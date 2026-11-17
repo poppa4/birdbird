@@ -67,18 +67,28 @@
       return `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])} · ${esc(t('Example', 'Eksempel'))}</span><b>${esc(n.label)}</b>${sub}<span class="w">${esc(WOULD(n.k))}</span><span class="x">${esc(explain(g, i, t))}</span>` +
         (o.pinned ? `<span class="b">${a ? (a[0] ? `<button type="button" class="btn sm pri" data-act="${a[0]}">${esc(a[1])}</button>` : `<a class="btn sm pri" href="route.html">${esc(a[1])}</a>`) : ''}</span>` : `<span class="m">${esc(o.coarse ? t('Tap to add your own', 'Trykk for å legge til ditt eget') : t('Click to add your own', 'Klikk for å legge til ditt eget'))}</span>`);
     }
-    return `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])}</span><b>${esc(n.label)}</b>${sub}<span class="m">${esc(n.deg === 1 ? t('1 link', '1 kobling') : t(n.deg + ' links', n.deg + ' koblinger'))}</span>` +
+    /* the links you made (each with × to remove it); the others come from the items themselves and light up on hover */
+    const ed = o.edit && o.pinned, nbs = ed ? g.links.filter(l => l.s === i || l.t === i).filter(l => l.m).map(l => ({ j: l.s === i ? l.t : l.s, m: true })).sort((a, b) => a.j - b.j) : [];
+    return `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])}</span><b>${esc(n.label)}</b>${sub}<span class="m">${esc(n.deg === 1 ? t('1 link', '1 kobling') : n.deg ? t(n.deg + ' links', n.deg + ' koblinger') : t('No links yet', 'Ingen koblinger ennå'))}</span>` +
       `<span class="b"><button type="button" class="btn sm pri" data-o="here">${esc(t('Open on the desk', 'Åpne på arbeidsflaten'))}</button><button type="button" class="btn sm" data-o="beside">${esc(t('Open beside', 'Åpne ved siden av'))}</button>` +
-      (o.edit && o.pinned && MOVABLE[n.k] ? `<button type="button" class="btn sm" data-mv aria-haspopup="menu">${esc(t('Move to', 'Flytt til'))} ▾</button>` : '') + `</span>`;
+      (ed ? `<button type="button" class="btn sm" data-lk aria-haspopup="dialog">${esc(t('Link to…', 'Koble til …'))}</button>` : '') +
+      (ed && MOVABLE[n.k] ? `<button type="button" class="btn sm" data-mv aria-haspopup="menu">${esc(t('Move to', 'Flytt til'))} ▾</button>` : '') + `</span>` +
+      (nbs.length ? `<ul class="gl lk" aria-label="${esc(t('Links you made', 'Koblinger du har laget'))}">${nbs.slice(0, 8).map(x => `<li><button type="button" data-i="${x.j}"><i style="background:${COL[g.nodes[x.j].k]}"></i><span>${esc(g.nodes[x.j].label)}</span><small>${esc(KN[g.nodes[x.j].k])}</small></button>${x.m ? `<button type="button" class="ux" data-ul="${x.j}" aria-label="${esc(t('Remove the link to ', 'Fjern koblingen til ') + g.nodes[x.j].label)}" title="${esc(t('Remove link', 'Fjern koblingen'))}">×</button>` : ''}</li>`).join('')}</ul>` +
+        (nbs.length > 8 ? `<span class="m">${esc(t(`and ${nbs.length - 8} more`, `og ${nbs.length - 8} til`))}</span>` : '') : '');
   }
   /* what can be placed in a group by hand (the same menu as the chip on the desk) */
   const MOVABLE = { doc: 1, note: 1, notebook: 1, pack: 1, route: 1 };
-  /* a click on the card's own-map actions: "Move to" on a dot, "New note here" (and Rename, Delete for a topic) on a
-     group. o.onEdit(what: 'move' | 'new' | 'rename' | 'delete', node or group, the button). -> true when it was one */
-  function cardAct(e, o, node, grp) {
-    const b = e.target.closest('[data-mv],[data-ga]'); if (!b) return false;
+  /* a click on the card's own-map actions: "Move to", "Link to…" and × (remove a link made by hand) on a dot; "New note
+     here", "Add existing…" (and Rename, Delete for a group of your own) on a group.
+     o.onEdit(what: 'move' | 'linkto' | 'unlink' | 'new' | 'add' | 'rename' | 'delete', node or group, the button or the
+     other node). -> true when it was one */
+  function cardAct(e, o, node, grp, g) {
+    const b = e.target.closest('[data-mv],[data-ga],[data-lk],[data-ul]'); if (!b) return false;
     if (!o.onEdit) return true;
-    if (b.hasAttribute('data-mv')) { if (node) o.onEdit('move', node, b); } else if (grp) o.onEdit(b.dataset.ga, grp, b);
+    if (b.hasAttribute('data-mv')) { if (node) o.onEdit('move', node, b); }
+    else if (b.hasAttribute('data-lk')) { if (node) o.onEdit('linkto', node, b); }
+    else if (b.hasAttribute('data-ul')) { if (node && g && g.nodes[+b.dataset.ul]) o.onEdit('unlink', node, g.nodes[+b.dataset.ul]); }
+    else if (grp) o.onEdit(b.dataset.ga, grp, b);
     return true;
   }
   /* the card of a focused group (2D and 3D): its name and count, "New note here" and back to all, every item in it (a
@@ -86,8 +96,9 @@
   function groupCardHTML(g, items, o) {
     const t = o.t, KN = names(t).KN, COL = o.col || COLS;
     return `<span class="k">${esc(o.sample ? t('Example group', 'Eksempelgruppe') : t('Group', 'Gruppe'))}</span><b class="gh">${esc(o.name)} <span class="gc">· ${items.filter(i => g.nodes[i].k !== 'aircraft').length}</span></b>${o.sub ? `<span class="m">${esc(o.sub)}</span>` : ''}` +
-      `<span class="b">${o.edit ? `<button type="button" class="btn sm pri" data-ga="new">${esc(t('+ New note here', '+ Nytt notat her'))}</button>` : ''}<button type="button" class="btn sm" data-back>${esc(t('← All groups', '← Alle grupper'))}</button></span>` +
+      `<span class="b">${o.edit ? `<button type="button" class="btn sm pri" data-ga="new">${esc(t('+ New note here', '+ Nytt notat her'))}</button><button type="button" class="btn sm" data-ga="add" aria-haspopup="dialog">${esc(t('+ Add existing…', '+ Legg til eksisterende …'))}</button>` : ''}<button type="button" class="btn sm" data-back>${esc(t('← All groups', '← Alle grupper'))}</button></span>` +
       `<ul class="gl">${items.map(i => `<li><button type="button" data-i="${i}"><i style="background:${COL[g.nodes[i].k]}"></i><span>${esc(g.nodes[i].label)}</span><small>${esc(KN[g.nodes[i].k])}</small></button></li>`).join('')}</ul>` +
+      (!items.length ? `<span class="x">${esc(t('Empty so far. Make a note here, add what you already have, or drag a dot from the map onto this group.', 'Tom så langt. Lag et notat her, legg til det du allerede har, eller dra en prikk fra kartet hit.'))}</span>` : '') +
       (o.edit && o.topic ? `<span class="ge"><button type="button" class="lnk" data-ga="rename">${esc(t('Rename', 'Gi nytt navn'))}</button><button type="button" class="lnk" data-ga="delete">${esc(t('Delete', 'Slett'))}</button></span>` : '');
   }
   /* search on the map: node indices best first (at most 7) */
@@ -110,7 +121,7 @@
     host.innerHTML = `<canvas class="wsm-c"${mini ? ' aria-hidden="true"' : ` tabindex="0" role="img" aria-roledescription="${esc(t('map', 'kart'))}"`}></canvas>` + (mini ? '' : `
       <div class="wsm-top">
         <div class="wsm-q"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.2"/><path d="M12.6 12.6 17 17"/></svg><input type="search" class="wsm-qi" placeholder="${esc(t('Find on the map', 'Finn på kartet'))}" aria-label="${esc(t('Find on the map', 'Finn på kartet'))}" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-autocomplete="list"><ul class="wsm-sug" role="listbox" hidden></ul></div>
-        <span class="sp"></span>
+        <span class="sp"></span>${o.onEdit ? `<button type="button" class="wsm-ng" data-ng>${esc(t('+ New group', '+ Ny gruppe'))}</button>` : ''}
         <div class="wsm-zm"><button type="button" data-z="in" aria-label="${esc(t('Zoom in', 'Zoom inn'))}">+</button><button type="button" data-z="out" aria-label="${esc(t('Zoom out', 'Zoom ut'))}">−</button><button type="button" data-z="fit">${esc(t('Fit', 'Tilpass'))}</button></div>${viewSwitch(o.view, t)}
       </div>
       <div class="wsm-card" hidden></div>
@@ -132,10 +143,15 @@
     /* ---------- data ---------- */
     let names2 = [];
     function setGraph(ng, keep) {
+      /* a change while you work on the map (a link, a move, a new group): the focused group and the pinned dot stay */
+      const gk = keep && L && gsel >= 0 && L.groups[gsel] ? L.groups[gsel].key : null, sk = keep && g && sel >= 0 && g.nodes[sel] ? g.nodes[sel].id : null, stay = keep && !auto && W > 0;
       g = ng; L = GW.cloudLayout(g, { aspect: aspect(), instant: !!keep || reduced() }); pulses = [];
       names2 = L.groups.map(q => GW.groupName(g, L.groups, q, t)); dbg.regions = names2.slice();
-      hover = -1; sel = -1; gsel = -1; nb = null; if (card) card.hidden = true;
-      auto = true; request();
+      hover = -1; sel = -1; gsel = -1; nb = null; drag = null; if (card) card.hidden = true;
+      if (stay) {
+        gsel = gk != null ? L.groups.findIndex(q => q.key === gk) : -1; sel = sk != null && g.index[sk] != null ? g.index[sk] : -1;
+        showCard(sel); moveTo(gsel >= 0 ? groupTarget(gsel) : fitTarget(), 320);
+      } else { auto = true; request(); }
       drawLegend(); drawGroupButtons(); host.setAttribute('data-nodes', g.nodes.length);
       if (!mini) cv.setAttribute('aria-label', t('Map of your workspace: ', 'Kart over arbeidsområdet ditt: ') + names2.map((s, k) => s + ' ' + L.groups[k].n).join(', ') + '. ' + legendText());
     }
@@ -300,8 +316,11 @@
       /* links: inside a group only, as faint hairlines; a focused dot's links (any) brighter */
       ctx.lineWidth = mini ? 0.5 : 0.8; ctx.lineCap = 'round'; ctx.strokeStyle = near ? 'rgba(150,182,218,.035)' : 'rgba(170,200,236,' + (mini ? 0.05 : 0.065) + ')'; ctx.beginPath();
       const hl = [];
-      for (const l of g.links) { if (!visible(l.s) || !visible(l.t) || !(vis[l.s] || vis[l.t])) continue; if (near && (l.s === focus || l.t === focus)) { hl.push(l); continue; } if (!inner(l) || (gsel >= 0 && L.gi[l.s] !== gsel)) continue; ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }
+      const xl = [];
+      for (const l of g.links) { if (!visible(l.s) || !visible(l.t) || !(vis[l.s] || vis[l.t])) continue; if (near && (l.s === focus || l.t === focus)) { hl.push(l); continue; } if (!inner(l)) { if (l.m && !mini && (gsel < 0 || L.gi[l.s] === gsel || L.gi[l.t] === gsel)) xl.push(l); continue; } if (gsel >= 0 && L.gi[l.s] !== gsel) continue; ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }
       ctx.stroke();
+      /* links you made between groups: a faint dashed line, so a group like "Flight prep January" shows what it ties to */
+      if (xl.length) { ctx.save(); ctx.setLineDash([3, 5]); ctx.strokeStyle = near ? 'rgba(170,200,236,.06)' : 'rgba(186,212,242,.2)'; ctx.lineWidth = 0.9; ctx.beginPath(); xl.forEach(l => { ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }); ctx.stroke(); ctx.restore(); }
       if (hl.length) { ctx.strokeStyle = 'rgba(214,232,250,.55)'; ctx.lineWidth = 1.1; ctx.beginPath(); hl.forEach(l => { ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }); ctx.stroke(); }
       /* a soft halo, then the dots, one path per colour */
       ctx.globalCompositeOperation = 'lighter';
@@ -353,6 +372,7 @@
       const RK = { aircraft: 0, doc: 1, pack: 2, route: 3 };
       order.sort((a, b) => (RK[g.nodes[a].k] ?? 4) - (RK[g.nodes[b].k] ?? 4) || g.nodes[b].deg - g.nodes[a].deg || a - b);
       order.slice(0, 160).forEach(i => label(i, ''));
+      drawDrag();
     }
     /* what lies over the plate (the example tag, the call to action, the card), in canvas pixels: names keep off it */
     function overlays() {
@@ -423,19 +443,53 @@
     }
 
     /* ---------- pointer: pan, pinch, wheel, click ---------- */
-    function hit(x, y) {
+    function hit(x, y, skip) {
       let best = -1, bd = Infinity; const zk = cam.k / (fitK || 1), sk = Math.min(1.8, Math.max(0.8, Math.sqrt(zk)));
-      for (let i = 0; i < g.nodes.length; i++) { if (!visible(i)) continue; const dx = sx(i) - x, dy = sy(i) - y, d = dx * dx + dy * dy, r = (BASE[g.nodes[i].k] || 2) * sk + (coarse ? 11 : 7); if (d < r * r && d < bd) { bd = d; best = i; } }
+      for (let i = 0; i < g.nodes.length; i++) { if (!visible(i) || i === skip) continue; const dx = sx(i) - x, dy = sy(i) - y, d = dx * dx + dy * dy, r = (BASE[g.nodes[i].k] || 2) * sk + (coarse ? 11 : 7); if (d < r * r && d < bd) { bd = d; best = i; } }
       return best;
     }
     const hitG = (x, y) => { for (const r of glab) if (x >= r.x0 - 4 && x <= r.x1 + 4 && y >= r.y0 - 4 && y <= r.y1 + 4) return r.k; return -1; };
     const pts = new Map(); let pinch = null, moved = 0;
     const local = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
     function down(e) {
-      if (mini) return;
+      if (mini || (e.pointerType === 'mouse' && e.button !== 0)) return; /* right-click: the card (contextmenu), never a click */
       cv.setPointerCapture(e.pointerId); const [x, y] = local(e); pts.set(e.pointerId, [x, y]); moved = 0; tween = null;
       if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), m: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] }; drag = null; return; }
-      drag = { x, y, sx: x, sy: y, shift: e.shiftKey || e.altKey };
+      drag = { x, y, sx: x, sy: y, shift: e.shiftKey || e.altKey, node: canEdit && e.button === 0 ? hit(x, y) : -1, tgt: null, px: x, py: y };
+    }
+    /* dragging a dot of your own: onto another dot links the two, onto a group (its cloud or its name) moves it there */
+    function dropTarget(i, x, y) {
+      const n = g.nodes[i], j = hit(x, y, i);
+      if (j >= 0) { const m = g.nodes[j]; return { t: 'link', j, ok: !(n.k === 'aircraft' && m.k === 'aircraft'), had: g.links.some(l => (l.s === i && l.t === j) || (l.s === j && l.t === i)) }; }
+      let k = hitG(x, y);
+      if (k < 0) { const [wx, wy] = toWorld(x, y); let bd = Infinity; L.groups.forEach((q, q2) => { const d = Math.hypot(wx - q.cx, wy - q.cy); if (d < q.r + L.D * 1.6 && d < bd) { bd = d; k = q2; } }); }
+      if (k < 0) return null;
+      return { t: 'move', k, ok: !!MOVABLE[n.k] && k !== L.gi[i], same: k === L.gi[i] };
+    }
+    function dropText(T) {
+      const n = drag && g.nodes[drag.node];
+      if (!T) return t('Drop on a dot to link · on a group to move', 'Slipp på en prikk for å koble · på en gruppe for å flytte');
+      if (T.t === 'link') return !T.ok ? t('Two aircraft cannot be linked', 'To fly kan ikke kobles') : T.had ? t('Already linked to ', 'Allerede koblet til ') + g.nodes[T.j].label : t('Link to ', 'Koble til ') + g.nodes[T.j].label;
+      if (T.same) return t('Already in ', 'Ligger allerede i ') + names2[T.k];
+      return T.ok ? t('Move to ', 'Flytt til ') + names2[T.k] : n && n.k === 'aircraft' ? t('An aircraft is a group of its own', 'Et fly er en egen gruppe') : t('This one cannot be moved', 'Denne kan ikke flyttes');
+    }
+    function drawDrag() {
+      if (!drag || drag.node < 0 || moved < 4) return;
+      const i = drag.node, n = g.nodes[i], ax = sx(i), ay = sy(i), T = drag.tgt, x = drag.px, y = drag.py, good = T && T.ok && !T.same;
+      ctx.save(); ctx.lineCap = 'round';
+      const tx = T && T.t === 'link' ? sx(T.j) : x, ty = T && T.t === 'link' ? sy(T.j) : y;
+      ctx.setLineDash(T && T.t === 'link' ? [] : [4, 5]); ctx.lineWidth = T && T.t === 'link' ? 1.6 : 1.1;
+      ctx.strokeStyle = T && T.t === 'link' ? (T.ok ? 'rgba(240,248,255,.9)' : 'rgba(255,160,160,.75)') : 'rgba(214,232,250,.55)';
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]);
+      if (T && T.t === 'link') { ctx.strokeStyle = T.ok ? '#FFFFFF' : 'rgba(255,160,160,.9)'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(tx, ty, 10, 0, Math.PI * 2); ctx.stroke(); }
+      ctx.globalAlpha = 0.95; ctx.fillStyle = COL[n.k] || '#fff'; ctx.beginPath(); ctx.arc(x, y, 5.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 1; ctx.stroke(); ctx.globalAlpha = 1;
+      const s = dropText(T); ctx.font = '600 12.5px Public Sans, system-ui, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      const w = ctx.measureText(s).width, bx = Math.max(6, Math.min(W - w - 16, x + 14)), by = Math.max(8, y - 30);
+      ctx.fillStyle = good ? 'rgba(14,38,70,.95)' : 'rgba(3,10,22,.9)'; roundRect(bx, by, w + 14, 24, 5); ctx.fill();
+      ctx.strokeStyle = good ? 'rgba(200,224,250,.6)' : 'rgba(190,215,245,.2)'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = PLATE.label; ctx.fillText(s, bx + 7, by + 12.5);
+      ctx.restore();
     }
     function move(e) {
       const [x, y] = local(e);
@@ -444,6 +498,11 @@
       if (pinch && pts.size >= 2) { const [a, b] = [...pts.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]), m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; cam.x -= (m[0] - pinch.m[0]) / cam.k; cam.y -= (m[1] - pinch.m[1]) / cam.k; zoomAt(d / (pinch.d || d), m[0], m[1]); pinch = { d, m }; moved = 99; return; }
       if (drag) {
         const dx = x - drag.x, dy = y - drag.y; moved = Math.max(moved, Math.hypot(x - drag.sx, y - drag.sy)); if (moved < 4) return;
+        if (drag.node >= 0) {
+          auto = false; tween = null; drag.px = x; drag.py = y; drag.tgt = dropTarget(drag.node, x, y); hover = -1;
+          hoverG = drag.tgt && drag.tgt.t === 'move' ? drag.tgt.k : -1; if (card && !card.hidden) card.hidden = true;
+          cv.style.cursor = 'grabbing'; request(); return;
+        }
         auto = false; cam.x -= dx / cam.k; cam.y -= dy / cam.k; cv.style.cursor = 'grabbing';
         drag.x = x; drag.y = y; request(); return;
       }
@@ -456,6 +515,13 @@
     function up(e) {
       pts.delete(e.pointerId); if (pinch) { if (pts.size < 2) pinch = null; drag = null; return; }
       const d = drag; drag = null; cv.style.cursor = hover >= 0 || hoverG >= 0 ? 'pointer' : '';
+      if (d && d.node >= 0 && moved >= 4) {
+        const T = d.tgt, n = g.nodes[d.node]; hoverG = -1; showCard(sel); request();
+        if (e.type === 'pointercancel' || !T || !o.onEdit) return;
+        if (T.t === 'link' && T.ok) o.onEdit('link', n, g.nodes[T.j]);
+        else if (T.t === 'move' && T.ok) o.onEdit('moveto', n, L.groups[T.k]);
+        return;
+      }
       if (!d || moved >= 4) return;
       const [x, y] = local(e), k = hitG(x, y), i = k < 0 ? hit(x, y) : -1;
       if (k >= 0) { focusGroup(k === gsel && sel < 0 ? -1 : k); return; }
@@ -502,7 +568,7 @@
       if (k < 0) auto = false;
     }
     if (card) card.addEventListener('click', e => {
-      if (cardAct(e, o, sel >= 0 ? g.nodes[sel] : null, gsel >= 0 ? L.groups[gsel] : null)) return;
+      if (cardAct(e, o, sel >= 0 ? g.nodes[sel] : null, gsel >= 0 ? L.groups[gsel] : null, g)) return;
       const b = e.target.closest('[data-o]'); if (b && sel >= 0) { open(sel, b.dataset.o === 'beside'); return; }
       const li = e.target.closest('[data-i]'); if (li) { const i = +li.dataset.i; if (isEx(i) || coarse) select(i); else { hover = -1; select(i); } return; }
       if (e.target.closest('[data-back]')) { focusGroup(-1); return; }
@@ -526,12 +592,14 @@
     }
     cv.addEventListener('pointerdown', down); cv.addEventListener('pointermove', move); cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); cv.addEventListener('pointerleave', leave);
     cv.addEventListener('wheel', wheel, { passive: false }); cv.addEventListener('keydown', key);
+    cv.addEventListener('contextmenu', e => { if (mini) return; const [x, y] = local(e), i = hit(x, y); if (i < 0 || isEx(i)) return; e.preventDefault(); hover = -1; select(i); });
     cv.addEventListener('dblclick', e => { if (mini) return; const [x, y] = local(e); if (hit(x, y) < 0 && hitG(x, y) < 0) zoomAt(1.8, x, y); });
     if (mini) cv.addEventListener('click', () => { if (o.onClick) o.onClick(); });
 
     /* ---------- toolbar, legend, search ---------- */
     if (!mini) {
       const vw = host.querySelector('.wsm-vw'); if (vw) vw.addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b && b.dataset.view !== o.view.cur) o.view.onSwitch(b.dataset.view); });
+      const ng = host.querySelector('[data-ng]'); if (ng) ng.addEventListener('click', () => { if (o.onEdit) o.onEdit('newgroup', null, ng); });
       host.querySelector('.wsm-zm').addEventListener('click', e => { const b = e.target.closest('[data-z]'); if (!b) return; if (b.dataset.z === 'fit') { if (gsel >= 0) { gsel = -1; showCard(sel); } moveTo(fitTarget(), 420); } else zoomAt(b.dataset.z === 'in' ? 1.4 : 1 / 1.4, W / 2, H / 2); });
       legEl.addEventListener('click', e => { const b = e.target.closest('[data-g]'); if (!b) return; const k = b.dataset.g; if (hidden.has(k)) hidden.delete(k); else hidden.add(k); if (sel >= 0 && !visible(sel)) select(-1); hover = -1; nb = null; drawLegend(); if (gsel >= 0 && sel < 0) showCard(-1); const nb2 = legEl.querySelector(`[data-g="${k}"]`); if (nb2) nb2.focus(); request(); });
       let rows = [], cur = 0;
@@ -558,7 +626,7 @@
     if (ro) ro.observe(cv); else window.addEventListener('resize', resize);
     setGraph(o.graph); resize();
     return (host.wsmap = {
-      setGraph: ng => setGraph(ng, true), pulseNow: () => { unschedule(); ambient(); }, fit: () => moveTo(fitTarget(), 380), focus: i => select(i, true), focusGroup, debug: dbg,
+      setGraph: ng => setGraph(ng, true), pulseNow: () => { unschedule(); ambient(); }, fit: () => moveTo(fitTarget(), 380), focus: i => select(i, true), focusGroup, focusKey: key => { const k = L.groups.findIndex(q => q.key === key); if (k >= 0) focusGroup(k); return k; }, debug: dbg,
       get graph() { return g; }, get camera() { return Object.assign({}, cam); }, get layout() { return L; },
       screenOf: i => [sx(i), sy(i)],
       destroy() { alive = false; if (raf) cancelAnimationFrame(raf); raf = 0; unschedule(); if (pulseT) clearTimeout(pulseT); pulseT = 0; if (io) io.disconnect(); document.removeEventListener('visibilitychange', onVis); scene = null; if (ro) ro.disconnect(); else window.removeEventListener('resize', resize); host.innerHTML = ''; cv.width = cv.height = 0; host.wsmap = null; }

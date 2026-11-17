@@ -1,6 +1,7 @@
 /* NORDAP – My Workspace map, core logic (no DOM): runs in the browser (window.WSGRAPH) and in node tests.
    buildGraph   the workspace as nodes and links, only from relations already in the data:
-                  document -> aircraft (acIds) · note -> aircraft / document / pack (links) · note -> cited page
+                  document -> aircraft (acIds) · links made by hand (note, notebook, document, pack and route marks:
+                  links, see addLink in workspacecore.js; m: 1 on the link) · note -> cited page
                   (<cite data-doc data-p>) -> document · pack <-> route (routeId, xs.route, packId) · pack -> aircraft
                   (pack mark, else registration) · desk -> the items open in its tabs. Ink on a PDF marks its document.
                 Every node is given the group it gathers around (n.ac: 'aircraft:<id>' or 'topic:<id>'). A group
@@ -43,9 +44,10 @@
     input = input || {}; opts = opts || {};
     const items = input.items || {}, name = opts.name || DEF_NAME, pages = opts.pages !== false, desks = opts.desks !== false;
     const pageName = opts.pageName || ((dl, p) => dl + ' · p. ' + p);
-    const nodes = [], index = {}, links = [], lk = new Set();
+    const nodes = [], index = {}, links = [], lk = new Map();
     const add = (k, r, label, extra) => { const id = k + ':' + r; if (index[id] != null) return index[id]; index[id] = nodes.length; nodes.push(Object.assign({ id, k, g: GROUP_OF[k], r: String(r), label: str(label) || k, ac: '', deg: 0 }, extra || {})); return index[id]; };
-    const link = (a, b, k) => { if (a == null || b == null || a === b) return; const key = a < b ? a + '-' + b : b + '-' + a; if (lk.has(key)) return; lk.add(key); links.push({ s: a, t: b, k }); nodes[a].deg++; nodes[b].deg++; };
+    /* m: a link made by hand (an item's links), which can be removed again on the map */
+    const link = (a, b, k, m) => { if (a == null || b == null || a === b) return; const key = a < b ? a + '-' + b : b + '-' + a; if (lk.has(key)) { if (m) { const x = links[lk.get(key)]; x.m = 1; } return; } lk.set(key, links.length); links.push(m ? { s: a, t: b, k, m: 1 } : { s: a, t: b, k }); nodes[a].deg++; nodes[b].deg++; };
     const at = (k, r) => index[k + ':' + r];
     const all = Object.values(items).filter(isLive);
     const of = k => all.filter(it => it.kind === k).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0) || (a.id < b.id ? -1 : 1));
@@ -74,7 +76,7 @@
     /* note -> its links, and -> the pages it cites */
     of('note').forEach(n => {
       const ni = at('note', n.id);
-      (n.links || []).forEach(l => link(ni, at(l.t === 'doc' ? 'doc' : l.t, l.id), l.t === 'aircraft' ? 'ac' : 'ref'));
+      (n.links || []).forEach(l => link(ni, at(l.t, l.id), l.t === 'aircraft' ? 'ac' : 'ref', 1));
       citesOf(n.body).forEach(c => {
         const di = at('doc', c.doc); if (di == null) return;
         if (!pages) { link(ni, di, 'cite'); return; }
@@ -92,6 +94,12 @@
       if (ac) link(pi, at('aircraft', ac), 'ac');
     });
     routes.forEach(r => { if (r.packId) link(at('route', r.id), at('pack', r.packId), 'flight'); });
+    /* links made by hand on notebooks, documents, packs and routes (a note's are above) */
+    const byHand = (i, it) => { if (i == null || !isLive(it)) return; (it.links || []).forEach(l => link(i, at(l.t, l.id), l.t === 'aircraft' ? 'ac' : 'ref', 1)); };
+    of('notebook').forEach(n => byHand(at('notebook', n.id), n));
+    of('doc').forEach(d => byHand(at('doc', d.id), d));
+    packs.forEach(p => byHand(at('pack', p.id), items['pk:' + p.id]));
+    routes.forEach(r => byHand(at('route', r.id), items['rt:' + r.id]));
     /* desk -> what is open in it (a desk with nothing open that is on the map gets no node) */
     if (desks) of('desk').forEach(d => {
       const ids = tabsOf(d.L).map(x => at(x.k, x.r)).filter(i => i != null); if (!ids.length) return;

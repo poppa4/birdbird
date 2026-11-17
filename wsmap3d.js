@@ -479,7 +479,7 @@
       states(); if (i >= 0 && fly) focusNode(i);
     }
     card.addEventListener('click', e => {
-      if (UI.cardAct(e, o, sel >= 0 ? g.nodes[sel] : null, gsel >= 0 ? L.clusters[gsel] : null)) return;
+      if (UI.cardAct(e, o, sel >= 0 ? g.nodes[sel] : null, gsel >= 0 ? L.clusters[gsel] : null, g)) return;
       const b = e.target.closest('[data-o]'); if (b && sel >= 0) { open(sel, b.dataset.o === 'beside'); return; }
       const li = e.target.closest('[data-i]'); if (li) { hover = -1; select(+li.dataset.i); return; }
       if (e.target.closest('[data-back]')) { back(); return; }

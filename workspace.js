@@ -29,7 +29,7 @@
   /* ---------- names ---------- */
   const CAT = { afm: ['AFM / POH', 'AFM / POH'], sop: ['SOP', 'SOP'], chk: ['Checklists', 'Sjekklister'], company: ['Company manuals', 'Selskapsmanualer'], charts: ['Charts', 'Kart'], other: ['Other', 'Annet'] };
   const catName = c => t.apply(null, CAT[c] || CAT.other);
-  const KIND = { aircraft: ['Aircraft', 'Fly'], doc: ['Document', 'Dokument'], note: ['Note', 'Notat'], pack: ['Briefing pack', 'Briefingpakke'], route: ['Route', 'Rute'], desk: ['Desk', 'Arbeidsflate'], notebook: ['Notebook', 'Notatbok'], topic: ['Topic', 'Tema'] };
+  const KIND = { aircraft: ['Aircraft', 'Fly'], doc: ['Document', 'Dokument'], note: ['Note', 'Notat'], pack: ['Briefing pack', 'Briefingpakke'], route: ['Route', 'Rute'], desk: ['Desk', 'Arbeidsflate'], notebook: ['Notebook', 'Notatbok'], topic: ['Group', 'Gruppe'] };
   const kindName = k => t.apply(null, KIND[k] || ['', '']);
   const acName = a => a ? ([a.type || W.typeOf(a.typeKey).name, a.reg].filter(Boolean).join(' · ') || t('Aircraft', 'Fly')) : '';
   const noteTitle = n => W.noteAutoTitle(n) || t('Untitled note', 'Notat uten tittel');
@@ -680,6 +680,9 @@
     if (l.t === 'doc') { const d = item(l.id); return W.isLive(d) ? { n: d.name, h: '#/documents/' + d.id } : null; }
     if (l.t === 'pack') { const p = S.packs.find(x => x.id === l.id); return p ? { n: packTitle(p), h: 'prep.html?id=' + encodeURIComponent(p.id) } : null; }
     if (l.t === 'lab') { const x = (LAB.FLAT || []).find(y => y.k === l.id); return x ? { n: t(x.en, x.no), h: x.f } : null; }
+    if (l.t === 'note') { const n = item(l.id); return W.isLive(n) && n.kind === 'note' ? { n: noteTitle(n), h: '#/notes/' + n.id } : null; }
+    if (l.t === 'notebook') { const n = item(l.id); return W.isLive(n) && n.kind === 'notebook' ? { n: n.title || t('Notebook', 'Notatbok'), h: '#/notebook/' + n.id } : null; }
+    if (l.t === 'route') { const r = S.routes.find(x => x.id === l.id); return r ? { n: routeTitle(r), h: 'route.html' } : null; }
     return null;
   }
   /* phase 2 registers more formats here (see the header of this file) */
@@ -741,7 +744,7 @@
     main.innerHTML = `<div class="ws-h"><h2>${t('Routes', 'Ruter')}</h2><div class="acts"><a class="btn pri" href="route.html">${t('Open Route Explorer', 'Åpne Route Explorer')}</a></div><p>${t('Routes you have drawn and saved in Route Explorer.', 'Ruter du har tegnet og lagret i Route Explorer.')}</p></div>
       ${l.length ? `<ul class="rows">${l.map(routeRow).join('')}</ul>` : empty(t('<b>No saved routes yet.</b> Draw a route in Route Explorer and it is saved here automatically.', '<b>Ingen lagrede ruter ennå.</b> Tegn en rute i Route Explorer, så lagres den her automatisk.'))}`;
   }
-  const itemName = it => it.kind === 'aircraft' ? acName(it) : it.kind === 'doc' ? it.name : it.kind === 'note' ? noteTitle(it) : it.kind === 'desk' ? (it.name || t('Desk', 'Arbeidsflate')) : it.kind === 'notebook' ? (it.title || t('Notebook', 'Notatbok')) : it.kind === 'topic' ? (it.name || t('Topic', 'Tema')) : it.id;
+  const itemName = it => it.kind === 'aircraft' ? acName(it) : it.kind === 'doc' ? it.name : it.kind === 'note' ? noteTitle(it) : it.kind === 'desk' ? (it.name || t('Desk', 'Arbeidsflate')) : it.kind === 'notebook' ? (it.title || t('Notebook', 'Notatbok')) : it.kind === 'topic' ? (it.name || t('Group', 'Gruppe')) : it.id;
   function viewTrash() {
     const l = W.trashed(S.items).filter(x => x.kind !== 'pack' && x.kind !== 'route');
     main.innerHTML = `<div class="ws-h"><h2>${t('Trash', 'Papirkurv')}</h2>${l.length ? `<div class="acts"><button type="button" class="btn danger" data-act="trash-empty">${t('Empty the trash', 'Tøm papirkurven')}</button></div>` : ''}<p>${t('Deleted aircraft, documents, notes and desks stay here for 30 days and can be restored with everything they had. After that they are removed for good.', 'Slettede fly, dokumenter, notater og arbeidsflater blir liggende her i 30 dager og kan gjenopprettes med alt de hadde. Etter det fjernes de for godt.')}</p></div>
@@ -834,31 +837,105 @@
     return true;
   }
   function topicDlg(title, val, ok) {
-    return openDlg(`<h3 id="wsDlgH">${esc(title)}</h3><form id="wsTopicF" novalidate><div class="fld"><label for="wsTopicN">${t('Name', 'Navn')}</label><input id="wsTopicN" maxlength="40" value="${esc(val || '')}" placeholder="${esc(t('e.g. Theory', 'f.eks. Teori'))}" autocomplete="off" autofocus></div><div class="foot"><button type="button" class="btn" data-close>${t('Cancel', 'Avbryt')}</button><button type="submit" class="btn pri">${esc(ok)}</button></div></form>`,
+    return openDlg(`<h3 id="wsDlgH">${esc(title)}</h3><form id="wsTopicF" novalidate><div class="fld"><label for="wsTopicN">${t('Name', 'Navn')}</label><input id="wsTopicN" maxlength="40" value="${esc(val || '')}" placeholder="${esc(t('e.g. Flight prep January', 'f.eks. Flight prep januar'))}" autocomplete="off" autofocus></div><div class="foot"><button type="button" class="btn" data-close>${t('Cancel', 'Avbryt')}</button><button type="submit" class="btn pri">${esc(ok)}</button></div></form>`,
       close => { el('wsTopicF').onsubmit = e => { e.preventDefault(); const v = W.cleanTopicName(el('wsTopicN').value); if (v) close(v); }; });
   }
   /* "New topic…": name it, and the item (if any) is placed there at once. A name you already have is that topic. */
   async function newTopic(k, r) {
-    const name = await topicDlg(t('New topic', 'Nytt tema'), '', t('Create', 'Lag')); if (!name) return null;
+    const name = await topicDlg(t('New group', 'Ny gruppe'), '', t('Create', 'Lag')); if (!name) return null;
     let tp = W.topicsOf(S.items).find(x => W.fold(x.name) === W.fold(name));
-    if (!tp) { if (W.topicsOf(S.items).length >= W.MAX_TOPICS) { toast(t('You have the most topics there is room for.', 'Du har så mange temaer det er plass til.')); return null; } tp = W.newTopic({ name }); await commit(tp); }
+    if (!tp) { if (W.topicsOf(S.items).length >= W.MAX_TOPICS) { toast(t('You have the most groups there is room for.', 'Du har så mange grupper det er plass til.')); return null; } tp = W.newTopic({ name }); await commit(tp); }
     if (k) await setPlace(k, r, tp.id); else render();
     return tp;
   }
-  async function renameTopic(id) { const tp = item(id); if (!W.isLive(tp)) return; const name = await topicDlg(t('Rename topic', 'Gi temaet nytt navn'), tp.name, t('Save', 'Lagre')); if (!name || name === tp.name) return; await commit(W.patch(item(id), { name })); render(); drawPlaceChips(); }
+  async function renameTopic(id) { const tp = item(id); if (!W.isLive(tp)) return; const name = await topicDlg(t('Rename group', 'Gi gruppen nytt navn'), tp.name, t('Save', 'Lagre')); if (!name || name === tp.name) return; await commit(W.patch(item(id), { name })); render(); drawPlaceChips(); }
   /* the one menu: your aircraft, your topics, New topic…, Unsorted. at: the button (or { x, y }) */
   function placeMenu(at, k, r, done) {
     const D = window.WSDESK; if (!D || !D.menu || !PLACE[k]) return;
     const cur = new Set(groupsOfItem(k, r)), go = async to => { if (await setPlace(k, r, to) && done) done(to); };
     D.menu(at, groupList().map(x => ({ l: x.name, on: cur.has(x.id), f: () => go(x.id) })).concat([{ sep: 1, hide: !groupList().length },
-      { l: t('New topic…', 'Nytt tema …'), f: async () => { const tp = await newTopic(k, r); if (tp && done) done(tp.id); } },
+      { l: t('New group…', 'Ny gruppe …'), f: async () => { const tp = await newTopic(k, r); if (tp && done) done(tp.id); } },
       { l: t('Unsorted', 'Usortert'), on: !cur.size, f: () => go(UNS) }]), true);
   }
   document.addEventListener('click', e => { const b = e.target.closest('[data-place]'); if (!b) return; e.preventDefault(); const v = b.dataset.place, i = v.indexOf(':'); placeMenu(b, v.slice(0, i), v.slice(i + 1)); });
   const groupName = id => { const x = groupList().find(q => q.id === id); return x ? x.name : t('Unsorted', 'Usortert'); };
   /* the map's own actions: "Move to" on a dot's card; "New note here", and Rename and Delete for a topic, on a group's card */
+  const nref = n => ({ k: n.k, r: n.r });
+  async function linkNodes(a, b, quiet) {
+    if (W.linked(S.items, nref(a), nref(b))) { toast(t('Already linked: ', 'Allerede koblet: ') + a.label + ' ↔ ' + b.label, [t('Remove the link', 'Fjern koblingen'), () => unlinkNodes(a, b)]); return false; }
+    const it = W.addLink(S.items, nref(a), nref(b)); if (!it) { toast(t('These two cannot be linked.', 'Disse to kan ikke kobles.')); return false; }
+    await commit(it); render(); drawPlaceChips();
+    if (!quiet) toast(t('Linked: ', 'Koblet: ') + a.label + ' ↔ ' + b.label, [t('Undo', 'Angre'), () => unlinkNodes(a, b, true)]);
+    return true;
+  }
+  async function unlinkNodes(a, b, quiet) {
+    const list = W.removeLink(S.items, nref(a), nref(b));
+    if (!list.length) { toast(t('This link comes from the item itself (a page reference, a document’s aircraft or a pack’s route), so it is changed there.', 'Denne koblingen kommer fra selve elementet (en sidehenvisning, dokumentets fly eller pakkens rute), så den endres der.')); return; }
+    await commit(list); render(); drawPlaceChips();
+    if (!quiet) toast(t('Link removed: ', 'Koblingen er fjernet: ') + a.label + ' ↔ ' + b.label, [t('Undo', 'Angre'), () => linkNodes(a, b, true)]);
+  }
+  /* the group id of a map group (aircraft id, topic id, or UNSORTED) */
+  const gidOf = q => q.topic ? q.topic.id : q.ac >= 0 ? mapGraph().nodes[q.ac].r : UNS;
+  const holderId = (k, r) => k === 'pack' ? 'pk:' + r : k === 'route' ? 'rt:' + r : r;
+  /* move one or more items into a group; Undo puts them back as they were */
+  async function placeMany(list, gid) {
+    const before = list.map(x => ({ id: holderId(x.k, x.r), it: item(holderId(x.k, x.r)) })), changed = [];
+    list.forEach(x => { const it = W.place(S.items, x.k, x.r, gid); if (it) { S.items[it.id] = it; changed.push(it); } });
+    if (!changed.length) return 0;
+    await commit(changed); for (const it of changed) if (it.kind === 'doc') await pushDocToFi(it);
+    render(); drawPlaceChips();
+    toast((changed.length === 1 ? t('Moved to ', 'Flyttet til ') : changed.length + t(' items moved to ', ' elementer flyttet til ')) + groupName(gid), [t('Undo', 'Angre'), async () => {
+      const back = before.map(b => b.it ? W.patch(b.it, {}) : (S.items[b.id] ? W.patch(S.items[b.id], { grp: '', acId: '' }) : null)).filter(Boolean);
+      await commit(back); render(); drawPlaceChips(); }]);
+    return changed.length;
+  }
+  /* a list to pick from (the map's own items), with a search box: one (radio) or several (checkboxes). -> [nodes] or null */
+  function pickDlg(o) {
+    const g = mapGraph(), KN = KIND, COL = (window.WSMAP && window.WSMAP.COL) || {}, multi = !!o.multi;
+    const RK = { note: 0, notebook: 1, doc: 2, pack: 3, route: 4, aircraft: 5 };
+    const rows = g.nodes.map((n, i) => ({ n, i })).filter(x => o.filter(x.n)).sort((a, b) => (RK[a.n.k] - RK[b.n.k]) || a.n.label.localeCompare(b.n.label, undefined, { numeric: true }));
+    const grpOfNode = n => n.ac ? groupName(n.ac.slice(n.ac.indexOf(':') + 1)) : t('Unsorted', 'Usortert');
+    return openDlg(`<h3 id="wsDlgH">${esc(o.title)}</h3>${o.sub ? `<p>${esc(o.sub)}</p>` : ''}
+      ${rows.length ? `<div class="fld"><input id="wsPkQ" type="search" placeholder="${esc(t('Search', 'Søk'))}" aria-label="${esc(t('Search', 'Søk'))}" autocomplete="off" autofocus></div>
+      <ul class="ws-pick" id="wsPkL">${rows.map(x => `<li data-q="${esc(W.fold(x.n.label + ' ' + t(KN[x.n.k][0], KN[x.n.k][1])))}"><label><input type="${multi ? 'checkbox' : 'radio'}" name="wsPk" value="${x.i}"><i style="background:${COL[x.n.k] || '#999'}"></i><span>${esc(x.n.label)}</span><small>${esc(t(KN[x.n.k][0], KN[x.n.k][1]))} · ${esc(grpOfNode(x.n))}</small></label></li>`).join('')}</ul>`
+        : `<p class="ws-pick-none">${esc(o.none)}</p>`}
+      <div class="foot"><button type="button" class="btn" data-close>${t('Cancel', 'Avbryt')}</button>${rows.length ? `<button type="button" class="btn pri" id="wsPkOk" disabled>${esc(o.ok)}</button>` : ''}</div>`,
+      close => {
+        const L2 = el('wsPkL'), ok = el('wsPkOk'), q = el('wsPkQ'); if (!L2) return;
+        const chosen = () => [...L2.querySelectorAll('input:checked')].map(i => g.nodes[+i.value]);
+        L2.addEventListener('change', () => { const n = chosen().length; ok.disabled = !n; if (multi) ok.textContent = o.ok + (n > 1 ? ' (' + n + ')' : ''); });
+        L2.addEventListener('dblclick', e => { if (!multi && e.target.closest('label')) { const c = chosen(); if (c.length) close(c); } });
+        q.addEventListener('input', () => { const v = W.fold(q.value.trim()).split(/\s+/).filter(Boolean); L2.querySelectorAll('li').forEach(li => { li.hidden = !v.every(w => li.dataset.q.includes(w)); }); });
+        q.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const f = [...L2.querySelectorAll('li:not([hidden]) input')]; if (f.length === 1 && !multi) close([g.nodes[+f[0].value]]); } });
+        ok.onclick = () => { const c = chosen(); if (c.length) close(c); };
+      });
+  }
   async function mapEdit(what, x, btn) {
     if (what === 'move') { placeMenu(btn, x.k, x.r, to => toast(t('Moved to ', 'Flyttet til ') + groupName(to))); return; }
+    if (what === 'link') { await linkNodes(x, btn); return; }
+    if (what === 'unlink') { await unlinkNodes(x, btn); return; }
+    if (what === 'moveto') { await placeMany([x], gidOf(btn)); return; }
+    if (what === 'linkto') {
+      const have = new Set(mapGraph().links.filter(l => mapGraph().nodes[l.s].id === x.id || mapGraph().nodes[l.t].id === x.id).map(l => mapGraph().nodes[l.s].id === x.id ? mapGraph().nodes[l.t].id : mapGraph().nodes[l.s].id));
+      const pick = await pickDlg({ title: t('Link ', 'Koble ') + x.label + t(' to…', ' til …'), ok: t('Link', 'Koble'), none: t('There is nothing else to link to yet.', 'Det er ikke noe annet å koble til ennå.'),
+        filter: n => n.id !== x.id && !have.has(n.id) && !(x.k === 'aircraft' && n.k === 'aircraft') });
+      if (pick && pick[0]) await linkNodes(x, pick[0]);
+      return;
+    }
+    if (what === 'newgroup') {
+      const tp = await newTopic(); if (!tp) return;
+      const v = mapV; if (v && v.m && v.m.focusKey) setTimeout(() => { if (mapV === v && v.m) v.m.focusKey('topic:' + tp.id); }, 60);
+      toast(t('Group made: ', 'Gruppen er laget: ') + tp.name + t('. Add notes and documents to it, or drag dots onto it.', '. Legg til notater og dokumenter, eller dra prikker hit.'));
+      return;
+    }
+    if (what === 'add') {
+      const gid = gidOf(x), name = groupName(gid);
+      const pick = await pickDlg({ multi: true, title: t('Add to ', 'Legg til i ') + name, sub: t('Choose what should be in this group. It moves here from where it is now; its links stay.', 'Velg hva som skal ligge i denne gruppen. Det flyttes hit fra der det ligger nå; koblingene blir med.'), ok: t('Add', 'Legg til'),
+        none: t('Everything you have is already here. Make a note with “New note here”.', 'Alt du har ligger allerede her. Lag et notat med «Nytt notat her».'),
+        filter: n => PLACE[n.k] && !groupsOfItem(n.k, n.r).includes(gid) && !(gid === UNS && !groupsOfItem(n.k, n.r).length) });
+      if (pick && pick.length) await placeMany(pick.map(nref), gid);
+      return;
+    }
     const gid = x.topic ? x.topic.id : x.ac >= 0 ? mapGraph().nodes[x.ac].r : '';
     if (what === 'new') { const n = W.newNote({ grp: gid, links: gid && !x.topic ? [{ t: 'aircraft', id: gid }] : [] }); await commit(n); if (window.WSDESK) { window.WSDESK.openItem('note', n.id); go(''); } else go('notes/' + n.id); }
     else if (what === 'rename' && x.topic) renameTopic(gid);
@@ -882,35 +959,28 @@
   }
   let mapV = null;
   const mapSig = g => g.nodes.map(n => n.id + '=' + n.label + '@' + n.ac).join('|') + '#' + g.links.map(l => l.s + '-' + l.t).join(',') + '#' + (g.topics || []).map(x => x.id + '=' + x.name).join('|');
-  /* 2D or 3D: your choice when you made one (the toolbar switch, remembered), else 3D where WebGL is there and the
-     device is not weak (a quick check here, then the 3D map times its first frames and hands over to 2D if it lags) */
+  /* 2D or 3D: 2D unless you switched to 3D on the toolbar (remembered); the 3D map times its first frames and hands
+     over to 2D if it lags */
   const MAPV = 'bb-map-view';
   const mapPref = () => { try { const v = LS && LS.getItem(MAPV); return v === '2d' || v === '3d' ? v : ''; } catch (e) { return ''; } };
   let webgl = null;
-  function can3d(g) {
-    if (g.nodes.length > (GW.CLOUD_MAX || 600)) return false;
-    try { if (sessionStorage.getItem('bb-map-weak')) return false; } catch (e) {}
-    const nv = navigator, c = nv.connection;
-    if ((nv.deviceMemory && nv.deviceMemory < 2) || (c && c.saveData)) return false;
-    if (webgl == null) { try { const cv = document.createElement('canvas'), gl = cv.getContext('webgl'); webgl = !!gl; const x = gl && gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); } catch (e) { webgl = false; } }
-    return webgl;
-  }
   let map3dP = null;
-  const load3d = () => map3dP || (map3dP = (window.THREE ? Promise.resolve() : loadScript('three.min.js?v=128')).then(() => window.WSGRAPH3D ? 0 : loadScript('wsgraph3d.js?v=4')).then(() => window.WSMAP3D ? 0 : loadScript('wsmap3d.js?v=7')).catch(e => { map3dP = null; throw e; }));
+  const load3d = () => map3dP || (map3dP = (window.THREE ? Promise.resolve() : loadScript('three.min.js?v=128')).then(() => window.WSGRAPH3D ? 0 : loadScript('wsgraph3d.js?v=4')).then(() => window.WSMAP3D ? 0 : loadScript('wsmap3d.js?v=8')).catch(e => { map3dP = null; throw e; }));
   /* room kept free at the foot of the map: the colour key (two rows on a phone), and the call to action on the example */
   const mapPadB = sample => window.innerWidth < 600 ? (sample ? 250 : 100) : sample ? 130 : 64;
   function viewMap() {
     if (!GW || !window.WSMAP) { main.innerHTML = empty(t('The map could not load. Reload the page.', 'Kartet kunne ikke lastes. Last inn siden på nytt.')); return; }
     const a = mapAny(), g = a.g, sample = a.sample, mode = a.mode, pref = mapPref();
-    const want = pref === '2d' ? '2d' : pref === '3d' ? (webgl !== false && g.nodes.length <= (GW.CLOUD_MAX || 600) ? '3d' : '2d') : can3d(g) ? '3d' : '2d';
+    /* 2D unless you chose 3D on the toolbar: the 2D map is the one you work in (drag to link and to move, right-click) */
+    const want = pref === '3d' && webgl !== false && g.nodes.length <= (GW.CLOUD_MAX || 600) ? '3d' : '2d';
     if (mapV && mapV.mode === mode && mapV.lang === LAB.lang && mapV.view === want && main.contains(mapV.host)) { const sg = mapSig(g); if (sg !== mapV.sig) { mapV.sig = sg; if (mapV.m) mapV.m.setGraph(g); } return; }
     if (mapV && mapV.m) mapV.m.destroy(); mapV = null;
     const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches, d3 = want === '3d';
     const hint = sample ? (coarse ? t('This is an example. Tap a dot to see what it would be in your workspace, or a group name to see what is in it. Your own map grows as you add aircraft, documents and notes.', 'Dette er et eksempel. Trykk på en prikk for å se hva den ville vært i arbeidsområdet ditt, eller på et gruppenavn for å se hva som er i den. Ditt eget kart vokser etter hvert som du legger til fly, dokumenter og notater.') : t('This is an example. Point at a dot to see what it would be in your workspace, click it to add your own. Your map grows as you add aircraft, documents and notes and link them.', 'Dette er et eksempel. Pek på en prikk for å se hva den ville vært i arbeidsområdet ditt, og klikk for å legge til ditt eget. Kartet ditt vokser etter hvert som du legger til fly, dokumenter og notater og kobler dem.'))
       : d3 ? (coarse ? t('Drag to turn, pinch to zoom, tap a dot for its card, tap a group name to see what is in it.', 'Dra for å snu, knip for å zoome, trykk på en prikk for kortet, trykk på et gruppenavn for å se hva som er i den.') : t('Drag to turn, scroll to zoom, click a dot for its card, a group name to see what is in it, double-click a dot to fly to it. Arrow keys, + and − work too.', 'Dra for å snu, rull for å zoome, klikk på en prikk for kortet, på et gruppenavn for å se hva som er i den, dobbeltklikk på en prikk for å fly dit. Piltastene, + og − virker også.'))
-      : coarse ? t('Each aircraft is a cloud of its own. Tap a dot for its card, a group name to see what is in it; pinch to zoom.', 'Hvert fly er en egen sky. Trykk på en prikk for kortet, på et gruppenavn for å se hva som er i den; knip for å zoome.') : t('Each aircraft is a cloud of its own. Click a dot to open it on the desk, Shift-click to open it beside, click a group name to see what is in it; scroll or pinch to zoom.', 'Hvert fly er en egen sky. Klikk på en prikk for å åpne den på arbeidsflaten, Shift-klikk for å åpne den ved siden av, klikk på et gruppenavn for å se hva som er i den; rull eller knip for å zoome.');
+      : coarse ? t('Drag a dot onto another dot to link them, or onto a group to move it there. Tap a dot for its card and links, a group name to see what is in it; pinch to zoom.', 'Dra en prikk over på en annen for å koble dem, eller over på en gruppe for å flytte den dit. Trykk på en prikk for kortet og koblingene, på et gruppenavn for å se hva som er i den; knip for å zoome.') : t('Drag a dot onto another dot to link them, or onto a group to move it there. Click a dot to open it on the desk, right-click it for its links and more, click a group name to see what is in it; scroll or pinch to zoom.', 'Dra en prikk over på en annen for å koble dem, eller over på en gruppe for å flytte den dit. Klikk på en prikk for å åpne den på arbeidsflaten, høyreklikk for koblingene og mer, klikk på et gruppenavn for å se hva som er i den; rull eller knip for å zoome.');
     main.innerHTML = `<div class="ws-h ws-maph"><h2>${t('Map', 'Kart')}</h2>
-        <p>${t('Each aircraft and each topic is a cloud of its own. Everything else is under Unsorted.', 'Hvert fly og hvert tema er en egen sky. Alt annet ligger under Usortert.')}</p></div>
+        <p>${sample ? t('Each aircraft and each group is a cloud of its own. Everything else is under Unsorted.', 'Hvert fly og hver gruppe er en egen sky. Alt annet ligger under Usortert.') : t('Each aircraft and each group of your own is a cloud. Make a group such as “Flight prep January”, put notes and documents in it, and link them together.', 'Hvert fly og hver gruppe du lager er en egen sky. Lag en gruppe som «Flight prep januar», legg notater og dokumenter i den, og koble dem sammen.')}</p></div>
       <div class="wsm-plate${sample ? ' sample' : ''}${d3 ? ' d3' : ''}" id="wsMapPlate"><div class="wsm-host" id="wsMapHost">${d3 ? `<p class="wsm-load" role="status">${t('Opening the 3D map…', 'Åpner 3D-kartet …')}</p>` : ''}</div>
         ${sample ? `<span class="wsm-tag">${t('Example', 'Eksempel')}</span><div class="wsm-cta"><p>${t('Add a document or note to start your map', 'Legg til et dokument eller notat for å starte kartet ditt')}</p><div class="row"><button type="button" class="btn sm pri" data-act="doc-add">${t('Add documents', 'Legg til dokumenter')}</button><button type="button" class="btn sm" data-act="map-note">${t('New note', 'Nytt notat')}</button></div></div>` : ''}</div>
       <p class="wsm-hint">${hint}</p>`;

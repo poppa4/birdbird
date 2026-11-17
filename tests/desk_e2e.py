@@ -143,10 +143,10 @@ with sync_playwright() as p:
     chips = lambda: [x.strip() for x in pg.locator('.dk-pane:not(.dk-home) .dk-strip .ws-place').all_inner_texts()]
     check('a group chip for the document and the note, none for the aircraft', chips() == ['Unsorted', 'Unsorted'], chips())
     pg.click('.dk-pane:has(.dv) .ws-place'); pg.wait_for_selector('.dk-menu')
-    check('chip menu: the aircraft, New topic…, Unsorted', [x.strip() for x in pg.locator('.dk-menu button').all_inner_texts()] == ['B200', 'New topic…', 'Unsorted'], pg.locator('.dk-menu button').all_inner_texts())
+    check('chip menu: the aircraft, New group…, Unsorted', [x.strip() for x in pg.locator('.dk-menu button').all_inner_texts()] == ['B200', 'New group…', 'Unsorted'], pg.locator('.dk-menu button').all_inner_texts())
     pg.click('.dk-menu button:has-text("B200")'); pg.wait_for_timeout(400)
     check('document placed with one tap; the note that cites it follows', chips() == ['B200', 'B200'], chips())
-    pg.click('.dk-pane:has(.nv) .ws-place'); pg.click('.dk-menu button:has-text("New topic")'); pg.fill('#wsTopicN', 'Theory'); pg.press('#wsTopicN', 'Enter'); pg.wait_for_timeout(400)
+    pg.click('.dk-pane:has(.nv) .ws-place'); pg.click('.dk-menu button:has-text("New group")'); pg.fill('#wsTopicN', 'Theory'); pg.press('#wsTopicN', 'Enter'); pg.wait_for_timeout(400)
     check('a new topic holds the note at once: chosen by hand wins over the page reference', chips() == ['B200', 'Theory'], chips())
     check('the layout did not change by placing', tabs_of() == tabs0, tabs_of())
     pg.screenshot(path=SHOTS + '/desk-chips.png')

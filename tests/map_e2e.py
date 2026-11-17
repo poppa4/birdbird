@@ -229,28 +229,28 @@ def groups(br):
         pg.goto(URL + '#/library'); pg.wait_for_function('() => window.WS && window.WS.api'); pg.evaluate(SEEDG)
         pg.goto(URL + '#/map'); pg.reload(); pg.wait_for_function(f"() => window.WS && window.WS.map && window.WS.mapView === '{pref}'", timeout=30000); pg.wait_for_timeout(2500 if pref == '3d' else 900)
         check(tag + ': an empty topic is a group of its own, between the aircraft and Unsorted', regs(pg) == ['DA42 2', 'Theory 0', 'Unsorted 1'], regs(pg))
-        check(tag + ': no topic button on the toolbar (topics are made where you place things)', pg.locator('.wsm-top button:has-text("topic")').count() == 0)
+        check(tag + ': + New group on the 2D toolbar', pg.locator('.wsm-ng').count() == (1 if pref == '2d' else 0))
         pg.screenshot(path=f"{SHOTS}/groups-{tag.replace(' ', '-')}.png")
         # a dot's card: Move to, the same menu as the chip
         pg.evaluate("window.WS.map.focus(window.WS.map.graph.index['note:gn1'])"); pg.wait_for_selector('.wsm-card [data-mv]'); pg.wait_for_timeout(900)
         act('.wsm-card [data-mv]'); pg.wait_for_selector('.dk-menu')
         items = [x.strip() for x in pg.locator('.dk-menu button').all_inner_texts()]
-        check(tag + ': Move to lists the aircraft, the topics, New topic… and Unsorted, with where it is now marked', items == ['DA42', 'Theory', 'New topic…', 'Unsorted'] and pg.locator('.dk-menu button.on').inner_text().strip() == 'DA42', items)
+        check(tag + ': Move to lists the aircraft, the groups, New group… and Unsorted, with where it is now marked', items == ['DA42', 'Theory', 'New group…', 'Unsorted'] and pg.locator('.dk-menu button.on').inner_text().strip() == 'DA42', items)
         if phone: check(tag + ': menu rows are 44 px', all(pg.locator('.dk-menu button').nth(k).bounding_box()['height'] >= 44 for k in range(4)))
         act('.dk-menu button:has-text("Theory")'); pg.wait_for_timeout(1500 if pref == '3d' else 500)
         check(tag + ': one tap moves the dot to the other cloud (by hand wins over its page reference)', regs(pg) == ['DA42 1', 'Theory 1', 'Unsorted 1'] and pg.evaluate("window.WS.api.item('gn1').grp") == 'gt', regs(pg))
         check(tag + ': a short confirmation', 'Moved to Theory' in pg.inner_text('#wsToast'), pg.inner_text('#wsToast'))
         # a document moves the same way; a new topic is made from the same menu
         pg.evaluate("window.WS.map.focus(window.WS.map.graph.index['doc:gd'])"); pg.wait_for_selector('.wsm-card [data-mv]'); pg.wait_for_timeout(900)
-        act('.wsm-card [data-mv]'); act('.dk-menu button:has-text("New topic")'); pg.wait_for_selector('#wsTopicN')
-        check(tag + ': New topic asks for a name only, with an example', pg.get_attribute('#wsTopicN', 'placeholder') == 'e.g. Theory' and pg.locator('#wsDlg input').count() == 1)
+        act('.wsm-card [data-mv]'); act('.dk-menu button:has-text("New group")'); pg.wait_for_selector('#wsTopicN')
+        check(tag + ': New group asks for a name only, with an example', pg.get_attribute('#wsTopicN', 'placeholder') == 'e.g. Flight prep January' and pg.locator('#wsDlg input').count() == 1)
         pg.fill('#wsTopicN', 'Air law'); pg.press('#wsTopicN', 'Enter'); pg.wait_for_timeout(1500 if pref == '3d' else 500)
         check(tag + ': the document is in the new topic at once', regs(pg) == ['DA42 0', 'Theory 1', 'Air law 1', 'Unsorted 1'] and pg.evaluate("window.WS.api.item('gd').acIds.length") == 0, regs(pg))
         # the focused group's card
         k = 2
         pg.evaluate(f"window.WS.map.is3d ? window.WS.map.flyToCluster({k}) : window.WS.map.focusGroup({k})"); pg.wait_for_selector('.wsm-card.grp [data-ga="new"]'); pg.wait_for_timeout(900)
         btns = [x.strip() for x in pg.locator('.wsm-card.grp button:not([data-i])').all_inner_texts()]
-        check(tag + ': a topic card: New note here, All groups, Rename, Delete', btns == ['+ New note here', '← All groups', 'Rename', 'Delete'], btns)
+        check(tag + ': a group card: New note here, Add existing, All groups, Rename, Delete', btns == ['+ New note here', '+ Add existing…', '← All groups', 'Rename', 'Delete'], btns)
         if phone: check(tag + ': card buttons are 44 px', all(pg.locator('.wsm-card.grp button:not([data-i])').nth(j).bounding_box()['height'] >= 44 for j in range(4)))
         pg.screenshot(path=f"{SHOTS}/groups-{tag.replace(' ', '-')}-card.png")
         act('.wsm-card.grp [data-ga="rename"]'); pg.wait_for_selector('#wsTopicN'); pg.fill('#wsTopicN', 'Law'); pg.press('#wsTopicN', 'Enter'); pg.wait_for_timeout(1500 if pref == '3d' else 500)
@@ -387,10 +387,10 @@ def map3d(br):
     pg.click('.langseg button[data-v="en"]')
     check('3d desktop: no console errors', not errs, errs); ctx.close()
 
-    # a weak device (the frame probe fails): the 2D map, no error
+    # no choice made: the 2D map (the one you work in); 3D only when chosen on the toolbar
     ctx, pg, errs = ctx3(br, pref='', extra='window.__wsm3dProbeMs = 0.001;')
     pg.goto(URL + '#/map'); pg.wait_for_function("() => window.WS && window.WS.mapView === '2d' && window.WS.map && !window.WS.map.is3d", timeout=30000)
-    check('3d: a weak device falls back to the 2D map', pg.evaluate("sessionStorage.getItem('bb-map-weak') === 'slow'") and pg.locator('.wsm-vw [data-view="3d"]').count() == 1)
+    check('2d by default, 3D on the toolbar', pg.locator('.wsm-vw [data-view="3d"]').count() == 1)
     check('3d fallback: no console errors', not errs, errs); ctx.close()
 
     # phone
@@ -517,8 +517,8 @@ with sync_playwright() as p:
         check(tag + ': search selects and zooms', pg.is_visible('.wsm-card') and 'LN-KAB' in pg.inner_text('.wsm-card') and pg.evaluate('window.WS.map.camera.k') > 1.5 * kb, pg.inner_text('.wsm-card') if pg.is_visible('.wsm-card') else '')
         pg.screenshot(path=f'{SHOTS}/{tag}-map-search.png')
         if tag == 'desktop':
-            # hover a document: label and neighbours
-            pg.click('.wsm-zm [data-z="fit"]'); pg.wait_for_timeout(700)
+            # hover a document: label and neighbours (the pinned card from the search closed first: it is taller now, with its links)
+            pg.evaluate('window.WS.map.focus(-1)'); pg.click('.wsm-zm [data-z="fit"]'); pg.wait_for_timeout(700)
             i = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.id === 'doc:fd0')")
             x, y = pg.evaluate(f'window.WS.map.screenOf({i})'); box = pg.locator('#wsMapHost canvas').bounding_box()
             pg.mouse.move(box['x'] + x, box['y'] + y); pg.wait_for_timeout(200)

@@ -486,3 +486,23 @@ html.ws-deskmode .nsearch,html.ws-deskmode .ws-status{display:none}
 .wsm-card .ge{display:flex;gap:18px;margin-top:6px}
 @media (pointer:coarse){.wsm-card .b .btn{min-height:44px}.wsm-card .ge .lnk{min-height:44px;min-width:44px;text-align:left}}
 .wsm-card .b .btn,.wsm-card .ge .lnk{font-family:var(--f-body);letter-spacing:0}
+/* making the map your own: + New group on the toolbar, a dot's links (× removes one made by hand), the pick list */
+.wsm-ng{height:34px;padding:0 12px;border:1px solid var(--map-line);border-radius:var(--radius);background:rgba(var(--map-panel-rgb),.72);color:var(--map-ink);font:inherit;font-size:12.5px;font-weight:600;letter-spacing:.02em;cursor:pointer;white-space:nowrap}
+.wsm-ng:hover{background:rgba(255,255,255,.1)}
+.wsm-ng:focus-visible{outline:2px solid var(--focus-dark);outline-offset:-2px}
+.wsm-card .gl.lk li{display:flex;align-items:center;gap:2px}
+.wsm-card .gl.lk li>button[data-i]{flex:1;min-width:0}
+.wsm-card .gl .ux{flex:none;width:28px;height:28px;padding:0;border:0;border-radius:var(--radius);background:none;color:var(--map-ink-3);font-size:17px;line-height:1;cursor:pointer}
+.wsm-card .gl .ux:hover{background:rgba(255,255,255,.1);color:var(--map-ink)}
+.ws-pick{list-style:none;margin:0 0 4px;padding:0;max-height:min(46vh,420px);overflow:auto;border:1px solid var(--rule);border-radius:var(--radius)}
+.ws-pick li+li{border-top:1px solid var(--rule)}
+.ws-pick label{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;font-size:14.5px}
+.ws-pick label:hover{background:var(--paper-2,rgba(0,0,0,.03))}
+.ws-pick input{flex:none;accent-color:var(--accent);margin:0}
+.ws-pick i{flex:none;width:9px;height:9px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+.ws-pick span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws-pick small{flex:none;font-size:12px;color:var(--ink-3);max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws-pick li[hidden]{display:none}
+.ws-pick-none{font-style:italic}
+@media (pointer:coarse){.wsm-ng{height:44px}.wsm-card .gl .ux{width:40px;height:40px}.ws-pick label{min-height:44px}}
+@media (max-width:640px){.wsm-ng{padding:0 9px}}

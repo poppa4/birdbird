@@ -97,8 +97,8 @@
     if (f.grp) o.grp = String(f.grp).slice(0, 80);
     return o;
   }
-  const LINK_TYPES = ['aircraft', 'doc', 'pack', 'lab'];
-  function cleanLinks(l) { const seen = new Set(); return (Array.isArray(l) ? l : []).filter(x => x && LINK_TYPES.includes(x.t) && x.id && !seen.has(x.t + ':' + x.id) && seen.add(x.t + ':' + x.id)).map(x => ({ t: x.t, id: String(x.id).slice(0, 80) })).slice(0, 24); }
+  const LINK_TYPES = ['aircraft', 'doc', 'pack', 'lab', 'note', 'notebook', 'route'];
+  function cleanLinks(l) { const seen = new Set(); return (Array.isArray(l) ? l : []).filter(x => x && LINK_TYPES.includes(x.t) && x.id && !seen.has(x.t + ':' + x.id) && seen.add(x.t + ':' + x.id)).map(x => ({ t: x.t, id: String(x.id).slice(0, 80) })).slice(0, 48); }
   function newDocEntry(f, now) {
     f = f || {}; now = now || Date.now();
     return { id: f.id, kind: 'doc', name: String(f.name || '').slice(0, 160), cat: DOC_CATS.includes(f.cat) ? f.cat : 'other', acIds: uniq(f.acIds), tags: cleanTags(f.tags), rev: String(f.rev || '').slice(0, 40), pages: +f.pages || 0, size: +f.size || 0, ext: String(f.ext || '').slice(0, 8), createdAt: f.createdAt || now, updatedAt: now };
@@ -162,6 +162,36 @@
     if (k === 'pack') { const m = items['pk:' + r], f = { acId: ac ? to : '', grp: ac ? '' : to }; return isLive(m) ? patch(m, f, now) : Object.assign(newPackMark(r, f, now), m ? { updatedAt: stamp(m, now) } : {}); }
     if (k === 'route') { const m = items['rt:' + r]; return isLive(m) ? patch(m, { grp: to }, now) : Object.assign(newRouteMark(r, { grp: to }, now), m ? { updatedAt: stamp(m, now) } : {}); }
     return null;
+  }
+
+  /* ---------- links made by hand (on the map, or in a note's side panel) ----------
+     a and b: { k, r } with k aircraft | doc | note | notebook | pack | route. A link is kept on one of the two: a note
+     first, then a notebook, a document, a briefing pack's mark ('pk:' + id), a route's mark ('rt:' + id). Two aircraft
+     cannot be linked. */
+  const HOLD = ['note', 'notebook', 'doc', 'pack', 'route'];
+  function linkHolder(items, x, now) {
+    if (x.k === 'note' || x.k === 'notebook' || x.k === 'doc') { const it = items[x.r]; return isLive(it) && it.kind === x.k ? it : null; }
+    if (x.k === 'pack') { const m = items['pk:' + x.r]; return isLive(m) ? m : Object.assign(newPackMark(x.r, {}, now), m ? { updatedAt: stamp(m, now) } : {}); }
+    if (x.k === 'route') { const m = items['rt:' + x.r]; return isLive(m) ? m : Object.assign(newRouteMark(x.r, {}, now), m ? { updatedAt: stamp(m, now) } : {}); }
+    return null;
+  }
+  const holdsLink = (it, x) => !!it && (it.links || []).some(l => l.t === x.k && l.id === x.r);
+  /* is there a link by hand between a and b (either way)? */
+  function linked(items, a, b) { items = items || {}; const ha = linkHolder(items, a), hb = linkHolder(items, b); return holdsLink(ha, b) || holdsLink(hb, a); }
+  /* -> the changed item to save, or null (already linked, the same item, or two aircraft) */
+  function addLink(items, a, b, now) {
+    items = items || {}; if (!a || !b || (a.k === b.k && a.r === b.r)) return null;
+    if (linked(items, a, b)) return null;
+    const [h, o] = HOLD.indexOf(a.k) >= 0 && (HOLD.indexOf(b.k) < 0 || HOLD.indexOf(a.k) <= HOLD.indexOf(b.k)) ? [a, b] : [b, a];
+    const it = linkHolder(items, h, now); if (!it || !LINK_TYPES.includes(o.k)) return null;
+    const links = cleanLinks((it.links || []).concat({ t: o.k, id: o.r })); if (!links.some(l => l.t === o.k && l.id === o.r)) return null;
+    return patch(it, { links }, now);
+  }
+  /* -> the changed items to save ([] when there was no link by hand) */
+  function removeLink(items, a, b, now) {
+    items = items || {}; const out = [];
+    [[a, b], [b, a]].forEach(([h, o]) => { const it = linkHolder(items, h); if (isLive(it) && items[it.id] && holdsLink(it, o)) out.push(patch(it, { links: (it.links || []).filter(l => !(l.t === o.k && l.id === o.r)) }, now)); });
+    return out;
   }
 
   /* ---------- notes: autosave with version history ---------- */
@@ -229,7 +259,9 @@
       if (add) item = Object.assign({}, w, { pages });
     } else if (concurrent && w.kind === 'doc') {
       const tags = uniq((w.tags || []).concat(l.tags || [])).sort().slice(0, 12), acIds = uniq((w.acIds || []).concat(l.acIds || [])).sort();
+      const links = cleanLinks((w.links || []).concat(l.links || [])).sort((x, y) => (x.t + x.id < y.t + y.id ? -1 : 1));
       if (stable(tags) !== stable(w.tags || []) || stable(acIds) !== stable(w.acIds || [])) item = Object.assign({}, w, { tags, acIds });
+      if ((w.links || l.links) && stable(links) !== stable(w.links || [])) item = Object.assign({}, item, { links });
     } else if (concurrent && w.kind === 'aircraft') {
       /* keep the loser's notes if the winner has none, and any speeds the winner left empty */
       const notes = w.notes || l.notes || '';
@@ -476,7 +508,7 @@
 
   const API = { DAY, TRASH_DAYS, TOMBSTONE_DAYS, MAX_VERSIONS, VERSION_GAP, NS_BUDGET, NAMESPACES, nsOfKind, AIRCRAFT_TYPES, typeOf, DOC_CATS, kindToCat, catToKind, guessKind, guessCat,
     uid, clone, stable, byteLen, fmtBytes, uniq, cleanTags, sanitizeHtml, htmlToText, textToHtml,
-    newAircraft, aircraftName, newNote, newDocEntry, newPackMark, cleanLinks, UNSORTED, MAX_TOPICS, cleanTopicName, newTopic, topicsOf, newRouteMark, isGroup, placed, place, isLive, inTrash, live, trashed, trashDaysLeft, patch, trash, restore, tombstone, purgeExpired,
+    newAircraft, aircraftName, newNote, newDocEntry, newPackMark, cleanLinks, LINK_TYPES, linked, addLink, removeLink, UNSORTED, MAX_TOPICS, cleanTopicName, newTopic, topicsOf, newRouteMark, isGroup, placed, place, isLive, inTrash, live, trashed, trashDaysLeft, patch, trash, restore, tombstone, purgeExpired,
     noteText, noteAutoTitle, wordCount, editNote, restoreVersion, mergeItem, mergeItems, splitNs, packNs, unpackNs, syncNs,
     fold, tokens, buildIndex, search, searchChunks, snippet, guessSec, chunkPage, byParts, pagesFromChunks, pushRecent,
     crc32, safeName, ZipWriter, zipRead, buildBackup, readBackup, mergeLocalKey, BACKUP_FORMAT };

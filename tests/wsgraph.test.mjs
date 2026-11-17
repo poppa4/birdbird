@@ -234,3 +234,30 @@ test('a group chosen by hand wins over the one worked out from links and page re
   const g2 = M.buildGraph(ws, { pages: false, desks: false }), b = B.layout3d(g2);
   assert.equal(a.clusters.length, b.clusters.length); assert.equal(b.clusters.find(c => c.topic && c.topic.id === 't2').topic.name, 'Law');
 });
+
+test('links made by hand: any two items (not two aircraft), kept on one of them, shown on the map and removable', () => {
+  const ac = W.newAircraft({ typeKey: 'da42', reg: 'LN-ABC' }), tp = W.newTopic({ name: 'Flight prep January' });
+  const n1 = W.newNote({ title: 'Weather ENTO', grp: tp.id }), n2 = W.newNote({ title: 'NOTAMs', grp: tp.id });
+  const d1 = W.newDocEntry({ id: 'd1', name: 'AFM DA42', acIds: [ac.id] }), d2 = W.newDocEntry({ id: 'd2', name: 'Checklist DA42', acIds: [ac.id] });
+  const items = {}; [ac, tp, n1, n2, d1, d2].forEach(x => { items[x.id] = x; });
+  const put = x => { assert.ok(x); items[x.id] = x; };
+  put(W.addLink(items, { k: 'note', r: n1.id }, { k: 'note', r: n2.id }));
+  put(W.addLink(items, { k: 'doc', r: d1.id }, { k: 'note', r: n1.id }));  /* kept on the note */
+  put(W.addLink(items, { k: 'doc', r: d1.id }, { k: 'doc', r: d2.id }));
+  put(W.addLink(items, { k: 'pack', r: 'p1' }, { k: 'route', r: 'r1' }));  /* a pack without a mark gets one */
+  assert.equal(W.addLink(items, { k: 'note', r: n2.id }, { k: 'note', r: n1.id }), null, 'already linked (either way)');
+  assert.equal(W.addLink(items, { k: 'aircraft', r: ac.id }, { k: 'aircraft', r: ac.id }), null);
+  assert.ok(items[n1.id].links.some(l => l.t === 'doc' && l.id === d1.id));
+  assert.ok(items['pk:p1'].links.some(l => l.t === 'route' && l.id === 'r1'));
+  const g = M.buildGraph({ items, packs: [{ id: 'p1', title: 'ENTO – ENBR' }], routes: [{ id: 'r1', pts: [{ n: 'ENTO', t: 'rwy' }] }] }, { pages: false, desks: false });
+  const L = (a, b) => g.links.find(l => (g.nodes[l.s].id === a && g.nodes[l.t].id === b) || (g.nodes[l.s].id === b && g.nodes[l.t].id === a));
+  assert.ok(L('note:' + n1.id, 'note:' + n2.id).m);
+  assert.ok(L('doc:' + d1.id, 'doc:' + d2.id).m);
+  assert.ok(L('pack:p1', 'route:r1').m);
+  assert.ok(!L('doc:' + d2.id, 'aircraft:' + ac.id).m, 'a document filed under an aircraft is not a link made by hand');
+  /* the notes stay in their group even when linked to the aircraft's documents */
+  assert.equal(g.nodes[g.index['note:' + n1.id]].ac, 'topic:' + tp.id);
+  const rm = W.removeLink(items, { k: 'note', r: n2.id }, { k: 'note', r: n1.id }); assert.equal(rm.length, 1); rm.forEach(put);
+  assert.equal(W.linked(items, { k: 'note', r: n1.id }, { k: 'note', r: n2.id }), false);
+  assert.deepEqual(W.removeLink(items, { k: 'doc', r: d2.id }, { k: 'aircraft', r: ac.id }), []);
+});
