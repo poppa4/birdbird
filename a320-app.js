@@ -642,6 +642,8 @@ const IMG=CF?CF.img:['img/cockpits/a320-deck-1500.webp','img/cockpits/a320-deck-
 function hiRes(){ const need=Z.s*(devicePixelRatio||1)>1.55; const img=$('deck'); const src=need?IMG[1]:IMG[0]; if(need&&!img.src.endsWith('3000.webp')){ const im=new Image(); im.decoding='async'; im.src=src; im.decode().then(()=>{ img.src=src; }).catch(()=>{}); } }
 function view(r){ if(!REG[r]) return; Z.reg=r; if(D3&&CK&&CK.LOOK[r]) CK.LOOK[r](); layout(false); }
 new ResizeObserver(()=>layout(true)).observe(ST);
+/* a phone turned on its side: aim the 3D view again for the new shape, so the instruments stay readable */
+{ let lastAsp=0; new ResizeObserver(()=>{ const a=ST.clientWidth/Math.max(1,ST.clientHeight); if(D3&&CK&&CK.LOOK[Z.reg]&&Math.abs(a-lastAsp)>0.3&&(lastAsp===0||(a>1)!==(lastAsp>1)||Math.abs(a-lastAsp)>0.6)){ CK.LOOK[Z.reg](); } lastAsp=a; }).observe(ST); }
 document.querySelectorAll('.vseg .cb').forEach(b=>b.onclick=()=>view(b.dataset.v));
 $('zBack').onclick=()=>view('main');
 { const zs=$('zoomSel'); Object.keys(REGN).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=T(REGN[k]); zs.appendChild(o); }); zs.onchange=()=>view(zs.value); }
