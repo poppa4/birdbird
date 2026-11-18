@@ -592,7 +592,7 @@
   <div class="rx-ly noprint" id="layers" hidden>
     <div class="lymm"><span class="lysub">Chart style</span> <div class="seg3" id="mmode" role="group" aria-label="Chart style"><button data-m="vfr" class="on" title="VFR chart: terrain colours, relief and contours">VFR</button><button data-m="ifr" title="IFR chart: low ink, faint relief">IFR</button></div></div>
     <div class="lypre" role="group" aria-label="Layer presets"><button type="button" data-pre="clean" title="VFR chart with CTR, TMA and R/D/P airspace, airports and reporting points. Obstacles, navaids and contours off.">Clean VFR</button><button type="button" data-pre="all" title="Every layer on">Everything</button></div>
-    <details class="lyg mlonly" data-g="base" id="bmsel" hidden><summary>Base map</summary><div class="bmg" role="group" aria-label="Base map"><button type="button" data-b="vfr" class="on">VFR chart</button><button type="button" data-b="ifr">IFR (low ink)</button><button type="button" data-b="chart">Plain</button><button type="button" data-b="terrain">Terrain</button><button type="button" data-b="sat">Satellite</button><button type="button" data-b="topo">Norway topo</button></div></details>
+    <details class="lyg mlonly" data-g="base" id="bmsel" hidden><summary>Base map</summary><div class="bmg" role="group" aria-label="Base map"><button type="button" data-b="vfr" class="on">VFR chart</button><button type="button" data-b="ifr">IFR (low ink)</button><button type="button" data-b="chart">Plain</button><button type="button" data-b="terrain">Terrain</button><button type="button" data-b="sat">Satellite</button><button type="button" data-b="topo" title="Topographic map: Kartverket in Norway, BKG TopPlusOpen in the rest of Europe">Topo</button></div></details>
     <details class="lyg" data-g="relief"><summary>Relief <span class="lyc"></span></summary>
     <label class="chk"><input type="checkbox" data-ly="ter"> Terrain colours and shading</label>
     <label class="chk mlonly" hidden><input type="checkbox" data-ly="ct"> Contour lines (ft)</label>
@@ -812,7 +812,7 @@
 <script src="flightlink.js?v=2"></script>
 <script src="terrain.js?v=3"></script>
 <script src="wmm.js?v=2"></script>
-<script src="rxmap.js?v=29"></script>
+<script src="rxmap.js?v=30"></script>
 <script src="aip.js?v=7"></script>
 <script src="windsaloft.js?v=4"></script>
 <script src="cloudcol.js?v=2"></script>
@@ -2226,7 +2226,7 @@ LAB.add({},{
  'Cruise':'Marsj','Aircraft':'Fly','Aircraft model':'Flymodell','Auto':'Auto','Symbol':'Symbol','3D: auto':'3D: auto','Show map help':'Vis karthjelp','GS':'GS','kt':'kt','500 ft lower':'500 ft lavere','500 ft higher':'500 ft høyere','Cruise altitude, feet or FL':'Marsjhøyde, fot eller FL','Cruise altitude: feet (6500) or flight level (FL75)':'Marsjhøyde: fot (6500) eller flygenivå (FL75)','Ground speed, knots':'Fart over bakken, knop','Ground speed (kt)':'Fart over bakken (kt)',
  '▶ Simulate flight':'▶ Simuler flygingen','Fly the route in 3D at your planned altitude':'Fly ruten i 3D i den planlagte høyden','Simulate the flight':'Simuler flygingen','Camera':'Kamera','Chase':'Bak flyet','Cockpit':'Cockpit','Overview':'Oversikt','Speed':'Fart','Simulation speed':'Simuleringsfart',
  'Behind and above the aircraft':'Bak og over flyet','From the aircraft, looking ahead along the track':'Fra flyet, fremover langs kursen','The whole route':'Hele ruten',
- 'Base map':'Bakgrunnskart','Chart':'Kart','Satellite':'Satellitt','Norway topo':'Norge topo','Drag to move · right-drag or two fingers to turn and tilt · scroll or pinch to zoom':'Dra for å flytte · høyreklikk-dra eller to fingre for å snu og tilte · scroll eller knip for å zoome',
+ 'Base map':'Bakgrunnskart','Chart':'Kart','Satellite':'Satellitt','Topographic map: Kartverket in Norway, BKG TopPlusOpen in the rest of Europe':'Topografisk kart: Kartverket i Norge, BKG TopPlusOpen i resten av Europa','Drag to move · right-drag or two fingers to turn and tilt · scroll or pinch to zoom':'Dra for å flytte · høyreklikk-dra eller to fingre for å snu og tilte · scroll eller knip for å zoome',
  'Already planned in ForeFlight or Garmin Pilot?':'Allerede planlagt i ForeFlight eller Garmin Pilot?','Upload a screenshot or PDF of your route or profile. It goes straight into your briefing pack.':'Last opp et skjermbilde eller en PDF av ruten eller profilen. Det går rett inn i briefingpakken din.','⇪ Upload screenshot or PDF':'⇪ Last opp skjermbilde eller PDF','Add to the briefing pack':'Legg til i briefingpakken','Name':'Navn','Add to briefing pack':'Legg til i briefingpakken','Cancel':'Avbryt',
  'Send to the briefing pack':'Send til briefingpakken','Goes with it:':'Følger med:','Route, markers and notes are saved together as one route.':'Rute, markører og notater lagres samlet som én rute.',
  'Relief':'Relieff','Plain':'Lys','Layers':'Kartlag','What the map shows':'Hva kartet viser','Terrain (relief)':'Terreng (relieff)','Briefing pack':'Briefingpakke','Search an airport or fix, or paste a route':'Søk flyplass eller fix, eller lim inn en rute','Airport, fix or route':'Flyplass, fix eller rute',
