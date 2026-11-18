@@ -41,6 +41,17 @@ function draw(g,W,H,p,tm){
   const circ=at(p,4,.9), str=1-circ;
   if(str>0.01){ g.save(); g.globalAlpha=str;
     const y0=H*.18, y1=H*.86, n=5, x0=W*(sm?.04:.04), x1=W*(sm?.96:.66);
+    // pressure field: low (cool, top) to high (warm, bottom)
+    const pf=g.createLinearGradient(0,y0-H*.1,0,y1+H*.1); pf.addColorStop(0,'rgba(236,90,71,.13)'); pf.addColorStop(.5,'rgba(20,30,40,0)'); pf.addColorStop(1,'rgba(127,198,238,.13)');
+    g.fillStyle=pf; g.fillRect(0,0,W,H);
+    // the flow: streaks moving with the current wind direction
+    { const P0=parcel(p), ua=P0.ang*Math.PI/180, ux=Math.cos(ua), uy=Math.sin(ua);
+      g.save(); g.lineCap='round';
+      for(let k=0;k<46;k++){ const ph=((tm*.11*P0.spd+k*.0731)%1), bx=x0+((k*137.5)%(x1-x0)), by=y0-H*.08+((k*71.3)%(y1-y0+H*.16));
+        const x=bx+ux*(ph-.5)*W*.22, y=by+uy*(ph-.5)*W*.22, a=.22*Math.sin(ph*Math.PI);
+        const gr=g.createLinearGradient(x-ux*22,y-uy*22,x,y); gr.addColorStop(0,'rgba(220,235,245,0)'); gr.addColorStop(1,`rgba(220,235,245,${a})`);
+        g.strokeStyle=gr; g.lineWidth=1.6; g.beginPath(); g.moveTo(x-ux*22,y-uy*22); g.lineTo(x,y); g.stroke(); }
+      g.restore(); }
     for(let i=0;i<n;i++){ const y=lerp(y0,y1,i/(n-1)); g.strokeStyle='rgba(255,255,255,.45)'; g.lineWidth=1.2; g.beginPath(); for(let x=x0;x<=x1;x+=8){ const yy=y+Math.sin(x*.008+i)*4; x===x0?g.moveTo(x,yy):g.lineTo(x,yy); } g.stroke();
       txt(g,`${1000+4*i} hPa`,x1+6,y+4,{mono:1,size:10*fs,col:'#AEB8C1'}); }
     txt(g,'L',x0+10,y0-16,{size:28*fs,col:C.red,w:700}); txt(g,L({en:'low',no:'lavt'}),x0+36,y0-22,{size:11*fs,col:'#FF8A78'});
@@ -57,6 +68,9 @@ function draw(g,W,H,p,tm){
     arrow(g,px,py,px,py-pgf,C.red,{lw:3,head:11}); pill(g,L({en:'pressure force',no:'trykkraft'}),px-10,py-pgf+6,{size:11*fs,col:'#FF8A78',al:'right'});
     if(cor>2){ const ca=(P.ang+90)*Math.PI/180; arrow(g,px,py,px+Math.cos(ca)*cor,py+Math.sin(ca)*cor,C.violet,{lw:3,head:11}); pill(g,'Coriolis',px+Math.cos(ca)*cor+8,py+Math.sin(ca)*cor+10,{size:11*fs,col:C.violet,fit:W}); }
     if(at(p,3,.8)>0.05){ const fa=(P.ang+180)*Math.PI/180, fl=F*.45*at(p,3,.8); arrow(g,px,py,px+Math.cos(fa)*fl,py+Math.sin(fa)*fl,C.amber,{lw:2.6,head:10}); pill(g,L({en:'friction',no:'friksjon'}),px+Math.cos(fa)*fl-8,py+Math.sin(fa)*fl+16,{size:11*fs,col:C.amber,al:'right'}); }
+    // the air parcel
+    { const hal=g.createRadialGradient(px,py,0,px,py,22); hal.addColorStop(0,'rgba(255,255,255,.35)'); hal.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle=hal; g.beginPath(); g.arc(px,py,22,0,7); g.fill();
+      g.fillStyle='#fff'; g.beginPath(); g.arc(px,py,4.5,0,7); g.fill(); }
     // wind arrow
     const wa=P.ang*Math.PI/180, wl=F*1.1*P.spd; arrow(g,px,py,px+Math.cos(wa)*wl,py+Math.sin(wa)*wl,'#fff',{lw:4,head:13});
     pill(g,L({en:'wind',no:'vind'}),px+Math.cos(wa)*wl+10,py+Math.sin(wa)*wl-12,{size:11.5*fs,col:'#fff',fit:W});
@@ -68,13 +82,19 @@ function draw(g,W,H,p,tm){
     g.restore(); }
   if(circ>0.01){ g.save(); g.globalAlpha=circ;
     const cL=[W*(sm?.28:.22),H*.5], cH=[W*(sm?.72:.56),H*.5], R=Math.min(W*(sm?.2:.15),H*.36);
-    const rings=(c,col)=>{ for(let i=1;i<=4;i++){ g.strokeStyle=col; g.lineWidth=1.1; g.beginPath(); g.ellipse(c[0],c[1],R*i/4*1.05,R*i/4*.9,0,0,7); g.stroke(); } };
-    rings(cL,'rgba(255,255,255,.35)'); rings(cH,'rgba(255,255,255,.35)');
+    const tint=(c,rgb)=>{ const gr=g.createRadialGradient(c[0],c[1],0,c[0],c[1],R*1.25); gr.addColorStop(0,`rgba(${rgb},.22)`); gr.addColorStop(1,`rgba(${rgb},0)`); g.fillStyle=gr; g.beginPath(); g.arc(c[0],c[1],R*1.25,0,7); g.fill(); };
+    tint(cL,'236,90,71'); tint(cH,'127,198,238');
+    const rings=(c,col,sd,lab)=>{ for(let i=1;i<=4;i++){ const ri=R*i/4; g.strokeStyle=col; g.lineWidth=i===4?1.4:1.1; g.beginPath();
+        for(let q=0;q<=72;q++){ const a=q/72*Math.PI*2, rr2=ri*(1+.06*Math.sin(2*a+sd+i*.7)+.03*Math.sin(3*a+sd*2)); const x=c[0]+Math.cos(a)*rr2*1.05, y=c[1]+Math.sin(a)*rr2*.9; q?g.lineTo(x,y):g.moveTo(x,y); } g.stroke();
+        if(!sm&&(i===2||i===4)){ const a=-Math.PI*.5, rr2=ri*(1+.06*Math.sin(2*a+sd+i*.7)+.03*Math.sin(3*a+sd*2)); const v=lab[i===2?0:1]; g.fillStyle='#141C24'; g.fillRect(c[0]-15,c[1]+Math.sin(a)*rr2*.9-7,30,13); txt(g,v,c[0],c[1]+Math.sin(a)*rr2*.9+4,{mono:1,size:9,col:'#AEB8C1',al:'center'}); } } };
+    rings(cL,'rgba(255,255,255,.38)',.3,['996','1004']); rings(cH,'rgba(255,255,255,.38)',1.7,['1028','1020']);
     txt(g,'L',cL[0],cL[1]+10,{size:30*fs,col:C.red,w:700,al:'center'}); txt(g,'H',cH[0],cH[1]+10,{size:30*fs,col:C.blue,w:700,al:'center'});
     // particles spiralling: anticlockwise in to the low, clockwise out of the high (screen y down: anticlockwise = decreasing angle)
     for(let k=0;k<26;k++){ const ph=((tm*.07+k/26)%1);
-      { const a=-(ph*Math.PI*2*1.3)+k*1.3, r=R*(1.0-0.55*ph); const x=cL[0]+Math.cos(a)*r*1.05, y=cL[1]+Math.sin(a)*r*.9; g.fillStyle=`rgba(127,198,238,${.8*Math.sin(ph*Math.PI)})`; g.beginPath(); g.arc(x,y,2.4,0,7); g.fill(); }
-      { const a=(ph*Math.PI*2*1.3)+k*1.3, r=R*(0.45+0.55*ph); const x=cH[0]+Math.cos(a)*r*1.05, y=cH[1]+Math.sin(a)*r*.9; g.fillStyle=`rgba(240,180,64,${.8*Math.sin(ph*Math.PI)})`; g.beginPath(); g.arc(x,y,2.4,0,7); g.fill(); } }
+      const comet=(c,sgn,inw,col)=>{ const al=.85*Math.sin(ph*Math.PI); g.strokeStyle=`rgba(${col},${al*.55})`; g.lineWidth=2; g.lineCap='round'; g.beginPath();
+          for(let j=0;j<=8;j++){ const q=Math.max(0,ph-j*.012), a=sgn*(q*Math.PI*2*1.3)+k*1.3, r=R*(inw?1.0-0.55*q:0.45+0.55*q); const x=c[0]+Math.cos(a)*r*1.05, y=c[1]+Math.sin(a)*r*.9; j?g.lineTo(x,y):g.moveTo(x,y); } g.stroke();
+          const a=sgn*(ph*Math.PI*2*1.3)+k*1.3, r=R*(inw?1.0-0.55*ph:0.45+0.55*ph); g.fillStyle=`rgba(${col},${al})`; g.beginPath(); g.arc(c[0]+Math.cos(a)*r*1.05,c[1]+Math.sin(a)*r*.9,2.4,0,7); g.fill(); };
+      comet(cL,-1,true,'159,212,242'); comet(cH,1,false,'240,180,64'); }
     // direction arrows on the rings
     const ringArrow=(c,cw,col)=>{ for(let q=0;q<4;q++){ const a=q*Math.PI/2+.4, r=R*.78, x=c[0]+Math.cos(a)*r*1.05, y=c[1]+Math.sin(a)*r*.9, t=a+(cw?Math.PI/2:-Math.PI/2)-0.35; arrow(g,x,y,x+Math.cos(t)*18,y+Math.sin(t)*18,col,{lw:2.4,head:8}); } };
     ringArrow(cL,false,C.blue); ringArrow(cH,true,C.amber);
@@ -82,11 +102,11 @@ function draw(g,W,H,p,tm){
     pill(g,L({en:'clockwise, out',no:'med klokka, ut'}),cH[0],cH[1]+R+18,{size:11*fs,col:C.amber,al:'center'});
     // Buys Ballot
     const bb=at(p,5,.8);
-    if(bb>0.01){ g.globalAlpha=circ*bb; const bx=sm?W*.5:W*.86, by=sm?H*.16:H*.5;
+    if(bb>0.01){ g.globalAlpha=circ*bb; const bx=sm?W*.5:W*.88, by=sm?H*.16:H*.5;
       // person seen from above with the wind at the back
       arrow(g,bx,by+70,bx,by+24,'#fff',{lw:3,head:10}); txt(g,L({en:'wind',no:'vind'}),bx+10,by+60,{size:11*fs,col:'#fff'});
       g.fillStyle='#E2E8EE'; g.beginPath(); g.arc(bx,by,10,0,7); g.fill(); g.fillStyle='#9AA6B0'; g.beginPath(); g.ellipse(bx,by,18,7,0,0,7); g.fill(); g.fillStyle='#E2E8EE'; g.beginPath(); g.arc(bx,by,8,0,7); g.fill();
-      arrow(g,bx-14,by,bx-60,by,C.red,{lw:3,head:10}); txt(g,L({en:'low on your left',no:'lavt på venstre side'}),bx-64,by-12,{size:11*fs,col:'#FF8A78',al:'right',w:600});
+      arrow(g,bx-14,by,bx-60,by,C.red,{lw:3,head:10}); txt(g,L({en:'low on your left',no:'lavt på venstre side'}),sm?bx-30:bx-12,by+(sm?-16:24),{size:11*fs,col:'#FF8A78',al:sm?'center':'right',w:600});
       if(!sm) txt(g,L({en:'back to the wind',no:'ryggen mot vinden'}),bx,by-26,{size:10.5*fs,col:'#AEB8C1',al:'center'});
       g.globalAlpha=circ; }
     g.restore(); }
