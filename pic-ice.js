@@ -26,20 +26,42 @@ const steps=[
      no:'Selv et tynt, ruglete lag kan redusere <em>CLmax med 25 % eller mer</em> og få vingen til å stalle ved <em>lavere innfallsvinkel</em> — før stallvarselet, som er satt for en ren vinge. Motstand og vekt øker.'},
   go:{en:'Open the icing and turbulence lab',no:'Åpne ising- og turbulenslabben',fn:()=>{ const v=document.querySelector('[data-lab-model],.atl-model'); if(v) v.scrollIntoView({behavior:'smooth',block:'start'}); }}}];
 
-const yU=x=>0.14*Math.sqrt(Math.max(0,x))*(1-x)*(1+0.5*x), yL=x=>-0.07*Math.sqrt(Math.max(0,x))*(1-x);
+/* NACA 2412 section, chord 0..1 */
+const yt=x=>.6*(.2969*Math.sqrt(Math.max(0,x))-.126*x-.3516*x*x+.2843*x*x*x-.1015*x*x*x*x);
+const yc=x=>x<.4?.02/.16*(.8*x-x*x):.02/.36*(.2+.8*x-x*x);
+const yU=x=>yc(x)+yt(x), yL=x=>yc(x)-yt(x);
 function foil(g,ax,ay,ch,iceType,k,tm){
   const PX=x=>ax+x*ch, PY=y=>ay-y*ch;
-  // ice first (under the outline)
-  if(k>0.01&&iceType){ g.save(); if(iceType==='rime'){ g.fillStyle=`rgba(236,242,248,${.9*k})`; for(let i=0;i<40;i++){ const a=-Math.PI/2+i/39*Math.PI, r=ch*.035*k*(1+.4*Math.sin(i*2.3)); g.beginPath(); g.arc(PX(0)+Math.cos(a+Math.PI)*ch*.008-r*.3,PY(0)+Math.sin(a)*ch*.03,r*.6,0,7); g.fill(); } }
-    else { g.fillStyle=`rgba(190,225,250,${.55*k})`; g.strokeStyle=`rgba(230,245,255,${.8*k})`; g.lineWidth=1;
-      g.beginPath(); g.moveTo(PX(.18),PY(yU(.18)+.004)); g.quadraticCurveTo(PX(.05),PY(yU(.05)+.02*k),PX(-.02*k),PY(.07*k)); g.lineTo(PX(-.06*k),PY(.09*k)); g.lineTo(PX(-.03*k),PY(.03)); g.lineTo(PX(-.05*k),PY(-.035*k)); g.lineTo(PX(-.01),PY(-.05*k)); g.quadraticCurveTo(PX(.05),PY(yL(.05)-.012*k),PX(.14),PY(yL(.14)-.003)); g.closePath(); g.fill(); g.stroke(); } g.restore(); }
-  g.fillStyle='#0f161d'; g.strokeStyle='rgba(255,255,255,.75)'; g.lineWidth=1.4; g.beginPath();
-  for(let x=0;x<=1.0001;x+=0.01) { const X=PX(x), Y=PY(yU(x)); x?g.lineTo(X,Y):g.moveTo(X,Y); }
-  for(let x=1;x>=0;x-=0.01) g.lineTo(PX(x),PY(yL(x))); g.closePath(); g.fill(); g.stroke();
-  // airflow streamlines
-  for(let j=-3;j<=3;j++){ const y0=j*.06; g.strokeStyle='rgba(127,198,238,.25)'; g.lineWidth=1; g.beginPath(); for(let x=-.25;x<=1.25;x+=.02){ const b=x>0&&x<1?(j>=0?yU(x)*(1-j*.12):yL(x)*(1+j*.1)):0; const y=y0+b*(Math.abs(j)<1?0:1)+(j===0?0:0); x<=-.25?g.moveTo(PX(x),PY(j>=0?y0+Math.max(0,b):y0+Math.min(0,b))):g.lineTo(PX(x),PY(j>=0?y0+Math.max(0,b):y0+Math.min(0,b))); } g.stroke(); }
-}
-
+  if(k>0.01&&iceType){ g.save();
+    if(iceType==='rime'){ // feathery white accretion growing forward into the flow, only around the stagnation point
+      const n=60; for(let i=0;i<n;i++){ const u=i/(n-1), a=lerp(-1.15,1.15,u), base=[PX(.004)-Math.cos(a)*ch*.012,PY(.0)-Math.sin(a)*ch*.03]; const len=ch*.045*k*Math.cos(a*1.1)*(0.75+.5*Math.abs(Math.sin(i*2.7)));
+        g.strokeStyle=`rgba(240,245,250,${.9})`; g.lineWidth=Math.max(1.5,ch*.006); g.beginPath(); g.moveTo(base[0],base[1]); g.lineTo(base[0]-len,base[1]-len*Math.sin(a)*.25); g.stroke(); }
+      g.fillStyle='rgba(236,242,248,.92)'; g.beginPath(); g.ellipse(PX(0)-ch*.012*k,PY(0),ch*.022*k+2,ch*.035*k+2,0,0,7); g.fill(); }
+    else { // glaze: clear, spreads aft, two horns
+      const hk=k; g.fillStyle='rgba(170,215,245,.55)'; g.strokeStyle='rgba(225,242,255,.95)'; g.lineWidth=1.4;
+      g.beginPath(); g.moveTo(PX(.16),PY(yU(.16)+.003));
+      g.bezierCurveTo(PX(.06),PY(yU(.06)+.01*hk),PX(.01),PY(.05*hk),PX(-.05*hk),PY(.085*hk));
+      g.lineTo(PX(-.065*hk),PY(.072*hk)); g.quadraticCurveTo(PX(-.02*hk),PY(.03*hk),PX(-.03*hk),PY(0));
+      g.quadraticCurveTo(PX(-.02*hk),PY(-.03*hk),PX(-.055*hk),PY(-.06*hk)); g.lineTo(PX(-.04*hk),PY(-.07*hk));
+      g.bezierCurveTo(PX(.0),PY(-.05*hk),PX(.05),PY(yL(.05)-.008*hk),PX(.13),PY(yL(.13)-.002)); g.closePath(); g.fill(); g.stroke();
+      // runback rivulets
+      for(let r=0;r<4;r++){ const x0=.1+r*.035; g.strokeStyle='rgba(200,232,252,.7)'; g.lineWidth=1.2; g.beginPath(); g.moveTo(PX(x0),PY(yU(x0)+.004)); g.lineTo(PX(x0+.05*hk),PY(yU(x0+.05*hk)+.004)); g.stroke(); } }
+    g.restore(); }
+  // the wing section (metal) with a leading-edge protection strip
+  const gr=g.createLinearGradient(0,PY(.1),0,PY(-.06)); gr.addColorStop(0,'#AEB9C2'); gr.addColorStop(.5,'#7D8A95'); gr.addColorStop(1,'#4C5862');
+  g.fillStyle=gr; g.strokeStyle='rgba(255,255,255,.75)'; g.lineWidth=1.4; g.beginPath();
+  for(let x=0;x<=1.0001;x+=0.005){ const X=PX(x), Y=PY(yU(x)); x?g.lineTo(X,Y):g.moveTo(X,Y); }
+  for(let x=1;x>=0;x-=0.005) g.lineTo(PX(x),PY(yL(x))); g.closePath(); g.fill(); g.stroke();
+  g.strokeStyle='rgba(113,204,147,.8)'; g.lineWidth=3; g.beginPath(); for(let x=.06;x>=0;x-=.005) g.lineTo(PX(x),PY(yU(x))); for(let x=0;x<=.05;x+=.005) g.lineTo(PX(x),PY(yL(x))); g.stroke();
+  return {PX,PY}; }
+/* droplet paths towards the leading edge: small drops follow the air round the nose, big ones keep going straight */
+function drops(g,ax,ay,ch,big,tm){ const PX=x=>ax+x*ch, PY=y=>ay-y*ch, n=big?16:22;
+  for(let i=0;i<n;i++){ const y0=lerp(-.16,.18,i/(n-1)), ph=((tm*(big?.35:.5)+i*.37)%1), x=lerp(-.6,0,ph);
+    // deflection: small drops are pushed away from the nose more strongly
+    const reach=Math.abs(y0)<(big?.11:.035), defl=big?.15:.85, k=clamp((x+.25)/.25,0,1), yy=y0+(y0>=0?1:-1)*defl*Math.pow(k,2)*Math.max(0,.09-Math.abs(y0)*.3)*(reach?0:1);
+    if(reach&&x>-.01) continue;
+    const yAt=reach?y0*(1-k*.6):yy;
+    g.fillStyle=big?'rgba(127,198,238,.9)':'rgba(200,230,250,.85)'; g.beginPath(); g.arc(PX(x),PY(yAt+.01),big?3.4:1.8,0,7); g.fill(); } }
 function draw(g,W,H,p,tm){
   const sm=W<640, fs=sm?.86:1;
   const sceneA=1-at(p,1,.7), foilA=at(p,1,.7)*(1-at(p,3,.7)), frA=at(p,3,.7)*(1-at(p,4,.7)), clA=at(p,4,.7);
@@ -58,13 +80,26 @@ function draw(g,W,H,p,tm){
     for(let k=0;k<30;k++){ const ph=((tm*.15+k*.37)%1), x=(k*71%W), y=lerp(Y(f20),Y(f0),((k*.29)%1))+Math.sin(tm+k)*4; g.fillStyle=`rgba(127,198,238,${.5+.3*Math.sin(tm*2+k)})`; g.beginPath(); g.arc(x,y,1.8,0,7); g.fill(); }
     g.restore(); }
   // 2–3: ice on the wing
-  if(foilA>0.01){ g.save(); g.globalAlpha=foilA; const ch=Math.min(W*(sm?.7:.5),H*1.2), ax=W*(sm?.2:.2), ay=H*.5;
+  if(foilA>0.01){ g.save(); g.globalAlpha=foilA; const ch=Math.min(W*(sm?1.4:1.15),H*2.6), ax=W*(sm?.3:.36), ay=H*(sm?.4:.46);
     const type=p<1.6?'rime':'clear', k=type==='rime'?ease(clamp((p-.4)/.6,0,1)):ease(clamp((p-1.6)/.4,0,1));
+    g.save(); g.beginPath(); g.rect(0,0,W,H); g.clip();
+    // airflow streamlines around the nose
+    for(let j=-4;j<=4;j++){ const y0=j*.04; g.strokeStyle='rgba(127,198,238,.22)'; g.lineWidth=1; g.beginPath();
+      for(let x=-.6;x<=.8;x+=.01){ const env=x<0?Math.exp(x/.12):1, yy=j>=0?Math.max(y0,yU(clamp(x,0,1))+y0*.6+.012)*env+y0*(1-env):Math.min(y0,yL(clamp(x,0,1))+y0*.6-.012)*env+y0*(1-env); const X=ax+x*ch, Y=ay-yy*ch; x<=-.6?g.moveTo(X,Y):g.lineTo(X,Y); } g.stroke(); }
+    drops(g,ax,ay,ch,type==='clear',tm);
     foil(g,ax,ay,ch,type,k,tm);
-    // drops coming in
-    for(let i=0;i<14;i++){ const ph=((tm*.8+i/14)%1), y=ay+(i-7)*ch*.012, x=lerp(ax-ch*.35,ax,ph); const big=type==='clear'; g.fillStyle='rgba(127,198,238,.8)'; g.beginPath(); g.arc(x,y,big?3.2:1.6,0,7); g.fill(); }
-    pill(g,type==='rime'?L({en:'RIME · white, rough, brittle',no:'RIMIS · hvit, ru, sprø'}):L({en:'CLEAR ICE · hard, heavy, runs back',no:'KLARIS · hard, tung, renner bakover'}),ax+ch*.5,ay-ch*.18,{mono:1,size:11.5*fs,col:'#fff',al:'center',fit:W});
-    if(type==='clear') pill(g,L({en:'horns',no:'horn'}),ax-ch*.07,ay-ch*.11,{size:10.5*fs,col:'#9FD4F2',al:'center'});
+    g.restore();
+    const big=type==='clear';
+    pill(g,big?L({en:'CLEAR ICE · hard, heavy, runs back',no:'KLARIS · hard, tung, renner bakover'}):L({en:'RIME · white, rough, brittle',no:'RIMIS · hvit, ru, sprø'}),ax+ch*.18,ay-ch*.13,{mono:1,size:12*fs,col:'#fff',fit:W});
+    if(big) pill(g,L({en:'horns',no:'horn'}),ax-ch*.07,ay-ch*.1,{size:10.5*fs,col:'#9FD4F2',al:'center'});
+    pill(g,L({en:'protected area',no:'beskyttet område'}),ax+ch*.02,ay+ch*.08,{size:10.5*fs,col:'#8EDDB0',al:'center'});
+    if(big) pill(g,L({en:'ice beyond the protection',no:'is bak beskyttelsen'}),ax+ch*.16,ay+ch*.05,{size:10.5*fs,col:'#FF8A78'});
+    // the conditions card
+    const cx0=sm?W*.05:W*.04, cy0=sm?H*.72:H*.7, cw=sm?W*.9:W*.37, chh=sm?H*.24:H*.24;
+    rr(g,cx0,cy0,cw,chh,8); g.fillStyle='rgba(10,15,20,.88)'; g.fill(); g.strokeStyle='rgba(255,255,255,.12)'; g.stroke();
+    [[L({en:'drops',no:'dråper'}),big?L({en:'large (cumulus, freezing rain)',no:'store (cumulus, underkjølt regn)'}):L({en:'small (layer cloud)',no:'små (lagsky)'})],
+     [L({en:'temperature',no:'temperatur'}),big?'0 … −10 °C':'−10 … −20 °C'],
+     [L({en:'freezes',no:'fryser'}),big?L({en:'slowly, flows back first',no:'sakte, renner bakover først'}):L({en:'at once, traps air',no:'straks, fanger luft'})]].forEach(([a,b2],r)=>{ txt(g,a,cx0+12,cy0+22+r*20*fs,{size:11.5*fs,col:'#AEB8C1'}); txt(g,b2,cx0+cw-12,cy0+22+r*20*fs,{size:11.5*fs,col:'#fff',al:'right'}); });
     g.restore(); }
   // 4: freezing rain
   if(frA>0.01){ g.save(); g.globalAlpha=frA; const Y=h=>gy-(gy-top)*h/12000;
@@ -89,7 +124,7 @@ function draw(g,W,H,p,tm){
     g.fillStyle='#fff'; g.beginPath(); g.arc(X(16),Y(1.6),4,0,7); g.fill(); pill(g,L({en:'clean CLmax',no:'ren CLmax'}),X(16)+10,Y(1.6)+16,{size:10.5*fs,col:'#fff'});
     g.fillStyle='#9FD4F2'; g.beginPath(); g.arc(X(lerp(16,11,k)),Y(lerp(1.6,1.15,k)),4,0,7); g.fill(); pill(g,L({en:'iced: −28 %, stalls 5° earlier',no:'iset: −28 %, staller 5° tidligere'}),X(lerp(16,11,k))-8,Y(lerp(1.6,1.15,k))+22,{size:10.5*fs,col:'#9FD4F2',al:'right',fit:W});
     g.strokeStyle=C.amber; g.setLineDash([4,4]); g.beginPath(); g.moveTo(X(14),y0); g.lineTo(X(14),y1); g.stroke(); g.setLineDash([]); pill(g,L({en:'stall warning (set for a clean wing)',no:'stallvarsel (satt for ren vinge)'}),X(14),y0+10,{size:10*fs,col:C.amber,al:'center',fit:W});
-    if(!sm){ const ch=W*.22; foil(g,W*.7,H*.5,ch,'clear',1,tm); }
+    if(!sm){ const ch=W*.24; g.save(); g.beginPath(); g.rect(W*.66,0,W*.34,H); g.clip(); foil(g,W*.72,H*.5,ch,'clear',1,tm); g.restore(); }
     g.restore(); }
   txt(g,L({en:'illustrative',no:'illustrerende'}),W-10,H-6,{mono:1,size:9*fs,col:'#5F6D77',al:'right'});
 }
