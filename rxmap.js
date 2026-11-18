@@ -29,6 +29,10 @@ const TOPO_URL='https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercat
 /* TopPlusOpen from BKG (the German federal mapping agency): free topographic map, Europe to z16, the world to z10.
    Licence dl-de/by-2-0 (commercial use allowed with attribution). Under the Topo base map it covers Europe; Kartverket is
    shown on top while the map centre is in Norway or Svalbard. */
+/* Esri Outdoor (ArcGIS Static Basemap Tiles, 512 px): topographic map with labels in the page language. Uses the same key as
+   the satellite imagery; if Esri refuses or fails, TopPlusOpen (labels in German) is used instead. */
+const ETOPO_URL='https://static-map-tiles-api.arcgis.com/arcgis/rest/services/static-basemap-tiles-service/v1/arcgis/outdoor/static/tile/{z}/{y}/{x}';
+const pageLang=()=>/^(nb|no|nn)/i.test(document.documentElement.lang||'')?'nb':'en';
 const TPO_URL='https://sgx.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web/default/WEBMERCATOR/{z}/{y}/{x}.png';
 // rough outline of Norway (incl. coastal waters) and Svalbard, [lon, lat]: decides when Kartverket is the topo map
 const NO_POLY=[[4.3,57.8],[7.0,57.7],[8.5,58.0],[10.6,58.8],[11.4,58.9],[12.2,60.0],[12.6,61.0],[12.1,61.7],[12.3,63.0],[12.0,63.9],[13.9,64.4],[14.2,65.1],[14.5,66.1],[15.5,66.3],[16.4,67.0],[18.1,68.5],[20.0,69.0],[21.0,69.2],[22.4,68.7],[24.0,68.6],[25.7,69.1],[26.0,69.7],[27.0,70.0],[28.2,69.9],[29.2,69.6],[31.8,69.9],[31.8,71.6],[25.0,71.6],[15.0,69.6],[10.0,66.2],[4.3,62.3]];
@@ -50,6 +54,7 @@ const ATT={
   hi:'Powered by '+A('https://www.esri.com','Esri')+' | Sources: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
   lo:'Imagery: '+A('https://www.earthdata.nasa.gov/gibs','NASA GIBS')+' (Blue Marble)',
   topo:A('https://www.kartverket.no/','© Kartverket'),
+  etopo:'Powered by '+A('https://www.esri.com','Esri')+' | Sources: Esri, TomTom, Garmin, FAO, NOAA, USGS, © OpenStreetMap contributors, and the GIS User Community',
   tpo:'© '+A('https://www.bkg.bund.de/','BKG')+' ('+new Date().getFullYear()+') '+A('https://www.govdata.de/dl-de/by-2-0','dl-de/by-2-0')+', '+A('https://sgx.geodatenzentrum.de/web_public/gdz/datenquellen/datenquellen_topplusopen.html','Datenquellen'),
   nav:'Airports, navaids: '+A('https://ourairports.com/data/','OurAirports'),
   oaip:'Airspace, VFR points, obstacles: '+A('https://www.openaip.net','© openAIP')+' ('+A('https://creativecommons.org/licenses/by-nc/4.0/','CC BY-NC 4.0')+')'
@@ -219,6 +224,7 @@ function buildStyle(base,o){
   if(key) st.sources['bb-sathi']={type:'raster',tiles:[HI_URL+encodeURIComponent(key)],tileSize:ts,minzoom:0,maxzoom:18,attribution:ATT.hi};
   st.sources['bb-topo']={type:'raster',tiles:[TOPO_URL],tileSize:256,minzoom:0,maxzoom:18,attribution:ATT.topo,bounds:[-10,53,42,82]};
   st.sources['bb-tpo']={type:'raster',tiles:[TPO_URL],tileSize:256,minzoom:0,maxzoom:16,attribution:ATT.tpo};
+  if(key) st.sources['bb-etopo']={type:'raster',tiles:[ETOPO_URL+'?token='+encodeURIComponent(key)+'&language='+pageLang()],tileSize:512,minzoom:0,maxzoom:19,attribution:ATT.etopo};
   const wi=out.findIndex(l=>l.metadata['bb:g']==='water'); const at=wi>=0?wi:1;
     const reliefV={id:'bb-reliefv',type:'color-relief',source:'bb-demh',metadata:{'bb:g':'reliefv'},layout:{visibility:'none'},paint:{'color-relief-opacity':lin(5,1,11,0.92,14,0.8),'color-relief-color':TINT_VFR}};
   const relief={id:'bb-relief',type:'color-relief',source:'bb-demh',metadata:{'bb:g':'relief'},layout:{visibility:'none'},paint:{'color-relief-opacity':0.8,'color-relief-color':TINT_TER}};
@@ -233,7 +239,8 @@ function buildStyle(base,o){
   out.splice(1,0,satlo,sat,...sathi,hills);
   const si=out.findIndex(l=>l.type==='symbol'); const topo={id:'bb-topo',type:'raster',source:'bb-topo',metadata:{'bb:g':'topo'},layout:{visibility:'none'},paint:{'raster-fade-duration':150}};
   const tpo={id:'bb-tpo',type:'raster',source:'bb-tpo',metadata:{'bb:g':'tpo'},layout:{visibility:'none'},paint:{'raster-fade-duration':150}};
-  out.splice(si>=0?si:out.length,0,tpo,topo);
+  const etopo=key?[{id:'bb-etopo',type:'raster',source:'bb-etopo',metadata:{'bb:g':'etopo'},layout:{visibility:'none'},paint:{'raster-fade-duration':150}}]:[];
+  out.splice(si>=0?si:out.length,0,tpo,...etopo,topo);
   // coastline: thin outline of the water polygons, under the labels
   const ci=out.findIndex(l=>l.metadata['bb:g']==='water')+1;
   if(vid) out.splice(ci>0?ci:out.length,0,{id:'bb-coast',type:'line',source:vid,'source-layer':'water',metadata:{'bb:g':'coast'},paint:{'line-color':P.coast,'line-width':lin(3,0.5,12,1.1)}});
@@ -290,7 +297,7 @@ function create(container,o){
       satWatch(map,lg);
       let loaded=false, tile=false; const chk=()=>{ if(loaded&&!done){ done=true; clearTimeout(tm); ok(map); } };
       map.on('error',e=>{ lg('map error: '+String((e&&e.error&&e.error.message)||e).slice(0,120)); if(!loaded&&e&&e.error&&/style|WebGL|context|layers\[|expression|sources\./i.test(String(e.error.message||''))) fail(e.error); });
-      map.on('load',()=>{ lg('map load'); loaded=true; try{ addImages(map); setBasemap(map,o.bm||'vfr'); setRelief(map,o.relief||'on'); }catch(e){ return fail(e); } chk(); }); map.on('moveend',()=>{ try{ topoPick(map); }catch(_){} });
+      map.on('load',()=>{ lg('map load'); loaded=true; try{ addImages(map); setBasemap(map,o.bm||'vfr'); setRelief(map,o.relief||'on'); }catch(e){ return fail(e); } chk(); }); map.on('moveend',()=>{ try{ topoPick(map); }catch(_){} }); etopoWatch(map);
       map.on('data',e=>{ if(e.dataType==='source'&&e.tile&&e.sourceId===map.__bb.vid){ tile=true; chk(); } });
     }).catch(fail);
   });
@@ -300,7 +307,7 @@ function create(container,o){
 function eachBase(map,f){ (map.getStyle().layers||[]).forEach(L=>{ const g=L.metadata&&L.metadata['bb:g']; if(g) f(L,g); }); }
 const fits=(k,t)=>{ const p=k.split('-')[0]; return t==='symbol'? (p==='text'||p==='icon') : t==='fill-extrusion'? k.startsWith('fill-extrusion-') : p===t&&!(t==='fill'&&k.startsWith('fill-extrusion-')); };
 const BMPK={}; Object.keys(BMP).forEach(bm=>Object.keys(BMP[bm]).forEach(g=>{ const s=BMPK[g]||(BMPK[g]=new Set()); Object.keys(BMP[bm][g]).forEach(k=>s.add(k)); }));
-const SKIP=new Set(['hill','hillm','hills','relief','reliefv','ct','sat','sathi','satlo']);
+const SKIP=new Set(['tpo','etopo','hill','hillm','hills','relief','reliefv','ct','sat','sathi','satlo']);
 function setBasemap(map,bm){ if(!BASEMAPS.includes(bm)) bm='vfr';
   if(bm==='sat'&&map.__bb.satBad&&!satActive(map)){ bm='vfr'; setTimeout(()=>{ try{ map.getContainer().dispatchEvent(new CustomEvent('bb-satfail')); }catch(_){} },0); }
   map.__bb.bm=bm; const v=VIS[bm];
@@ -312,7 +319,15 @@ function setBasemap(map,bm){ if(!BASEMAPS.includes(bm)) bm='vfr';
   map.setPaintProperty('bb-sat','raster-opacity',1);
   topoPick(map); applyRelief(map); if(map.__bb.t3) setSky(map); }
 // Topo: TopPlusOpen covers Europe; Kartverket on top while the map centre is in Norway or Svalbard
-function topoPick(map){ if(!map.__bb||map.__bb.bm!=='topo'||!map.getLayer('bb-topo')) return; const c=map.getCenter(), on=inNorway(c.lat,c.lng); if(map.__bb.topoNo===on&&map.getLayoutProperty('bb-topo','visibility')===(on?'visible':'none')) return; map.__bb.topoNo=on; map.setLayoutProperty('bb-topo','visibility',on?'visible':'none'); }
+// Europe: Esri Outdoor (labels in the page language) while it works, otherwise TopPlusOpen
+function topoPick(map){ if(!map.__bb) return; const t=map.__bb.bm==='topo', es=t&&!!map.getLayer('bb-etopo')&&!map.__bb.etopoBad;
+  vis(map,'bb-etopo',es); vis(map,'bb-tpo',t&&!es); if(!t||!map.getLayer('bb-topo')) return;
+  const c=map.getCenter(), on=inNorway(c.lat,c.lng); if(map.getLayoutProperty('bb-topo','visibility')!==(on?'visible':'none')) map.setLayoutProperty('bb-topo','visibility',on?'visible':'none'); }
+function etopoWatch(map){ const n={ok:0,err:0};
+  map.on('data',e=>{ if(e.dataType==='source'&&e.tile&&e.sourceId==='bb-etopo') n.ok++; });
+  map.on('error',e=>{ if(!e||e.sourceId!=='bb-etopo'||map.__bb.etopoBad) return; const st=e.error&&e.error.status; n.err++;
+    if(!([400,401,403,498,499].includes(st)||(n.err>=6&&n.err>3*n.ok)||(n.err>=4&&!n.ok))) return;
+    map.__bb.etopoBad=st||'errors'; try{ console.warn('Route Explorer: Esri topo tiles failed ('+(st||'errors')+'), using TopPlusOpen'); }catch(_){} topoPick(map); }); }
 function setRelief(map,mode){ map.__bb.relief=mode==='off'?'off':'on'; applyRelief(map); }
 /* Satellite: the first source in the chain that works is shown, so the map is never blank. Esri (with a key) → EOX 2016
    → NASA Blue Marble. A source is dropped after a refused key (401/403/498/499) or when its tiles keep failing
@@ -673,7 +688,7 @@ function tileJobs(map,pts,zc){ const jobs=[], seen=new Set(), src=id=>map.getSou
     const r=km/111.32; pts.forEach(p=>{ const k=Math.cos(p.la*Math.PI/180)||1; const [x0,y1]=tileXY(p.la-r,p.lo-r/k,z), [x1,y0]=tileXY(p.la+r,p.lo+r/k,z);
       for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++){ const u=url(S.tiles[0],z,x,y); if(!seen.has(u)){ seen.add(u); jobs.push({u,x:p.x}); } } }); };
   const b=map.__bb; if(b.bm==='sat'){ const a=satActive(map); if(a){ add(a,0,2.5); add(a,-2,10); } }
-  if(b.bm==='topo'){ const c=pts[0]; if(c&&inNorway(c.la,c.lo)) add('bb-topo',0,2.5); add('bb-tpo',0,2.5); }
+  if(b.bm==='topo'){ const c=pts[0]; if(c&&inNorway(c.la,c.lo)) add('bb-topo',0,2.5); if(map.getLayer('bb-etopo')&&!b.etopoBad) add('bb-etopo',0,2.5,512); else add('bb-tpo',0,2.5); }
   add('bb-dem',-1,8,256); add('bb-demh',0,2.5); add(b.vid,0,6);
   jobs.sort((p,q)=>p.x-q.x); return jobs; }
 function prefetch(map,pts,zc,o){ o=o||{}; const jobs=tileJobs(map,pts,zc).slice(0,o.max||900), n=jobs.length, ctl={n,done:0,readyX:0,abort:false}; let i=0, act=0;
