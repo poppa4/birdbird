@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="An Airbus A320 cockpit procedure trainer in the browser: the real flight deck layout, a working overhead panel, ECAM with warnings, procedures and system pages, PFD and ND with the FMA, FCU and autopilot, MCDU and fly-by-wire normal law.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Airbus A320 3D cockpit (beta)</title>
+
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=35">
+<link rel="stylesheet" href="b200.css?v=20">
+<link rel="stylesheet" href="simshell.css?v=11">
+<link rel="stylesheet" href="a320.css?v=2">
+</head>
+<body data-title="Airbus A320 3D cockpit" data-d3="a320.html">
+<script src="site.js?v=103"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">NORDAP · Simulators</div>
+      <h1>Airbus A320 3D cockpit <small>beta</small></h1>
+      <p>The A320 flight deck as it is: overhead panel, glareshield, main instrument panel and pedestal, with the system logic behind every switch. Bring the aircraft from cold and dark to the runway, work the ECAM, set up the FCU and MCDU, and fly it in normal law with or without the autopilot.</p>
+    </div>
+    <div class="hright"><div class="status ok" id="stat">On ground</div></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#cockpit">Cockpit</a><a href="#controls">Flight controls</a><a href="#read">How it works</a></nav>
+
+  <section id="cockpit" class="ckp a320 d3" aria-label="Cockpit">
+    <div class="ctop" role="toolbar" aria-label="Cockpit tools">
+      <a class="cbhome" href="training.html" aria-label="NORDAP: training overview"><span aria-hidden="true">‹</span><b>NORDAP</b></a>
+      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html">DA42</option><option value="b200.html">King Air B200</option><option value="c172.html">Cessna 172</option><option value="a320.html" selected>Airbus A320</option></select>
+      <span class="dseg" role="group" aria-label="View"><a href="a320.html">2D</a><a href="a320-3d.html" class=on aria-current=page>3D <small>beta</small></a></span>
+      <select class="cb afsel" id="apSel" aria-label="Start"><option value="air">✈︎ In the air, 5,000 ft</option><option value="cold">✈︎ Cold and dark</option><option value="ready">✈︎ Ready for take-off</option><option value="appr">✈︎ ILS 36, 12 NM</option></select>
+      <span class="vseg" role="group" aria-label="Look"><button class="cb" data-v="ovhd" type="button">Overhead</button><button class="cb on" data-v="main" type="button">Panel</button><button class="cb" data-v="ped" type="button">Pedestal</button></span>
+      <button class="cb" id="bDrawer" type="button" aria-pressed="false">Procedures</button>
+      <button class="cb" id="bPause" type="button">Pause</button>
+      <button class="cb" id="bReset" type="button" aria-label="Restart"><i aria-hidden="true">↺</i><span>Restart</span></button>
+      <span class="sp"></span>
+      <button class="cb" id="bMore" type="button" aria-controls="moreMenu" aria-expanded="false" aria-label="More">⋯</button>
+    </div>
+    <div class="cbody">
+      <div class="stage" id="stage">
+        <div class="otwsky" id="otwSky" aria-hidden="true"></div><canvas id="otw" role="img" aria-label="View out of the window"></canvas>
+        <div class="otwmsg" id="otwMsg" hidden>3D needs WebGL, which this browser does not offer. <a href="a320.html">Open the 2D cockpit</a></div><div class="vp" id="vp"><div class="world" id="world"><img id="deck" src="img/cockpits/a320-deck-1500.webp" alt="" width="1000" height="1678" decoding="async" draggable="false"><div class="ovl" id="ovl"></div></div></div>
+        <button class="zback" id="zBack" type="button">← Back</button>
+        <div class="more" id="moreMenu" hidden role="group" aria-label="Settings"><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bAlign" type="button" aria-pressed="false">Fast ADIRS alignment</button><button class="cb" id="bHelp" type="button">Controls</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
+        <div class="tip" id="tip" hidden></div>
+        <div class="perfm" id="perfm" hidden></div>
+        <div class="pill" id="pill" aria-live="polite"></div>
+        <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.<a class="rotback" href="training.html">← Back to NORDAP</a></div></div>
+      </div>
+      <aside class="drawer" id="drawer" aria-label="Procedures"><div class="din">
+        <div class="tabs" role="tablist" aria-label="Procedures"><button data-t="fl" class="on" role="tab" aria-selected="true">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
+        <div id="tabFl"></div><div id="tabSp" hidden></div>
+      </div></aside>
+    </div>
+  </section>
+
+  <section class="card" id="controls">
+    <div class="eyebrow">Fly it</div>
+    <h2>Flight controls</h2>
+    <p class="lead">Fly with the keyboard, a gamepad or joystick, the touch stick or this pad. The sidestick works as in the aircraft: in normal law it asks for a load factor and a roll rate, and lets go to hold the flight path and the bank angle.</p>
+    <div class="ctlgrid" style="margin-top:12px">
+      <div class="box">
+        <b class="t">Sidestick</b>
+        <div class="stick" id="stick"><span class="dot"></span><small>Drag · springs back to neutral</small></div>
+      </div>
+      <div class="box">
+        <b class="t">Thrust levers</b>
+        <div class="thrbox" id="thrBox"></div>
+        <div class="btns" style="margin-top:12px"><button class="btn" id="brk">Hold for brakes</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="read">
+    <div class="eyebrow">Understand</div>
+    <h2>How the trainer works</h2>
+    <div class="legend">
+      <div class="box"><b class="t">Electrical</b><p>Two batteries, two engine generators (IDG), the APU generator and external power feed AC BUS 1 and 2; each generator normally feeds its own side and one source can feed both through the bus tie. AC ESS comes from AC BUS 1 (ALTN: AC BUS 2). With batteries only on the ground the screens stay dark: check both batteries above 25.5 V, then use external power or the APU.</p></div>
+      <div class="box"><b class="t">APU and engine start</b><p>APU MASTER SW opens the air intake flap; START spins the APU up to AVAIL in about a minute. With the APU BLEED on and the mode selector at IGN/START, ENG MASTER ON starts an engine automatically: starter valve, ignition at 16 % N2, fuel at 22 %, light-off, starter cut-out at 50 %, idle at about 59 % N2. The packs close during a start.</p></div>
+      <div class="box"><b class="t">Hydraulics</b><p>Green (engine 1 pump), blue (electric pump, on when an engine runs) and yellow (engine 2 pump, electric pump). The PTU joins green and yellow when their pressures differ by more than 500 psi; it is inhibited between the first and the second engine start with the parking brake on.</p></div>
+      <div class="box"><b class="t">ECAM</b><p>Warnings (red, MASTER WARN and the continuous chime) and cautions (amber, MASTER CAUT and a single chime) show on the E/WD with their actions in blue; an action disappears when the system senses it done. CLR goes to the next alert, RCL brings them back, STS shows the status page. T.O and LDG memos, the right memo and the SD page follow the flight phase.</p></div>
+      <div class="box"><b class="t">Fly-by-wire and auto flight</b><p>Normal law: load factor demand with automatic trim, roll rate demand with bank hold up to 33°, protections for pitch attitude, bank, high angle of attack (alpha floor) and high speed, and the flare mode below 50 ft. FCU: pull a knob for selected guidance, push it for managed. The FMA shows what the A/THR, the vertical and the lateral modes are doing.</p></div>
+      <div class="box"><b class="t">What is simplified</b><p>The flight model is a teaching model tuned to typical A320neo numbers; the FMS knows the practice area only (field, fixes and the ILS 36), managed climb and descent use the FCU altitude, and some panels (cargo, cabin, communications) are pictures only. Our own drawings of the display formats.</p></div>
+    </div>
+    <h3 style="margin-top:6px">Keyboard</h3>
+    <table class="keys">
+      <tr><td><kbd>W</kbd> <kbd>S</kbd> · <kbd>A</kbd> <kbd>D</kbd> or the arrow keys</td><td>Sidestick: nose down and up, roll left and right (springs back to neutral)</td></tr>
+      <tr><td><kbd>Q</kbd> <kbd>E</kbd></td><td>Rudder pedals (and nose wheel steering below 100 kt)</td></tr>
+      <tr><td><kbd>+</kbd> <kbd>−</kbd></td><td>Thrust levers forward and back (they stop at each detent); <kbd>T</kbd> TOGA, <kbd>Y</kbd> FLX/MCT, <kbd>U</kbd> CL, <kbd>I</kbd> IDLE, <kbd>R</kbd> reverse (on the ground)</td></tr>
+      <tr><td><kbd>F</kbd> <kbd>V</kbd> · <kbd>G</kbd> · <kbd>B</kbd></td><td>Flaps lever down and up · gear lever · brakes while held</td></tr>
+      <tr><td><kbd>K</kbd> <kbd>J</kbd> · <kbd>L</kbd></td><td>Speed brake out and in · ground spoilers ARM</td></tr>
+      <tr><td><kbd>Space</kbd> · <kbd>Z</kbd> · <kbd>P</kbd></td><td>AP instinctive disconnect · A/THR instinctive disconnect · pause</td></tr>
+      <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> … <kbd>Esc</kbd></td><td>Overhead, panel, pedestal, FCU, ECAM, MCDU · back to the panel</td></tr>
+    </table>
+  </section>
+
+  <p class="note simnote">Training aid, not a certified simulator or a substitute for the aircraft's approved documents. No procedures are included: use your operator's FCOM, QRH and SOP.</p>
+  <p class="note">Not affiliated with Airbus, CFM or any operator. The flight deck picture is rendered from the FlightGear A320-family model (GPL-2.0, see <a href="sources.html">data sources</a>); the display formats are our own drawings. Numbers are typical values for learning.</p>
+</div>
+
+<script>window.OTW_RWY=3000; window.CK3D=window.CK3D||{a320:1};</script>
+<script src="three.min.js?v=128"></script>
+<script src="simterrain.js?v=5"></script>
+<script src="otw.js?v=16"></script>
+<script src="lab.js?v=52"></script>
+<script src="simshell.js?v=10"></script>
+<script src="a320t.js?v=1"></script>
+<script src="a320sys.js?v=2"></script>
+<script src="a320fm.js?v=2"></script>
+<script src="a320disp.js?v=2"></script>
+<script src="a320mcdu.js?v=1"></script>
+<script src="a320-3d.js?v=3"></script>
+<script src="a320-app.js?v=2"></script>
+</body>
+</html>

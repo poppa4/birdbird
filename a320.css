@@ -54,3 +54,7 @@
 #controls .thrbox .lv b{position:absolute;left:3px;right:3px;height:22px;border-radius:5px;background:linear-gradient(#e9edf1,#9aa3ac);box-shadow:0 2px 4px rgba(0,0,0,.6)}
 #controls .thrbox .lv span{position:absolute;left:100%;margin-left:4px;font:600 10px var(--f-mono);color:#8e98a3;transform:translateY(-50%);white-space:nowrap}
 #controls .thrbox .lv span.on{color:#7fcbe8}
+.a320.d3 .vp{display:none}
+.a320.d3 .stage>canvas#otw{height:100%;cursor:grab}
+.a320.d3 .stage .otwmsg{position:absolute;inset:0;display:grid;place-items:center;color:#e6ebef;z-index:3}
+.a320.d3 .stage .otwmsg[hidden]{display:none}
