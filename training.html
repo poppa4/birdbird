@@ -40,7 +40,7 @@
 
 /* the index: four jump links, the same four parts as the Training menu */
 .tv-idx{margin-top:44px}
-.tv-idx ol{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--ink);border-bottom:1px solid var(--rule1)}
+.tv-idx ol{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid var(--ink);border-bottom:1px solid var(--rule1)}
 .tv-idx li+li{border-left:1px solid var(--rule2)}
 .tv-idx a{display:grid;grid-template-columns:auto minmax(0,1fr);align-content:start;gap:2px 12px;height:100%;padding:16px 20px 17px;text-decoration:none;transition:background-color .15s}
 .tv-idx li:first-child a{padding-left:0}
@@ -176,7 +176,8 @@
   .tv-idx ol{grid-template-columns:repeat(2,minmax(0,1fr))}
   .tv-idx li:nth-child(3){border-left:0}
   .tv-idx li:nth-child(n+3){border-top:1px solid var(--rule2)}
-  .tv-idx li:nth-child(3) a{padding-left:0}
+  .tv-idx li:nth-child(3) a,.tv-idx li:nth-child(5) a{padding-left:0}
+  .tv-idx li:nth-child(5){border-left:0}
   .tv-sh{grid-template-columns:minmax(0,1fr)}
   .sims{grid-template-columns:minmax(0,1fr)}
   .sy{display:grid;grid-template-columns:minmax(0,44fr) minmax(0,56fr)}
@@ -251,6 +252,7 @@
       <li><a href="#ifr"><span class="n">02</span><b data-tx="x2">IFR trainer</b><small data-tx="x2s">46 exercises</small></a></li>
       <li><a href="#briefing"><span class="n">03</span><b data-tx="x3">Briefing</b><small data-tx="x3s">Departures and approaches, scored</small></a></li>
       <li><a href="#radio"><span class="n">04</span><b data-tx="x4">Radio</b><small data-tx="x4s">Radio drills and gate to gate</small></a></li>
+      <li><a href="mcdu.html"><span class="n">05</span><b data-tx="x5">MCDU trainer</b><small data-tx="x5s">A320, 11 tasks</small></a></li>
     </ol>
   </nav>
 
@@ -475,7 +477,7 @@ LAB.tx({
  h1:'Cockpittrenere, IFR-prosedyrer, briefing og radio',
  lede:'Alt NORDAP tilbyr for trening, samlet på ett sted: fungerende cockpiter for tre flytyper, en IFR-trener som lærer deg én prosedyre om gangen, briefinger som instruktøren vurderer, og radiotrening fra enkeltkall til en hel flyging. Typeratingstudier og kontrollforberedelse finner du også her.',
  fA:'Flytyper', fP:'Plattform', fPv:'I nettleseren, uten installasjon', fL:'Språk', fLv:'Engelsk og norsk; typerating på engelsk',
- x1:'Simulatorer', x1s:'3 flytyper, 2D og 3D', x2:'IFR-trener', x2s:'46 øvelser', x3:'Briefing', x3s:'Avganger og innflyginger, med poeng', x4:'Radio', x4s:'Radiodriller og gate to gate',
+ x1:'Simulatorer', x1s:'3 flytyper, 2D og 3D', x2:'IFR-trener', x2s:'46 øvelser', x3:'Briefing', x3s:'Avganger og innflyginger, med poeng', x4:'Radio', x4s:'Radiodriller og gate to gate', x5:'MCDU-trener', x5s:'A320, 11 oppgaver',
  simH:'Simulatorer',
  simP:'Fungerende cockpiter for tre flytyper, fra de seks grunnleggende instrumentene til en turboprop med to piloter. Alle kjører som 2D-panel; 3D-cockpitene er i beta.',
  stB:'Beta', tr:'Trener', o2:'Åpne 2D',
