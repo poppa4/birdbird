@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Sunrise, sunset and civil, nautical and astronomical twilight for any European aerodrome, in local time and UTC, with the EASA night period.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sun and twilight · NORDAP</title>
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=35">
+<style>
+.sunin{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;font-size:14px}
+.sunin input{font-family:var(--f-mono);font-size:16px;padding:7px 10px;border:1px solid var(--rule);border-radius:3px;background:#fff}
+.sunin #icao{width:92px;text-transform:uppercase}
+.sunin .st{color:var(--ink-2);flex:1 1 220px;min-width:0}
+.sunsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin:16px 0 0}
+.sunsum div{padding:12px 16px;border-left:1px solid var(--rule-2)}
+.sunsum div:first-child{border-left:0;padding-left:0}
+.sunsum span{display:block;font-size:13px;color:var(--ink-2)}
+.sunsum b{display:block;font-family:var(--f-display);font-stretch:88%;font-weight:700;font-size:26px;font-variant-numeric:tabular-nums}
+.sunsum small{display:block;font-size:12.5px;color:var(--ink-2);font-family:var(--f-mono)}
+.sunsum .night b{color:var(--magenta)}
+.dbar{position:relative;height:38px;margin:22px 0 4px;border-radius:3px;overflow:hidden;background:#24323d}
+.dbar i{position:absolute;top:0;bottom:0}
+.dbar .now{width:2px;background:var(--magenta);box-shadow:0 0 0 1px #fff}
+.dax{position:relative;height:18px;font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2)}
+.dax span{position:absolute;transform:translateX(-50%)}
+.lg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-2);margin:10px 0 0}
+.lg i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.c-night{background:#24323d}.c-astro{background:#4b5d6a}.c-naut{background:#6f8794}.c-civil{background:#9fbccb}.c-day{background:#cfe6f1}
+.stab{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.stab th,.stab td{padding:7px 10px 7px 0;border-bottom:1px solid var(--rule-2);text-align:left;font-size:14px;white-space:nowrap}
+.stab th{font-weight:600;font-size:12.5px;color:var(--ink-2);border-bottom:1px solid var(--ink)}
+.stab td.m{font-family:var(--f-mono)}
+.stab tr.today td{background:#fff5fa}
+.stab td.n{color:var(--magenta);font-family:var(--f-mono)}
+.tw{overflow-x:auto}
+#year{width:100%;height:auto;display:block;margin-top:10px}
+.utc{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2)}
+</style>
+</head>
+<body data-title="Sun and twilight">
+<script src="site.js?v=89"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">NORDAP · Flight planning</div>
+      <h1>Sun and twilight</h1>
+      <p>Sunrise, sunset and twilight at any European aerodrome, in the aerodrome's local time and in UTC. Civil twilight decides when night begins for VFR.</p>
+    </div>
+  </header>
+
+  <section class="card" id="today">
+    <div class="sunin">
+      <label for="icao">ICAO code</label><input id="icao" maxlength="4" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ENTO">
+      <label for="date">Date</label><input id="date" type="date">
+      <span class="st" id="st"></span>
+    </div>
+    <div class="sunsum" id="sum"></div>
+    <div class="dbar" id="bar" aria-hidden="true"></div>
+    <div class="dax" id="dax" aria-hidden="true"></div>
+    <div class="lg"><span><i class="c-night"></i>Night</span><span><i class="c-astro"></i>Astronomical twilight</span><span><i class="c-naut"></i>Nautical twilight</span><span><i class="c-civil"></i>Civil twilight</span><span><i class="c-day"></i>Sun above the horizon</span></div>
+    <p class="note" id="easa">Night (EASA): from the end of evening civil twilight to the beginning of morning civil twilight. Your operator, the aerodrome or a national authority may set other limits.</p>
+  </section>
+
+  <section class="card" id="month">
+    <h2>The next 30 days</h2>
+    <div class="tw"><table class="stab" id="tab"></table></div>
+  </section>
+
+  <section class="card" id="yearc">
+    <h2>The whole year</h2>
+    <p class="lead">Each column is one day; the bands show night, the three twilights and daylight in the aerodrome's local time.</p>
+    <svg id="year" viewBox="0 0 740 300" shape-rendering="crispEdges" role="img" aria-label="Daylight and twilight through the year"></svg>
+  </section>
+
+  <section class="card">
+    <h2>How it is worked out</h2>
+    <p>NORDAP computes the times itself from the solar position (the NOAA equations), for a sea-level horizon and standard refraction: sunrise and sunset when the centre of the sun is 0.833° below the horizon, civil twilight at 6°, nautical at 12° and astronomical at 18°. The times are normally within a minute of the almanac. Terrain, such as mountains or a fjord, can hide the sun well after sunrise and before sunset. For flight planning, check the official sources your operator requires.</p>
+  </section>
+</div>
+<script src="lab.js?v=52"></script>
+<script src="sun.js?v=1"></script>
+<script>
+(function(){
+'use strict';
+const {L,el}=LAB;
+LAB.add({},{
+ 'NORDAP · Flight planning':'NORDAP · Flyplanlegging','Sun and twilight':'Sol og tussmørke',
+ "Sunrise, sunset and twilight at any European aerodrome, in the aerodrome's local time and in UTC. Civil twilight decides when night begins for VFR.":'Soloppgang, solnedgang og tussmørke for enhver europeisk flyplass, i flyplassens lokaltid og i UTC. Sivilt tussmørke avgjør når det blir natt for VFR.',
+ 'ICAO code':'ICAO-kode','Date':'Dato','Night':'Natt','Astronomical twilight':'Astronomisk tussmørke','Nautical twilight':'Nautisk tussmørke','Civil twilight':'Sivilt tussmørke','Sun above the horizon':'Sola over horisonten',
+ 'Night (EASA): from the end of evening civil twilight to the beginning of morning civil twilight. Your operator, the aerodrome or a national authority may set other limits.':'Natt (EASA): fra slutten av kveldens sivile tussmørke til begynnelsen av morgenens sivile tussmørke. Operatøren, flyplassen eller nasjonale myndigheter kan ha andre grenser.',
+ 'The next 30 days':'De neste 30 dagene','The whole year':'Hele året',
+ "Each column is one day; the bands show night, the three twilights and daylight in the aerodrome's local time.":'Hver kolonne er én dag; båndene viser natt, de tre tussmørkene og dagslys i flyplassens lokaltid.',
+ 'How it is worked out':'Slik regnes det ut',
+ 'NORDAP computes the times itself from the solar position (the NOAA equations), for a sea-level horizon and standard refraction: sunrise and sunset when the centre of the sun is 0.833° below the horizon, civil twilight at 6°, nautical at 12° and astronomical at 18°. The times are normally within a minute of the almanac. Terrain, such as mountains or a fjord, can hide the sun well after sunrise and before sunset. For flight planning, check the official sources your operator requires.':'NORDAP regner ut tidene selv fra solens posisjon (NOAA-likningene), for horisont ved havnivå og standard refraksjon: soloppgang og solnedgang når solens sentrum er 0,833° under horisonten, sivilt tussmørke ved 6°, nautisk ved 12° og astronomisk ved 18°. Tidene ligger normalt innenfor ett minutt av almanakken. Terreng, som fjell eller en fjord, kan skjule sola lenge etter soloppgang og før solnedgang. Til flyplanlegging, sjekk de offisielle kildene operatøren din krever.'
+});
+let AP=null, apP=null;
+const loadAp=()=>apP||(apP=fetch('data/nav-eu.json').then(r=>r.json()).then(d=>{ AP={}; (d.ap||[]).forEach(a=>{ AP[a[0]]={n:a[1],lat:a[2],lon:a[3]}; }); }));
+const inp=el('icao'), dIn=el('date');
+const q=new URLSearchParams(location.search);
+let icao=(q.get('icao')||'').toUpperCase(); try{ if(!icao) icao=localStorage.getItem('bb-sun-icao')||'ENTO'; }catch(e){ if(!icao) icao='ENTO'; }
+inp.value=icao;
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());
+let dateSet=q.get('date')||'';
+function minsLocal(d,tz){ if(!d) return null; const p=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:tz||'UTC'}).formatToParts(d); const h=+p.find(x=>x.type==='hour').value%24, m=+p.find(x=>x.type==='minute').value; return h*60+m; }
+const dur=(a,b)=> a&&b? Math.round((b-a)/60000) : null;
+const hhmm=m=> m==null?'—':Math.floor(m/60)+' h '+pad(m%60)+' min';
+function draw(){
+  const ap=AP&&AP[icao]; const st=el('st');
+  if(!ap){ st.textContent=AP? L({en:'Unknown ICAO code: ',no:'Ukjent ICAO-kode: '})+icao : L({en:'Loading aerodromes…',no:'Henter flyplasser …'}); return; }
+  try{ localStorage.setItem('bb-sun-icao',icao); }catch(e){}
+  const tz=SUN.tzOf(icao), now=new Date();
+  const day0= dateSet? new Date(dateSet+'T00:00:00Z') : SUN.localDate(now,tz);
+  dIn.value=ymd(day0);
+  const D=SUN.day(day0,ap.lat,ap.lon), off=SUN.offset(D.noon,tz);
+  st.innerHTML=`<b>${icao}</b> · ${ap.n.replace(/[<>&]/g,'')} · ${tz?L({en:'local time ',no:'lokal tid '})+off:L({en:'times in UTC (time zone not known)',no:'tider i UTC (tidssone ukjent)'})}`;
+  const t=d=>SUN.hm(d,tz), u=d=>d?SUN.hm(d,'UTC')+'Z':'';
+  const cell=(lab,d,cls)=>`<div class="${cls||''}"><span>${lab}</span><b>${t(d)}</b><small>${u(d)}</small></div>`;
+  let h='';
+  if(D.state==='normal'){
+    h+=cell(L({en:'Civil twilight begins',no:'Sivilt tussmørke begynner'}),D.civil[0])+cell(L({en:'Sunrise',no:'Soloppgang'}),D.rise)+cell(L({en:'Sunset',no:'Solnedgang'}),D.set)+cell(L({en:'Night begins (EASA)',no:'Natt begynner (EASA)'}),D.civil[1],'night');
+    h+=`<div><span>${L({en:'Day, civil twilight to civil twilight',no:'Dag, sivilt til sivilt tussmørke'})}</span><b style="font-size:20px">${hhmm(dur(D.civil[0],D.civil[1]))}</b><small>${L({en:'sun up',no:'sola oppe'})} ${hhmm(dur(D.rise,D.set))}</small></div>`;
+  } else if(D.state==='midnight-sun'){ h+=`<div><span>${L({en:'Midnight sun',no:'Midnattssol'})}</span><b>${L({en:'No night',no:'Ingen natt'})}</b><small>${L({en:'the sun does not set',no:'sola går ikke ned'})}</small></div>`; }
+  else if(D.allDayLight.civil){ h+=cell(L({en:'Sunrise',no:'Soloppgang'}),D.rise)+cell(L({en:'Sunset',no:'Solnedgang'}),D.set)+`<div><span>${L({en:'Civil twilight all night',no:'Sivilt tussmørke hele natta'})}</span><b>${L({en:'No night',no:'Ingen natt'})}</b><small>${L({en:'by the EASA definition',no:'etter EASAs definisjon'})}</small></div>`; }
+  else if(D.state==='polar-night-twilight'){ h+=cell(L({en:'Civil twilight begins',no:'Sivilt tussmørke begynner'}),D.civil[0])+`<div><span>${L({en:'Polar night',no:'Mørketid'})}</span><b>${L({en:'No sunrise',no:'Ingen soloppgang'})}</b><small>${L({en:'civil twilight only',no:'bare sivilt tussmørke'})}</small></div>`+cell(L({en:'Night begins (EASA)',no:'Natt begynner (EASA)'}),D.civil[1],'night'); }
+  else { h+=`<div class="night"><span>${L({en:'Polar night',no:'Mørketid'})}</span><b>${L({en:'Night all day',no:'Natt hele døgnet'})}</b><small>${L({en:'no civil twilight',no:'ikke noe sivilt tussmørke'})}</small></div>`; }
+  el('sum').innerHTML=h;
+  /* day bar */
+  const segs=[]; const pos=d=>{ const m=minsLocal(d,tz); return m==null?null:m/1440*100; };
+  const band=(a,b,c)=>{ const x=pos(a), y=pos(b); if(x==null||y==null) return; if(y>=x) segs.push([x,y,c]); else { segs.push([x,100,c]); segs.push([0,y,c]); } };
+  [['c-astro',D.astro,D.allDayLight.astro],['c-naut',D.nautical,D.allDayLight.nautical],['c-civil',D.civil,D.allDayLight.civil],['c-day',[D.rise,D.set],D.allDayLight.sun]]
+    .forEach(([c,p,all])=>{ if(p[0]&&p[1]) band(p[0],p[1],c); else if(all) segs.push([0,100,c]); });
+  let bh=segs.map(([a,b,c])=>`<i class="${c}" style="left:${a}%;width:${b-a}%"></i>`).join('');
+  if(!dateSet||ymd(SUN.localDate(now,tz))===ymd(day0)) bh+=`<i class="now" style="left:${pos(now)}%"></i>`;
+  el('bar').innerHTML=bh;
+  el('dax').innerHTML=[0,3,6,9,12,15,18,21,24].map(hr=>`<span style="left:${hr/24*100}%">${pad(hr%24)}</span>`).join('');
+  /* 30 days */
+  let tb=`<tr><th>${L({en:'Date',no:'Dato'})}</th><th>${L({en:'Civil twilight',no:'Sivilt tussmørke'})}</th><th>${L({en:'Sunrise',no:'Soloppgang'})}</th><th>${L({en:'Sunset',no:'Solnedgang'})}</th><th>${L({en:'Night from (EASA)',no:'Natt fra (EASA)'})}</th><th>${L({en:'Day (civil)',no:'Dag (sivilt)'})}</th></tr>`;
+  const loc=LAB.lang==='no'?'nb-NO':'en-GB';
+  for(let i=0;i<30;i++){ const d=new Date(day0.getTime()+i*864e5), X=SUN.day(d,ap.lat,ap.lon);
+    const ds=new Intl.DateTimeFormat(loc,{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'}).format(d);
+    tb+=`<tr class="${i===0?'today':''}"><td>${ds}</td><td class="m">${t(X.civil[0])}</td><td class="m">${t(X.rise)}</td><td class="m">${t(X.set)}</td><td class="n">${X.civil[1]?t(X.civil[1]):(X.allDayLight.civil?L({en:'no night',no:'ingen natt'}):'—')}</td><td class="m">${X.civil[0]&&X.civil[1]?hhmm(dur(X.civil[0],X.civil[1])):'—'}</td></tr>`; }
+  el('tab').innerHTML=tb;
+  year(ap,tz,day0);
+}
+function year(ap,tz,day0){
+  const W=740,H=300,l=34,r=6,tp=6,bt=24, w=W-l-r, hh=H-tp-bt, y0=Date.UTC(day0.getUTCFullYear(),0,1), n=(Date.UTC(day0.getUTCFullYear()+1,0,1)-y0)/864e5;
+  const C={astro:'#4b5d6a',naut:'#6f8794',civil:'#9fbccb',day:'#cfe6f1'};
+  let s=`<rect x="${l}" y="${tp}" width="${w}" height="${hh}" fill="#24323d"/>`;
+  const Y=m=>tp+hh*(1-m/1440), cw=w/n+0.6;
+  for(let i=0;i<n;i++){ const d=new Date(y0+i*864e5), X=SUN.day(d,ap.lat,ap.lon), x=l+i*w/n;
+    [['astro',X.astro,X.allDayLight.astro],['naut',X.nautical,X.allDayLight.nautical],['civil',X.civil,X.allDayLight.civil],['day',[X.rise,X.set],X.allDayLight.sun]].forEach(([k,p,all])=>{
+      if(all&&!p[0]){ s+=`<rect x="${x.toFixed(2)}" y="${tp}" width="${cw.toFixed(2)}" height="${hh}" fill="${C[k]}"/>`; return; }
+      const a=minsLocal(p[0],tz), b=minsLocal(p[1],tz); if(a==null||b==null) return;
+      if(b>a) s+=`<rect x="${x.toFixed(2)}" y="${Y(b).toFixed(1)}" width="${cw.toFixed(2)}" height="${(Y(a)-Y(b)).toFixed(1)}" fill="${C[k]}"/>`;
+      else { s+=`<rect x="${x.toFixed(2)}" y="${tp}" width="${cw.toFixed(2)}" height="${(Y(b)-tp).toFixed(1)}" fill="${C[k]}"/><rect x="${x.toFixed(2)}" y="${Y(a).toFixed(1)}" width="${cw.toFixed(2)}" height="${(tp+hh-Y(a)).toFixed(1)}" fill="${C[k]}"/>`; } }); }
+  for(let hr=0;hr<=24;hr+=4){ const yy=Y(hr*60); s+=`<line x1="${l}" x2="${W-r}" y1="${yy}" y2="${yy}" stroke="#fff" stroke-opacity=".25" stroke-width=".6"/><text x="${l-6}" y="${yy+4}" text-anchor="end" font-size="11" font-family="var(--f-mono)" fill="currentColor">${pad(hr)}</text>`; }
+  const loc=LAB.lang==='no'?'nb-NO':'en-GB';
+  for(let m=0;m<12;m++){ const i=(Date.UTC(day0.getUTCFullYear(),m,1)-y0)/864e5; s+=`<text x="${(l+(i+15)*w/n).toFixed(1)}" y="${H-7}" text-anchor="middle" font-size="11" fill="currentColor">${new Intl.DateTimeFormat(loc,{month:'short',timeZone:'UTC'}).format(new Date(Date.UTC(2026,m,15)))}</text>`; }
+  const ti=(day0-y0)/864e5; s+=`<line x1="${(l+ti*w/n+cw/2).toFixed(1)}" x2="${(l+ti*w/n+cw/2).toFixed(1)}" y1="${tp}" y2="${tp+hh}" stroke="var(--magenta)" stroke-width="1.6"/>`;
+  el('year').innerHTML=s;
+}
+function setIcao(v){ v=String(v||'').trim().toUpperCase(); if(!/^[A-Z0-9]{4}$/.test(v)) return; icao=v; const p=new URLSearchParams(location.search); p.set('icao',v); history.replaceState(null,'','?'+p.toString()); draw(); }
+inp.addEventListener('input',()=>{ if(inp.value.trim().length===4) setIcao(inp.value); });
+dIn.addEventListener('change',()=>{ dateSet=dIn.value||''; draw(); });
+LAB.start('sun');
+loadAp().then(draw).catch(()=>{ el('st').textContent=L({en:'Could not load the aerodrome list.',no:'Kunne ikke hente flyplasslisten.'}); });
+draw();
+LAB.onLang(draw);
+})();
+</script>
+</body>
+</html>

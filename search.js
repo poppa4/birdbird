@@ -26,6 +26,7 @@ const IDX=[
  P('propeller.html#single','Asymmetric thrust','Asymmetrisk skyv','asymmetric thrust asymmetrisk skyv','Engine failure and minimum control speeds','Motorstans og minste kontrollfarter'),
  P('propeller.html#lt','Critical engine on a light twin','Kritisk motor på lett tomotors','critical engine kritisk motor p-factor p-faktor past vmca light twin lett tomotors','Engine failure and minimum control speeds','Motorstans og minste kontrollfarter'),
  P('propeller.html#pwing','Propeller as a wing','Propellen som vinge','propeller blade angle bladvinkel constant speed konstant turtall feather fjæring windmilling vindmølling','Engine failure and minimum control speeds','Motorstans og minste kontrollfarter'),
+P('sun.html','Sun and twilight','Sol og tussmørke','sunrise sunset soloppgang solnedgang civil twilight sivilt tussmørke nautical astronomical night natt easa daylight dagslys mørketid midnattssol polar night midnight sun','Flight planning','Flyplanlegging'),
 P('forces.html','Forces in flight','Krefter i flyging','four forces fire krefter lift weight thrust drag løft vekt skyvekraft motstand climb stigning glide glid turn sving load factor lastfaktor vx vy rate one','Aerodynamics','Aerodynamikk'),
 P('propeller.html#a320','Failure after V1','Motorstans etter V1','failure after v1 motorstans etter v1','Engine failure and minimum control speeds','Motorstans og minste kontrollfarter'),
  P('highspeed.html','High-speed flight and drag','Høyfart og motstand','drag and speed stability motstand og fartsstabilitet mach and compressibility mach og kompressibilitet buffet boundary buffetgrense the swept wing pilvingen upset recovery upset recovery in the aircraft i flyet','Virtual Labs · Principles of flight','Virtual Labs · Aerodynamikk'),
@@ -255,7 +256,9 @@ const EX={en:['crosswind 270/15 rwy 24','ENTO','alternates NCO','3° 120 kt','ho
 /* ICAO code of a European aerodrome → AIP link (the server finds the AD 2 page in force, or the state's portal) */
 const icaoOf=q=>{ const m=String(q).trim().toUpperCase().match(/^([A-Z]{2}[A-Z0-9]{2})$/); return m&&/^(E|L|B[GIK]|GC|U[BDGKM])/.test(m[1])?m[1]:null; };
 let APN=null, apP=null;
-const loadAp=()=>apP||(apP=fetch('data/nav-eu.json').then(r=>r.json()).then(d=>{ APN={}; (d.ap||[]).forEach(a=>{ APN[a[0]]=a[1]; }); }).catch(()=>{ APN={}; }));
+const loadAp=()=>apP||(apP=fetch('data/nav-eu.json').then(r=>r.json()).then(d=>{ APN={}; (d.ap||[]).forEach(a=>{ APN[a[0]]={n:a[1],lat:a[2],lon:a[3]}; }); }).catch(()=>{ APN={}; }));
+/* sun and twilight (sun.js, computed here) for the aerodrome; loaded the first time an ICAO code is typed */
+let sunP=null; const loadSun=()=>sunP||(sunP=new Promise(ok=>{ if(window.SUN) return ok(); const sc=document.createElement('script'); sc.src='sun.js?v=1'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
 function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.dataset.w) return; const head=document.querySelector('header.site'); if(!head){ setTimeout(mount,50); return; }
   const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
   /* site.js places the box before first paint (no jump); this only builds it when it is missing */
@@ -289,9 +292,12 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
     if(w){ clearTimeout(wxT); wxT=setTimeout(()=>wxGet(w.ids),250); }
     const c=wr?null:calc(q), hits=score(q).filter(x=>!c&&!wr||x.s>=3); items=[]; let h='';
     if(wr){ items.push({u:'weather.html?ids='+w.ids.join(',')+(w.kind==='TAF'?'&k=T':'')}); h+=wr; }
-    const ic=w&&w.forced?null:icaoOf(q); if(ic){ const nm=APN&&APN[ic]; if(!APN) loadAp().then(()=>{ if(icaoOf(inp.value.trim())===ic) draw(); });
+    const ic=w&&w.forced?null:icaoOf(q); if(ic){ const ap=APN&&APN[ic], nm=ap&&ap.n; if(!APN) loadAp().then(()=>{ if(icaoOf(inp.value.trim())===ic) draw(); }); if(!window.SUN) loadSun().then(()=>{ if(icaoOf(inp.value.trim())===ic) draw(); });
       const u='/api/aip?icao='+ic+'&go=1'; items.push({u,ext:1});
-      h+=`<a class="it" data-i="${items.length-1}" href="${u}" target="_blank" rel="noopener"><span><b>${esc(ic)}${nm?' · '+esc(nm):''}</b><br><small>${L({en:'AIP and charts (AD 2), the edition in force today',no:'AIP og kart (AD 2), utgaven som gjelder i dag'})}</small></span><small>AIP ↗</small></a>`; }
+      h+=`<a class="it" data-i="${items.length-1}" href="${u}" target="_blank" rel="noopener"><span><b>${esc(ic)}${nm?' · '+esc(nm):''}</b><br><small>${L({en:'AIP and charts (AD 2), the edition in force today',no:'AIP og kart (AD 2), utgaven som gjelder i dag'})}</small></span><small>AIP ↗</small></a>`;  if(ap&&window.SUN){ const tz=SUN.tzOf(ic), D=SUN.day(SUN.localDate(new Date(),tz),ap.lat,ap.lon), t=d=>SUN.hm(d,tz), su='sun.html?icao='+ic; items.push({u:su});
+        const body= D.civil[0]&&D.civil[1] ? `${L({en:'Civil twilight from',no:'Sivilt tussmørke fra'})} ${t(D.civil[0])} · ${L({en:'sunrise',no:'soloppgang'})} ${t(D.rise)} · ${L({en:'sunset',no:'solnedgang'})} ${t(D.set)} · ${L({en:'night (EASA) from',no:'natt (EASA) fra'})} <b>${t(D.civil[1])}</b>`
+          : D.allDayLight.civil ? L({en:'No night today: civil twilight or sun all night',no:'Ingen natt i dag: sivilt tussmørke eller sol hele natta'}) : L({en:'Night all day (polar night)',no:'Natt hele døgnet (mørketid)'});
+        h+=`<a class="it" data-i="${items.length-1}" href="${su}"><span><b>${L({en:'Sun and twilight today',no:'Sol og tussmørke i dag'})}</b> <small>${tz?L({en:'local time ',no:'lokal tid '})+SUN.offset(D.noon,tz):'UTC'}</small><br><small>${body}</small></span><small>sun</small></a>`; }}
     if(c){ items.push({u:c.u}); h+=`<div class="it calc" data-i="0"><span><b>${esc(c.h)}</b><br><span class="v">${esc(c.v)}</span></span>${c.u?`<small>${L({en:'Open the tool',no:'Åpne verktøyet'})} →</small>`:''}</div>`; }
     hits.forEach(({e})=>{ items.push({u:e.u}); h+=`<a class="it" data-i="${items.length-1}" href="${e.u}"><span><b>${esc(L(e.t))}</b><br><small>${esc(L(e.d))}</small></span><small>${e.u.split(/[?#]/)[0].replace('.html','')}</small></a>`; });
     items.push({ai:1}); h+=`<div class="it" data-i="${items.length-1}"><span><b>${L({en:'Ask the instructor',no:'Spør instruktøren'})}:</b> ${esc(q)}</span><small>Enter${hits.length||c?' ↵':''}</small></div>`;
