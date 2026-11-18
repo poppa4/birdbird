@@ -36,9 +36,9 @@
   if(!document.querySelector('link[rel~="icon"]')){ const fl=document.createElement('link'); fl.rel='icon'; fl.type='image/svg+xml'; fl.href='favicon.svg'; document.head.appendChild(fl); }
   const logo='<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15.5" fill="#13202A"/><circle cx="16" cy="16" r="12.6" fill="#F3EFE4"/><path d="M16 16L14.94 14.94L16.00 4.70Z" fill="#13202A"/><path d="M16 16L16.00 4.70L17.06 14.94Z" fill="#3B5670"/><path d="M16 16L17.06 14.94L27.30 16.00Z" fill="#13202A"/><path d="M16 16L27.30 16.00L17.06 17.06Z" fill="#3B5670"/><path d="M16 16L17.06 17.06L16.00 27.30Z" fill="#13202A"/><path d="M16 16L16.00 27.30L14.94 17.06Z" fill="#3B5670"/><path d="M16 16L14.94 17.06L4.70 16.00Z" fill="#13202A"/><path d="M16 16L4.70 16.00L14.94 14.94Z" fill="#3B5670"/><g transform="translate(16 16.6) rotate(-6) scale(0.27)"><path d="M-42 -2 Q-30 -23 -10 -11 Q-4 -7 0 2 Q5 -9 12 -14 Q34 -30 46 -6 Q32 -12 15 -1 Q6 4 0 14 Q-5 4 -12 0 Q-28 -8 -42 -2 Z" fill="#9A1E68" stroke="#F3EFE4" stroke-width="4.5" stroke-linejoin="round"/></g></svg>';
   /* the full seal for larger places (footer); the mark above is for the header and small sizes. The earlier logo: logo-classic.svg */
-  const seal='<img src="logo-seal.svg" width="64" height="64" alt="" class="seal" loading="lazy">';
+  const seal='<img src="logo-seal.webp" width="64" height="64" alt="" class="seal" loading="lazy">';
   /* the header carries the same seal as the footer */
-  const sealHead='<img src="logo-seal.svg" width="42" height="42" alt="" class="seal">';
+  const sealHead='<img src="logo-seal.webp" width="42" height="42" alt="" class="seal">';
 
   /* ---------- rang og progresjon (lokalt; klar for synk mot konto senere) ---------- */
   const PK='naeroson-prog';
