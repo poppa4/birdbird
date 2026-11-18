@@ -131,7 +131,7 @@ function init(o){
   function visible(d){ const x=disp.find(z=>z.d===d); if(!x) return false; sph.center.copy(x.c); sph.radius=0.12; return frus.intersectsSphere(sph); }
   function lookAt(p,fov,lean){ head.tEye.copy(EYE); if(lean!=null) head.tEye.x=lean; const dv=p.clone().sub(head.tEye).normalize(); head.tYaw=Math.atan2(-dv.x,-dv.z); head.tPitch=Math.asin(Math.max(-1,Math.min(1,dv.y))); if(fov) head.tFov=fov; }
   // the overhead and the pedestal: the pilot leans in towards the centre line (as in the aircraft), so the panel is seen square
-  const LOOK={main:()=>{ head.tEye.copy(EYE); head.tYaw=-0.04; head.tPitch=-11*D2R; head.tFov=62; },ovhd:()=>lookAt(toP(500,610),62,-0.02),aft:()=>lookAt(toP(500,230),64,-0.02),ped:()=>lookAt(toP(500,1300),58,-0.18),fcu:()=>lookAt(toP(500,845),26),ecam:()=>lookAt(toP(507,1000),32,-0.3),mcdu:()=>lookAt(toP(500,1200),34,-0.25),pfd:()=>lookAt(toP(225,955),36)};
+  const LOOK={main:()=>{ head.tEye.copy(EYE); head.tYaw=-0.04; head.tPitch=-11*D2R; head.tFov=62; },ovhd:()=>lookAt(toP(500,610),62,-0.02),aft:()=>lookAt(toP(500,230),64,-0.02),ped:()=>lookAt(toP(500,1300),58,-0.18),fcu:()=>lookAt(toP(500,845),26),ecam:()=>lookAt(toP(507,1000),32,-0.3),mcdu:()=>lookAt(toP(500,1196),33,-0.16),pfd:()=>lookAt(toP(225,955),36)};
   /* ---- picking: ray from the eye through the pointer to the nearest panel ---- */
   const ray=new THREE.Ray(), hitP=new THREE.Vector3(), pl=new THREE.Plane();
   function pick(nx,ny){ // nx, ny in -1..1

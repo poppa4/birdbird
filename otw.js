@@ -348,7 +348,7 @@ function render(S,view){
 }
 /* 3D-cockpit (da42-3d.html): same world, camera = aircraft attitude × head rotation; `after` draws the cockpit on top */
 let _e3=null;
-function render3d(S,qHead,fov,dpr,after){
+function render3d(S,qHead,fov,dpr,after,pre){
   if(!ok||!cv) return false; lastKey=''; const w=cw(), h=ch(); if(!w||!h) return false;
   if(Math.abs(R.getPixelRatio()-dpr)>1e-3){ R.setPixelRatio(dpr); W=0; }
   if(w!==W||h!==H){ W=w; H=h; R.setSize(w,h,false); }
@@ -360,7 +360,10 @@ function render3d(S,qHead,fov,dpr,after){
   const th=[3.5,3.17,2.83,2.5]; for(let i=0;i<4;i++){ const white=ang>th[i]; papiCol[i*3]=1; papiCol[i*3+1]=white?1:0.12; papiCol[i*3+2]=white?1:0.1; }
   papi.geometry.attributes.color.needsUpdate=true;
   cam.updateMatrixWorld(); sortClouds();
-  R.setRenderTarget(null); R.autoClear=true; R.render(scene,cam);
+  R.setRenderTarget(null);
+  if(pre){ // the cockpit first, into the nearest 2 % of the depth range: the world behind it is rejected by the depth test (no shading behind the walls)
+    const gl=R.getContext(); R.autoClear=false; R.clear(true,true,true); gl.depthRange(0,0.02); pre(R,cam); gl.depthRange(0.02,1); R.render(scene,cam); gl.depthRange(0,1); R.autoClear=true; return true; }
+  R.autoClear=true; R.render(scene,cam);
   if(after){ R.autoClear=false; R.clearDepth(); after(R,cam); R.autoClear=true; }
   return true;
 }
