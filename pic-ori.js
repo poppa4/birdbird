@@ -100,12 +100,12 @@ function draw(g,W,H,p,tm){
     // one state per step: [real bank, felt bank, cupula bend (+ = sensing a roll right)]
     const SS=[[20,20,.85],[30,0,0],[0,-12,-.85],[0,0,0]], i0=clamp(Math.floor(p),0,2), kk=ease(clamp(p-i0,0,1)), A=SS[i0], B=SS[i0+1];
     const real=lerp(A[0],B[0],kk), felt=lerp(A[1],B[1],kk), bendS=lerp(A[2],B[2],kk);
-    const hr=Math.min(H*(sm?.075:.1),W*(sm?.075:.05)), hx=W*(sm?.2:.13), hy=H*(sm?.22:.4);
+    const hr=Math.min(H*(sm?.075:.1),W*(sm?.075:.05)), hx=W*(sm?.2:.145), hy=H*(sm?.22:.4);
     // a level horizon behind the head, so the tilt reads
     g.strokeStyle='rgba(255,255,255,.12)'; g.lineWidth=1; g.setLineDash([4,5]); g.beginPath(); g.moveTo(hx-hr*1.9,hy+hr*1.25); g.lineTo(hx+hr*1.9,hy+hr*1.25); g.stroke(); g.setLineDash([]);
     head(g,hx,hy,hr,real);
     txt(g,L({en:'PILOT',no:'PILOT'}),hx,hy-hr*1.35-8,{mono:1,size:10*fs,col:'#AEB8C1',al:'center'});
-    const cr=Math.min(W*(sm?.13:.075),H*(sm?.13:.17)), cx=W*(sm?.64:.31), cy=hy;
+    const cr=Math.min(W*(sm?.13:.075),H*(sm?.13:.17)), cx=W*(sm?.64:.335), cy=hy;
     // leader from the ear to the enlarged canal
     const ex=hx+Math.cos(real*Math.PI/180)*hr*.86-Math.sin(real*Math.PI/180)*(-hr*1.2), ey=hy+hr*1.25+Math.sin(real*Math.PI/180)*hr*.86+Math.cos(real*Math.PI/180)*(-hr*1.2);
     g.strokeStyle='rgba(127,198,238,.45)'; g.lineWidth=1; g.setLineDash([2,3]); g.beginPath(); g.moveTo(ex,ey); g.lineTo(cx-cr*1.42,cy); g.stroke(); g.setLineDash([]);
@@ -113,7 +113,7 @@ function draw(g,W,H,p,tm){
     txt(g,L({en:'INNER EAR · enlarged',no:'INDREØRET · forstørret'}),cx,cy-cr*1.42-10,{mono:1,size:10*fs,col:'#AEB8C1',al:'center'});
     pill(g,Math.abs(bendS)<.15?L({en:'cupula straight: "no rotation"',no:'cupula rett: «ingen rotasjon»'}):bendS>0?L({en:'fluid lags, cupula bends: "rolling right"',no:'væsken henger etter, cupula bøyes: «ruller til høyre»'}):L({en:'bent the other way: "rolling left"',no:'bøyd andre veien: «ruller til venstre»'}),sm?W*.5:cx,cy+cr*1.42+(sm?16:20),{size:10.5*fs,col:Math.abs(bendS)<.15?'#fff':'#F29AC8',al:'center',fit:W});
     // two attitude indicators: reality and feeling
-    const r2=Math.min(W*(sm?.16:.09),H*.17), y2=sm?H*.7:H*.42, xa=sm?W*.27:W*.6, xb=sm?W*.73:W*.85;
+    const r2=Math.min(W*(sm?.16:.09),H*.17), y2=sm?H*.7:H*.42, xa=sm?W*.27:W*.62, xb=sm?W*.73:W*.86;
     ai(g,xa,y2,r2,real,0,L({en:'REALITY',no:'VIRKELIGHET'}),C.amber);
     ai(g,xb,y2,r2,felt,0,L({en:'WHAT YOU FEEL',no:'DET DU FØLER'}),'#E46BAE');
     pill(g,`${nf(Math.abs(real))}° ${real>0.5?L({en:'right',no:'høyre'}):''}`.trim(),xa,y2-r2-14,{mono:1,size:11*fs,col:C.amber,al:'center'});
