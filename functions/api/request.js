@@ -34,7 +34,17 @@ const bad = (s, c, m) => { throw new Err(s, c, m); };
 const str = (v, n) => String(v == null ? '' : v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').trim().slice(0, n);
 const hex = async s => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map(b => b.toString(16).padStart(2, '0')).join('');
 
+/* kind 'school': a flight school, operator or other organisation that is interested in NORDAP (schoolform.js).
+   { kind:'school', org, name?, role?, reply (required), country?, size?, want? } */
+export function cleanSchool(b) {
+  const o = { kind: 'school', org: str(b.org, 120), name: str(b.name, 80), role: str(b.role, 80), reply: str(b.reply, 120), country: str(b.country, 60), size: str(b.size, 40), want: str(b.want, 2000) };
+  if (o.org.length < 2) bad(400, 'bad_request', 'Write the name of your school or organisation.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(o.reply)) bad(400, 'bad_request', 'Write an e-mail address so we can answer you.');
+  o.aircraft = o.org; // the shared columns and the subject line use this
+  return { o, images: [] };
+}
 export function clean(b) {
+  if (b.kind === 'school') return cleanSchool(b);
   const kind = b.kind === 'sim' ? 'sim' : b.kind === 'flows' ? 'flows' : b.kind === 'fix' ? 'fix' : bad(400, 'bad_request', 'Say whether the request is for a simulator or for the flow trainer.');
   const o = { kind, aircraft: str(b.aircraft, 80), variant: str(b.variant, 80), want: str(b.want, 1500), links: str(b.links, 1000), name: str(b.name, 80), reply: str(b.reply, 120) };
   if (o.aircraft.length < 2) bad(400, 'bad_request', 'Write which aircraft you want.');
@@ -48,6 +58,13 @@ export function clean(b) {
   return { o, images };
 }
 export function mailText(o, t) {
+  if (o.kind === 'school') {
+    const L = ['A school or organisation is interested in NORDAP', '', `Organisation: ${o.org}`];
+    if (o.country) L.push(`Country: ${o.country}`); if (o.size) L.push(`Size: ${o.size}`);
+    L.push(`Contact: ${o.name || 'no name given'}${o.role ? ', ' + o.role : ''} <${o.reply}>`);
+    if (o.want) L.push('', 'Message:', o.want);
+    L.push('', `Sent: ${new Date(t).toISOString()}`); return L.join('\n');
+  }
   const L = [o.kind === 'fix' ? 'Correction to a cockpit in the flow trainer' : `Request for ${o.kind === 'sim' ? 'a simulator' : 'the flow trainer'}`, '', `Aircraft: ${o.aircraft}`];
   if (o.variant) L.push(`Variant: ${o.variant}`);
   if (o.want) L.push('', o.kind === 'fix' ? 'What is wrong:' : 'What they want:', o.want);
@@ -58,7 +75,7 @@ export function mailText(o, t) {
 /* returns true when the mail went out */
 export async function send(env, o, images, t, fetcher) {
   if (!env.REQUEST_TO || !env.RESEND_API_KEY) return false;
-  const body = { from: env.REQUEST_FROM || 'NORDAP <onboarding@resend.dev>', to: [env.REQUEST_TO], subject: `NORDAP ${o.kind === 'fix' ? 'correction' : 'request'}: ${o.aircraft}${o.variant ? ' ' + o.variant : ''} (${o.kind === 'sim' ? 'simulator' : 'flow trainer'})`.slice(0, 150), text: mailText(o, t) };
+  const body = { from: env.REQUEST_FROM || 'NORDAP <onboarding@resend.dev>', to: [env.REQUEST_TO], subject: (o.kind === 'school' ? `NORDAP: interest from ${o.org}${o.country ? ' (' + o.country + ')' : ''}` : `NORDAP ${o.kind === 'fix' ? 'correction' : 'request'}: ${o.aircraft}${o.variant ? ' ' + o.variant : ''} (${o.kind === 'sim' ? 'simulator' : 'flow trainer'})`).slice(0, 150), text: mailText(o, t) };
   if (o.reply) body.reply_to = o.reply;
   if (images.length) body.attachments = images.map(im => ({ filename: im.name, content: im.data }));
   try { const r = await (fetcher || fetch)(RESEND, { method: 'POST', headers: { authorization: 'Bearer ' + env.RESEND_API_KEY, 'content-type': 'application/json' }, body: JSON.stringify(body) });

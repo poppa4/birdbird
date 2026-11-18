@@ -375,6 +375,9 @@
 .fp-schools .fp-btn{margin-top:auto;background:#fff;color:var(--navy)}
 .fp-schools .fp-btn:hover{background:#E6ECF1}
 .fp-schools .fp-btn:focus-visible{outline-color:#fff}
+.fp-schools button.fp-btn{border:0;font:inherit;cursor:pointer}
+.fp-schools .fp-more{margin-top:14px;color:#E3E9EF;font-size:15px;text-decoration:underline;text-underline-offset:3px}
+.fp-schools .fp-more:hover{color:#fff}
 .fp-maker{border:1px solid var(--rule);background:var(--sheet);padding:44px 40px 40px}
 .fp-maker .face{width:96px;height:96px;border-radius:50%;overflow:hidden;background:var(--navy);margin-bottom:22px}
 .fp-maker .face img{display:block;width:100%;height:100%;object-fit:cover}
@@ -736,14 +739,15 @@
   <div class="fp-wrap">
     <div class="fp-end">
       <section class="fp-schools" aria-labelledby="h-sch">
-        <h2 id="h-sch" data-tx="h2d">For flight schools</h2>
-        <p data-tx="sch">One consistent set of interactive theory, briefing material and type-rating preparation. Instructors use it on a classroom screen; students repeat the same material on their own between lessons.</p>
+        <h2 id="h-sch" data-tx="h2d">Interested?</h2>
+        <p data-tx="sch">Do you run a flight school, an operator or another training organisation? NORDAP gives you one consistent set of interactive theory, briefing material and type-rating preparation. Tell us a little about you, and we will get in touch.</p>
         <ul>
           <li data-tx="sc1">Labs an instructor can project, aligned to the ATPL subjects</li>
           <li data-tx="sc2">One standard briefing pack, VFR and IFR</li>
           <li data-tx="sc3">Type-rating setups: the King Air B200 trainer with 320 questions</li>
         </ul>
-        <a class="fp-btn" href="schools.html" data-tx="goSch">How a school can use NORDAP</a>
+        <button type="button" class="fp-btn" data-schoolform data-tx="goInt">I'm interested</button>
+        <a class="fp-more" href="schools.html" data-tx="goSch">How a school can use NORDAP</a>
       </section>
       <section class="fp-maker" aria-labelledby="h-me">
         <div class="face"><img src="daniel.jpg" width="96" height="96" loading="lazy" decoding="async" alt="Daniel Nilsson" onerror="this.remove()"></div>
@@ -757,6 +761,7 @@
 </main>
 <script src="lab.js?v=52"></script>
 <script src="reqplane.js?v=2" defer></script>
+<script src="schoolform.js?v=1" defer></script>
 <script src="front-flow.js?v=1" defer></script>
 <script src="front-fi.js?v=16" defer></script>
 <script>
@@ -842,12 +847,13 @@ LAB.tx({
  src4:'Flight Intelligence svarer først ut fra din AFM, QRH og SOP. De blir i nettleseren din. Ingen analyseverktøy og ingen sporingskapsler; konto er valgfritt.',
  model:'<b>Pedagogiske modeller, ikke operative data.</b> Labbene bruker forenklet fysikk og typiske verdier; tall for A320 og B200 er illustrasjoner, ikke produsentdata.',
  goSrc:'Datakilder og lisenser',
- h2d:'For flyskoler',
- sch:'Ett samlet sett med interaktiv teori, briefingmateriell og forberedelse til typerating. Instruktører bruker det på skjermen i klasserommet; elevene repeterer det samme materialet på egen hånd mellom timene.',
+ h2d:'Interessert?',
+ sch:'Driver du en flyskole, en operatør eller en annen opplæringsorganisasjon? NORDAP gir dere ett samlet sett med interaktiv teori, briefingmateriell og forberedelse til typerating. Fortell litt om dere, så tar vi kontakt.',
  sc1:'Labber en instruktør kan vise på storskjerm, knyttet til ATPL-fagene',
  sc2:'Én standard briefingpakke, VFR og IFR',
  sc3:'Oppsett for typerating: King Air B200-treneren med 320 spørsmål',
  goSch:'Slik kan en skole bruke NORDAP',
+ goInt:'Jeg er interessert',
  h2e:'Daniel Nilsson',
  me:'Under flyutdanningen var det sjelden selve flygingen som var vanskelig. Det var rekkefølgen på ting, og det du ikke kan se: luften over vingen, eller hvorfor høydemåleren viser feil en kald dag. NORDAP er verktøyene jeg skulle ønske jeg hadde.',
  goAb:'Om NORDAP'
