@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MCDU trainer · NORDAP</title>
+<meta name="description" content="Learn the A320 MCDU in the browser: cockpit preparation in the D-I-F-R-I-P order, FMS data crosscheck, runway change with the SEC F-PLN, direct to, centreline extension, arrival and approach, discontinuities, holding, diversion, navaid tuning and the PERF APPR and GO AROUND pages. Guided steps or practice from the paperwork.">
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=35">
+<style>
+/* ===== MCDU trainer =====
+   Left: the tasks, the paperwork and the steps. Right: the line "what to do now" and the MCDU itself.
+   MCDU colours as in the aircraft: white titles and prompts, cyan for what you can enter, green for FMS data,
+   amber for mandatory boxes and messages, magenta for constraints, yellow for the temporary flight plan. */
+.mapp{display:grid;grid-template-columns:minmax(0,1fr) minmax(330px,500px);grid-template-areas:"list mc" "docs mc" "steps mc" ". mc";grid-template-rows:auto auto auto 1fr;gap:16px 22px;align-items:start}
+.mlist{grid-area:list}.mdocs{grid-area:docs}.mstepw{grid-area:steps}.mcol{grid-area:mc;position:sticky;top:12px}
+@media (max-width:900px){.mapp{grid-template-columns:minmax(0,1fr);grid-template-areas:"list" "mc" "docs" "steps";grid-template-rows:none}.mcol{position:static}}
+.mbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:0 0 14px}
+.mbar h2{margin:0;font-size:20px}.mbar .kick{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2,#5A6570);font-weight:700}
+.mbar .r{display:flex;gap:8px;align-items:center}
+.mseg{display:inline-flex;border:1px solid var(--ink);border-radius:8px;overflow:hidden}
+.mseg button{font:600 14px var(--f-body,inherit);padding:8px 14px;border:0;background:#fff;color:var(--ink);cursor:pointer}
+.mseg button+button{border-left:1px solid var(--ink)}.mseg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.mrst{font:600 14px var(--f-body,inherit);padding:8px 12px;border:1px solid var(--rule);border-radius:8px;background:#fff;cursor:pointer}
+.mrst:hover,.mlg button:hover{background:var(--wash,#F2F4F5)}
+.mlg{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px}
+.mlg>span{flex:0 0 100%;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2,#5A6570)}
+.mlg button{font:500 14px var(--f-body,inherit);padding:7px 11px;border:1px solid var(--rule);border-radius:999px;background:#fff;color:var(--ink);cursor:pointer;text-align:left}
+.mlg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+@media (max-width:900px){.mlg{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}.mlg>span{flex:0 0 auto;margin-right:4px}.mlg button{flex:0 0 auto;white-space:nowrap}}
+.mdocs h3,.mstepw h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2,#5A6570);margin:0 0 8px}
+.mdocg{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.mdoc{background:#FBFAF6;border:1px solid var(--rule);border-left:4px solid var(--ink);border-radius:4px;padding:9px 12px}
+.mdoc b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.mdoc pre{margin:0;font:13px/1.45 var(--f-mono,monospace);white-space:pre-wrap;color:var(--ink)}
+.msl{margin:0;padding:0 0 0 0;list-style:none;counter-reset:s}
+.msl li{counter-increment:s;position:relative;padding:7px 8px 7px 34px;border-radius:6px;font-size:14.5px;line-height:1.4;color:var(--ink-2,#5A6570)}
+.msl li::before{content:counter(s);position:absolute;left:6px;top:7px;width:20px;height:20px;border-radius:50%;border:1px solid var(--rule);display:grid;place-items:center;font:700 11px var(--f-body,sans-serif);color:var(--ink-2,#5A6570)}
+.msl li.cur{background:var(--wash,#F2F4F5);color:var(--ink);font-weight:600}
+.msl li.cur::before{background:var(--ink);color:#fff;border-color:var(--ink)}
+.msl li.ok{color:var(--ink)}.msl li.ok::before{content:"✓";background:#1E8E5A;border-color:#1E8E5A;color:#fff}
+.msl li.no::before{content:"✗";background:#C4332D;border-color:#C4332D;color:#fff}
+.mres{margin:10px 0 0;padding:10px 12px;border-radius:6px;font-weight:600}.mres.ok{background:#E3F4EA;color:#14653F}.mres.part{background:#FDF0E2;color:#8A4B08}
+/* now-bar */
+.mnow{background:#0E1114;color:#fff;border-radius:10px 10px 0 0;padding:10px 12px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:15px;line-height:1.38;border-left:5px solid #3CC8F5;min-height:48px}
+.mnow.ok{border-left-color:#3BE37A}.mnow.pr{border-left-color:#FFA22E}
+.mnow .mst{font:700 12px var(--f-mono,monospace);color:#9AA5B1;flex:0 0 auto}
+.mnow .mtx{flex:1 1 200px}
+.mhint{font:600 13px var(--f-body,inherit);padding:6px 10px;border-radius:6px;border:1px solid #4A535C;background:#1E2328;color:#fff;cursor:pointer;flex:0 0 auto}
+.mhint:hover{background:#2A3036}
+.mhk{flex:0 0 100%;font-size:14px;color:#D7DCE1;padding-top:2px}
+.mhk kbd{display:inline-block;font:700 12px var(--f-body,sans-serif);background:#3a3f44;border:1px solid #5A636C;border-bottom-width:2px;border-radius:4px;padding:2px 6px;margin:1px 0;color:#fff}
+.mhk code{font:600 13px var(--f-mono,monospace);color:#3CC8F5}.mhk p{margin:6px 0 0;color:#FFD08A}
+.mphase{font:600 12px var(--f-body,sans-serif);color:#9AA5B1;margin-left:auto}
+/* ---- the MCDU ---- */
+.mcdu{container-type:inline-size;background:linear-gradient(#3B4046,#2C3035);border-radius:0 0 14px 14px;padding:3.4cqw 3cqw 4cqw;box-shadow:0 10px 30px rgba(0,0,0,.18);user-select:none;-webkit-user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.mcdu{--rh:5.25cqw}
+.mtop{display:grid;grid-template-columns:8cqw minmax(0,1fr) 8cqw;gap:1.6cqw}
+.mscr{background:#030604;border:.5cqw solid #15181b;border-radius:1.2cqw;padding:1.4cqw 1.5cqw;box-shadow:inset 0 0 2cqw rgba(0,0,0,.9);font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-weight:500}
+.mr{display:grid;grid-template-columns:repeat(24,1fr);height:var(--rh);align-items:center}
+.mr i{font-style:normal;text-align:center;font-size:4.35cqw;line-height:1;white-space:pre;letter-spacing:0}
+.mr i.s{font-size:3.25cqw}
+.mr .w{color:#ECEFF1}.mr .c{color:#3CC8F5}.mr .g{color:#3BE37A}.mr .a{color:#FFA22E}.mr .m{color:#F45BFF}.mr .y{color:#FFE14D}
+.mr .bx{display:block;width:72%;height:70%;margin:auto;border:.35cqw solid #FFA22E;box-sizing:border-box}
+.mlsk{display:grid;grid-template-rows:repeat(14,var(--rh));padding-top:calc(1.4cqw + .5cqw)}
+.mlsk .lk{align-self:center;height:3.6cqw;padding:0;border-radius:.7cqw}
+.mlsk .lk span{display:block;width:55%;height:.45cqw;background:#D7DCE1;margin:auto;border-radius:1px}
+.k{font:600 2.3cqw/1.05 var(--f-body,"Public Sans",sans-serif);color:#F4F5F6;background:linear-gradient(#50565C,#3B4045);border:1px solid #16191C;border-radius:1cqw;box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 .5cqw 0 #16191C;cursor:pointer;padding:0;text-align:center;transition:transform .05s}
+.k.dn{transform:translateY(.4cqw);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 .1cqw 0 #16191C;background:linear-gradient(#5A6066,#454A4F)}
+.k:focus-visible{outline:2px solid #4FA3FF;outline-offset:1px}
+.k.hl{outline:.6cqw solid #3CC8F5;outline-offset:.3cqw;animation:khl 1.1s ease-in-out infinite}
+@keyframes khl{50%{outline-color:rgba(60,200,245,.25)}}
+.mpk{display:grid;grid-template-columns:repeat(7,1fr);gap:1.6cqw;margin:3.4cqw 0 0}
+.mpk .pk{height:7.4cqw;font-size:2.2cqw}.mpk .pk.sm{font-size:1.9cqw;color:#AEB6BE}
+.mkb{display:grid;grid-template-columns:38fr 62fr;gap:3cqw;margin-top:3cqw}
+.mkl{display:grid;gap:2cqw;align-content:start}
+.mar{display:grid;grid-template-columns:repeat(2,1fr);gap:1.6cqw}
+.mar .ak{height:7cqw;font-size:3.6cqw}
+.mnum{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6cqw}
+.mnum .nk{height:7cqw;font-size:3.4cqw;border-radius:50%/45%}
+.mlet{display:grid;grid-template-columns:repeat(5,1fr);gap:1.6cqw}
+.mlet .ck{height:7cqw;font-size:3.2cqw}.mlet .ck.clr{font-size:2.6cqw}
+.mlet .ck[data-k="OVFY"]{font-size:1.9cqw}
+@media print{.mcol,.mlist{display:none}}
+</style>
+</head>
+<body data-title="MCDU trainer">
+<script src="site.js?v=103"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">NORDAP · Training</div>
+      <h1>MCDU trainer</h1>
+      <p>Learn the A320 MCDU before the simulator: the cockpit preparation in the order D-I-F-R-I-P, the FMS data crosscheck and the functions you use on every flight, from direct to and the approach to holding and diversion. Follow the steps, then do the same task from the paperwork alone.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#app">Trainer</a><a href="#how">How it works</a></nav>
+
+  <section class="card" id="app" aria-label="MCDU trainer">
+    <div class="mbar">
+      <div><span class="kick">Task</span><h2 id="mtitle"></h2></div>
+      <div class="r">
+        <div class="mseg" id="mmode" role="group" aria-label="Mode"><button type="button" data-m="guided" aria-pressed="true">Guided</button><button type="button" data-m="practice" aria-pressed="false">Practice</button></div>
+        <button type="button" class="mrst" id="mreset">Start again</button>
+      </div>
+    </div>
+    <div class="mapp">
+      <div class="mlist" id="mlist" aria-label="Tasks"></div>
+      <div class="mdocs"><h3>Paperwork</h3><div class="mdocg" id="mdocs"></div></div>
+      <div class="mstepw"><h3>Steps</h3><div id="msteps"></div><p class="mres" id="mres" hidden role="status"></p></div>
+      <div class="mcol">
+        <div class="mnow" id="mnow" aria-live="polite"></div>
+        <div class="mcdu" id="mcdu"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="how">
+    <h2>How it works</h2>
+    <div class="cols">
+      <div class="box"><b class="t">Guided</b><p>One step at a time, in the order you would do it in the cockpit. Stuck? Hint shows the keys to press and what to type, and lights the keys on the MCDU.</p></div>
+      <div class="box"><b class="t">Practice</b><p>The same task without the steps: only the clearance and the paperwork. Set it up your way, then check your setup and see what is missing.</p></div>
+      <div class="box"><b class="t">The keyboard</b><p>Type letters and numbers on your computer keyboard, Backspace is CLR. After you tap the MCDU, the arrow keys work as the slew and scroll keys. Hold CLR to clear the whole scratchpad.</p></div>
+      <div class="box"><b class="t">The colours</b><p>Amber boxes must be filled, cyan is what you can enter, green is computed by the FMS, magenta are constraints and yellow is the temporary flight plan. Small letters are default or auto-tuned values, large letters are your own entries.</p></div>
+    </div>
+    <p class="note">A generic, simplified A320-family MCDU for learning: not every page and function is modelled, and it is not an aircraft or simulator FMS. The navigation data is fictional (Nordvik XNDV, Skarhamn XSKH and Fjellby XFJB) and the fuel and speed figures are teaching values. Not for navigation or for operational use: follow your operator's FCOM and SOP.</p>
+  </section>
+</div>
+
+<script src="lab.js?v=52"></script>
+<script>
+LAB.add({},{
+ 'MCDU trainer':'MCDU-trener','Trainer':'Trener','How it works':'Slik virker det','Task':'Oppgave','Guided':'Guidet','Practice':'Øv','Start again':'Start på nytt','Paperwork':'Papirer','Steps':'Steg','Tasks':'Oppgaver','Mode':'Modus','The keyboard':'Tastaturet','The colours':'Fargene',
+ 'Learn the A320 MCDU before the simulator: the cockpit preparation in the order D-I-F-R-I-P, the FMS data crosscheck and the functions you use on every flight, from direct to and the approach to holding and diversion. Follow the steps, then do the same task from the paperwork alone.':'Lær A320-MCDU-en før simulatoren: cockpit preparation i rekkefølgen D-I-F-R-I-P, FMS data crosscheck og funksjonene du bruker på hver flyging, fra direct to og innflygingen til holding og diversjon. Følg stegene, og gjør så den samme oppgaven bare etter papirene.',
+ 'One step at a time, in the order you would do it in the cockpit. Stuck? Hint shows the keys to press and what to type, and lights the keys on the MCDU.':'Ett steg om gangen, i den rekkefølgen du ville gjort det i cockpit. Står du fast? Hint viser hvilke taster du skal trykke og hva du skal skrive, og lyser opp tastene på MCDU-en.',
+ 'The same task without the steps: only the clearance and the paperwork. Set it up your way, then check your setup and see what is missing.':'Samme oppgave uten stegene: bare klareringen og papirene. Sett det opp på din måte, sjekk oppsettet og se hva som mangler.',
+ 'Type letters and numbers on your computer keyboard, Backspace is CLR. After you tap the MCDU, the arrow keys work as the slew and scroll keys. Hold CLR to clear the whole scratchpad.':'Skriv bokstaver og tall på tastaturet, Backspace er CLR. Når du har trykket på MCDU-en, virker piltastene som slew- og scroll-tastene. Hold inne CLR for å tømme hele scratchpad.',
+ 'Amber boxes must be filled, cyan is what you can enter, green is computed by the FMS, magenta are constraints and yellow is the temporary flight plan. Small letters are default or auto-tuned values, large letters are your own entries.':'Oransje bokser må fylles ut, cyan er det du kan legge inn, grønt er beregnet av FMS-en, magenta er restriksjoner og gult er den midlertidige flyplanen. Små bokstaver er standard- eller autotunede verdier, store bokstaver er dine egne verdier.',
+ "A generic, simplified A320-family MCDU for learning: not every page and function is modelled, and it is not an aircraft or simulator FMS. The navigation data is fictional (Nordvik XNDV, Skarhamn XSKH and Fjellby XFJB) and the fuel and speed figures are teaching values. Not for navigation or for operational use: follow your operator's FCOM and SOP.":'En generisk, forenklet MCDU for A320-familien, laget for læring: ikke alle sider og funksjoner er med, og det er ikke en FMS fra fly eller simulator. Navigasjonsdataene er fiktive (Nordvik XNDV, Skarhamn XSKH og Fjellby XFJB), og drivstoff- og fartstallene er undervisningsverdier. Ikke for navigasjon eller operativ bruk: følg operatørens FCOM og SOP.'
+});
+LAB.start('mcdu');
+</script>
+<script src="mcdu.js?v=1"></script>
+</body>
+</html>
