@@ -592,7 +592,7 @@
   <div class="rx-ly noprint" id="layers" hidden>
     <div class="lymm"><span class="lysub">Chart style</span> <div class="seg3" id="mmode" role="group" aria-label="Chart style"><button data-m="vfr" class="on" title="VFR chart: terrain colours, relief and contours">VFR</button><button data-m="ifr" title="IFR chart: low ink, faint relief">IFR</button></div></div>
     <div class="lypre" role="group" aria-label="Layer presets"><button type="button" data-pre="clean" title="VFR chart with CTR, TMA and R/D/P airspace, airports and reporting points. Obstacles, navaids and contours off.">Clean VFR</button><button type="button" data-pre="all" title="Every layer on">Everything</button></div>
-    <details class="lyg mlonly" data-g="base" id="bmsel" hidden><summary>Base map</summary><div class="bmg" role="group" aria-label="Base map"><button type="button" data-b="vfr" class="on">VFR chart</button><button type="button" data-b="ifr">IFR (low ink)</button><button type="button" data-b="chart">Plain</button><button type="button" data-b="terrain">Terrain</button><button type="button" data-b="sat">Satellite</button><button type="button" data-b="topo">Norway topo</button></div></details>
+    <details class="lyg mlonly" data-g="base" id="bmsel" hidden><summary>Base map</summary><div class="bmg" role="group" aria-label="Base map"><button type="button" data-b="vfr" class="on">VFR chart</button><button type="button" data-b="ifr">IFR (low ink)</button><button type="button" data-b="chart">Plain</button><button type="button" data-b="terrain">Terrain</button><button type="button" data-b="sat">Satellite</button><button type="button" data-b="topo" title="Topographic map: Kartverket in Norway, BKG TopPlusOpen in the rest of Europe">Topo</button></div></details>
     <details class="lyg" data-g="relief"><summary>Relief <span class="lyc"></span></summary>
     <label class="chk"><input type="checkbox" data-ly="ter"> Terrain colours and shading</label>
     <label class="chk mlonly" hidden><input type="checkbox" data-ly="ct"> Contour lines (ft)</label>
@@ -766,7 +766,7 @@
     </details>
     <div class="legs" id="legs"></div>
   </section>
-  <details class="note srcd"><summary>Data sources and limits</summary><p id="srcdates" style="margin:6px 0 0;font-weight:500"></p><p style="margin:6px 0 0">Airports and navaids: OurAirports. IFR points for Finland (Fintraffic eAIP ENR 4.4, free reuse) and Iceland (Isavia eAIP ENR 4.4, non-commercial use). Norway, Sweden and Denmark are left out until the AIP publishers give permission: add the points you need under My fixes. Map: OpenFreeMap © OpenMapTiles, data from OpenStreetMap (ODbL). Satellite: Esri World Imagery through ArcGIS Location Platform (Powered by Esri; sources: Esri, Maxar, Earthstar Geographics, and the GIS User Community); without it, Sentinel-2 cloudless 2016 by EOX IT Services GmbH, contains modified Copernicus Sentinel data 2016 (CC BY 4.0); if neither loads, NASA GIBS Blue Marble at low resolution. The relief shading over the satellite map in 3D is computed from the terrain tiles. Norway topo: © Kartverket (CC BY 4.0). Map library: MapLibre GL JS (BSD-3). Contour lines: computed in your browser from the terrain tiles with maplibre-contour (BSD-3). Airspace, VFR reporting points, obstacles and small airfields: © openAIP contributors (CC BY-NC 4.0), a community database that is not official and can be incomplete or out of date. Coastline when the map works offline: Natural Earth. Terrain, relief and 3D: Mapzen/AWS Terrain Tiles; Europe terrain data produced using Copernicus data and information funded by the European Union – EU-DEM layers; Norway terrain data © Kartverket; SRTM and GMTED2010 (USGS); ETOPO1 (NOAA). For planning only. Always check positions against the AIP and current charts.</p></details>
+  <details class="note srcd"><summary>Data sources and limits</summary><p id="srcdates" style="margin:6px 0 0;font-weight:500"></p><p style="margin:6px 0 0">Airports and navaids: OurAirports. IFR points for Finland (Fintraffic eAIP ENR 4.4, free reuse) and Iceland (Isavia eAIP ENR 4.4, non-commercial use). Norway, Sweden and Denmark are left out until the AIP publishers give permission: add the points you need under My fixes. Map: OpenFreeMap © OpenMapTiles, data from OpenStreetMap (ODbL). Satellite: Esri World Imagery through ArcGIS Location Platform (Powered by Esri; sources: Esri, Maxar, Earthstar Geographics, and the GIS User Community); without it, Sentinel-2 cloudless 2016 by EOX IT Services GmbH, contains modified Copernicus Sentinel data 2016 (CC BY 4.0); if neither loads, NASA GIBS Blue Marble at low resolution. The relief shading over the satellite map in 3D is computed from the terrain tiles. Topo: © Kartverket (CC BY 4.0) in Norway; © BKG TopPlusOpen (dl-de/by-2-0) in the rest of Europe. Map library: MapLibre GL JS (BSD-3). Contour lines: computed in your browser from the terrain tiles with maplibre-contour (BSD-3). Airspace, VFR reporting points, obstacles and small airfields: © openAIP contributors (CC BY-NC 4.0), a community database that is not official and can be incomplete or out of date. Coastline when the map works offline: Natural Earth. Terrain, relief and 3D: Mapzen/AWS Terrain Tiles; Europe terrain data produced using Copernicus data and information funded by the European Union – EU-DEM layers; Norway terrain data © Kartverket; SRTM and GMTED2010 (USGS); ETOPO1 (NOAA). For planning only. Always check positions against the AIP and current charts.</p></details>
   </div>
 
   <div id="drawMode" hidden>
@@ -812,11 +812,11 @@
 <script src="flightlink.js?v=2"></script>
 <script src="terrain.js?v=3"></script>
 <script src="wmm.js?v=2"></script>
-<script src="rxmap.js?v=29"></script>
+<script src="rxmap.js?v=30"></script>
 <script src="aip.js?v=7"></script>
 <script src="windsaloft.js?v=4"></script>
 <script src="cloudcol.js?v=2"></script>
-<script src="route.js?v=1"></script>
+<script src="route.js?v=2"></script>
 <script>try{ if(matchMedia("(max-width:520px)").matches){ const r=document.getElementById("rtxt"); const f=()=>{ r.placeholder=LAB.lang==="no"?"Flyplass / rute":"Airport or route"; }; f(); LAB.onLang(f); } }catch(e){}</script>
 </body>
 </html>
