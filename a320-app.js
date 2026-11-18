@@ -837,7 +837,7 @@ let d3Last=0;
 function otwTick(){
   if(D3){ if(!CK||document.hidden) return; const now=performance.now(), dt=d3Last?Math.min(0.1,(now-d3Last)/1000):0.016; d3Last=now; CK.updCam(dt);
     const c=Math.cos(M.psi), s=Math.sin(M.psi), hx=CK.cam.position, fw=5-hx.z; otwS.N=M.N+fw*c-hx.x*s; otwS.E=M.E+fw*s+hx.x*c; otwS.h=M.h+3.7-1.55+(hx.y-0.63); otwS.th=M.th; otwS.phi=M.phi; otwS.psi=M.psi;
-    const dpr=Math.min(devicePixelRatio||1,[1.5,1.15,0.8][GOV.lvl]); OTW.render3d(otwS,CK.qHead(),CK.fov(),dpr,null,R=>CK.draw(R)); if(GOV.lvl!==(OTW.lvl||0)) OTW.quality(GOV.lvl===2?2:GOV.lvl>0); return; }
+    const d0=Math.min(devicePixelRatio||1,2), zoomed=CK.fov()<45, dpr=zoomed?d0:Math.max(Math.min(1,d0),[d0,d0*0.8,d0*0.65][GOV.lvl]); /* never below 1 CSS pixel; full Retina when zoomed in to read */ OTW.render3d(otwS,CK.qHead(),CK.fov(),dpr,null,R=>CK.draw(R)); if(GOV.lvl!==(OTW.lvl||0)) OTW.quality(GOV.lvl===2?2:GOV.lvl>0); return; }
   if(!otwReady||OTWH<8||UI.otw===false||document.hidden) return; const n=GOV.lvl+1; if(n>1&&(++otwSkip%n)) return;
   const c=Math.cos(M.psi), s=Math.sin(M.psi); otwS.N=M.N+5*c+0.5*s; otwS.E=M.E+5*s-0.5*c; otwS.h=M.h+2.3; otwS.th=M.th; otwS.phi=M.phi; otwS.psi=M.psi; OTW.render(otwS,''); if(GOV.lvl!==(OTW.lvl||0)) OTW.quality(GOV.lvl===2?2:GOV.lvl>0); }
 
