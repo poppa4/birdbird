@@ -235,7 +235,7 @@ function paint(){
       if(!n){ txt(g,L({en:'thrust',no:'skyvekraft'}),pe[0]-Dpx-6,pe[1]+4,{col:K.cau,al:'right',size:F(11)}); txt(g,L({en:'drag',no:'motstand'})+' '+nf(D/1000,1)+' kN',pd[0]+6+Dpx,pd[1]+4,{col:'#B9A6F0',size:F(11)}); } }
     // labels on the forces
     const fs=F(n?10.5:12);
-    txt(g,(n?'L ':L({en:'Wing lift ',no:'Vingeløft '}))+nf(t.Lw/Wn*100,1)+' % W',pTop[0]+(n?5:8),pTop[1]-Lpx+(n?10:12),{col:I.cyan,size:fs});
+    txt(g,(n?'L ':L({en:'Wing lift ',no:'Vingeløft '}))+nf(t.Lw/Wn*100,1)+' % W',pTop[0]+(n?5:8),Math.max(pTop[1]-Lpx+(n?10:12),n?58:66),{col:I.cyan,size:fs});
     txt(g,(n?'W ':L({en:'Weight ',no:'Vekt '}))+nf(ST.m,1)+' t',pCG[0]+(n?5:9),pCG[1]+Wpx-2,{col:I.white,al:'left',size:fs});
     const tlab=(t.Lt<0?(n?'↓ ':L({en:'Tail down-force ',no:'Halekraft ned '})):(n?'↑ ':L({en:'Tail up-force ',no:'Halekraft opp '})))+nf(Math.abs(t.Lt)/Wn*100,1)+' % W';
     const tx=n?pT[0]-4:Q(20.9,0)[0], ty=n?Math.max(pT[1]+22,pT[1]-Tpx+12):t.Lt<0?Math.max(pT[1]+14,pT[1]-Tpx+4):Math.min(pT[1]-Tpx+4,pT[1]-10);
