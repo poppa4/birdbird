@@ -95,6 +95,31 @@
 .mfcu .run{background:#1E8E5A;border-color:#14653F;min-width:38px}.mfcu .run[aria-pressed="true"]{background:#8A4B08}
 .mfcu .fseg{display:inline-flex;border-radius:6px;overflow:hidden}.mfcu .fseg button{border-radius:0}.mfcu .fseg button[aria-pressed="true"]{background:#3BE37A;color:#0B0F12}
 .mfcu input{width:46px;height:30px;border:1px solid #16191C;border-radius:6px;background:#030604;color:#3CC8F5;font:600 15px "IBM Plex Mono",monospace;text-align:center}
+.msub{color:var(--ink-2,#5A6570);max-width:62em;margin:0 0 14px}
+.mcg{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.mcard{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:auto 1fr;gap:2px 10px;padding:12px 14px;border:1px solid var(--rule);border-radius:8px;background:#fff}
+.mcard:hover{border-color:var(--ink)}.mcard.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.mcard .n{grid-row:1/3;font:600 13px var(--f-mono,monospace);color:var(--accent,#B0186A);padding-top:2px}
+.mcard b{font-size:15.5px}.mcard small{color:var(--ink-2,#5A6570);font-size:13.5px;line-height:1.35}
+.mcard.dr{background:#0E1114;border-color:#0E1114;color:#fff}.mcard.dr small{color:#B8C1CA}.mcard.dr .n{color:#3CC8F5}
+.mcard:focus-visible{outline:2px solid #4FA3FF;outline-offset:2px}
+.mcm{margin-top:14px;border:1px solid var(--ink);border-radius:10px;padding:16px 18px;background:#fff}
+.mcm-h{display:flex;justify-content:space-between;align-items:center;gap:10px}.mcm-h h3{margin:0;font-size:20px}
+.mcm h4{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2,#5A6570);margin:16px 0 8px}
+.mcm-g{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:8px 28px}@media (max-width:820px){.mcm-g{grid-template-columns:minmax(0,1fr)}}
+.mpts{margin:0;padding-left:18px}.mpts li{margin:0 0 8px;line-height:1.5}
+.mtsk{margin:0;padding:0;list-style:none}.mtsk li{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 10px;padding:8px 0;border-bottom:1px solid var(--rule)}.mtsk .go{display:flex;gap:6px}
+.mquiz{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.mq{border:1px solid var(--rule);border-radius:8px;padding:10px 12px}.mq>p:first-child{margin:0 0 8px;font-weight:600;line-height:1.4}
+.mqa{display:grid;gap:6px}.mqa button{font:inherit;font-size:14.5px;text-align:left;padding:8px 10px;border:1px solid var(--rule);border-radius:6px;background:#fff;cursor:pointer}
+.mqa button:hover:not([disabled]){border-color:var(--ink)}.mqa button.ok{background:#E3F4EA;border-color:#1E8E5A}.mqa button.no{background:#FBE7E6;border-color:#C4332D}.mqa button[disabled]{cursor:default;color:var(--ink)}
+.mqw{margin:8px 0 0;font-size:14px;line-height:1.45;color:var(--ink-2,#3B4650)}
+.mnow.good{border-left-color:#3BE37A}.mnow.bad{border-left-color:#FF5A5A}.mnow em{color:#FF9A9A;font-style:normal}
+.mrefw{overflow-x:auto}
+.mreft{border-collapse:collapse;width:100%;font-size:14px}.mreft th{text-align:left;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2,#5A6570);padding:6px 8px;border-bottom:1px solid var(--ink)}
+.mreft td{padding:8px;border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.45}.mreft td:last-child{font-family:var(--f-mono,monospace);font-size:13px}
+.mreft kbd{display:inline-block;font:700 11.5px var(--f-body,sans-serif);background:#3a3f44;color:#fff;border-radius:4px;padding:2px 6px;white-space:nowrap}
+.btn.sm.ghost{background:#fff}
 @media print{.mcol,.mlist{display:none}}
 </style>
 </head>
@@ -105,17 +130,24 @@
     <div class="brand">
       <div class="eyebrow">NORDAP · Training</div>
       <h1>MCDU trainer</h1>
-      <p>Learn the A320 MCDU before the simulator: the cockpit preparation in the order D-I-F-R-I-P, the FMS data crosscheck and the functions you use on every flight, from direct to and the approach to holding and diversion. Follow the steps, then do the same task from the paperwork alone.</p>
+      <p>Learn the A320 MCDU before the simulator, one small step at a time. Start with the course below: read the key points, do the task with help, then do it on your own. The trainer works like the real MCDU, with an ND that shows what the aircraft will fly.</p>
     </div>
     <div class="hright"></div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#app">Trainer</a><a href="#how">How it works</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#course">Course</a><a href="#app">Trainer</a><a href="#ref">MCDU on one page</a><a href="#how">How it works</a></nav>
+
+  <section class="card" id="course" aria-labelledby="h-course">
+    <h2 id="h-course">Learn the MCDU</h2>
+    <p class="msub">Seven short modules, in the order you need them. Each one has the same three steps: read the key points, do the task with help, then do it on your own. Start with 1.</p>
+    <div class="mcg" id="mcourse"></div>
+    <div class="mcm" id="mcmod" hidden></div>
+  </section>
 
   <section class="card" id="app" aria-label="MCDU trainer">
     <div class="mbar">
       <div><span class="kick">Task</span><h2 id="mtitle"></h2></div>
       <div class="r">
-        <div class="mseg" id="mmode" role="group" aria-label="Mode"><button type="button" data-m="guided" aria-pressed="true">Guided</button><button type="button" data-m="practice" aria-pressed="false">Practice</button></div>
+        <div class="mseg" id="mmode" role="group" aria-label="Mode"><button type="button" data-m="guided" aria-pressed="true">With help</button><button type="button" data-m="practice" aria-pressed="false">On your own</button><button type="button" data-m="drill" aria-pressed="false">Find the field</button></div>
         <button type="button" class="mrst" id="mreset">Start again</button>
       </div>
     </div>
@@ -133,11 +165,18 @@
     </div>
   </section>
 
+  <section class="card" id="ref" aria-labelledby="h-ref">
+    <h2 id="h-ref">MCDU on one page</h2>
+    <p class="msub">Which key opens which page, and what sits on each line key. Keep it beside you while you practise.</p>
+    <div class="mrefw" id="mref"></div>
+  </section>
+
   <section class="card" id="how">
     <h2>How it works</h2>
     <div class="cols">
-      <div class="box"><b class="t">Guided</b><p>One step at a time, in the order you would do it in the cockpit. Stuck? Hint shows the keys to press and what to type, and lights the keys on the MCDU.</p></div>
-      <div class="box"><b class="t">Practice</b><p>The same task without the steps: only the clearance and the paperwork. Set it up your way, then check your setup and see what is missing.</p></div>
+      <div class="box"><b class="t">With help</b><p>One step at a time, in the order you would do it in the cockpit. Stuck? Hint shows the keys to press and what to type, and lights the keys on the MCDU.</p></div>
+      <div class="box"><b class="t">On your own</b><p>The same task without the steps: only the clearance and the paperwork. Set it up your way, then check your setup and see what is missing.</p></div>
+      <div class="box"><b class="t">Find the field</b><p>The trainer names a field, for example “Enter ZFW and ZFWCG”. Find the page and press the right line key. This builds the muscle memory.</p></div>
       <div class="box"><b class="t">The keyboard</b><p>Type letters and numbers on your computer keyboard, Backspace is CLR. After you tap the MCDU, the arrow keys work as the slew and scroll keys. Hold CLR to clear the whole scratchpad.</p></div>
       <div class="box"><b class="t">The colours</b><p>In flight, ▶ on the FCU flies the aircraft: it follows the F-PLN in NAV, sequences the waypoints, flies the hold until IMM EXIT, and holds a heading in HDG. The ND in plan mode shows what the FMS will fly: green is the active flight plan, yellow dashed the temporary one, cyan the missed approach and the alternate. It is centred on the waypoint on the second line of the F-PLN page, as in the aircraft. Amber boxes must be filled, cyan is what you can enter, green is computed by the FMS, magenta are constraints and yellow is the temporary flight plan. Small letters are default or auto-tuned values, large letters are your own entries.</p></div>
     </div>
@@ -148,8 +187,11 @@
 <script src="lab.js?v=52"></script>
 <script>
 LAB.add({},{
- 'MCDU trainer':'MCDU-trener','Trainer':'Trener','How it works':'Slik virker det','Task':'Oppgave','Guided':'Guidet','Practice':'Øv','Start again':'Start på nytt','Paperwork':'Papirer','Lateral mode':'Lateralmodus','Heading left':'Heading venstre','Heading right':'Heading høyre','Selected heading':'Valgt heading','ND · Plan':'ND · Plan','Range in':'Kortere rekkevidde','Range out':'Lengre rekkevidde','Steps':'Steg','Tasks':'Oppgaver','Mode':'Modus','The keyboard':'Tastaturet','The colours':'Fargene',
- 'Learn the A320 MCDU before the simulator: the cockpit preparation in the order D-I-F-R-I-P, the FMS data crosscheck and the functions you use on every flight, from direct to and the approach to holding and diversion. Follow the steps, then do the same task from the paperwork alone.':'Lær A320-MCDU-en før simulatoren: cockpit preparation i rekkefølgen D-I-F-R-I-P, FMS data crosscheck og funksjonene du bruker på hver flyging, fra direct to og innflygingen til holding og diversjon. Følg stegene, og gjør så den samme oppgaven bare etter papirene.',
+ 'MCDU trainer':'MCDU-trener',
+ 'Seven short modules, in the order you need them. Each one has the same three steps: read the key points, do the task with help, then do it on your own. Start with 1.':'Sju korte moduler, i den rekkefølgen du trenger dem. Hver har de samme tre stegene: les det viktigste, gjør oppgaven med hjelp, og gjør den så på egen hånd. Start med 1.',
+ 'Which key opens which page, and what sits on each line key. Keep it beside you while you practise.':'Hvilken tast som åpner hvilken side, og hva som ligger på hver linjetast. Ha den ved siden av deg når du øver.',
+ 'The trainer names a field, for example “Enter ZFW and ZFWCG”. Find the page and press the right line key. This builds the muscle memory.':'Treneren nevner et felt, for eksempel «Legg inn ZFW og ZFWCG». Finn siden og trykk riktig linjetast. Slik bygger du muskelminnet.','Trainer':'Trener','How it works':'Slik virker det','Task':'Oppgave','Start again':'Start på nytt','Paperwork':'Papirer','Course':'Kurs','Learn the MCDU':'Lær MCDU-en','MCDU on one page':'MCDU på ett ark','With help':'Med hjelp','On your own':'På egen hånd','Find the field':'Finn feltet','Lateral mode':'Lateralmodus','Heading left':'Heading venstre','Heading right':'Heading høyre','Selected heading':'Valgt heading','ND · Plan':'ND · Plan','Range in':'Kortere rekkevidde','Range out':'Lengre rekkevidde','Steps':'Steg','Tasks':'Oppgaver','Mode':'Modus','The keyboard':'Tastaturet','The colours':'Fargene',
+ 'Learn the A320 MCDU before the simulator, one small step at a time. Start with the course below: read the key points, do the task with help, then do it on your own. The trainer works like the real MCDU, with an ND that shows what the aircraft will fly.':'Lær A320-MCDU-en før simulatoren, ett lite steg om gangen. Start med kurset under: les det viktigste, gjør oppgaven med hjelp, og gjør den så på egen hånd. Treneren virker som en ekte MCDU, med en ND som viser hva flyet vil fly.',
  'One step at a time, in the order you would do it in the cockpit. Stuck? Hint shows the keys to press and what to type, and lights the keys on the MCDU.':'Ett steg om gangen, i den rekkefølgen du ville gjort det i cockpit. Står du fast? Hint viser hvilke taster du skal trykke og hva du skal skrive, og lyser opp tastene på MCDU-en.',
  'The same task without the steps: only the clearance and the paperwork. Set it up your way, then check your setup and see what is missing.':'Samme oppgave uten stegene: bare klareringen og papirene. Sett det opp på din måte, sjekk oppsettet og se hva som mangler.',
  'Type letters and numbers on your computer keyboard, Backspace is CLR. After you tap the MCDU, the arrow keys work as the slew and scroll keys. Hold CLR to clear the whole scratchpad.':'Skriv bokstaver og tall på tastaturet, Backspace er CLR. Når du har trykket på MCDU-en, virker piltastene som slew- og scroll-tastene. Hold inne CLR for å tømme hele scratchpad.',
@@ -158,6 +200,6 @@ LAB.add({},{
 });
 LAB.start('mcdu');
 </script>
-<script src="mcdu.js?v=7"></script>
+<script src="mcdu.js?v=8"></script>
 </body>
 </html>

@@ -909,7 +909,7 @@ PG.data={
   slew(){ S.dpg=S.dpg===2?1:2; }
 };
 PG.acstat={
-  draw(){ const a=airac(); putC(0,'A320-200','w'); lbl(1,'L',' ENG'); prompt(1,'L','CFM56-5B4','g'); lbl(2,'L',' ACTIVE NAV DATA BASE'); prompt(2,'L',' '+a.act,'c'); putR(DR(2),a.id,'g'); lbl(3,'L',' SECOND NAV DATA BASE'); prompt(3,'L','{'+a.sec,'c'); scr[DR(3)].forEach(x=>x.s=1); lbl(5,'L','CHG CODE'); prompt(5,'L','[  ]','c'); lbl(6,'L','IDLE/PERF'); prompt(6,'L','+0.0/+0.0','g'); scr[DR(6)].forEach((x,i)=>{ if(i<9) x.s=1; }); prompt(6,'R','STATUS/XLOAD>','w'); },
+  draw(){ const a=airac(); putC(0,'A320-200','w'); lbl(1,'L',' ENG'); prompt(1,'L','CFM56-5B4','g'); lbl(2,'L',' ACTIVE NAV DATA BASE'); prompt(2,'L',' '+a.act,'c'); putR(DR(2),a.id,'g'); lbl(3,'L',' SECOND NAV DATA BASE'); prompt(3,'L','←'+a.sec,'c'); scr[DR(3)].forEach(x=>x.s=1); lbl(5,'L','CHG CODE'); prompt(5,'L','[  ]','c'); lbl(6,'L','IDLE/PERF'); prompt(6,'L','+0.0/+0.0','g'); scr[DR(6)].forEach((x,i)=>{ if(i<9) x.s=1; }); prompt(6,'R','STATUS/XLOAD>','w'); },
   lsk(s,n){ if(s==='L'&&n===3){ msg('NOT ALLOWED'); return; } if(s==='R'&&n===6){ msg('NOT AVAILABLE'); return; } if(S.sp) msg('NOT ALLOWED'); }
 };
 PG.posmon={
@@ -1195,6 +1195,7 @@ const SCN=[
    {t:tt('SEC INDEX: *ACTIVATE SEC (L4). It is there because you are in HDG.','SEC INDEX: *ACTIVATE SEC (L4). Den vises fordi du er i HDG.'),keys:['SEC','L4'],ok:()=>S.act.appr==='ILS07'&&S.act.via==='SK070'},
    {t:tt('ATC: “Cleared direct SK070.” DIR, SK070, DIR TO*. NAV engages again.','ATC: «Cleared direct SK070.» DIR, SK070, DIR TO*. NAV kobles inn igjen.'),keys:['DIR','L2','R6'],ok:()=>S.act.appr==='ILS07'&&S.act.items[1]&&S.act.items[1].id==='SK070'&&S.ap==='NAV'}
   ]},
+ {id:'drill',cat:'hidden',t:tt('Find the field','Finn feltet'),d:tt('Find the page and the line key for each field.','Finn siden og linjetasten for hvert felt.'),setup(){ buildPrep(); S.sec=clone(S.act); go('acstat'); },docs:[],steps:[]},
  {id:'free',cat:'free',
   t:tt('Free practice','Fri trening'),
   d:tt('An empty FMS on the ground at XNDV. Use the paperwork and set it up your own way, or try any page.','En tom FMS på bakken på XNDV. Bruk papirene og sett den opp på din måte, eller prøv hvilken som helst side.'),
@@ -1390,7 +1391,7 @@ document.addEventListener('keydown',e=>{
   if(!k) return; e.preventDefault(); key(k); flash(k);
 });
 function flash(k){ const b=document.querySelector(`#mcdu .k[data-k="${k}"]`); if(!b) return; b.classList.add('dn'); setTimeout(()=>b.classList.remove('dn'),110); }
-function key(k){ press(k); clearHl(); refresh(); }
+function key(k){ if(drillKey(k)){ refresh(); return; } press(k); clearHl(); refresh(); }
 function clearHl(){ document.querySelectorAll('#mcdu .k.hl').forEach(b=>b.classList.remove('hl')); }
 
 let LATCH=[];
@@ -1399,10 +1400,11 @@ const stepOk=i=>!!LATCH[i]||SC.steps[i].ok();
 function refresh(){
   el('mscr').innerHTML=draw(); drawNd();
   if(!SC) return;
+  if(MODE==='drill'){ drillNow(); drillSteps(); return; }
   const n=SC.steps.length, i=stepIdx();
   const now=el('mnow');
   if(MODE==='guided'&&n){
-    if(i>=n){ now.innerHTML=`<b>${esc(Lx(tt('Done.','Ferdig.')))}</b> ${esc(Lx(tt('Every step is complete. Try the same task in Practice mode without the steps.','Alle stegene er gjort. Prøv samme oppgave i Øv-modus uten stegene.')))}`; now.className='mnow ok'; if(!DONE){ DONE=true; } }
+    if(i>=n){ now.innerHTML=`<b>${esc(Lx(tt('Done.','Ferdig.')))}</b> ${esc(Lx(tt('Every step is complete. Now try the same task “On your own”, without the steps.','Alle stegene er gjort. Prøv nå samme oppgave «På egen hånd», uten stegene.')))}`; now.className='mnow ok'; if(!DONE){ DONE=true; } }
     else { const st=SC.steps[i]; now.className='mnow'; now.innerHTML=`<span class="mst">${esc(Lx(tt('Step','Steg')))} ${i+1}/${n}</span><span class="mtx">${esc(Lx(st.t))}</span><button type="button" class="mhint" id="mhint">${esc(Lx(tt('Hint','Hint')))}</button><div class="mhk" id="mhk" hidden></div>`; el('mhint').onclick=()=>{ HINT=i; showHint(st); }; if(HINT===i) showHint(st); }
   } else if(MODE==='practice'&&n){
     now.className='mnow pr'; now.innerHTML=`<span class="mtx">${esc(Lx(SC.d))}</span><button type="button" class="mhint" id="mchk">${esc(Lx(tt('Check my setup','Sjekk oppsettet')))}</button>`; el('mchk').onclick=check;
@@ -1422,7 +1424,7 @@ function showHint(st){
 function drawSteps(cur){
   const box=el('msteps'); if(!box) return;
   if(!SC.steps.length){ box.innerHTML=''; return; }
-  if(MODE==='practice'&&!CHECKED){ box.innerHTML=`<p class="note">${esc(Lx(tt('The steps are hidden in Practice. Do the task from the paperwork, then press “Check my setup”.','Stegene er skjult i Øv-modus. Gjør oppgaven etter papirene, og trykk «Sjekk oppsettet».')))}</p>`; return; }
+  if(MODE==='practice'&&!CHECKED){ box.innerHTML=`<p class="note">${esc(Lx(tt('On your own, the steps are hidden. Do the task from the paperwork, then press “Check my setup”.','På egen hånd er stegene skjult. Gjør oppgaven etter papirene, og trykk «Sjekk oppsettet».')))}</p>`; return; }
   box.innerHTML='<ol class="msl">'+SC.steps.map((s,i)=>{ const ok=stepOk(i); const cl=MODE==='practice'?(ok?'ok':'no'):(i<cur?'ok':i===cur?'cur':''); return `<li class="${cl}">${esc(Lx(s.t))}</li>`; }).join('')+'</ol>';
 }
 function check(){ CHECKED=true; stepIdx(); const n=SC.steps.length, ok=SC.steps.filter((s,i)=>stepOk(i)).length; drawSteps(stepIdx()); const r=el('mres'); r.hidden=false; r.className='mres '+(ok===n?'ok':'part'); r.textContent=ok===n?Lx(tt(`All ${n} items correct.`,`Alle ${n} punktene er riktige.`)):Lx(tt(`${ok} of ${n} correct. The list shows what is missing.`,`${ok} av ${n} riktige. Listen viser hva som mangler.`)); }
@@ -1433,16 +1435,16 @@ function loadScn(id){
   el('mdocs').innerHTML=SC.docs.map(docHtml).join('');
   el('mtitle').textContent=Lx(SC.t);
   document.querySelectorAll('#mlist button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===SC.id?'true':'false'));
-  try{ localStorage.setItem('mcdu-scn',SC.id); }catch(e){}
+  if(SC.cat!=='hidden'){ try{ localStorage.setItem('mcdu-scn',SC.id); }catch(e){} }
   refresh();
 }
 function buildList(){
   const box=el('mlist'); if(!box) return;
   const grp=[['pre',tt('On the ground','På bakken')],['fly',tt('In flight','I lufta')],['free',tt('Free','Fri')]];
   box.innerHTML=grp.map(([g,t])=>`<div class="mlg"><span>${esc(Lx(t))}</span>${SCN.filter(s=>s.cat===g).map(s=>`<button type="button" data-s="${s.id}" aria-pressed="false">${esc(Lx(s.t))}</button>`).join('')}</div>`).join('');
-  box.onclick=e=>{ const b=e.target.closest('button[data-s]'); if(b){ loadScn(b.dataset.s); const a=el('mcdu'); if(a&&innerWidth<980) a.scrollIntoView({block:'nearest',behavior:'smooth'}); } };
+  box.onclick=e=>{ const b=e.target.closest('button[data-s]'); if(b){ if(MODE==='drill') setMode('guided'); loadScn(b.dataset.s); const a=el('mcdu'); if(a&&innerWidth<980) a.scrollIntoView({block:'nearest',behavior:'smooth'}); } };
 }
-function setMode(m){ MODE=m; CHECKED=false; const r=el('mres'); if(r) r.hidden=true; document.querySelectorAll('#mmode button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m?'true':'false')); clearHl(); refresh(); }
+function setMode(m){ if(m!=='drill'&&MODE==='drill'&&SC&&SC.id==='drill'){ MODE=m; loadScn('prep'); } if(m==='drill'&&(!DRL||DRL.i>=DRL.list.length)&&MODE!=='drill'){ MODE='drill'; startDrill(null); return; } MODE=m; CHECKED=false; const r=el('mres'); if(r) r.hidden=true; document.querySelectorAll('#mmode button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m?'true':'false')); clearHl(); refresh(); }
 function init(){
   if(!el('mcdu')) return;
   buildMcdu(); buildList();
@@ -1453,10 +1455,188 @@ function init(){
   let first='prep'; try{ const s=localStorage.getItem('mcdu-scn'); if(s&&SCN.some(x=>x.id===s)) first=s; }catch(e){}
   const h=location.hash.replace('#',''); if(SCN.some(x=>x.id===h)) first=h;
   loadScn(first);
-  if(LB()) LB().onLang(()=>{ buildList(); loadScnKeep(); });
+  courseUi(); refUi();
+  if(LB()) LB().onLang(()=>{ buildList(); loadScnKeep(); courseUi(); refUi(); });
 }
 function loadScnKeep(){ /* language change: redraw texts without resetting the state */ el('mdocs').innerHTML=SC.docs.map(docHtml).join(''); el('mtitle').textContent=Lx(SC.t); document.querySelectorAll('#mlist button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===SC.id?'true':'false')); refresh(); }
 
-window.MCDU={progress:()=>stepIdx(),tick:(n,dt)=>{ for(let i=0;i<(n||1);i++) stepFlight(dt||0.8); refresh(); },fcu:(c,v)=>{ fcu(c,v); refresh(); },press:k=>{ key(k); },state:()=>S,load:loadScn,scn:SCN,mode:setMode,screen:()=>{ cls(); (PG[S.page]||PG.menu).draw(); if(S.page!=='fpln') scratch(); return scr.map(r=>r.map(c=>c.c==='§'?'#':c.c).join('')).join('\n'); }};
+
+/* =========================================================== course: modules, quizzes, find-the-field drill, reference */
+const DRILL_T=[
+ {id:'fromto',q:tt('Enter FROM/TO','Legg inn FROM/TO'),pg:()=>S.page==='init',k:'R1',a:'INIT · R1'},
+ {id:'altn',q:tt('Enter the alternate','Legg inn alternativ flyplass'),pg:()=>S.page==='init',k:'L2',a:'INIT · L2'},
+ {id:'flt',q:tt('Enter the flight number','Legg inn flightnummeret'),pg:()=>S.page==='init',k:'L3',a:'INIT · L3'},
+ {id:'ci',q:tt('Enter the cost index','Legg inn cost index'),pg:()=>S.page==='init',k:'L5',a:'INIT · L5'},
+ {id:'crz',q:tt('Enter the cruise level and temperature','Legg inn marsjhøyde og temperatur'),pg:()=>S.page==='init',k:'L6',a:'INIT · L6'},
+ {id:'irs',q:tt('Open IRS INIT','Åpne IRS INIT'),pg:()=>S.page==='init',k:'R3',a:'INIT · R3'},
+ {id:'zfw',q:tt('Enter ZFW and ZFWCG','Legg inn ZFW og ZFWCG'),pg:()=>S.page==='initb',k:'R1',a:'INIT · → · R1'},
+ {id:'block',q:tt('Enter the block fuel','Legg inn block fuel'),pg:()=>S.page==='initb',k:'R2',a:'INIT · → · R2'},
+ {id:'taxi',q:tt('Change the taxi fuel','Endre taxi fuel'),pg:()=>S.page==='initb',k:'L1',a:'INIT · → · L1'},
+ {id:'v1',q:tt('Enter V1','Legg inn V1'),pg:()=>S.page==='perf'&&(S.pp||actPhase())==='TO',k:'L1',a:'PERF · L1'},
+ {id:'v2',q:tt('Enter V2','Legg inn V2'),pg:()=>S.page==='perf'&&(S.pp||actPhase())==='TO',k:'L3',a:'PERF · L3'},
+ {id:'ths',q:tt('Enter FLAPS/THS for take-off','Legg inn FLAPS/THS for avgang'),pg:()=>S.page==='perf'&&(S.pp||actPhase())==='TO',k:'R3',a:'PERF · R3'},
+ {id:'flex',q:tt('Enter the FLEX temperature','Legg inn FLEX-temperaturen'),pg:()=>S.page==='perf'&&(S.pp||actPhase())==='TO',k:'R4',a:'PERF · R4'},
+ {id:'thr',q:tt('Change THR RED/ACC for take-off','Endre THR RED/ACC for avgang'),pg:()=>S.page==='perf'&&(S.pp||actPhase())==='TO',k:'L5',a:'PERF · L5'},
+ {id:'ta',q:tt('Change the departure transition altitude','Endre overgangshøyden for avgangen'),pg:()=>S.page==='perf'&&(S.pp||actPhase())==='TO',k:'L4',a:'PERF · L4'},
+ {id:'qnh',q:tt('Enter the destination QNH','Legg inn QNH på destinasjonen'),pg:()=>S.page==='perf'&&(S.pp||actPhase())==='APPR',k:'L1',a:'PERF · NEXT PHASE ×4 · L1'},
+ {id:'baro',q:tt('Enter the BARO minimum (DA on a CAT I ILS)','Legg inn BARO-minimum (DA på en CAT I ILS)'),pg:()=>S.page==='perf'&&(S.pp||actPhase())==='APPR',k:'R2',a:'PERF · NEXT PHASE ×4 · R2'},
+ {id:'ldg',q:tt('Select landing CONF FULL','Velg landing CONF FULL'),pg:()=>S.page==='perf'&&(S.pp||actPhase())==='APPR',k:'R5',a:'PERF · NEXT PHASE ×4 · R5'},
+ {id:'eoa',q:tt('Enter the go-around ENG OUT ACC','Legg inn ENG OUT ACC for go-around'),pg:()=>S.page==='perf'&&(S.pp||actPhase())==='GA',k:'R5',a:'PERF · NEXT PHASE ×5 · R5'},
+ {id:'vor1',q:tt('Hard-tune VOR 1','Hard-tune VOR 1'),pg:()=>S.page==='rad',k:'L1',a:'RAD NAV · L1'},
+ {id:'crs2',q:tt('Set the course for VOR 2','Sett kursen for VOR 2'),pg:()=>S.page==='rad',k:'R2',a:'RAD NAV · R2'},
+ {id:'ils',q:tt('Tune an ILS manually','Tune en ILS manuelt'),pg:()=>S.page==='rad',k:'L3',a:'RAD NAV · L3'},
+ {id:'copy',q:tt('Copy the active flight plan to the SEC','Kopier aktiv flyplan til SEC'),pg:()=>S.page==='sec',k:'L1',a:'SEC F-PLN · L1'},
+ {id:'acst',q:tt('Open A/C STATUS (nav database)','Åpne A/C STATUS (navigasjonsdatabasen)'),pg:()=>S.page==='data'&&S.dpg!==2,k:'L4',a:'DATA · L4'},
+ {id:'posm',q:tt('Open POSITION MONITOR','Åpne POSITION MONITOR'),pg:()=>S.page==='data'&&S.dpg!==2,k:'L1',a:'DATA · L1'},
+ {id:'dep',q:tt('Open DEPARTURE to choose runway and SID','Åpne DEPARTURE for å velge rullebane og SID'),pg:()=>S.page==='latrev'&&S.lr&&(planFor(S.lr.view).items[S.lr.i]||{}).k==='apt',k:'L1',a:'F-PLN · L1 (XNDV) · L1'},
+ {id:'arr',q:tt('Open ARRIVAL at the destination','Åpne ARRIVAL på destinasjonen'),pg:()=>S.page==='latrev'&&S.lr&&(planFor(S.lr.view).items[S.lr.i]||{}).k==='dest',k:'R1',a:'F-PLN · L6 · R1'},
+ {id:'awy',q:tt('Open AIRWAYS from a waypoint','Åpne AIRWAYS fra et waypoint'),pg:()=>S.page==='latrev'&&S.lr&&(planFor(S.lr.view).items[S.lr.i]||{}).k==='wpt',k:'R5',a:tt('F-PLN · left key at the waypoint · R5','F-PLN · venstre tast ved waypointet · R5')},
+ {id:'hold',q:tt('Open HOLD at a waypoint','Åpne HOLD på et waypoint'),pg:()=>S.page==='latrev'&&S.lr&&(planFor(S.lr.view).items[S.lr.i]||{}).k==='wpt',k:'L3',a:tt('F-PLN · left key at the waypoint · L3','F-PLN · venstre tast ved waypointet · L3')},
+ {id:'cstr',q:tt('Open the vertical revision (constraints) at a waypoint','Åpne vertikal revisjon (restriksjoner) på et waypoint'),pg:()=>S.page==='fpln'&&(S.view||'act')==='act',k:'R',a:tt('F-PLN · RIGHT key at the waypoint','F-PLN · HØYRE tast ved waypointet'),any:1},
+ {id:'brg',q:tt('Get bearing and distance to a point','Få peiling og avstand til et punkt'),pg:()=>S.page==='prog',k:'R4',a:'PROG · R4'}
+];
+const COURSE=[
+ {id:'m1',t:tt('The MCDU in ten minutes','MCDU-en på ti minutter'),s:tt('Keys, scratchpad, colours and CLR','Taster, scratchpad, farger og CLR'),
+  pts:[tt('The page keys open pages. The six keys on each side (L1–L6, R1–R6) select the line beside them.','Sidetastene åpner sider. De seks tastene på hver side (L1–L6, R1–R6) velger linjen ved siden av.'),
+       tt('Write first, then “throw” it: type in the scratchpad, then press the line key beside the field.','Skriv først, «kast» det så: skriv i scratchpad, og trykk linjetasten ved feltet.'),
+       tt('Colours: amber boxes must be filled, cyan you can change, green is computed by the FMS, magenta are constraints, yellow is the temporary flight plan. Small letters are default or computed values, large letters are entries.','Farger: oransje bokser må fylles ut, cyan kan du endre, grønt er beregnet av FMS-en, magenta er restriksjoner, gult er den midlertidige flyplanen. Små bokstaver er standard- eller beregnede verdier, store bokstaver er innlagte verdier.'),
+       tt('CLR deletes one character. On an empty scratchpad it writes CLR: then the line key deletes that field. CLR also removes a message.','CLR sletter ett tegn. På tom scratchpad skriver den CLR: da sletter linjetasten feltet. CLR fjerner også en melding.'),
+       tt('← and → change between pages of one function (INIT A and INIT B). ↑ and ↓ scroll lists and the flight plan.','← og → bytter mellom sidene i én funksjon (INIT A og INIT B). ↑ og ↓ blar i lister og i flyplanen.')],
+  tasks:['free'],drill:['fromto','altn','ci','crz','zfw','block','vor1','acst'],
+  quiz:[{q:tt('An entry is shown in amber boxes. What does it mean?','En verdi vises som oransje bokser. Hva betyr det?'),a:[tt('It must be filled in','Den må fylles ut'),tt('It is optional','Den er valgfri'),tt('It is computed by the FMS','Den er beregnet av FMS-en')],c:0,w:tt('Amber boxes are mandatory data. Cyan brackets are optional.','Oransje bokser er obligatoriske data. Cyan klammer er valgfrie.')},
+        {q:tt('How do you delete the cost index on INIT A?','Hvordan sletter du cost index på INIT A?'),a:[tt('Press CLR until it is gone','Trykk CLR til den er borte'),tt('CLR on an empty scratchpad, then L5','CLR på tom scratchpad, så L5'),tt('Type 0 and press L5','Skriv 0 og trykk L5')],c:1,w:tt('CLR on an empty scratchpad shows CLR; the line key then deletes the field.','CLR på tom scratchpad viser CLR; linjetasten sletter så feltet.')},
+        {q:tt('Waypoints in yellow on the F-PLN mean …','Gule waypoints i F-PLN betyr …'),a:[tt('the active flight plan','den aktive flyplanen'),tt('a temporary flight plan that is not inserted yet','en midlertidig flyplan som ikke er satt inn ennå'),tt('the secondary flight plan','den sekundære flyplanen')],c:1,w:tt('Yellow is TMPY. Check it, then INSERT or ERASE.','Gult er TMPY. Sjekk den, så INSERT eller ERASE.')},
+        {q:tt('How do you get from INIT A to INIT B?','Hvordan kommer du fra INIT A til INIT B?'),a:[tt('The → key','→-tasten'),tt('R6','R6'),tt('The FUEL PRED key','FUEL PRED-tasten')],c:0,w:tt('The slew key → turns the page. After engine start INIT B is replaced by FUEL PRED.','Slew-tasten → blar til neste side. Etter motorstart erstattes INIT B av FUEL PRED.')}]},
+ {id:'m2',t:tt('Cockpit preparation: D-I-F-R-I-P','Cockpit preparation: D-I-F-R-I-P'),s:tt('The order, who does what, and the crosscheck','Rekkefølgen, hvem gjør hva, og crosschecken'),
+  pts:[tt('D-I-F-R-I-P: DATA (A/C STATUS, database), INIT A, F-PLN (with the SEC), RAD NAV, INIT B, PERF.','D-I-F-R-I-P: DATA (A/C STATUS, database), INIT A, F-PLN (med SEC), RAD NAV, INIT B, PERF.'),
+       tt('Only D-I-F-R before the loadsheet. INIT B and PERF come when the loadsheet and take-off data are there.','Bare D-I-F-R før loadsheeten. INIT B og PERF kommer når loadsheet og take-off-data er der.'),
+       tt('The F-PLN is checked against the OFP: runway, SID, airways, distance. A discontinuity before the destination stays until the arrival is inserted in cruise.','F-PLN sjekkes mot OFP-en: rullebane, SID, luftveier, distanse. En diskontinuitet før destinasjonen blir stående til arrival legges inn i marsjhøyde.'),
+       tt('Predictions (times, levels, T/C and T/D) appear only when ZFW, BLOCK and the cruise level are entered.','Prediksjoner (tider, høyder, T/C og T/D) kommer først når ZFW, BLOCK og marsjhøyde er lagt inn.'),
+       tt('PF sets up, then: “I’ve set up the FMGS, please check it.” PM checks every page against the paperwork.','PF setter opp, så: «I’ve set up the FMGS, please check it.» PM sjekker hver side mot papirene.')],
+  tasks:['prep','xchk'],drill:['acst','fromto','flt','crz','dep','copy','vor1','zfw','block','v1','ths','flex'],
+  quiz:[{q:tt('What can you do before the loadsheet has arrived?','Hva kan du gjøre før loadsheeten er kommet?'),a:[tt('D-I-F-R','D-I-F-R'),tt('Everything','Alt'),tt('Only DATA','Bare DATA')],c:0,w:tt('INIT B (weights) and PERF (speeds) depend on the loadsheet and the take-off data.','INIT B (vekter) og PERF (hastigheter) avhenger av loadsheet og take-off-data.')},
+        {q:tt('Why are there no times or levels in the F-PLN yet?','Hvorfor står det ingen tider eller høyder i F-PLN ennå?'),a:[tt('The SID is missing','SID-en mangler'),tt('ZFW and BLOCK (INIT B) are not entered','ZFW og BLOCK (INIT B) er ikke lagt inn'),tt('The IRS is not aligned','IRS er ikke alignet')],c:1,w:tt('Without weights the FMS cannot compute a speed profile and predictions.','Uten vekter kan ikke FMS-en beregne fartsprofil og prediksjoner.')},
+        {q:tt('What is COPY ACTIVE in the SEC F-PLN for on the ground?','Hva brukes COPY ACTIVE i SEC F-PLN til på bakken?'),a:[tt('A backup in case the FMS fails','En reserve hvis FMS-en svikter'),tt('A ready plan for a likely runway change','En klar plan for et sannsynlig rullebanebytte'),tt('To send the plan to ATC','For å sende planen til ATC')],c:1,w:tt('You copy, change the departure in the SEC, and activate it if the runway changes.','Du kopierer, endrer avgangen i SEC og aktiverer den hvis rullebanen endres.')},
+        {q:tt('ZFW on the loadsheet is 58.4, the FMS shows 54.8. What do you do?','ZFW på loadsheeten er 58.4, FMS-en viser 54.8. Hva gjør du?'),a:[tt('Accept it, it is close','Godtar, det er nært'),tt('Correct it on INIT B and tell PF','Retter på INIT B og sier det til PF'),tt('Change BLOCK instead','Endrer BLOCK i stedet')],c:1,w:tt('Swapped digits are a classic error. Weight errors affect speeds, trim and performance.','Ombyttede siffer er en klassisk feil. Vektfeil påvirker hastigheter, trim og ytelse.')}]},
+ {id:'m3',t:tt('The flight plan','Flyplanen'),s:tt('TMPY, discontinuities, airways and revisions','TMPY, diskontinuiteter, luftveier og revisjoner'),
+  pts:[tt('Left key on a waypoint: lateral revision (route). Right key: vertical revision (speed and altitude constraints).','Venstre tast ved et waypoint: lateral revisjon (rute). Høyre tast: vertikal revisjon (fart- og høyderestriksjoner).'),
+       tt('Changes from LAT REV, DEPARTURE, ARRIVAL and HOLD become a TMPY (yellow). Check it, then INSERT or ERASE.','Endringer fra LAT REV, DEPARTURE, ARRIVAL og HOLD blir en TMPY (gul). Sjekk den, så INSERT eller ERASE.'),
+       tt('A waypoint typed straight onto an F-PLN line goes directly into the plan, followed by a F-PLN DISCONTINUITY.','Et waypoint skrevet rett på en F-PLN-linje går direkte inn i planen, etterfulgt av en F-PLN DISCONTINUITY.'),
+       tt('The aircraft does not fly past a discontinuity in NAV. Clear it with CLR and the key beside it, but only when the route on both sides is what ATC cleared.','Flyet flyr ikke forbi en diskontinuitet i NAV. Fjern den med CLR og tasten ved siden av, men bare når ruten på begge sider er det ATC har klarert.'),
+       tt('AIRWAYS: LAT REV on the first point, VIA (airway) on the left, TO (end point) on the right.','AIRWAYS: LAT REV på første punkt, VIA (luftvei) til venstre, TO (sluttpunkt) til høyre.')],
+  tasks:['disc','cstr'],drill:['awy','hold','cstr','dep','arr'],
+  quiz:[{q:tt('You type ODRUP onto the F-PLN line of SELKA. What happens?','Du skriver ODRUP på F-PLN-linjen til SELKA. Hva skjer?'),a:[tt('A TMPY is created','En TMPY lages'),tt('ODRUP goes into the plan at that line; if ODRUP is further down, the points in between are removed','ODRUP går inn i planen på den linjen; ligger ODRUP lenger ned, fjernes punktene imellom'),tt('Nothing, it must be done via LAT REV','Ingenting, det må gjøres via LAT REV')],c:1,w:tt('Direct F-PLN entries go straight into the plan. A new waypoint brings a discontinuity after it.','Direkte F-PLN-endringer går rett inn i planen. Et nytt waypoint gir en diskontinuitet etter seg.')},
+        {q:tt('“Cross ODRUP at or above FL110” is entered as …','«Cross ODRUP at or above FL110» legges inn som …'),a:[tt('FL110','FL110'),tt('+FL110','+FL110'),tt('-FL110','-FL110')],c:1,w:tt('+ is at or above, − at or below, no sign is “at”.','+ er at or above, − er at or below, uten fortegn er «at».')},
+        {q:tt('What does the aircraft do at a F-PLN DISCONTINUITY in NAV?','Hva gjør flyet ved en F-PLN DISCONTINUITY i NAV?'),a:[tt('Flies direct to the next waypoint','Flyr direkte til neste waypoint'),tt('Keeps its heading; NAV is lost','Holder headingen; NAV forsvinner'),tt('Enters a hold','Går inn i holding')],c:1,w:tt('NAV reverts and the aircraft holds the current heading. LAT DISCONT AHEAD warns you in advance.','NAV faller ut og flyet holder headingen. LAT DISCONT AHEAD varsler på forhånd.')}]},
+ {id:'m4',t:tt('Take-off performance','Take-off-ytelse'),s:tt('PERF TAKE OFF and runway changes','PERF TAKE OFF og rullebanebytte'),
+  pts:[tt('PERF TAKE OFF: V1, VR and V2 on L1–L3, always V1 ≤ VR ≤ V2. Without V2 there is no SRS at take-off.','PERF TAKE OFF: V1, VR og V2 på L1–L3, alltid V1 ≤ VR ≤ V2. Uten V2 får du ikke SRS ved avgang.'),
+       tt('FLAPS/THS on R3 (e.g. 1/UP0.4), FLEX on R4. THR RED/ACC default to 1500 ft above the runway.','FLAPS/THS på R3 (f.eks. 1/UP0.4), FLEX på R4. THR RED/ACC er som standard 1500 ft over rullebanen.'),
+       tt('Runway change: CHECK TAKE OFF DATA. The speeds are invalidated and must be entered again, or confirmed only if they are valid for the new runway.','Rullebanebytte: CHECK TAKE OFF DATA. Hastighetene blir ugyldige og må legges inn på nytt, eller bekreftes bare hvis de gjelder for den nye rullebanen.'),
+       tt('The FLEX and V-speeds come from the take-off data for that runway, never from memory.','FLEX og V-hastigheter kommer fra take-off-dataene for den rullebanen, aldri fra hukommelsen.')],
+  tasks:['rwy'],drill:['v1','v2','ths','flex','thr','ta','copy'],
+  quiz:[{q:tt('V1 142, VR 140, V2 146 is entered. What does the MCDU say?','V1 142, VR 140, V2 146 legges inn. Hva sier MCDU-en?'),a:[tt('Nothing','Ingenting'),tt('V1/VR/V2 DISAGREE','V1/VR/V2 DISAGREE'),tt('FORMAT ERROR','FORMAT ERROR')],c:1,w:tt('The rule is V1 ≤ VR ≤ V2.','Regelen er V1 ≤ VR ≤ V2.')},
+        {q:tt('After a runway change the speeds are invalidated. When may you use CONFIRM TO DATA?','Etter rullebanebytte er hastighetene ugyldige. Når kan du bruke CONFIRM TO DATA?'),a:[tt('Always, it saves time','Alltid, det sparer tid'),tt('Only if the old speeds are valid for the new runway','Bare hvis de gamle hastighetene gjelder for den nye rullebanen'),tt('Never','Aldri')],c:1,w:tt('Speeds for the wrong runway are a known cause of tail strikes and overruns.','Hastigheter for feil rullebane er en kjent årsak til tail strikes og overruns.')}]},
+ {id:'m5',t:tt('In flight','I lufta'),s:tt('Direct to, holding, constraints and navaids','Direct to, holding, restriksjoner og navaids'),
+  pts:[tt('DIR, choose or type the waypoint, check, then DIR TO*. In NAV the TO waypoint is only changed with DIR.','DIR, velg eller skriv waypointet, sjekk, så DIR TO*. I NAV endres TO-waypointet bare med DIR.'),
+       tt('RADIAL IN is the radial from the fix you fly inbound on: the opposite of the inbound course (ILS 25 → 070).','RADIAL IN er radialen fra fixet du flyr inn på: motsatt av innflygingskursen (ILS 25 → 070).'),
+       tt('HOLD: LAT REV at the fix, HOLD, INB CRS and TURN, then INSERT. IMM EXIT* leaves the hold. LAST EXIT shows when fuel forces you out.','HOLD: LAT REV på fixet, HOLD, INB CRS og TURN, så INSERT. IMM EXIT* tar deg ut av holdingen. LAST EXIT viser når drivstoffet tvinger deg ut.'),
+       tt('RAD NAV: auto-tuned navaids are small letters. Type an ident to hard-tune it (large letters) for raw data.','RAD NAV: autotunede navaids står med små bokstaver. Skriv en ident for å hard-tune (store bokstaver) for rådata.')],
+  tasks:['dct','hold','nav','cstr'],drill:['hold','vor1','crs2','ils','cstr','brg','posm'],
+  quiz:[{q:tt('Vectors for ILS 25. What RADIAL IN do you enter on the point on final?','Vektorer til ILS 25. Hvilken RADIAL IN legger du inn på punktet på finalen?'),a:[tt('250','250'),tt('070','070'),tt('160','160')],c:1,w:tt('The radial is measured from the fix: the inbound course 250 lies on radial 070.','Radialen måles fra fixet: innflygingskursen 250 ligger på radial 070.')},
+        {q:tt('You are holding and ATC clears you on. What do you press?','Du er i holding, og ATC klarerer deg videre. Hva trykker du?'),a:[tt('IMM EXIT* on the F-PLN','IMM EXIT* på F-PLN'),tt('CLR on the hold','CLR på holdingen'),tt('HDG on the FCU','HDG på FCU-en')],c:0,w:tt('IMM EXIT leaves the hold and continues the flight plan.','IMM EXIT tar deg ut av holdingen og videre langs flyplanen.')},
+        {q:tt('In NAV you try to clear the TO waypoint. What happens?','I NAV prøver du å slette TO-waypointet. Hva skjer?'),a:[tt('It is deleted','Det slettes'),tt('NOT ALLOWED IN NAV','NOT ALLOWED IN NAV'),tt('A TMPY is created','En TMPY lages')],c:1,w:tt('Use DIR TO to change where the aircraft is going.','Bruk DIR TO for å endre hvor flyet skal.')}]},
+ {id:'m6',t:tt('Arrival and approach','Arrival og innflyging'),s:tt('ARRIVAL, PERF APPR and GO AROUND','ARRIVAL, PERF APPR og GO AROUND'),
+  pts:[tt('Prepare in cruise from the ATIS: F-PLN, L6 (destination), ARRIVAL: approach, STAR, VIA, check the TMPY, INSERT.','Forbered i marsjhøyde etter ATIS: F-PLN, L6 (destinasjonen), ARRIVAL: innflyging, STAR, VIA, sjekk TMPY, INSERT.'),
+       tt('Choose the VIA that joins the STAR to the approach, so no discontinuity is left between them.','Velg VIA-en som kobler STAR-en til innflygingen, så det ikke blir igjen en diskontinuitet mellom dem.'),
+       tt('PERF APPR: QNH, TEMP, MAG WIND, minimum (BARO for CAT I and non-precision, RADIO for CAT II/III) and LDG CONF. VAPP is computed from the wind.','PERF APPR: QNH, TEMP, MAG WIND, minimum (BARO for CAT I og ikke-presisjon, RADIO for CAT II/III) og LDG CONF. VAPP beregnes ut fra vinden.'),
+       tt('GO AROUND: THR RED/ACC (often 1000 ft above the aerodrome) and ENG OUT ACC. Do not activate the approach phase until it is time.','GO AROUND: THR RED/ACC (ofte 1000 ft over flyplassen) og ENG OUT ACC. Ikke aktiver approach-fasen før det er tid.'),
+       tt('Watch the QNH field: a temperature typed there by mistake is accepted as inches of mercury.','Pass på QNH-feltet: en temperatur skrevet der ved en feil godtas som inches of mercury.')],
+  tasks:['app','appr','ctr'],drill:['arr','qnh','baro','ldg','eoa','ils'],
+  quiz:[{q:tt('CAT I ILS with DA 380 ft. Where does the minimum go?','CAT I ILS med DA 380 ft. Hvor skal minimum?'),a:[tt('BARO','BARO'),tt('RADIO','RADIO'),tt('Nowhere','Ingen steder')],c:0,w:tt('RADIO is for CAT II/III decision heights.','RADIO er for beslutningshøyder på CAT II/III.')},
+        {q:tt('After choosing ILS25 and ODRUP2W, a discontinuity sits between SK260 and SK255. Most likely cause?','Etter ILS25 og ODRUP2W ligger det en diskontinuitet mellom SK260 og SK255. Mest sannsynlig årsak?'),a:[tt('Wrong runway','Feil rullebane'),tt('NO VIA was chosen instead of the VIA SK260','NO VIA ble valgt i stedet for VIA SK260'),tt('The STAR is closed','STAR-en er stengt')],c:1,w:tt('The VIA is the transition that joins the STAR to the approach.','VIA-en er overgangen som kobler STAR-en til innflygingen.')},
+        {q:tt('Headwind 15 kt, VLS 131. What does the FMS add for VAPP?','Motvind 15 kt, VLS 131. Hva legger FMS-en til for VAPP?'),a:[tt('+15','+15'),tt('+5 (one third of the headwind, at least 5)','+5 (en tredjedel av motvinden, minst 5)'),tt('+0','+0')],c:1,w:tt('VAPP = VLS + 1/3 of the headwind, between +5 and +15.','VAPP = VLS + 1/3 av motvinden, mellom +5 og +15.')}]},
+ {id:'m7',t:tt('When the plan changes','Når planen endres'),s:tt('SEC F-PLN in the air and diversion','SEC F-PLN i lufta og diversjon'),
+  pts:[tt('Prepare the likely change in the SEC before it comes: other runway, other approach, diversion.','Forbered den sannsynlige endringen i SEC før den kommer: annen rullebane, annen innflyging, diversjon.'),
+       tt('In flight *ACTIVATE SEC appears only in HDG, or when both plans have the same active leg. Select HDG first, activate, then DIR TO to get NAV back.','I lufta vises *ACTIVATE SEC bare i HDG, eller når begge planene har samme aktive leg. Velg HDG først, aktiver, og bruk så DIR TO for å få NAV tilbake.'),
+       tt('Diversion: LAT REV at a waypoint, ENABLE ALTN, check the new destination in the TMPY, INSERT. Then the fuel: EFOB and EXTRA.','Diversjon: LAT REV på et waypoint, ENABLE ALTN, sjekk ny destinasjon i TMPY, INSERT. Så drivstoffet: EFOB og EXTRA.')],
+  tasks:['secair','altn'],drill:['copy','hold','arr'],
+  quiz:[{q:tt('You are in NAV and *ACTIVATE SEC is missing. Why?','Du er i NAV, og *ACTIVATE SEC mangler. Hvorfor?'),a:[tt('The SEC is empty','SEC er tom'),tt('In flight it shows only in HDG or with the same active leg','I lufta vises den bare i HDG eller med samme aktive leg'),tt('It is only for the ground','Den er bare for bakken')],c:1,w:tt('Select a heading first, then activate.','Velg heading først, og aktiver så.')},
+        {q:tt('After ENABLE ALTN, what do you check first?','Hva sjekker du først etter ENABLE ALTN?'),a:[tt('The new destination and the fuel (EFOB, EXTRA)','Ny destinasjon og drivstoffet (EFOB, EXTRA)'),tt('The cost index','Cost index'),tt('The SID','SID-en')],c:0,w:tt('The diversion only works if the fuel does.','Diversjonen fungerer bare hvis drivstoffet gjør det.')}]}
+];
+let MOD=null, DRL=null;
+function courseUi(){
+  const g=el('mcourse'); if(!g) return;
+  g.innerHTML=COURSE.map((m,i)=>`<button type="button" class="mcard${MOD===m.id?' on':''}" data-m="${m.id}" aria-expanded="${MOD===m.id}"><span class="n">${String(i+1).padStart(2,'0')}</span><b>${esc(Lx(m.t))}</b><small>${esc(Lx(m.s))}</small></button>`).join('')+
+    `<button type="button" class="mcard dr" data-m="drill"><span class="n">⌖</span><b>${esc(Lx(tt('Find the field','Finn feltet')))}</b><small>${esc(Lx(tt('12 random fields: find the page and the key','12 tilfeldige felt: finn siden og tasten')))}</small></button>`;
+  g.onclick=e=>{ const b=e.target.closest('button[data-m]'); if(!b) return; if(b.dataset.m==='drill'){ startDrill(null); return; } MOD=MOD===b.dataset.m?null:b.dataset.m; courseUi(); if(MOD){ const p=el('mcmod'); if(p) p.scrollIntoView({block:'nearest',behavior:'smooth'}); } };
+  const p=el('mcmod'); if(!p) return; const m=COURSE.find(x=>x.id===MOD); if(!m){ p.hidden=true; p.innerHTML=''; return; }
+  p.hidden=false;
+  const tsk=m.tasks.map(id=>{ const sc=SCN.find(s=>s.id===id); return `<li><b>${esc(Lx(sc.t))}</b><span class="go"><button type="button" class="btn sm" data-try="${id}" data-mode="guided">${esc(Lx(tt('With help','Med hjelp')))}</button>${sc.steps.length?`<button type="button" class="btn sm ghost" data-try="${id}" data-mode="practice">${esc(Lx(tt('On your own','På egen hånd')))}</button>`:''}</span></li>`; }).join('');
+  p.innerHTML=`<div class="mcm-h"><h3>${esc(Lx(m.t))}</h3><button type="button" class="mrst" data-close="1">${esc(Lx(tt('Close','Lukk')))}</button></div>
+   <div class="mcm-g"><div><h4>${esc(Lx(tt('Key points','Det viktigste')))}</h4><ul class="mpts">${m.pts.map(x=>`<li>${esc(Lx(x))}</li>`).join('')}</ul></div>
+   <div><h4>${esc(Lx(tt('Tasks','Oppgaver')))}</h4><ol class="mtsk">${tsk}</ol>
+   <h4>${esc(Lx(tt('Find the field','Finn feltet')))}</h4><p class="note">${esc(Lx(tt('Drill the fields of this module until you find them without thinking.','Drill feltene i denne modulen til du finner dem uten å tenke.')))}</p><button type="button" class="btn sm" data-drill="${m.id}">${esc(Lx(tt('Start the drill','Start drillen')))}</button></div></div>
+   <h4>${esc(Lx(tt('Check yourself','Test deg selv')))}</h4><div class="mquiz">${m.quiz.map((q,i)=>`<div class="mq" data-q="${i}"><p>${esc(Lx(q.q))}</p><div class="mqa">${q.a.map((a,j)=>`<button type="button" data-a="${j}">${esc(Lx(a))}</button>`).join('')}</div><p class="mqw" hidden></p></div>`).join('')}</div>`;
+  p.onclick=e=>{
+    const c=e.target.closest('[data-close]'); if(c){ MOD=null; courseUi(); return; }
+    const t=e.target.closest('[data-try]'); if(t){ setMode(t.dataset.mode); loadScn(t.dataset.try); setMode(t.dataset.mode); el('app').scrollIntoView({behavior:'smooth'}); return; }
+    const d=e.target.closest('[data-drill]'); if(d){ startDrill(d.dataset.drill); return; }
+    const a=e.target.closest('.mqa button'); if(a){ const box=a.closest('.mq'), q=m.quiz[+box.dataset.q], j=+a.dataset.a; box.querySelectorAll('.mqa button').forEach(b=>{ b.disabled=true; const k=+b.dataset.a; if(k===q.c) b.classList.add('ok'); else if(k===j) b.classList.add('no'); }); const w=box.querySelector('.mqw'); w.hidden=false; w.textContent=(j===q.c?Lx(tt('Correct. ','Riktig. ')):Lx(tt('Not quite. ','Ikke helt. ')))+Lx(q.w); }
+  };
+}
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function startDrill(mid){
+  const m=mid&&COURSE.find(x=>x.id===mid);
+  const ids=m?m.drill:shuffle(DRILL_T.map(t=>t.id)).slice(0,12);
+  DRL={list:shuffle(ids).map(id=>DRILL_T.find(t=>t.id===id)).filter(Boolean),i:0,found:[],helped:0,tries:0,shown:false,mod:mid};
+  setMode('drill'); loadScn('drill'); setMode('drill'); el('app').scrollIntoView({behavior:'smooth'});
+}
+function drillKey(k){
+  if(MODE!=='drill'||!DRL||DRL.i>=DRL.list.length) return false;
+  const t=DRL.list[DRL.i]; if(!/^[LR][1-6]$/.test(k)) return false;
+  if(t.pg()&&(t.any?k[0]===t.k:k===t.k)){ DRL.found.push({t,help:DRL.shown}); if(DRL.shown) DRL.helped++; DRL.i++; DRL.shown=false; DRL.flash='ok'; clearHl(); return true; }
+  if(t.pg()){ DRL.tries++; DRL.flash='no'; return true; }
+  return false;
+}
+function drillNow(){
+  const now=el('mnow');
+  if(!DRL){ now.className='mnow pr'; now.innerHTML=''; return; }
+  if(DRL.i>=DRL.list.length){ now.className='mnow ok'; now.innerHTML=`<b>${esc(Lx(tt('Done.','Ferdig.')))}</b> <span class="mtx">${esc(Lx(tt(`You found all ${DRL.list.length}, ${DRL.helped} with help.`,`Du fant alle ${DRL.list.length}, ${DRL.helped} med hjelp.`)))}</span><button type="button" class="mhint" id="mdragain">${esc(Lx(tt('Again','Igjen')))}</button>`; el('mdragain').onclick=()=>startDrill(DRL.mod); return; }
+  const t=DRL.list[DRL.i];
+  now.className='mnow'+(DRL.flash==='no'?' bad':DRL.flash==='ok'?' good':'');
+  now.innerHTML=`<span class="mst">${DRL.i+1}/${DRL.list.length}</span><span class="mtx"><b>${esc(Lx(tt('Find:','Finn:')))}</b> ${esc(Lx(t.q))}${DRL.flash==='no'?` <em>${esc(Lx(tt('Right page, wrong line.','Riktig side, feil linje.')))}</em>`:''}</span><button type="button" class="mhint" id="mdshow">${esc(Lx(tt('Show me','Vis meg')))}</button><button type="button" class="mhint" id="mdskip">${esc(Lx(tt('Skip','Hopp over')))}</button>${DRL.shown?`<div class="mhk"><kbd>${esc(typeof t.a==='string'?t.a:Lx(t.a))}</kbd></div>`:''}`;
+  DRL.flash=null;
+  el('mdshow').onclick=()=>{ DRL.shown=true; drillNow(); const first=(typeof t.a==='string'?t.a:t.a.en).split(' · ')[0].replace('F-PLN','FPLN').replace('RAD NAV','RAD').replace('SEC F-PLN','SEC'); const b=document.querySelector(`#mcdu .k[data-k="${first}"]`); if(b) b.classList.add('hl'); };
+  el('mdskip').onclick=()=>{ DRL.list.push(DRL.list.splice(DRL.i,1)[0]); DRL.shown=false; drillNow(); };
+}
+function drillSteps(){
+  const box=el('msteps'); if(!box) return;
+  if(!DRL){ box.innerHTML=''; return; }
+  box.innerHTML='<ol class="msl">'+DRL.found.map(f=>`<li class="ok">${esc(Lx(f.t.q))} · <b>${esc(typeof f.t.a==='string'?f.t.a:Lx(f.t.a))}</b></li>`).join('')+'</ol>'+(DRL.found.length?'':`<p class="note">${esc(Lx(tt('Navigate with the page keys, then press the line key of the field. The fields you find are listed here with the way to them.','Naviger med sidetastene, og trykk linjetasten til feltet. Feltene du finner, listes her med veien dit.')))}</p>`);
+}
+function refUi(){
+  const r=el('mref'); if(!r) return;
+  const R=[
+   ['INIT','INIT A',tt('Before the route','Før ruten'),'R1 FROM/TO · L1 CO RTE · L2 ALTN · L3 FLT NBR · R3 IRS INIT · L5 COST INDEX · L6 CRZ FL/TEMP · R6 TROPO'],
+   ['INIT →','INIT B',tt('Loadsheet','Loadsheet'),'R1 ZFW/ZFWCG · R2 BLOCK · R3 FUEL PLANNING · L1 TAXI · L2 TRIP · L3 RTE RSV · L4 ALTN · L5 FINAL · L6 MIN DEST FOB · R4 TOW/LW · R6 EXTRA'],
+   ['F-PLN','F-PLN',tt('The route','Ruten'),tt('Left key: LAT REV · right key: VERT REV · L6: destination · ↑↓ scroll · AIRPORT jumps to the next airport','Venstre tast: LAT REV · høyre tast: VERT REV · L6: destinasjon · ↑↓ blar · AIRPORT hopper til neste flyplass')],
+   [tt('F-PLN, left key','F-PLN, venstre tast'),'LAT REV',tt('Change the route','Endre ruten'),tt('L1 DEPARTURE (origin) · R1 ARRIVAL (destination) · L3 HOLD · R3 NEXT WPT · L4 ENABLE ALTN · R4 NEW DEST · R5 AIRWAYS · R1 FIX INFO (FROM)','L1 DEPARTURE (avgang) · R1 ARRIVAL (destinasjon) · L3 HOLD · R3 NEXT WPT · L4 ENABLE ALTN · R4 NEW DEST · R5 AIRWAYS · R1 FIX INFO (FROM)')],
+   [tt('F-PLN, right key','F-PLN, høyre tast'),'VERT REV',tt('Constraints','Restriksjoner'),'L3 SPD CSTR · R3 ALT CSTR · L2 SPD LIM'],
+   ['PERF','TAKE OFF',tt('Take-off','Avgang'),'L1 V1 · L2 VR · L3 V2 · L4 TRANS ALT · L5 THR RED/ACC · R1 RWY · R2 TO SHIFT · R3 FLAPS/THS · R4 FLEX · R5 ENG OUT ACC · R6 NEXT PHASE'],
+   ['PERF ·R6','CLB · CRZ · DES',tt('En route','Underveis'),'L1 ACT MODE · L2 CI · L3 MANAGED · L4 PRESEL · R4 DES CABIN RATE (CRZ)'],
+   ['PERF ·R6','APPR',tt('Approach','Innflyging'),'L1 QNH · L2 TEMP · L3 MAG WIND · L4 TRANS ALT · L5 VAPP · R2 BARO · R3 RADIO · R4 CONF3 · R5 FULL · L6 ACTIVATE APPR PHASE'],
+   ['PERF ·R6','GO AROUND',tt('Missed approach','Missed approach'),'L5 THR RED/ACC · R5 ENG OUT ACC'],
+   ['RAD NAV','RADIO NAV',tt('Navaids','Navaids'),'L1 VOR1 · R1 VOR2 · L2/R2 CRS · L3 ILS · L4 ILS CRS · L5 ADF1 · R5 ADF2'],
+   ['DIR','DIR TO',tt('Direct','Direkte'),'L1 DIR TO · L2–L5 F-PLN WPTS · R4 RADIAL IN · R5 RADIAL OUT · R6 DIR TO* · L6 ERASE'],
+   ['SEC F-PLN','SEC INDEX',tt('Secondary plan','Sekundærplan'),'L1 COPY ACTIVE · L2 SEC F-PLN · L3 DELETE SEC · L4 ACTIVATE SEC'],
+   ['FUEL PRED','FUEL PRED',tt('Fuel after engine start','Drivstoff etter motorstart'),'L1 DEST · L2 ALTN · R3 ZFW/ZFWCG · R4 FOB · R5 GW/CG · R6 EXTRA'],
+   ['PROG','PROG',tt('Progress','Fremdrift'),'L1 CRZ · M OPT · R1 REC MAX · L4/R4 BRG/DIST TO · L6 REQUIRED · R6 ESTIMATED'],
+   ['DATA','DATA INDEX',tt('Status','Status'),'L1 POSITION MONITOR · L4 A/C STATUS · → DATA 2/2']
+  ];
+  const S2=x=>typeof x==='string'?x:Lx(x);
+  r.innerHTML=`<table class="mreft"><thead><tr><th>${esc(Lx(tt('Key','Tast')))}</th><th>${esc(Lx(tt('Page','Side')))}</th><th>${esc(Lx(tt('For','Til')))}</th><th>${esc(Lx(tt('Line keys','Linjetaster')))}</th></tr></thead><tbody>${R.map(x=>`<tr><td><kbd>${esc(S2(x[0]))}</kbd></td><td><b>${esc(x[1])}</b></td><td>${esc(S2(x[2]))}</td><td>${esc(S2(x[3]))}</td></tr>`).join('')}</tbody></table>`;
+}
+
+window.MCDU={drill:startDrill,drillState:()=>DRL,course:COURSE,drillT:DRILL_T,progress:()=>stepIdx(),tick:(n,dt)=>{ for(let i=0;i<(n||1);i++) stepFlight(dt||0.8); refresh(); },fcu:(c,v)=>{ fcu(c,v); refresh(); },press:k=>{ key(k); },state:()=>S,load:loadScn,scn:SCN,mode:setMode,screen:()=>{ cls(); (PG[S.page]||PG.menu).draw(); if(S.page!=='fpln') scratch(); return scr.map(r=>r.map(c=>c.c==='§'?'#':c.c).join('')).join('\n'); }};
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
