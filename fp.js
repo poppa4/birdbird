@@ -67,7 +67,7 @@ function drawClimb(g,W,top){ const ph=W<640, ac=AC(), c=F.climbSpeeds(ac,S.m,S.h
     const x2=X(c.vy.eas); line(g,x2,Y(kN(c.vy.T)),x2,Y(kN(c.vy.D)),C.vy,3); line(g,x2,Y(kN(c.vy.D)),x2,b[1]+b[3],C.vy,1,[3,3]);
     const close=Math.abs(x2-x)<70, yl=b[1]+b[3]-12;
     tag(g,'Vx '+Math.round(c.vx.eas),x-(close?4:0),yl,C.vx,close?'right':'center'); tag(g,'Vy '+Math.round(c.vy.eas),x2+(close?4:0),yl,C.vy,close?'left':'center');
-    if(!ph) tag(g,L(t2('biggest gap: steepest climb','størst gap: brattest stigning')),x,Y((kN(c.vx.T)+kN(c.vx.D))/2),C.vx,'right',10);
+    if(!ph){ const lt=L(t2('biggest gap: steepest climb','størst gap: brattest stigning')), lw=tw(g,lt,10,600,SANS)+18, rgt=x-lw<b[0]+4; tag(g,lt,rgt?x+8:x-8,Y((kN(c.vx.T)+kN(c.vx.D))/2)+(rgt&&close?18:0),C.vx,rgt?'left':'right',10); }
     if(!ph) tag(g,L(t2('gap × speed: fastest climb','gap × fart: raskest stigning')),x2+8,Y((kN(c.vy.T)+kN(c.vy.D))/2)-(close?18:0),C.vy,'left',10); }
   else tag(g,L(t2('No gap: this is the ceiling','Ingen gap: dette er taket')),b[0]+b[2]/2,b[1]+b[3]/2,C.red,'center',12);
   return b[1]+b[3]+(ph?34:38); }
