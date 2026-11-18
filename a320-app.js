@@ -13,22 +13,27 @@ if(LB.add) LB.add({},{'NORDAP · Simulators':'NORDAP · Simulatorer','Airbus A32
   'Fast ADIRS alignment':'Rask ADIRS-oppretting','On ground':'På bakken','Flying':'Flyr','Paused':'Pause','Crashed':'Havarert','Cold and dark':'Kald og mørk','Ready for take-off':'Klar for avgang'});
 const D3=document.body.hasAttribute('data-d3');
 const F=A320FM, Y=A320SYS, DSP=A320DISP, MC=A320MCDU, SH=window.SIMSHELL;
+/* CF: another aircraft built on this engine (b737.js sets window.SIMAC before this file runs): its panel picture, control
+   rectangles, controls, screens, CDU and start positions. Without it this is the A320. */
+const CF=window.SIMAC||null;
 const KT=F.KT, FT=F.FT, FPM=F.FPM, NM=F.NM, D2R=F.D2R, R2D=F.R2D, clamp=F.clamp, w360=F.w360, w180=F.w180;
-const RECT={}; (window.A320T||[]).forEach(t=>RECT[t[0]]=t);
-RECT['FCU|ALT KNOB']=['FCU|ALT KNOB',520.5,838.5,12.5,12.5];
-const SHEET={W:1000,H:1678};
+const RECT={}; ((CF&&CF.T)||window.A320T||[]).forEach(t=>RECT[t[0]]=t);
+if(!CF) RECT['FCU|ALT KNOB']=['FCU|ALT KNOB',520.5,838.5,12.5,12.5];
+const SHEET={W:1000,H:CF?CF.H:1678};
+const CDU_ID=CF&&CF.cduIds||['MCDU 1','MCDU 2'];
+const SKEY=CF?CF.key:'bb-a320-start2';
 const FIX=(window.AIRPROC&&AIRPROC.FIX)||{RW36:{N:0,E:0},FAPSO:{N:-5*NM,E:0},RONAX:{N:-10*NM,E:0},ALPOR:{N:-10*NM,E:-5*NM},BIKAN:{N:-10*NM,E:5*NM},HOLAN:{N:9*NM,E:0},TUSKA:{N:-22*NM,E:-8*NM},OSVIK:{N:18*NM,E:-14*NM},ASN:{N:900,E:-2600},AN:{N:-7600,E:0}};
 Object.keys(FIX).forEach(k=>FIX[k].id=k);
 
 /* ================= state ================= */
 let A,M,K; const UI={paused:false,sound:true,start:'cold',t:0,crashed:false,fastAlign:false,ls:[false,false],fd:[true,true],efis:{mode:3,range:2,filt:'wpt',qnh:1013,std:false,adf1:0,adf2:0},efis2:{mode:3,range:2,filt:'wpt',qnh:1013,std:false},
   annTest:false,inp:{keys:new Set(),sx:0,sy:0,pad:null,rud:0,brk:0,tiller:0,stick:null},tla:[0,0],mcduChg:0,fcuKey:''};
-UI.start='air'; try{ UI.start=localStorage.getItem('bb-a320-start2')||'air'; }catch(e){}
+UI.start='air'; try{ UI.start=localStorage.getItem(SKEY)||'air'; }catch(e){}
 const qp=new URLSearchParams(location.search); if(qp.get('start')) UI.start=qp.get('start');
 const RANGES=[10,20,40,80,160,320], MODES=['ROSE ILS','ROSE VOR','ROSE NAV','ARC','PLAN'];
 
 function reset(kind){
-  UI.start=kind; try{ localStorage.setItem('bb-a320-start2',kind); }catch(e){}
+  UI.start=kind; try{ localStorage.setItem(SKEY,kind); }catch(e){}
   if(kind==='cold'){
     A=Y.create({cold:true,gpu:true}); M=F.create({N:820,E:215}); M.psi=M.chi=270*D2R;
   } else if(kind==='ready'){
@@ -61,22 +66,26 @@ function reset(kind){
   M.nav=F.navCalc(M); M.spds=F.speeds(M); M.ap.tgtSpd=M.ias;
   syncCtl(); for(let i=0;i<20;i++) sysStep(0.05);
   if(kind==='ready'){ A.eng.forEach(e=>{ e.availT=99; }); A.ecam.t2=200; }
+  if(CF&&CF.reset){ CF.reset(kind,X); dirty.all=true; return; }
   dirty.all=true; say(kind==='cold'?'Cold and dark on the apron. Ground power is plugged in.':kind==='ready'?'Lined up on runway 36. Parking brake set.':kind==='air'?'5,000 ft, 250 kt, AP 1 and A/THR on, heading 360 towards NORDAP.':'Established 12 NM from runway 36, 3,000 ft. Press APPR on the FCU.');
 }
 const dirty={all:true};
+/* what an aircraft config (CF) sees of this page */
+const X={get A(){ return A; },get M(){ return M; },get K(){ return K; },UI,F,Y,DSP,MC,get CT(){ return CT; },RECT,FIX,say:(m,c,t)=>say(m,c,t),snd:k=>snd(k),tip:(c,t)=>tip(c,t),view:r=>view(r),dirty,get Z(){ return Z; },
+  pb:(...a)=>pb(...a),mom:(...a)=>mom(...a),ann:(...a)=>ann(...a),sel:(...a)=>sel(...a),tog:(...a)=>tog(...a),bar:(...a)=>bar(...a),act:(...a)=>act(...a)};
 
 /* ================= simulation ================= */
 function airOf(){ return {gnd:M.gnd,ias:M.ias,gs:M.gs/KT,alt:M.h/FT,ra:M.ra/FT,vs:M.vs/FPM,sig:F.isa(M.h).sig,mach:M.mach}; }
 const fmView={n1Cmd:[19.6,19.6],tla:[0,0],slat:0,flapLv:0,ths:0,gearDown:true,gearUp:false,toPower:false,sideAny:0};
 function sysStep(dt){
   Object.assign(fmView,{n1Cmd:M.n1Cmd,tla:M.tla,slat:M.slat,flapLv:A.sw.flapLv,ths:M.ths||0,gearDown:M.gearDown,gearUp:M.gearUp,toPower:M.toPower,sideAny:M.sideAny||0,apOffWarn:UI.apOffT>0,athrOffCaut:UI.athrOffT>0,overspeed:M.overspeed,tcasStby:!A.sw.tcas});
-  Y.step(A,dt,airOf(),fmView);
+  Y.step(A,dt,airOf(),fmView); if(CF&&CF.postSys) CF.postSys(dt,X);
   if(UI.apOffT>0) UI.apOffT-=dt; if(UI.athrOffT>0) UI.athrOffT-=dt;
 }
 function syncCtl(){
   const S=A.sw, C=M.ctl, I=UI.inp;
   C.park=S.park; C.flapLv=S.flapLv; C.gearLv=S.gearLv; C.spd=S.spdBrk; C.spArm=S.spArm; C.abrk=S.abrk;
-  C.tla=[UI.tla[0],UI.tla[1]];
+  C.tla=CF&&CF.tla?CF.tla():[UI.tla[0],UI.tla[1]];
   let sx=I.sx, sy=I.sy; if(I.stick){ sx=I.stick.x; sy=I.stick.y; } if(I.gp){ if(Math.abs(I.gp.x)>Math.abs(sx)) sx=I.gp.x; if(Math.abs(I.gp.y)>Math.abs(sy)) sy=I.gp.y; }
   C.sx=sx; C.sy=sy; C.rud=I.rud; C.tiller=I.rud*0.6+I.tiller; C.brkL=C.brkR=I.brk;
   M.gw=A.gw;
@@ -119,6 +128,7 @@ window.addEventListener('keydown',e=>{
   const c=e.code, I=UI.inp;
   if(KEYS.has(c)){ I.keys.add(c); e.preventDefault(); if(c==='KeyR'&&M.gnd) UI.tla=UI.tla.map(()=>-20); return; }
   const lv=v=>{ UI.tla=[v,v]; e.preventDefault(); };
+  if(CF&&CF.keydown&&CF.keydown(c,e,X)){ dirty.all=true; return; }
   switch(c){
     case 'KeyT': lv(45); break; case 'KeyY': lv(35); break; case 'KeyU': lv(25); break; case 'KeyI': lv(0); break;
     case 'KeyF': A.sw.flapLv=Math.min(4,A.sw.flapLv+1); flapSay(); break; case 'KeyV': A.sw.flapLv=Math.max(0,A.sw.flapLv-1); flapSay(); break;
@@ -145,7 +155,7 @@ function keysStep(dt){
   I.rud=ax(['KeyQ','KeyQ'],['KeyE','KeyE'],I.rud,1.5);
   I.brk=k.has('KeyB')||I.brkHeld?1:0;
   const up=k.has('Equal')||k.has('NumpadAdd'), dn=k.has('Minus')||k.has('NumpadSubtract');
-  if(up||dn){ const r=(up?1:-1)*14*dt; UI.tla=UI.tla.map(v=>{ let n=clamp(v+r,M.gnd?-20:0,45); for(const d of [0,25,35,45]){ if((v<d&&n>=d)||(v>d&&n<=d)){ if(!UI.detentHold||UI.detentHold<0.25){ n=d; } } } return n; }); }
+  if(up||dn){ const r=(up?1:-1)*14*dt; UI.tla=UI.tla.map(v=>{ let n=clamp(v+r,M.gnd?-20:0,45); for(const d of (CF&&CF.detents||[0,25,35,45])){ if((v<d&&n>=d)||(v>d&&n<=d)){ if(!UI.detentHold||UI.detentHold<0.25){ n=d; } } } return n; }); }
 }
 function gamepad(){ const gps=navigator.getGamepads?navigator.getGamepads():[]; const g=gps&&[...gps].find(x=>x&&x.connected); if(!g){ UI.inp.gp=null; return; }
   const dz=v=>Math.abs(v)<0.08?0:v; UI.inp.gp={x:dz(g.axes[0]||0),y:dz(g.axes[1]||0)}; }
@@ -198,6 +208,7 @@ function tog(id,k,vals,o){ CT.push(Object.assign({id,t:'tog',k,vals},o||{})); }
 function bar(id,lit,on,o){ CT.push(Object.assign({id,t:'bar',lit,on},o||{})); }
 function act(id,on,o){ CT.push(Object.assign({id,t:'act',on},o||{})); }
 function defs(){
+  if(CF){ CF.defs(X); return; }
   const e=A=>A; // (readability)
   // ---- ADIRS ----
   for(const n of [1,2,3]){
@@ -363,7 +374,7 @@ function defs(){
 }
 function autolandWarn(){ const a=M.ap; return !M.gnd&&M.ra/FT<200&&(a.vert==='LAND'||a.vert==='FLARE')&&!(a.ap1||a.ap2); }
 function mcduKeys(side){
-  const r=RECT[side?'MCDU 2':'MCDU 1']; if(!r) return; const x0=r[1], y0=r[2];
+  const r=RECT[CDU_ID[side]]; if(!r) return; const x0=r[1], y0=r[2];
   const add=(k,x,y,w,h)=>CT.push({id:'MCDU '+(side+1)+'|'+k,t:'mkey',k,side,rect:[x0+x-(w||7)/2,y0+y-(h||5)/2,w||7,h||5]});
   [16.7,24,31.7,39.3,46.7,54.3].forEach((y,i)=>{ add('L'+(i+1),6,y,8,5); add('R'+(i+1),81,y,8,5); });
   ['DIR','PROG','PERF','INIT','DATA','',  'BRT'].forEach((k,i)=>{ if(k) add(k,[12.7,25,36,46.7,57.3,68.3,77.3][i],69.3,9,5.5); });
@@ -410,7 +421,7 @@ function buildOverlay(){
     else { Object.assign(cv.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'}); $('world').insertBefore(cv,ovl); d.px=0; }
     d.cv=cv; d.g=cv.getContext('2d',{alpha:false}); d.t=0;
     if(!D3){ const gl=document.createElement('div'); gl.className='glass'; Object.assign(gl.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'}); $('world').insertBefore(gl,ovl); } });
-  if(!D3){ const sh=document.createElement('div'); sh.className='gshade'; Object.assign(sh.style,{top:'887px',height:'26px'}); $('world').insertBefore(sh,ovl); }
+  const gsy=CF?CF.gshade:887; if(!D3&&gsy){ const sh=document.createElement('div'); sh.className='gshade'; Object.assign(sh.style,{top:gsy+'px',height:'26px'}); $('world').insertBefore(sh,ovl); }
 }
 const lastSig=new Map();
 /* ---- 3D: paint lit legends, switches and the FCU window into the panel textures (sheet units), only when something changed ---- */
@@ -422,7 +433,7 @@ function stateSig(){ const test=A.sw.annLt===2&&A.dc; let s=test?'T':'';
     case 'key': s+=A.dc&&A.bus.dcEss&&(test||c.lit())?1:0; break; case 'bar': s+=A.dc&&(test||c.lit())?1:0; break;
     case 'sel': case 'cont': s+=A.sw[c.k]; break; case 'selF': s+=c.get(); break; case 'knob': s+=c.ang?c.ang():''; break;
     case 'tog': s+=c.get?c.get():A.sw[c.k]; break; case 'seg': s+='|'+c.txt(); break; case 'gearInd': s+=M.gear>0.99?'D':M.gear<0.01?'U':'T'; break;
-    case 'thr': s+=Math.round(UI.tla[c.i]); break; case 'lever': s+=A.sw.gearLv+''+A.sw.flapLv+A.sw.spArm+A.sw.spdBrk+A.sw.park; break; case 'fcu': s+=fcuVals().join('|')+M.ap.lat+M.ap.latArm+M.ap.spd.man+M.ap.alt.v; break; }
+    case 'thr': s+=thrTxt(c.i); break; case 'lever': s+=levTxt(c.kind); break; case 'fcu': s+=fcuVals().join('|')+M.ap.lat+M.ap.latArm+M.ap.spd.man+M.ap.alt.v; break; }
     s+=','; }
   return s; }
 function paint3d(force){ if(!CK) return; const s=stateSig(); if(!force&&s===sig3) return; sig3=s; CK.repaint(paintPanel); }
@@ -442,8 +453,8 @@ function paintPanel(g,R){
         const by=n===2?(i===0?y+h*0.02:y+h*0.52):(i===0?y+h*0.02:i===1?y+h*0.27:y+h*0.52); const gr=g.createLinearGradient(x+w*0.28,0,x+w*0.72,0); gr.addColorStop(0,'#9aa3ac'); gr.addColorStop(0.45,'#e7ebef'); gr.addColorStop(1,'#8b939b'); g.fillStyle=gr; g.fillRect(x+w*0.28,by,w*0.44,h*0.46); break; }
       case 'seg': { const t=c.txt(); if(!t) break; g.fillStyle='#090a0b'; g.fillRect(x,y,w,h); g.fillStyle='#ffb347'; g.font='600 '+(h*0.62).toFixed(2)+'px "IBM Plex Mono",monospace'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t,x+w/2,y+h/2); break; }
       case 'gearInd': { if(!A.dc) break; const t=M.gear>0.99?'▼ ▼ ▼':M.gear<0.01?'':'UNLK'; if(!t) break; g.fillStyle='#08090a'; g.fillRect(x,y,w,h); g.fillStyle=M.gear>0.99?COL.g:COL.r; g.font='600 3.6px Archivo,Arial'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t,x+w/2,y+h/2); break; }
-      case 'thr': { const v=UI.tla[c.i]; const t=v>=44.5?'TOGA':v>=34.5?'FLX/MCT':v>=24.5&&v<=25.5?'CL':v<=0.5&&v>=-0.5?'IDLE':v<0?'REV':Math.round(v)+'°'; const lx=x+(c.i?w:-12); g.fillStyle='rgba(8,9,10,.85)'; g.fillRect(lx,y+h+1,12,4.5); g.fillStyle='#7fe8ff'; g.font='600 3px "IBM Plex Mono",monospace'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t,lx+6,y+h+3.3); break; }
-      case 'lever': { let t='', lx=x, ly=y, lw=14; if(c.kind==='gear'){ t=A.sw.gearLv?'DOWN':'UP'; lx=x-14; ly=y+h/2-2.5; } if(c.kind==='flaps'){ t=['0','1','2','3','FULL'][A.sw.flapLv]; lx=x+w+1; ly=y+2; } if(c.kind==='spd'){ t=A.sw.spArm?'ARM':A.sw.spdBrk>0?Math.round(A.sw.spdBrk*100)+'%':'RET'; lx=x-17; ly=y+2; lw=16; } if(c.kind==='park'){ t=A.sw.park?'ON':'OFF'; lx=x+w*0.35; ly=y+h-6; lw=w*0.3; }
+      case 'thr': { const t=thrTxt(c.i); const lx=x+(c.i?w:-12); g.fillStyle='rgba(8,9,10,.85)'; g.fillRect(lx,y+h+1,12,4.5); g.fillStyle='#7fe8ff'; g.font='600 3px "IBM Plex Mono",monospace'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t,lx+6,y+h+3.3); break; }
+      case 'lever': { const t=levTxt(c.kind); let lx=x, ly=y, lw=14; if(c.kind==='gear'){ lx=x-14; ly=y+h/2-2.5; } if(c.kind==='flaps'){ lx=x+w+1; ly=y+2; } if(c.kind==='spd'){ lx=x-17; ly=y+2; lw=16; } if(c.kind==='park'){ lx=x+w*0.35; ly=y+h-6; lw=w*0.3; }
         g.fillStyle='rgba(8,9,10,.85)'; g.fillRect(lx,ly,lw,5); g.fillStyle='#7fe8ff'; g.font='600 3px "IBM Plex Mono",monospace'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t,lx+lw/2,ly+2.6); break; }
       case 'fcu': { const [pw,spd,hdg,vs]=fcuVals(); g.save(); g.translate(x,y); g.scale(w/137,h/10); fcuPaint(g,pw,spd,hdg,vs); g.restore(); break; }
     } }
@@ -467,13 +478,16 @@ function overlayTick(){
       case 'tog': { const v=c.get?c.get():A.sw[c.k]; if(lastSig.get(c)===v) break; lastSig.set(c,v); const i=c.vals.indexOf(v), b=c.el.firstChild; b.className=c.vals.length===2?(i===0?'u':'d'):(i===0?'u':i===1?'m':'d'); break; }
       case 'seg': { const s=c.txt(); if(lastSig.get(c)===s) break; lastSig.set(c,s); c.el.textContent=s; c.el.style.visibility=s?'visible':'hidden'; break; }
       case 'gearInd': { const g=M.gear, on=A.dc; const s=on?(g>0.99?'▼ ▼ ▼':g<0.01?'':'UNLK'):''; if(lastSig.get(c)===s) break; lastSig.set(c,s); c.el.textContent=s; c.el.style.color=g>0.99?'#2bff4a':'#ff3a2a'; c.el.style.visibility=s?'visible':'hidden'; break; }
-      case 'thr': { const v=UI.tla[c.i]; const s=v>=44.5?'TOGA':v>=34.5?'FLX/MCT':v>=24.5&&v<=25.5?'CL':v<=0.5&&v>=-0.5?'IDLE':v<0?'REV':Math.round(v)+'°'; if(lastSig.get(c)===s) break; lastSig.set(c,s); c.el.textContent=s; break; }
-      case 'lever': { let s=''; if(c.kind==='gear') s=A.sw.gearLv?'DOWN':'UP'; if(c.kind==='flaps') s=['0','1','2','3','FULL'][A.sw.flapLv]; if(c.kind==='spd') s=A.sw.spArm?'ARM':A.sw.spdBrk>0?Math.round(A.sw.spdBrk*100)+'%':'RET'; if(c.kind==='park') s=A.sw.park?'ON':'OFF';
+      case 'thr': { const s=thrTxt(c.i); if(lastSig.get(c)===s) break; lastSig.set(c,s); c.el.textContent=s; break; }
+      case 'lever': { const s=levTxt(c.kind);
         if(lastSig.get(c)===s) break; lastSig.set(c,s); c.el.textContent=s; break; }
       case 'fcu': fcuDraw(c); break;
     }
   }
 }
+function thrTxt(i){ if(CF&&CF.thrTxt) return CF.thrTxt(i); const v=UI.tla[i]; return v>=44.5?'TOGA':v>=34.5?'FLX/MCT':v>=24.5&&v<=25.5?'CL':v<=0.5&&v>=-0.5?'IDLE':v<0?'REV':Math.round(v)+'°'; }
+function levTxt(kind){ if(CF&&CF.levTxt){ const t=CF.levTxt(kind); if(t!=null) return t; }
+  return kind==='gear'?(A.sw.gearLv?'DOWN':'UP'):kind==='flaps'?['0','1','2','3','FULL'][A.sw.flapLv]:kind==='spd'?(A.sw.spArm?'ARM':A.sw.spdBrk>0?Math.round(A.sw.spdBrk*100)+'%':'RET'):kind==='park'?(A.sw.park?'ON':'OFF'):''; }
 function fcuVals(){ const a=M.ap;
   const spd=a.spd.man?(a.spd.mach?'.'+String(Math.round(a.spd.v*100)).padStart(2,'0'):String(Math.round(a.spd.v))):'---';
   const hdg=(a.lat==='HDG'||a.lat==='TRK'||a.hdg.preset)&&!(a.lat==='NAV'&&!a.hdg.preset)?String(Math.round(a.hdg.v)).padStart(3,'0'):'---';
@@ -498,12 +512,14 @@ function fcuPaint(g,pw,spd,hdg,vs){ const a=M.ap; g.fillStyle='#0d0d0c'; g.fillR
 }
 
 /* ================= displays ================= */
-const DISP=[
+const DISP=CF?CF.DISP:[
   {id:'PFD CPT',k:'pfd',side:0,hz:30},{id:'ND CPT',k:'nd',side:0,hz:30},{id:'E/WD (upper ECAM)',k:'ewd',hz:12},{id:'SD (lower ECAM)',k:'sd',hz:12},
   {id:'ND F/O',k:'nd',side:1,hz:15},{id:'PFD F/O',k:'pfd',side:1,hz:15},{id:'STANDBY (ISIS)',k:'isis',hz:15},
   {id:'MCDU 1',k:'mcdu',side:0,hz:0,rect:null},{id:'MCDU 2',k:'mcdu',side:1,hz:0,rect:null}];
-(function(){ for(const d of DISP){ if(d.k==='mcdu'){ const r=(window.A320T||[]).find(t=>t[0]===d.id); if(r) d.rect=[r[1]+14.6,r[2]+5.2,58.5,58.5]; } } })();
+(function(){ if(CF) return; for(const d of DISP){ if(d.k==='mcdu'){ const r=(window.A320T||[]).find(t=>t[0]===d.id); if(r) d.rect=[r[1]+14.6,r[2]+5.2,58.5,58.5]; } } })();
+const drawD=(d,D)=>((CF&&CF.draw&&CF.draw[d.k])||DSP[d.k])(d.g,d.cv,D);
 function dispData(d){
+  if(CF&&CF.dispData){ const r=CF.dispData(d,X); if(r) return r; }
   const ap=M.ap, sp=M.spds||{}, side=d.side||0, E=side?UI.efis2:UI.efis;
   const ir=A.irs[side?1:0], irOK=ir.st===2, attOK=ir.st===2||ir.st===3;
   const adrOK=A.sw['adr'+(side?2:1)]&&(A.bus.acEss||A.bus.ac1||A.bus.ac2||A.bus.dcBat);
@@ -581,7 +597,7 @@ function displayTick(dt){
       const want=Math.max(192,Math.min(CK.mobile?768:1024,Math.round(CK.pxSize(d,vh)*1.1/64)*64)); if(Math.abs(want-d.px)>Math.max(64,d.px*0.25)){ d.cv.width=d.cv.height=want; d.px=want; d.sig=''; d.t=99; d.tex.needsUpdate=true; }
       if(d.k==='mcdu'){ const sig=K.changed+'|'+side_pw(d)+'|'+(K.page==='fpln'||K.page==='prog'?Math.round(UI.t):0)+'|'+d.hidden; if(sig===d.sig) continue; d.sig=sig; }
       else { const capt=(d.k==='pfd'||d.k==='nd')&&!d.side, hz=[capt?20:8,capt?12:6,capt?8:4][GOV.lvl]; if(d.t<1/hz&&!d.hidden) continue; }
-      d.hidden=false; d.t=0; DSP[d.k](d.g,d.cv,dispData(d)); d.tex.needsUpdate=true; }
+      d.hidden=false; d.t=0; drawD(d,dispData(d)); d.tex.needsUpdate=true; }
     return; }
   for(const d of DISP){
     if(!d.cv) continue;
@@ -589,21 +605,21 @@ function displayTick(dt){
     const [x,y,w,h]=d.r, sx=x*Z.s+Z.tx, sy=y*Z.s+Z.ty, sw=w*Z.s, sh=h*Z.s;
     const vis=sx+sw>0&&sy+sh>0&&sx<vw&&sy<vh&&sw>6; if(!vis){ d.hidden=true; continue; }
     const px=Math.round(clamp(sw*Math.min(devicePixelRatio||1,2),96,1100));
-    if(px!==d.px){ d.px=px; d.cv.width=d.cv.height=px; d.t=99; d.sig=''; }
+    if(px!==d.px){ d.px=px; d.cv.width=px; d.cv.height=Math.round(px*(d.asp||1)); d.t=99; d.sig=''; }
     d.t+=dt;
-    if(d.k==='mcdu'){ const sig=K.changed+'|'+(side_pw(d))+'|'+(K.page==='fpln'||K.page==='prog'?Math.round(UI.t):0)+'|'+d.px+'|'+d.hidden; if(sig===d.sig) continue; d.sig=sig; }
+    if(d.k==='mcdu'){ const sig=K.changed+'|'+(side_pw(d))+'|'+(K.page==='fpln'||K.page==='prog'||K.page==='legs'?Math.round(UI.t):0)+'|'+(K.exec?1:0)+'|'+d.px+'|'+d.hidden; if(sig===d.sig) continue; d.sig=sig; }
     else { const capt=d.k==='pfd'||d.k==='nd'?!d.side:false, hz=Math.min(d.hz,[capt?30:12,capt?20:8,capt?12:5][GOV.lvl]); if(d.t<1/hz&&!d.hidden) continue; } // the frame governor steps the screens down with the outside view
     d.hidden=false; d.t=0;
     const D=dispData(d);
-    DSP[d.k](d.g,d.cv,D);
+    drawD(d,D);
   }
 }
 function side_pw(d){ return (d.side?A.bus.ac2:(A.bus.acEss||A.bus.ac1))?1:0; }
 
 /* ================= view, zoom and pan ================= */
 const ST=$('stage'), VP=$('vp'), WORLD=$('world');
-const REG={ovhd:[300,438,400,356],aft:[300,0,400,436],pfd:[100,893,400,125],main:[0,793,1000,345],ped:[330,1130,340,548],fcu:[296,810,408,68],ecam:[390,880,240,370],mcdu:[338,1132,325,150],side:[0,1300,1000,120]};
-const REGN={ovhd:'Overhead',aft:'Aft overhead',main:'Panel',ped:'Pedestal',fcu:'FCU and EFIS',ecam:'ECAM',mcdu:'MCDU'};
+const REG=CF?CF.REG:{ovhd:[300,438,400,356],aft:[300,0,400,436],pfd:[100,893,400,125],main:[0,793,1000,345],ped:[330,1130,340,548],fcu:[296,810,408,68],ecam:[390,880,240,370],mcdu:[338,1132,325,150],side:[0,1300,1000,120]};
+const REGN=CF?CF.REGN:{ovhd:'Overhead',aft:'Aft overhead',main:'Panel',ped:'Pedestal',fcu:'FCU and EFIS',ecam:'ECAM',mcdu:'MCDU'};
 const Z={s:1,tx:0,ty:0,reg:'main',free:false}; let VPW=1,VPH=1, OTWH=0, cockpitVis=true;
 function layout(instant){
   const W=ST.clientWidth, H=ST.clientHeight; if(!W||!H) return;
@@ -622,7 +638,8 @@ function layout(instant){
 }
 function apply(instant){ WORLD.classList.toggle('anim',!instant); WORLD.style.transform=`translate(${Z.tx.toFixed(1)}px,${Z.ty.toFixed(1)}px) scale(${Z.s.toFixed(4)})`; hiRes(); fitSoon(); }
 let fitT=0; function fitSoon(){ clearTimeout(fitT); fitT=setTimeout(()=>{ DISP.forEach(d=>{ d.t=99; }); OV.forEach(c=>{ if(c.t==='fcu') c.sig=''; }); },360); }
-function hiRes(){ const need=Z.s*(devicePixelRatio||1)>1.55; const img=$('deck'); const src=need?'img/cockpits/a320-deck-3000.webp':'img/cockpits/a320-deck-1500.webp'; if(need&&!img.src.endsWith('3000.webp')){ const im=new Image(); im.decoding='async'; im.src=src; im.decode().then(()=>{ img.src=src; }).catch(()=>{}); } }
+const IMG=CF?CF.img:['img/cockpits/a320-deck-1500.webp','img/cockpits/a320-deck-3000.webp'];
+function hiRes(){ const need=Z.s*(devicePixelRatio||1)>1.55; const img=$('deck'); const src=need?IMG[1]:IMG[0]; if(need&&!img.src.endsWith('3000.webp')){ const im=new Image(); im.decoding='async'; im.src=src; im.decode().then(()=>{ img.src=src; }).catch(()=>{}); } }
 function view(r){ if(!REG[r]) return; Z.reg=r; if(D3&&CK&&CK.LOOK[r]) CK.LOOK[r](); layout(false); }
 new ResizeObserver(()=>layout(true)).observe(ST);
 document.querySelectorAll('.vseg .cb').forEach(b=>b.onclick=()=>view(b.dataset.v));
@@ -636,7 +653,7 @@ function clampPan(){ const w=SHEET.W*Z.s, h=SHEET.H*Z.s; Z.tx=clamp(Z.tx,Math.mi
 
 /* ================= pointer: controls ================= */
 function hit(wx,wy){
-  for(const side of [0,1]){ const r=RECT[side?'MCDU 2':'MCDU 1']; if(r&&wx>=r[1]&&wx<=r[1]+r[3]&&wy>=r[2]&&wy<=r[2]+r[4]) return MCDU_HIT[side]; }
+  for(const side of [0,1]){ const r=RECT[CDU_ID[side]]; if(r&&wx>=r[1]&&wx<=r[1]+r[3]&&wy>=r[2]&&wy<=r[2]+r[4]) return MCDU_HIT[side]; }
   let best=null, ba=1e9;
   for(const c of CT){ const r=c.r; if(!r) continue; const pad=c.t==='mkey'?0.4:1.2; if(wx<r[0]-pad||wx>r[0]+r[2]+pad||wy<r[1]-pad||wy>r[1]+r[3]+pad) continue; if(c.t==='ann'&&!c.click) continue; if(c.t==='seg'||c.t==='fcu'||c.t==='gearInd') continue; const a=r[2]*r[3]; if(a<ba){ ba=a; best=c; } }
   return best; }
@@ -715,7 +732,7 @@ function release(c,dr){
 }
 function dragCtl(dr,e,dx,dy){
   const c=dr.c;
-  if(c.t==='thr'){ const h=c.r[3]*Z.s; let v=clamp(dr.tla0-dy/h*80,M.gnd?-20:0,45); for(const d of [0,25,35,45]) if(Math.abs(v-d)<2.2) v=d; if(dr.both) UI.tla=[v,v]; else UI.tla[c.i]=v; return; }
+  if(c.t==='thr'){ const h=c.r[3]*Z.s; let v=clamp(dr.tla0-dy/h*80,M.gnd?-20:0,45); for(const d of (CF&&CF.detents||[0,25,35,45])) if(Math.abs(v-d)<2.2) v=d; if(CF&&CF.thrDrag){ CF.thrDrag(c.i,v,dr.both); return; } if(dr.both) UI.tla=[v,v]; else UI.tla[c.i]=v; return; }
   if(c.t==='stick'){ const R=40; UI.inp.stick={x:clamp(dx/R,-1,1),y:clamp(dy/R,-1,1)}; return; }
   if(c.t==='tiller'){ UI.inp.tiller=clamp(dx/60,-1,1); return; }
   if(c.t==='knob'||c.t==='sel'||c.t==='selF'||c.t==='cont'){ dr.acc+=e.movementX||0; const step=14; while(Math.abs(dr.acc)>=step){ const d=Math.sign(dr.acc); dr.acc-=d*step; turn(c,d,false); } }
@@ -728,6 +745,7 @@ function turn(c,d,big){
   else if(c.t==='thr'){ UI.tla=UI.tla.map(v=>clamp(v+d*2.5,M.gnd?-20:0,45)); }
 }
 function lever(c,fy){
+  if(CF&&CF.lever&&CF.lever(c,fy,X)) return;
   if(c.kind==='gear'){ A.sw.gearLv=A.sw.gearLv?0:1; say('Gear lever '+(A.sw.gearLv?'DOWN':'UP')); }
   if(c.kind==='flaps'){ A.sw.flapLv=clamp(A.sw.flapLv+(fy<0.5?-1:1),0,4); flapSay(); }
   if(c.kind==='spd'){ if(fy<0.25){ A.sw.spArm=A.sw.spArm?0:1; if(A.sw.spArm) A.sw.spdBrk=0; } else { A.sw.spArm=0; A.sw.spdBrk=clamp(+(A.sw.spdBrk+(fy<0.6?-0.5:0.5)).toFixed(1),0,1); } }
@@ -759,11 +777,11 @@ const mcApi={say:m=>say(m),perf:d=>{ const a=M.ap; if(d.v1) a.v1=d.v1; if(d.vr) 
   let lastT=0; ST.addEventListener('touchend',e=>{ const t=Date.now(); if(t-lastT<320&&e.changedTouches.length===1) e.preventDefault(); lastT=t; },{passive:false}); }
 
 /* ================= the big MCDU: a tap on either MCDU opens it full size ================= */
-const MCDU_HIT=[{t:'mkey',side:0,id:'MCDU 1|MCDU',r:RECT['MCDU 1']?RECT['MCDU 1'].slice(1,5):null},{t:'mkey',side:1,id:'MCDU 2|MCDU',r:RECT['MCDU 2']?RECT['MCDU 2'].slice(1,5):null}];
+const MCDU_HIT=[0,1].map(side=>({t:'mkey',side,id:CDU_ID[side]+'|'+(CF?'CDU':'MCDU'),r:RECT[CDU_ID[side]]?RECT[CDU_ID[side]].slice(1,5):null}));
 let MOV=null;
 function openMcdu(side){
   if(!MOV){
-    MOV=document.createElement('div'); MOV.className='mcduov'; MOV.setAttribute('role','dialog'); MOV.setAttribute('aria-label','MCDU');
+    MOV=document.createElement('div'); MOV.className='mcduov'+(CF?' '+CF.cduCls:''); MOV.setAttribute('role','dialog'); MOV.setAttribute('aria-label',CF?'CDU':'MCDU');
     const fk=[['DIR','PROG','PERF','INIT','DATA',''],['F-PLN','RAD NAV','FUEL PRED','SEC F-PLN','ATC COMM','MCDU MENU']];
     const L6=n=>Array.from({length:6},(_,i)=>`<button type="button" data-k="${n}${i+1}" class="lsk" aria-label="${n==='L'?'Left':'Right'} line key ${i+1}"></button>`).join('');
     MOV.innerHTML=`<div class="mtop"><div class="mtabs" role="tablist"><button type="button" class="on" data-t="live" role="tab">MCDU · this flight</button><button type="button" data-t="tr" role="tab">MCDU trainer (guided tasks)</button></div><button type="button" class="mx" aria-label="Close">×</button></div>
@@ -774,20 +792,21 @@ function openMcdu(side){
         <div class="mabc">${'ABCDEFGHIJKLMNOPQRSTUVWXY'.split('').map(k=>`<button type="button" data-k="${k}">${k}</button>`).join('')}${['Z','/','SP','OVFY','CLR'].map(k=>`<button type="button" data-k="${k}">${k==='OVFY'?'OVFY':k}</button>`).join('')}</div></div>
       <p class="mhint">Type with the keys (or your keyboard), then press a line key beside the field. CLR clears the scratchpad. This MCDU flies the aircraft: F-PLN, DIR TO, PERF and RAD NAV are used by the autopilot.</p></div></div>
       <div class="mpane" data-p="tr" hidden><iframe title="MCDU trainer" loading="lazy"></iframe></div>`;
+    if(CF) MOV.innerHTML=CF.cduHTML();
     ST.appendChild(MOV);
     const cv=MOV.querySelector('canvas'), g=cv.getContext('2d',{alpha:false});
-    MOV._draw=()=>{ DSP.mcdu(g,cv,{pwr:true,mcdu:MC.render(K,M,A)}); };
+    MOV._draw=()=>{ if(CF){ CF.draw.mcdu(g,cv,{pwr:true,mcdu:CF.cdu.render(K,M,A),exec:!!K.exec}); MOV.classList.toggle('xon',!!K.exec); } else DSP.mcdu(g,cv,{pwr:true,mcdu:MC.render(K,M,A)}); };
     MOV.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
       if(b.classList.contains('mx')){ closeMcdu(); return; }
       if(b.dataset.t){ MOV.querySelectorAll('.mtabs button').forEach(x=>x.classList.toggle('on',x===b)); MOV.querySelectorAll('.mpane').forEach(p=>p.hidden=p.dataset.p!==b.dataset.t);
         if(b.dataset.t==='tr'){ const f=MOV.querySelector('iframe'); if(!f.src){ f.src='mcdu.html'; f.onload=()=>{ try{ const d=f.contentDocument, st=d.createElement('style'); st.textContent='header.site,.sitefoot,.skip,.trnav,.lhead,.snav,.nsearch,#how,.note{display:none!important} body{background:#0e1216} .page{padding-top:8px!important}'; d.head.appendChild(st); }catch(_){} }; } } return; }
-      const k=b.dataset.k; if(!k) return; snd('click'); MC.key(K,k,M,A,mcApi); MOV._draw(); dirty.all=true; });
+      const k=b.dataset.k; if(!k) return; snd('click'); (CF?CF.cdu:MC).key(K,k,M,A,mcApi); MOV._draw(); dirty.all=true; });
     ['pointerdown','pointermove','pointerup','wheel','dblclick'].forEach(t=>MOV.addEventListener(t,e=>e.stopPropagation(),{passive:true}));
     MOV.addEventListener('keydown',e=>e.stopPropagation());
     window.addEventListener('keydown',e=>{ if(!MOV||MOV.hidden||typing(e)) return; let k=null;
       if(e.key==='Escape'){ closeMcdu(); e.preventDefault(); e.stopImmediatePropagation(); return; }
       if(/^[a-zA-Z0-9]$/.test(e.key)) k=e.key.toUpperCase(); else if(e.key==='/'||e.key==='.') k=e.key; else if(e.key===' ') k='SP'; else if(e.key==='Backspace'||e.key==='Delete') k='CLR'; else if(e.key==='-') k='+/-';
-      if(k){ e.preventDefault(); e.stopImmediatePropagation(); MC.key(K,k,M,A,mcApi); MOV._draw(); } },true);
+      if(k){ e.preventDefault(); e.stopImmediatePropagation(); (CF?CF.cdu:MC).key(K,k,M,A,mcApi); MOV._draw(); } },true);
   }
   MOV.hidden=false; MOV.dataset.side=side; MOV._draw(); MOV._t=setInterval(()=>{ if(!MOV.hidden) MOV._draw(); },1000);
 }
@@ -821,7 +840,7 @@ if(SH){ SH.init(); CH=SH.chrome({paused:()=>UI.paused,pause,restart:()=>reset(UI
       if(k==='hydGY'){ const on=!A.fail.hydGY; A.fail.hydGY=on; A.fail.hydG=on; A.fail.hydY=on; el.querySelectorAll('button[data-f]').forEach(x=>x.classList.toggle('on',!!A.fail[x.dataset.f])); return; }
       if(k==='__clr'){ UI.v1cut=false; A.fail={}; A.idgOK=[true,true]; A.eng.forEach(e=>{ e.fail=false; e.fire=false; }); A.apu.fire=false; A.irs.forEach(r=>{ if(r.st===4) r.st=0; }); } else { A.fail[k]=!A.fail[k]; if(k==='decomp'&&A.fail[k]) say('Decompression'); }
       el.querySelectorAll('button[data-f]').forEach(x=>x.classList.toggle('on',!!A.fail[x.dataset.f])); }); });
-  SH.pane('sp',el=>{ const s=M.spds||{}; const r=(t,v)=>`<div class="row"><span>${t}</span><b>${v==null?'—':Math.round(v)+' kt'}</b></div>`;
+  SH.pane('sp',el=>{ if(CF&&CF.speedsPane){ CF.speedsPane(el,X); return; } const s=M.spds||{}; const r=(t,v)=>`<div class="row"><span>${t}</span><b>${v==null?'—':Math.round(v)+' kt'}</b></div>`;
     el.innerHTML='<div class="sgrp">Speeds at '+(A.gw/1000).toFixed(1)+' t</div>'+r('V1',K.d.v1)+r('VR',K.d.vr)+r('V2',K.d.v2)+r('VS1G (this config)',s.vs1g)+r('VLS',s.vls)+r('F',s.F)+r('S',s.S)+r('Green dot',s.gd)+r('VFE (this config)',s.vfe)+r('VMO','350')+'<p class="pdisc">MMO 0.82. VLE 280 kt, VLO 250 kt (retraction 220 kt). VFE: 1 230, 1+F 215, 2 200, 3 185, FULL 177 kt.</p>'; });
 }
 $('apSel').value=UI.start; $('apSel').onchange=()=>reset($('apSel').value);
@@ -837,7 +856,7 @@ function hasWebGL(){ try{ const c=document.createElement('canvas'); return !!(c.
 let CK=null;
 (window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=!!(window.OTW&&window.THREE&&hasWebGL()&&OTW.init($('otw'))); }catch(e){ otwReady=false; } ST.classList.toggle('otwlive',otwReady);
   if(D3){ if(otwReady&&window.A3D){ try{ CK=A3D.init({R:OTW.renderer(),displays:DISP.filter(d=>d.cv),aspect:()=>ST.clientWidth/Math.max(1,ST.clientHeight)});
-      const im=new Image(); im.decoding='async'; im.src=CK.mobile?'img/cockpits/a320-deck-1500.webp':'img/cockpits/a320-deck-3000.webp'; im.decode().then(()=>{ CK.setImage(im); paint3d(true); }).catch(()=>{});
+      const im=new Image(); im.decoding='async'; im.src=CK.mobile?IMG[0]:IMG[1]; im.decode().then(()=>{ CK.setImage(im); paint3d(true); }).catch(()=>{});
       if(CK.LOOK[Z.reg]) CK.LOOK[Z.reg](); }catch(err){ console.warn('A320 3D',err); CK=null; } }
     if(!CK){ $('otwMsg')&&($('otwMsg').hidden=false); } }
   layout(true); },{timeout:500});
@@ -870,8 +889,9 @@ function frame(t){
 }
 
 /* ================= start ================= */
+if(CF&&CF.init) CF.init(X);
 reset(UI.start);
 defs(); buildOverlay(); layout(true);
 requestAnimationFrame(frame);
-window.__a320={get CK(){ return CK; },get A(){ return A; },get M(){ return M; },get K(){ return K; },reset,view,UI,GOV,fast(sec){ for(let i=0;i<sec*20;i++) simTick(0.05); }};
+window.__a320={get CK(){ return CK; },get A(){ return A; },get M(){ return M; },get K(){ return K; },reset,view,UI,GOV,X,fast(sec){ for(let i=0;i<sec*20;i++) simTick(0.05); }};
 })();

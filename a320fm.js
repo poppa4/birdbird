@@ -286,7 +286,7 @@ function step(M,dt,sys){
   M.asym=(M.thrust[0]-M.thrust[1]);
   // aerodynamic coefficients
   const c=cl(M), gearCD=AC.gearCD*M.gear, spCD=AC.spCD*M.sp;
-  M.fbw.law=sys?sys.law:'NORMAL';
+  M.fbw.law=M.conv?'CONV':(sys?sys.law:'NORMAL');
   const law=M.fbw.law;
   // ----- FBW normal law: sidestick -> load factor demand (pitch), roll rate demand (roll)
   const ap=A.ap1||A.ap2;
@@ -343,6 +343,10 @@ function step(M,dt,sys){
     if(apAct&&A.gamC!=null){ // the AP flies a flight path angle
       const e=A.gamC-M.gam; nzD=cg/Math.max(0.5,cosPhi)+clamp(e*M.tas/g0*1.2,-0.35,0.35);
       if(A.vert==='FLARE'||A.vert==='ROLL OUT') nzD=cg/Math.max(0.5,cosPhi)+clamp(e*M.tas/g0*1.5,-0.3,0.3);
+    } else if(law==='CONV'){ // conventional controls (737): the column adds load factor; speed stability about the trimmed speed; no auto trim, no bank compensation
+      if(M.trimSpd==null) M.trimSpd=M.ias;
+      nzD=cg+sy*1.15+clamp((M.ias-M.trimSpd)*0.009+(M.accel||0)*0.03,-0.45,0.45);
+      M.fbw.gamHold=null; M.fbw.flare=false;
     } else if(law==='NORMAL'||law==='ALTN'){
       const neutral=Math.abs(sy)<0.02;
       if(neutral){ // path hold, bank-compensated up to 33°
@@ -361,8 +365,10 @@ function step(M,dt,sys){
     nzD=clamp(nzD,nzMin,nzMax);
     // pitch attitude protection
     const thMax=(M.conf>=5?25:30)*D2R, thMin=-15*D2R;
+    if(law!=='CONV'){
     if(M.th>thMax-2*D2R&&nzD>cg) nzD=Math.min(nzD,cg+(thMax-M.th)*3);
-    if(M.th<thMin+2*D2R&&nzD<cg) nzD=Math.max(nzD,cg-(M.th-thMin)*3);
+    if(M.th<thMin+2*D2R&&nzD<cg) nzD=Math.max(nzD,cg-(M.th-thMin)*3); }
+    if(law==='CONV'&&apAct) M.trimSpd=M.ias; // the autopilot trims
     // high speed protection: nose-up demand above VMO+6, bank limited to 40°
     M.fbw.hsp=M.ias>sp.vmo+6&&law==='NORMAL';
     if(M.fbw.hsp) nzD=Math.max(nzD,cg+0.15+(M.ias-sp.vmo-6)*0.02);
