@@ -182,7 +182,7 @@ function mount(host,cfg){
   const cv=root.querySelector('canvas'), g=cv.getContext('2d'), ol=root.querySelector('ol'), sc=root.querySelector('.sc input'),
     pl=root.querySelector('.pl'), nEl=root.querySelector('.n'), cap=root.querySelector('.cpic-cap'), live=root.querySelector('[aria-live]');
   cv.style.aspectRatio=String(asp);
-  let p=0, from=0, to=0, t0=0, dur=1, playing=false, arrived=0, cur=0, vis=true, raf=0, W=0, H=0, dpr=1, dragging=false;
+  const api={}; let p=0, from=0, to=0, t0=0, dur=1, playing=false, arrived=0, cur=0, vis=true, raf=0, W=0, H=0, dpr=1, dragging=false;
   const now=()=>performance.now();
   function size(){ const a=root.getBoundingClientRect().width<600?(cfg.aspectSm||asp):asp; if(cv.style.aspectRatio!==String(a)) cv.style.aspectRatio=String(a);
     const r=cv.getBoundingClientRect(); dpr=Math.min(2,window.devicePixelRatio||1); W=Math.max(1,r.width); H=Math.max(1,Math.max(r.height,r.width/a));
@@ -213,7 +213,7 @@ function mount(host,cfg){
     if(!dragging) sc.value=String(p);
     if(Math.round(p)!==cur) list();
     g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
-    try{ cfg.draw(g,W,H,p,t/1000); }catch(e){ console.error(e); }
+    try{ cfg.draw(g,W,H,p,t/1000); }catch(e){ if(!api.err){ api.err=1; console.error(e); } }
     if(vis) raf=requestAnimationFrame(frame);
   }
   function kick(){ if(!raf&&vis) raf=requestAnimationFrame(frame); }
@@ -232,7 +232,7 @@ function mount(host,cfg){
   size(); list();
   if(window.LAB&&LAB.onLang) LAB.onLang(()=>{ list(); kick(); });
   document.addEventListener('labdepth',()=>{ setTimeout(()=>{ size(); kick(); },30); });
-  const api={go:i=>{ playing=false; go(i); }, get step(){ return cur; }, el:root, redraw:kick};
+  Object.assign(api,{go:i=>{ playing=false; go(i); }, step:()=>cur, el:root, redraw:kick});
   return api;
 }
 window.CORE={mount,U};
