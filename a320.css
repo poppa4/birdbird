@@ -103,3 +103,6 @@
 .b737 .mcduov .mabc{grid-template-columns:repeat(5,1fr)}
 .b737 .mcduov .mnav{grid-template-columns:repeat(3,1fr)}
 .b737 .world,.b737 .world img{height:1520px}
+.a320:not(.d3) .stage:not(.otwlive)>canvas#otw{visibility:hidden}
+.a320 .stage>.otwsky{background:linear-gradient(#4f86d3 0,#a9c6e6 55%,#d6e3ee 70%,#b4c6a4 71%,#86a865 85%,#5f8a40 100%)}
+.a320 .stage.otwlive>.otwsky{display:none}

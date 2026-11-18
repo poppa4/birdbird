@@ -94,13 +94,18 @@ for f in OFa:
 EYE = np.array([-0.51, 1.28, 1.34])
 flip = np.einsum('ij,ij->i', FN, EYE - OVa) < 0; FN[flip] *= -1
 L = shade(bake(OVa, FN)); col = np.array(C_) * L[:, None] * np.array([0.98, 1.0, 1.04])
+# wind every triangle towards the eye (the page then draws front faces only), and order them near to far: less overdraw
+for f in OFa:
+    nn = np.cross(OVa[f[1]] - OVa[f[0]], OVa[f[2]] - OVa[f[0]])
+    if nn @ (EYE - OVa[f[0]]) < 0: f[1], f[2] = f[2], f[1]
+OFa = OFa[np.argsort(np.linalg.norm(OVa[OFa].mean(1) - EYE, axis=1))]
 S = 16000; Pq = np.clip(np.round(OVa * S), -32767, 32767).astype(np.int16)
 N4 = np.zeros((len(Pq), 4), np.uint8); N4[:, :3] = np.clip(col / 1.12 * 255, 0, 255).round()
 Q = np.zeros((len(Pq), 2), np.uint16)
 I = OFa.reshape(-1); big = len(Pq) > 65535; I = I.astype(np.uint32 if big else np.uint16)
 def pad(b): return b + b'\0' * ((-len(b)) % 4)
 parts = [Pq.tobytes(), Q.tobytes(), N4.tobytes(), I.tobytes()]
-hdr = {'S': S, 'lmax': 1.12, 'groups': [{'tex': 'flat', 'nv': int(len(Pq)), 'ni': int(len(I)), 'i32': bool(big), 'uv': [0, 0, 1, 1], 'off': 0, 'sizes': [len(pad(p)) for p in parts]}], 'double': True}
+hdr = {'S': S, 'lmax': 1.12, 'groups': [{'tex': 'flat', 'nv': int(len(Pq)), 'ni': int(len(I)), 'i32': bool(big), 'uv': [0, 0, 1, 1], 'off': 0, 'sizes': [len(pad(p)) for p in parts]}]}
 blob = b''.join(pad(p) for p in parts)
 hdr['panels'] = {}
 for k, c, n, up, x, W, H, dep in B:

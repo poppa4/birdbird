@@ -596,7 +596,7 @@ function displayTick(dt){
       // canvas size follows how big the screen is on the display (zoomed in: up to 1024 px, sharp; far away: small, cheap)
       const want=Math.max(192,Math.min(CK.mobile?768:1024,Math.round(CK.pxSize(d,vh)*1.1/64)*64)); if(Math.abs(want-d.px)>Math.max(64,d.px*0.25)){ d.cv.width=want; d.cv.height=Math.round(want*(d.asp||1)); d.px=want; d.sig=''; d.t=99; d.tex.needsUpdate=true; }
       if(d.k==='mcdu'){ const sig=K.changed+'|'+side_pw(d)+'|'+(K.page==='fpln'||K.page==='prog'?Math.round(UI.t):0)+'|'+d.hidden; if(sig===d.sig) continue; d.sig=sig; }
-      else { const capt=(d.k==='pfd'||d.k==='nd')&&!d.side, hz=[capt?20:8,capt?12:6,capt?8:4][GOV.lvl]; if(d.t<1/hz&&!d.hidden) continue; }
+      else { const capt=(d.k==='pfd'||d.k==='nd')&&!d.side, hz=Math.min(d.hz||30,[capt?20:8,capt?12:5,capt?8:3][GOV.lvl]); if(d.t<1/hz&&!d.hidden) continue; } /* each upload of a screen texture costs GPU time: only the captain's PFD and ND fast */
       d.hidden=false; d.t=0; drawD(d,dispData(d)); d.tex.needsUpdate=true; }
     return; }
   for(const d of DISP){
@@ -846,7 +846,12 @@ if(SH){ SH.init(); CH=SH.chrome({paused:()=>UI.paused,pause,restart:()=>reset(UI
     el.innerHTML='<div class="sgrp">Speeds at '+(A.gw/1000).toFixed(1)+' t</div>'+r('V1',K.d.v1)+r('VR',K.d.vr)+r('V2',K.d.v2)+r('VS1G (this config)',s.vs1g)+r('VLS',s.vls)+r('F',s.F)+r('S',s.S)+r('Green dot',s.gd)+r('VFE (this config)',s.vfe)+r('VMO','350')+'<p class="pdisc">MMO 0.82. VLE 280 kt, VLO 250 kt (retraction 220 kt). VFE: 1 230, 1+F 215, 2 200, 3 185, FULL 177 kt.</p>'; });
 }
 $('apSel').value=UI.start; $('apSel').onchange=()=>reset($('apSel').value);
-$('bOtw').onclick=()=>{ UI.otw=UI.otw===false; $('bOtw').setAttribute('aria-pressed',UI.otw!==false); layout(true); };
+/* live outside view: on by default, off on phones (the King Air rule: a small strip of sky is not worth half the GPU there; they
+   get the static sky until the … menu turns it on). Off keeps the window, painted. */
+const OTWK=(CF?CF.key:'bb-a320')+'-otw', PHONE=matchMedia('(pointer:coarse)').matches&&Math.min(screen.width,screen.height)<=500;
+{ let pr=null; try{ pr=localStorage.getItem(OTWK); }catch(e){} UI.otwLive=pr?pr==='1':!PHONE; }
+function otwLiveSync(){ ST.classList.toggle('otwlive',otwReady&&(UI.otwLive||D3)); $('bOtw').setAttribute('aria-pressed',!!UI.otwLive); }
+$('bOtw').onclick=()=>{ UI.otwLive=!UI.otwLive; try{ localStorage.setItem(OTWK,UI.otwLive?'1':'0'); }catch(e){} otwLiveSync(); };
 $('bAlign').onclick=()=>{ UI.fastAlign=!UI.fastAlign; A.alignK=UI.fastAlign?20:1; $('bAlign').setAttribute('aria-pressed',UI.fastAlign); say(UI.fastAlign?'ADIRS align in about 20 s':'ADIRS align in 7 min, as in the aircraft'); };
 $('bPerf').onclick=()=>{ const p=$('perfm'); p.hidden=!p.hidden; $('bPerf').setAttribute('aria-pressed',!p.hidden); };
 $('bHelp').onclick=()=>{ if(SH&&SH.help) SH.help(); };
@@ -856,7 +861,7 @@ if(SH&&SH.touch) SH.touch({stage:ST,stick:v=>{ UI.inp.stick=v; },rud:v=>{ UI.inp
 let otwReady=false;
 function hasWebGL(){ try{ const c=document.createElement('canvas'); return !!(c.getContext('webgl2')||c.getContext('webgl')); }catch(e){ return false; } }
 let CK=null;
-(window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=!!(window.OTW&&window.THREE&&hasWebGL()&&OTW.init($('otw'))); }catch(e){ otwReady=false; } ST.classList.toggle('otwlive',otwReady);
+(window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=!!(window.OTW&&window.THREE&&hasWebGL()&&OTW.init($('otw'))); }catch(e){ otwReady=false; } otwLiveSync();
   if(D3){ if(otwReady&&window.A3D){ try{ CK=A3D.init({R:OTW.renderer(),displays:DISP.filter(d=>d.cv),aspect:()=>ST.clientWidth/Math.max(1,ST.clientHeight)});
       const im=new Image(); im.decoding='async'; im.src=CK.mobile?IMG[0]:IMG[1]; im.decode().then(()=>{ CK.setImage(im); paint3d(true); }).catch(()=>{});
       if(CK.LOOK[Z.reg]) CK.LOOK[Z.reg](); }catch(err){ console.warn('A320 3D',err); CK=null; } }
@@ -868,8 +873,8 @@ let d3Last=0;
 function otwTick(){
   if(D3){ if(!CK||document.hidden) return; const now=performance.now(), dt=d3Last?Math.min(0.1,(now-d3Last)/1000):0.016; d3Last=now; CK.updCam(dt);
     const c=Math.cos(M.psi), s=Math.sin(M.psi), hx=CK.cam.position, fw=5-hx.z; otwS.N=M.N+fw*c-hx.x*s; otwS.E=M.E+fw*s+hx.x*c; otwS.h=M.h+3.7-1.55+(hx.y-0.63); otwS.th=M.th; otwS.phi=M.phi; otwS.psi=M.psi;
-    const d0=Math.min(devicePixelRatio||1,2), zoomed=CK.fov()<45, dpr=zoomed?d0:Math.max(Math.min(1,d0),[d0,d0*0.8,d0*0.65][GOV.lvl]); /* never below 1 CSS pixel; full Retina when zoomed in to read */ OTW.render3d(otwS,CK.qHead(),CK.fov(),dpr,null,R=>CK.draw(R)); if(GOV.lvl!==(OTW.lvl||0)) OTW.quality(GOV.lvl===2?2:GOV.lvl>0); return; }
-  if(!otwReady||OTWH<8||UI.otw===false||document.hidden) return; const n=GOV.lvl+1; if(n>1&&(++otwSkip%n)) return;
+    const d0=Math.min(devicePixelRatio||1,2), zoomed=CK.fov()<45, dpr=zoomed?d0:Math.min(d0,[CK.mobile||PHONE?1.25:1.5,0.95,0.7][GOV.lvl]); /* the wide view at about King Air resolution or less; full Retina when zoomed in to read (that is where the text is) */ OTW.render3d(otwS,CK.qHead(),CK.fov(),dpr,null,R=>CK.draw(R)); if(GOV.lvl!==(OTW.lvl||0)) OTW.quality(GOV.lvl===2?2:GOV.lvl>0); return; }
+  if(!otwReady||OTWH<8||UI.otw===false||!UI.otwLive||document.hidden) return; const n=GOV.lvl+2; if(++otwSkip%n) return; /* the outside view at 30 Hz (20, 15 when the frame budget is tight), the panel at the full rate: as the King Air */
   const c=Math.cos(M.psi), s=Math.sin(M.psi); otwS.N=M.N+5*c+0.5*s; otwS.E=M.E+5*s-0.5*c; otwS.h=M.h+2.3; otwS.th=M.th; otwS.phi=M.phi; otwS.psi=M.psi; OTW.render(otwS,''); if(GOV.lvl!==(OTW.lvl||0)) OTW.quality(GOV.lvl===2?2:GOV.lvl>0); }
 
 /* ================= frame governor and loop ================= */

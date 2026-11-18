@@ -248,9 +248,9 @@ function atDisc(){ const a=X.M.ap; if(a.athr||a.athrArm){ a.athr=false; a.athrAr
 function trimUnits(){ const M=X.M; const v=M.trimSpd||(M.ias>60?M.ias:150); return clamp(4.2+(250-v)*0.024+(M.conf>0?0.6:0),0,17); }
 function trim(d){ const M=X.M; if(M.ap.ap1||M.ap.ap2) { X.say('Autopilot trim: disconnect the autopilot to trim by hand'); return; } const v=M.trimSpd||M.ias; M.trimSpd=clamp(v+d*2.5*(v/200),100,360); B.trimT=0.6; }
 /* ---------------- displays ---------------- */
-const DISP=[{id:'PFD CPT',k:'pfd',side:0,hz:30},{id:'ND CPT',k:'nd',side:0,hz:30},{id:'UPPER DU',k:'eng',hz:12},{id:'LOWER DU',k:'eng2',hz:5},{id:'ND F/O',k:'nd',side:1,hz:15},{id:'PFD F/O',k:'pfd',side:1,hz:15},
-  {id:'STANDBY',k:'isis',hz:15,rect:[381.3,681.3,39.5,39.5]},{id:'CDU L',k:'mcdu',side:0,hz:0,rect:[346.3,826.3,71,63.7],asp:63.7/71},{id:'CDU R',k:'mcdu',side:1,hz:0,rect:[580.3,826.3,71,63.7],asp:63.7/71},
-  {id:'FLAP IND',k:'flapind',hz:8,rect:[537.5,618,29,29]},{id:'GEAR LTS',k:'gearl',hz:4,rect:[574,617,31,30]}];
+const DISP=[{id:'PFD CPT',k:'pfd',side:0,hz:30},{id:'ND CPT',k:'nd',side:0,hz:30},{id:'UPPER DU',k:'eng',hz:12},{id:'LOWER DU',k:'eng2',hz:3},{id:'ND F/O',k:'nd',side:1,hz:15},{id:'PFD F/O',k:'pfd',side:1,hz:15},
+  {id:'STANDBY',k:'isis',hz:8,rect:[381.3,681.3,39.5,39.5]},{id:'CDU L',k:'mcdu',side:0,hz:0,rect:[346.3,826.3,71,63.7],asp:63.7/71},{id:'CDU R',k:'mcdu',side:1,hz:0,rect:[580.3,826.3,71,63.7],asp:63.7/71},
+  {id:'FLAP IND',k:'flapind',hz:4,rect:[537.5,618,29,29]},{id:'GEAR LTS',k:'gearl',hz:2,rect:[574,617,31,30]}];
 function vsp(M){ const s=M.spds||{}; return s; }
 function dispData(d){
   const M=X.M, A=X.A, K=X.K, ap=M.ap, side=d.side||0, E=side?UI.efis2:UI.efis, R2D=180/Math.PI;
