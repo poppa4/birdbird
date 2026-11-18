@@ -189,15 +189,15 @@ function drawChart(g,M,b){ const [bx,by,bw,bh]=b, c=P.CLS[S.cls], ph=ST.w<640, a
   /* passenger oxygen bar */
   if(S.mode==='oxy'&&TR.dec&&TR.dec.t14!=null){ const t0=TR.dec.t14, t1=t0+S.gen*60, yb=altB-8; g.fillStyle='rgba(113,204,147,.35)'; g.fillRect(X(t0),yb,Math.max(2,X(Math.min(t1,TR.T))-X(t0)),6);
     const after=a.find(p=>p.t>t1); if(after&&after.cab>13000){ g.fillStyle='rgba(236,90,71,.5)'; g.fillRect(X(t1),yb,X(TR.T)-X(t1),6); }
-    txt(g,L(t2('passenger O₂','passasjer-O₂'))+' '+S.gen+' min',X(t0)+3,yb-4,C.ok,'left',9.5,600,SANS); }
+    txt(g,L(t2('passenger O₂','passasjer-O₂'))+' '+S.gen+' min',X(t0)+3,yb+12,C.ok,'left',9.5,600,SANS); }
   /* aircraft and cabin, with the ΔP gap shaded */
   g.fillStyle='rgba(240,154,200,.08)'; g.beginPath(); a.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.h)):g.moveTo(X(p.t),Y(p.h))); for(let i=a.length-1;i>=0;i--) g.lineTo(X(a[i].t),Y(a[i].cab)); g.closePath(); g.fill();
   poly(g,a.map(p=>[X(p.t),Y(p.h)]),C.ac,2); if(c.press) poly(g,a.map(p=>[X(p.t),Y(p.cab)]),C.cab,2.4);
   /* labels on the lines */
   const pick=f=>a[Math.round(clamp(f,0,1)*(a.length-1))]; const la=S.mode==='norm'&&TR.sched?a.find(p=>p.t>=TR.sched.tc*60*0.55):pick(0.25);
   tag(g,L(t2('aircraft','fly')),X(la.t)+(S.mode==='norm'?-8:0),Y(la.h)+(S.mode==='norm'?0:-10),C.ac,{al:S.mode==='norm'?'right':'center',sz:10.5,dir:-1,minX:bx+pl});
-  if(c.press){ const lc=pick(S.mode==='norm'?0.5:0.72); tag(g,L(t2('cabin','kabin')),X(lc.t),Y(lc.cab)+(lc.h-lc.cab<2500?-12:12),C.cab,{al:'center',sz:10.5,minX:bx+pl}); }
-  if(S.mode==='norm'&&TR.sched){ const s=TR.sched, mid=(t0,t1,t)=>{ const x=(X(t0*60)+X(t1*60))/2; if(X(t1*60)-X(t0*60)>50) txt(g,L(t),x,altB-6,C.dim,'center',9.5,600,SANS); };
+  if(c.press){ const lc=pick(S.mode==='norm'?0.3:0.72); tag(g,L(t2('cabin','kabin')),X(lc.t),Y(lc.cab)+(lc.h-lc.cab<2500?-12:S.mode==='norm'?-12:12),C.cab,{al:'center',sz:10.5,minX:bx+pl}); }
+  if(S.mode==='norm'&&TR.sched){ const s=TR.sched, mid=(t0,t1,t)=>{ const x=(X(t0*60)+X(t1*60))/2; if(X(t1*60)-X(t0*60)>50&&!ph) txt(g,L(t),x,altB-6,C.dim,'center',9.5,600,SANS); };
     mid(0,s.tc,t2('climb','stigning')); mid(s.tc,s.tc+s.tcr,t2('cruise','marsj')); mid(s.tc+s.tcr,s.tc+s.tcr+s.td,t2('descent','nedstigning')); }
   if(TR.dec&&TR.dec.tEnd!=null&&S.mode!=='norm'){ const p=a.find(q=>q.t>(TR.dec.tEnd*0.55)); if(p&&!ph) tag(g,L(t2('emergency descent','nødnedstigning')),X(p.t)+8,Y(p.h)-2,C.mut,{sz:9.5,dir:-1}); }
   /* ΔP strip */
@@ -211,7 +211,7 @@ function drawChart(g,M,b){ const [bx,by,bw,bh]=b, c=P.CLS[S.cls], ph=ST.w<640, a
   /* time axis */
   const ya=by+bh-axisH+14, Tm=TR.T; let ticks;
   if(sq) ticks=[0,5,15,30,60,120,240,480,900].filter(s=>s<=Tm); else { const st=Tm>5400?1800:Tm>2400?600:Tm>900?300:60; ticks=[]; for(let s=0;s<=Tm;s+=st) ticks.push(s); }
-  let lastX=-99; ticks.forEach(s=>{ const x=X(s); if(x-lastX<26) return; lastX=x; line(g,x,altB,x,altB+3,C.mut,1); txt(g,s<60&&s?s+' s':(s/60)+(s?' min':''),x,ya,C.mut,'center',9.5); });
+  let lastX=-99; ticks.forEach(s=>{ const x=X(s); if(x-lastX<40) return; lastX=x; line(g,x,altB,x,altB+3,C.mut,1); txt(g,s<60&&s?s+' s':(s/60)+(s?' min':''),x,ya,C.mut,'center',9.5); });
   if(sq&&!ph) txt(g,L(t2('time (stretched: the first seconds are wide)','tid (strukket: de første sekundene er brede)')),bx+bw-pr,by+bh-1,C.dim,'right',9);
   /* playhead */
   const xp=X(M.t); line(g,xp+.5,top0,xp+.5,c.press?altB+10+dpH:altB,'rgba(238,242,245,.45)',1);
@@ -233,7 +233,7 @@ function drawHypoxia(g,M,b){ const [bx,by,bw,bh]=b, ph=ST.w<760, maxH=45000, pl=
   (bh<170?[[60,'1 min'],[300,'5 min'],[1800,'30 min']]:[[30,'30 s'],[60,'1 min'],[300,'5 min'],[1800,'30 min']]).forEach(([s,t])=>{ line(g,x0,Y(s)+.5,x0+pw,Y(s)+.5,C.grid,1); txt(g,t,x0-5,Y(s)+3.5,C.mut,'right',9); });
   const curve=[]; for(let h=15000;h<=maxH;h+=250) curve.push([X(h),Y(P.tuc(h))]); poly(g,curve,'#EEF2F5',2);
   const rapid=TR.dec&&(TR.dec.kind==='rapid'||TR.dec.kind==='explosive')&&S.mode!=='slow';
-  if(rapid){ const c2=[]; for(let h=15000;h<=maxH;h+=250) c2.push([X(h),Y(P.tuc(h,true))]); poly(g,c2,'rgba(238,242,245,.45)',1.4,[4,3]); if(!ph) txt(g,L(t2('after rapid decompression: about half','etter rask dekompresjon: omtrent halvparten')),X(26000),y0+26,C.mut,'left',9); }
+  if(rapid){ const c2=[]; for(let h=15000;h<=maxH;h+=250) c2.push([X(h),Y(P.tuc(h,true))]); poly(g,c2,'rgba(238,242,245,.45)',1.4,[4,3]); if(!ph) txt(g,L(t2('after rapid decompression: about half','etter rask dekompresjon: omtrent halvparten')),X(23000),y0+40,C.mut,'left',9); }
   /* the cabin marker (no oxygen) and, with masks, the crew equivalent */
   const cab=M.cab, xc=X(cab); line(g,xc+.5,y0,xc+.5,y1,'rgba(240,154,200,.75)',1.5);
   const tu=P.tuc(cab,rapid); if(tu!=null) dot(g,xc,Y(tu),5,C.cab,'#0c1217',1.2);

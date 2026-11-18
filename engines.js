@@ -158,7 +158,7 @@ function drawTPd(g,b,M,ph){ const [bx,by,bw,bh]=b, G=geo([bx+bw*0.1,by,bw*0.9,bh
     lab(g,X(0.11),Yb(0.62),L(t2('Gearbox','Girkasse')),C.mut);
     lab(g,X(0.22),Yt(0.8),L(t2('Air in','Luft inn')),'#BFE3F5');
     lab(g,X(0.38),Yb(0.66),L(t2('Compressor · Ng','Kompressor · Ng')),C.hp); lab(g,X(0.59),Yb(0.82),L(t2('Combustor','Brennkammer')),C.amb);
-    lab(g,X(0.79),Yt(0.7),L(t2('Power turbine','Kraftturbin')),C.lp); if(!sm) lab(g,X(0.92),Yb(0.62),L(t2('Exhaust','Eksos')),'#F2B8A8'); }
+    lab(g,X(0.79),sm?Yt(1.0):Yt(0.7),L(t2('Power turbine','Kraftturbin')),C.lp); if(!sm) lab(g,X(0.92),Yb(0.62),L(t2('Exhaust','Eksos')),'#F2B8A8'); }
   const PL=[[0.0,0.18,t2('5 Prop','5 Propell'),5],[0.18,0.3,t2('1 Intake','1 Innsug'),1],[0.3,0.48,t2('2 Compression','2 Kompresjon'),2],[0.48,0.68,t2('3 Combustion','3 Forbrenning'),3],[0.68,0.98,t2('4 Turbines · exhaust','4 Turbiner · eksos'),4]], py0=G.Yb(0.98)+12;
   if(sm){ phases(g,G,PL.filter((_,i)=>i%2===0),py0); phases(g,G,PL.filter((_,i)=>i%2===1),py0+22); } else phases(g,G,PL,py0);
   stations(g,G,M,[[0.24,'in'],[0.47,'comp'],[0.59,'burn'],[0.755,'itt'],[0.9,'exh']]);
@@ -213,7 +213,7 @@ function drawTP(g,b,M,ph){ const [bx,by,bw,bh]=b, G=geo([bx+bw*0.1,by,bw*0.9,bh]
   else { if(!S.stnTags){
     lab(g,hx+6,Yt(1.05)-4,L(fe?t2('Propeller · feathered','Propell · fjæret'):t2('Propeller · Np','Propell · Np')),C.lp,'left');
     lab(g,X(0.11),Yb(0.62),L(t2('Gearbox','Girkasse')),C.mut);
-    lab(g,X(0.33),Yt(0.8),L(t2('Power turbine','Kraftturbin')),C.lp); if(!sm) lab(g,X(0.23),Yt(1.06),L(t2('Exhaust','Eksos')),'#F2B8A8');
+    lab(g,sm?X(0.38):X(0.33),sm?Yb(0.62):Yt(0.8),L(t2('Power turbine','Kraftturbin')),C.lp); if(!sm) lab(g,X(0.23),Yt(0.9),L(t2('Exhaust','Eksos')),'#F2B8A8');
     lab(g,X(0.47),Yt(0.8),L(t2('Combustor','Brennkammer')),C.amb); lab(g,X(0.73),Yt(0.6),L(t2('Compressor · Ng','Kompressor · Ng')),C.hp);
     lab(g,X(0.6),Yb(0.83),L(t2('Air in (duct to the rear)','Luft inn (kanal bakover)')),'#BFE3F5'); }
     const PL=[[0.0,0.18,t2('5 Prop','5 Propell'),5],[0.19,0.29,t2('4 Exhaust','4 Eksos'),4],[0.29,0.57,t2('3 Combustion · 4 turbines','3 Forbrenning · 4 turbiner'),3],[0.57,0.8,t2('2 Compression','2 Kompresjon'),2],[0.8,0.96,t2('1 Intake','1 Innsug'),1]], py0=G.Yb(0.98)+12;

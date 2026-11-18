@@ -171,7 +171,7 @@ function behind(st,g,box){
     if(T.phi>0.2){ const hx=Lt[0]+sl*sc*Wl*Math.sin(T.phi*D2R)*4; arrow(g,Lt[0],Lt[1],hx,Lt[1],I.green,2.4,8); txt(g,'L·sin φ ×4',hx+(sl>0?6:-6),Lt[1]+4,{col:I.green,al:sl>0?'left':'right',size:fs-1,bg:BG}); }
     const fp=B(0,1.45), Yr=Math.min(P.Yr,P.Ymax); if(Yr>20){ const fx=fp[0]-sl*sc*Yr*0.0011*1.6; arrow(g,fp[0],fp[1],fx,fp[1],I.cyan,2.4,8); txt(g,L({en:'fin',no:'finne'}),fx+(sl>0?-6:6),fp[1]+4,{col:I.cyan,al:sl>0?'right':'left',size:fs-1,bg:BG}); } }
   // bank readout + inclinometer (ball)
-  txt(g,'φ '+nf(T.phi,1)+'° '+L({en:'toward live',no:'mot god'}),n?box.x+8:box.x+box.w-8,n?box.y+31:box.y+16,{col:I.green,al:n?'left':'right',size:fs,mono:1});
+  txt(g,'φ '+nf(T.phi,1)+'° '+L({en:'toward live',no:'mot god'}),box.x+box.w-8,box.y+16,{col:I.green,al:'right',size:fs,mono:1});
   const bw=Math.min(box.w*0.5,170), bx=cx-bw/2, by=Math.min(box.y+box.h-(n?34:24),cy+sc*3.4), bh=16;
   g.fillStyle='#18232C'; g.strokeStyle='#2A3742'; g.lineWidth=1; g.beginPath(); g.roundRect?g.roundRect(bx,by,bw,bh,8):g.rect(bx,by,bw,bh); g.fill(); g.stroke();
   const ballW=bh-3; g.strokeStyle='#5E6D7C'; for(const k of [-1,1]){ g.beginPath(); g.moveTo(cx+k*(ballW/2+1.5),by+1); g.lineTo(cx+k*(ballW/2+1.5),by+bh-1); g.stroke(); }

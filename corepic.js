@@ -53,6 +53,9 @@ const css=`
 .cpic-ls li.c-past i{border-color:rgba(228,107,174,.55);color:#E9A9CC}
 .cpic-ls .ft{margin:0;padding:10px 16px 12px;border-top:1px solid rgba(255,255,255,.06);font-size:11.5px;line-height:1.45;color:#7F8B96}
 .cpic-cap{display:none}
+.cpic.cpic-merged .cpic-h h3,.cpic.cpic-merged .cpic-h .k{display:none}
+.cpic.cpic-merged{margin-top:0}
+.cpic.cpic-merged .cpic-h{margin-bottom:12px}
 .cpic-more{margin:22px 0 0;border-top:1px solid var(--rule-2)}
 .cpic-more>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:10px;padding:14px 0 4px;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;color:var(--ink)}
 .cpic-more>summary::-webkit-details-marker{display:none}
@@ -267,6 +270,10 @@ function mount(host,cfg){
     new IntersectionObserver(es=>{ const e=es[0]; if(e.isIntersecting&&e.intersectionRatio>=.55&&!autoDone&&!touched&&!reduced()){ autoDone=true; setTimeout(()=>{ if(!touched&&!playing) setPlay(true); },500); } },{threshold:[.55]}).observe(cv); }
   new ResizeObserver(()=>{ size(); kick(); }).observe(cv);
   size(); list();
+  /* one heading, not two: the section's H2 takes the picture's title; the small "Start here" line stays above it */
+  const merge=()=>{ const sec=root.closest('section'); const h2=sec&&sec.querySelector(':scope > h2'); if(!h2||h2.contains(root)) return;
+    if(h2.compareDocumentPosition(root)&Node.DOCUMENT_POSITION_FOLLOWING){ root.classList.add('cpic-merged'); h2.dataset.cpicTitle='1'; h2.textContent=L(cfg.title); h2.classList.add('cpic-h2'); } };
+  if(cfg.merge!==false){ merge(); if(window.LAB&&LAB.onLang) LAB.onLang(merge); }
   const fold=()=>{ const sec=root.closest('section'); if(!sec||sec.querySelector('.cpic-more')) return; const grid=sec.querySelector('.kcgrid,#kcGrid'); if(!grid||!grid.children.length) return false;
     const intro=sec.querySelector('.kintro'); const d=document.createElement('details'); d.className='cpic-more';
     const sm=document.createElement('summary'); d.appendChild(sm); grid.parentNode.insertBefore(d,grid); if(intro&&intro.compareDocumentPosition(grid)&Node.DOCUMENT_POSITION_FOLLOWING) d.appendChild(intro); d.appendChild(grid);

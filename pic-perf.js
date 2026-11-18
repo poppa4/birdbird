@@ -21,7 +21,7 @@ D.v2=D.vlof+480;
 D.stop=D.v1+2*SP.v1*KT+Math.pow(SP.v1*KT,2)/(2*2.9);
 /* key frames, one per step: distance m, CAS kt, height ft, pitch deg, engine (near) 1 running 0 failed */
 const K=[
-  {d:0,v:0,h:0,th:0,e:1},
+  {d:dAEO(84),v:84,h:0,th:0,e:1},
   {d:D.vmcg,v:SP.vmcg,h:0,th:0,e:1},
   {d:D.vef,v:SP.vef,h:0,th:0,e:0},
   {d:D.v1,v:SP.v1,h:0,th:0,e:0},
@@ -98,7 +98,7 @@ function draw(g,W,H,p,tm){
   // current speed marker on the scale
   if(S.v>vLo-1){ const x=SX(clamp(S.v,vLo,vHi)); g.fillStyle='#fff'; g.beginPath(); g.moveTo(x,sy-2); g.lineTo(x-6,sy-11); g.lineTo(x+6,sy-11); g.closePath(); g.fill();
     g.strokeStyle='rgba(255,255,255,.75)'; g.lineWidth=2; g.beginPath(); g.moveTo(SX(vLo),sy); g.lineTo(x,sy); g.stroke(); }
-  else { txt(g,`${nf(S.v)} kt →`,sx0,sy-9,{mono:1,size:10.5*fs,col:'#fff'}); }
+  else { txt(g,`← ${nf(S.v)} kt`,sx0,sy-9,{mono:1,size:10.5*fs,col:'#fff'}); }
 
   // speed bugs + leaders to the runway
   const ax=X(S.d), ay=yG-hpx(S.h);

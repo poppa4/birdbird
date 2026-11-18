@@ -15,6 +15,17 @@
    Phones      (≤900 px) viewport first, then the Controls tray: collapsed under the model, and it stays at the bottom edge while the model
                is on screen. Touch targets are at least 44 px.
    Canvas      every canvas with an aria-label is exposed as an image (role=img); live values are in the chip (aria-live). */
+/* Readable charts: in the Virtual Labs shell (.atl-main) and the essentials pictures, small canvas text (8–11 px) is raised to a common floor (about 11 px on a wide canvas, 10 px on a phone).
+   Dial numerals and other text below 8.75 px are left as drawn. A canvas can opt out with data-nofloor. */
+(function(){
+  if(window.__labFontFloor) return; window.__labFontFloor=1;
+  const P=window.CanvasRenderingContext2D&&CanvasRenderingContext2D.prototype, d=P&&Object.getOwnPropertyDescriptor(P,'font'); if(!d||!d.set) return;
+  const re=/(\d+(?:\.\d+)?)px/;
+  Object.defineProperty(P,'font',{configurable:true,get(){ return d.get.call(this); },set(v){
+    const c=this.canvas; if(c&&typeof v==='string'){ let f=c.__ff; if(f===undefined){ f=(!c.hasAttribute('data-nofloor')&&c.closest&&c.closest('.atl-main, .cpic'))?1:0; if(f||performance.now()>4000) c.__ff=f; }
+      if(f){ const m=re.exec(v); if(m){ const s=+m[1]; if(s>=8.75&&s<11){ const w=c.clientWidth||600, lo=w<520?9.8:10.6, hi=w<520?10.4:11.4; const n=Math.min(hi,lo+(s-9)*0.32); if(n>s) v=v.replace(re,n.toFixed(2)+'px'); } } } }
+    d.set.call(this,v); }});
+})();
 (function(){
   'use strict';
   const D={

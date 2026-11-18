@@ -373,8 +373,8 @@ function gear(cls,F,A,G,EL,HY){
   else {
     const h1=!!HY.info.sys[1]&&!F.bn, h2=!!HY.info.sys[2];
     nodes.push({id:'h1',r:0,x:.6,k:'sys',c:'h1',l:T('SYSTEM 1','SYSTEM 1'),s:F.bn?T('NORMAL LOST','NORMAL TAPT'):T('normal','normal'),src:h1,fail:!h1},
-      {id:'h2',r:0,x:.78,k:'sys',c:'h2',l:T('SYSTEM 2','SYSTEM 2'),s:T('alternate','alternativ'),src:h2&&!h1,off:h1,fail:!h2},
-      {id:'acc',r:0,x:.94,k:'acc',l:T('ACCU','AKKU'),s:T('park · backup','park · reserve'),src:true,warn:!h1&&!h2},
+      {id:'h2',r:0,x:.755,k:'sys',c:'h2',l:T('SYSTEM 2','SYSTEM 2'),s:T('alternate','alternativ'),src:h2&&!h1,off:h1,fail:!h2},
+      {id:'acc',r:0,x:.95,k:'acc',l:T('ACCU','AKKU'),s:T('park · backup','park · reserve'),src:true,warn:!h1&&!h2},
       {id:'ab',r:1,x:.88,k:'ctl',c:'sig',l:T('AUTOBRAKE','AUTOBREMS'),s:h1?(A.ab?T('armed','armert'):T('off','av')):T('LOST','TAPT'),src:h1&&!!A.ab,off:!(h1&&A.ab),w:T('Autobrake','Autobrems')},
       {id:'ask',r:1,x:.66,k:'pump',c:'sig',l:T('ANTI-SKID','ANTISKRENS'),fail:!!F.ask,s:F.ask?T('FAULT','FEIL'):null,w:T('Anti-skid','Antiskrens')},
       {id:'brk',r:2,x:.74,k:'use',l:T('WHEEL BRAKES','HJULBREMSER'),s:T('carbon','karbon'),w:T('Wheel brakes','Hjulbremser')});

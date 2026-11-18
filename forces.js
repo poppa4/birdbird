@@ -174,7 +174,7 @@ function sideView(st,g,n){ const W=st.w, H=st.h, fs=n?10:11.5;
   // horizon reference and flight path through the CG
   dline(g,cx-W*0.4,cy,cx+W*0.5,cy,'rgba(139,153,167,.22)',1,[2,5]);
   const pl=W*0.6; dline(g,cx-Math.cos(ga)*pl,cy+Math.sin(ga)*pl,cx+Math.cos(ga)*pl,cy-Math.sin(ga)*pl,'rgba(127,203,232,.4)',1.2,[7,6]);
-  if(!n) txt(g,L({en:'flight path',no:'flybane'}),cx+Math.cos(ga)*(n?W*0.36:W*0.44),cy-Math.sin(ga)*(n?W*0.36:W*0.44)-8,{col:'rgba(127,203,232,.7)',al:'center',size:fs-1,mono:1});
+  if(!n) txt(g,L({en:'flight path',no:'flybane'}),cx-Math.cos(ga)*W*0.36,cy+Math.sin(ga)*W*0.36-8,{col:'rgba(127,203,232,.7)',al:'center',size:fs-1,mono:1});
   if(Math.abs(R.gam)>0.4){ const rr=n?54:74; g.strokeStyle=INK.amber; g.lineWidth=1.5; g.beginPath(); g.arc(cx,cy,rr,Math.min(0,-ga),Math.max(0,-ga)); g.stroke(); txt(g,'γ '+nf(R.gam,1)+'°',cx+rr+8,cy-Math.sin(ga/2)*rr+4,{col:INK.amber,size:fs,mono:1,bg:BG}); }
   const sc=Math.min(W*(n?0.04:0.034),H*0.058);
   plane(g,cx,cy,sc,R.th,AN.t);

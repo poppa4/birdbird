@@ -80,7 +80,7 @@ function gALT(g,cx,cy,r,v,set){ face(g,cx,cy,r);
   dot(g,cx,cy,r*0.08,'#2a3036'); glassHi(g,cx,cy,r); }
 function gVSI(g,cx,cy,r,v){ face(g,cx,cy,r);
   const L1=[]; for(let k=-2000;k<=2000;k+=100) L1.push([k,k%500===0]); ticks(g,cx,cy,r,L1,vsiA,[[0,'0'],[500,'5'],[1000,'10'],[1500,'15'],[-500,'5'],[-1000,'10'],[-1500,'15']]);
-  txt(g,'UP',cx-r*0.32,cy-r*0.32,'#8E99A4','center',Math.max(7,r*0.13)/FS,600,SANS); txt(g,'DN',cx-r*0.32,cy+r*0.42,'#8E99A4','center',Math.max(7,r*0.13)/FS,600,SANS);
+  txt(g,'UP',cx-r*0.44,cy-r*0.2,'#8E99A4','center',Math.max(7,r*0.13)/FS,600,SANS); txt(g,'DN',cx-r*0.44,cy+r*0.3,'#8E99A4','center',Math.max(7,r*0.13)/FS,600,SANS);
   hand(g,cx,cy,vsiA(v),r*0.86,Math.max(2,r*0.06),'#F4F7F9',r*0.15); dot(g,cx,cy,r*0.08,'#2a3036'); glassHi(g,cx,cy,r); }
 function gMACH(g,cx,cy,r,m){ face(g,cx,cy,r);
   const L1=[]; for(let k=0.2;k<=1.001;k+=0.05) L1.push([k,Math.round(k*100)%10===0]); ticks(g,cx,cy,r,L1,machA,[[0.3,'.3'],[0.5,'.5'],[0.7,'.7'],[0.9,'.9']]);

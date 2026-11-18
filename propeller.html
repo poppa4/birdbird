@@ -5,7 +5,7 @@
 <meta name="description" content="Engine failure on the A320 for ATPL 081 and the type rating: slow down until the rudder runs out and find VMCA, see why bank, thrust, altitude, CG and weight move it, and how CS-25 turns it into VMCG, VMCL, V1, VR and V2.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Engine failure and minimum control speeds</title>
-<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="lab.css?v=15">
 <link rel="stylesheet" href="site.css?v=35">
 <style>
 .stack{display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -339,7 +339,7 @@ ol.steps li{margin:4px 0}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=52"></script>
+<script src="lab.js?v=54"></script>
 <script src="chartnote.js?v=3"></script>
 <script src="concepts.js?v=3"></script>
 <script src="stab.js?v=2"></script>
@@ -862,7 +862,7 @@ LAB.onLang(()=>{ hooks.forEach(f=>f()); vmRead(); acC.draw(); trC.draw(); mvC.dr
 })();
 </script>
 <script src="cfd3d.js?v=7"></script>
-<script src="twin.js?v=8"></script>
+<script src="twin.js?v=10"></script>
 <script>
 /* Understand: key concept cards (same pattern as the wind tunnel) */
 (function(){ if(!window.KCS) return; const {sv,tx,ar}=KCS, L=LAB.L;
@@ -885,7 +885,7 @@ LAB.onLang(()=>{ hooks.forEach(f=>f()); vmRead(); acC.draw(); trC.draw(); mvC.dr
   const g=document.getElementById('pfKc'); if(g) KCS.render(g,KCP);
 })();
 </script>
-<script src="corepic.js?v=8"></script>
+<script src="corepic.js?v=9"></script>
 <script src="pic-vmc.js?v=1"></script>
 </body>
 </html>

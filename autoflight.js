@@ -241,7 +241,7 @@ function drawTraffic(g,b,f){ const [x0,y0,w,h]=b, ph=ST.w<640; panel(g,b,L(t2('T
   planeTop(g,cx,cy-6,0,ph?16:20,C.own);
   if(!ph||deepOn()) txt(g,L(t2('constant bearing, decreasing range: a collision course','konstant peiling, minkende avstand: kollisjonskurs')),x0+10,y0+34,C.dim,'left',9.5,500,SANS);
   g.restore(); }
-function drawTcSide(g,b,f){ const [x0,y0,w,h]=b, ph=ST.w<640; panel(g,b,L(t2('SIDE VIEW','SIDEBILDE')),L(t2('relative to your start altitude, against time','i forhold til din starthøyde, mot tid')));
+function drawTcSide(g,b,f){ const [x0,y0,w,h]=b, ph=ST.w<640; panel(g,b,L(t2('SIDE VIEW','SIDEBILDE')),ph?'':L(t2('relative to your start altitude, against time','i forhold til din starthøyde, mot tid')));
   const fr=E.fr, T=fr[fr.length-1].t, rel=z=>z-TC.alt, all=fr.map(q=>rel(q.zo)).concat(fr.map(q=>rel(q.zi))).concat([TC.dz0+(TC.vi)*T/60,TC.vo*T/60]);
   let lo=Math.min(...all,-800), hi=Math.max(...all,800); const pad=(hi-lo)*0.12; lo-=pad; hi+=pad;
   const pl=x0+(ph?40:50), pr=x0+w-12, pt=y0+28, pb=y0+h-(ph?20:24), X=t=>pl+10+t/T*(pr-pl-10), Y=z=>pb-(z-lo)/(hi-lo)*(pb-pt);
