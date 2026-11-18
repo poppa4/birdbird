@@ -236,7 +236,7 @@
 </style>
 </head>
 <body data-title="Training">
-<script src="site.js?v=103"></script>
+<script src="site.js?v=104"></script>
 <main class="tv" id="main">
 
   <header class="tv-hero">
@@ -259,6 +259,7 @@
       <li><a href="#briefing"><span class="n">03</span><b data-tx="x3">Briefing</b><small data-tx="x3s">Departures and approaches, scored</small></a></li>
       <li><a href="#radio"><span class="n">04</span><b data-tx="x4">Radio</b><small data-tx="x4s">Radio drills and gate to gate</small></a></li>
       <li><a href="mcdu.html"><span class="n">05</span><b data-tx="x5">MCDU trainer</b><small data-tx="x5s">A320, 13 tasks</small></a></li>
+      <li><a href="fmc.html"><span class="n">06</span><b data-tx="x6">FMC trainer</b><small data-tx="x6s">737, 11 tasks</small></a></li>
     </ol>
   </nav>
 
@@ -330,6 +331,18 @@
           <p class="sy-kind" data-tx="mK">FMGS from cockpit preparation to the approach, with an ND in plan mode</p>
           <dl class="tv-wh"><dt data-tx="tr">Trains</dt><dd data-tx="mT">Cockpit preparation in the D-I-F-R-I-P order, the FMS data crosscheck as PM, runway change with the SEC F-PLN, direct to, centreline extension, arrival and approach, discontinuities, holding, diversion, navaids and the PERF APPR and GO AROUND pages. Step by step, or from the paperwork alone.</dd></dl>
           <div class="sy-go"><a class="tv-btn sm" href="mcdu.html"><span data-tx="mGo">Open the trainer</span><span class="sr"> – MCDU</span></a></div>
+        </div>
+      </article>
+      <article class="sy sy-wide" aria-labelledby="s-fmc">
+        <a class="sy-ph" href="fmc.html" tabindex="-1" aria-hidden="true">
+          <picture><source media="(max-width:640px)" srcset="img/training/fmc-480.webp 480w, img/training/fmc-960.webp 960w, img/training/fmc-1440.webp 1440w" sizes="calc(100vw - 48px)"><img src="img/training/fmc-full-800.webp" srcset="img/training/fmc-full-400.webp 400w, img/training/fmc-full-800.webp 800w, img/training/fmc-full-1200.webp 1200w" sizes="(max-width:900px) 40vw, 340px" width="1200" height="1927" decoding="async" loading="lazy"
+            alt="The 737 FMC trainer showing the active RTE LEGS page: SELKA in magenta as the active waypoint, then ODRUP, TOLKA, SK260 and SK255 with courses, distances and altitude constraints." data-alt-no="737 FMC-treneren med den aktive RTE LEGS-siden: SELKA i magenta som aktivt waypoint, så ODRUP, TOLKA, SK260 og SK255 med kurser, distanser og høyderestriksjoner."></picture>
+        </a>
+        <div class="sy-b">
+          <h3 id="s-fmc"><a href="fmc.html">FMC trainer · 737</a> <span class="st beta" data-tx="stN">New</span></h3>
+          <p class="sy-kind" data-tx="fK">Boeing CDU from IDENT to APPROACH REF, with MOD and EXEC and an ND in plan mode</p>
+          <dl class="tv-wh"><dt data-tx="tr">Trains</dt><dd data-tx="fT">The preflight from IDENT to TAKEOFF REF, the crosscheck as PM, runway change, direct to and intercept course, arrival and approach, discontinuities, constraints, holding, diversion and APPROACH REF. Step by step, or from the paperwork alone.</dd></dl>
+          <div class="sy-go"><a class="tv-btn sm" href="fmc.html"><span data-tx="mGo">Open the trainer</span><span class="sr"> – 737 FMC</span></a></div>
         </div>
       </article>
     </div>
@@ -494,7 +507,7 @@ LAB.tx({
  h1:'Cockpittrenere, IFR-prosedyrer, briefing og radio',
  lede:'Alt NORDAP tilbyr for trening, samlet på ett sted: fungerende cockpiter for tre flytyper, en IFR-trener som lærer deg én prosedyre om gangen, briefinger som instruktøren vurderer, og radiotrening fra enkeltkall til en hel flyging. Typeratingstudier og kontrollforberedelse finner du også her.',
  fA:'Flytyper', fP:'Plattform', fPv:'I nettleseren, uten installasjon', fL:'Språk', fLv:'Engelsk og norsk; typerating på engelsk',
- x1:'Simulatorer', x1s:'3 flytyper, 2D og 3D', x2:'IFR-trener', x2s:'46 øvelser', x3:'Briefing', x3s:'Avganger og innflyginger, med poeng', x4:'Radio', x4s:'Radiodriller og gate to gate', x5:'MCDU-trener', x5s:'A320, 13 oppgaver',
+ x1:'Simulatorer', x1s:'3 flytyper, 2D og 3D', x2:'IFR-trener', x2s:'46 øvelser', x3:'Briefing', x3s:'Avganger og innflyginger, med poeng', x4:'Radio', x4s:'Radiodriller og gate to gate', x5:'MCDU-trener', x5s:'A320, 13 oppgaver', x6:'FMC-trener', x6s:'737, 11 oppgaver', fK:'Boeing-CDU fra IDENT til APPROACH REF, med MOD og EXEC og en ND i plan-modus', fT:'Preflight fra IDENT til TAKEOFF REF, kryssjekken som PM, rullebanebytte, direct to og intercept course, arrival og innflyging, diskontinuiteter, restriksjoner, holding, diversjon og APPROACH REF. Steg for steg, eller bare fra papirene.',
  simH:'Simulatorer',
  simP:'Fungerende cockpiter for tre flytyper, fra de seks grunnleggende instrumentene til en turboprop med to piloter. Alle kjører som 2D-panel; 3D-cockpitene er i beta.',
  stB:'Beta', tr:'Trener', o2:'Åpne 2D',

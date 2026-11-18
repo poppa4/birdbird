@@ -1436,7 +1436,7 @@ function loadScn(id){
   el('mdocs').innerHTML=SC.docs.map(docHtml).join('');
   el('mtitle').textContent=Lx(SC.t);
   document.querySelectorAll('#mlist button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===SC.id?'true':'false'));
-  if(SC.cat!=='hidden'){ try{ localStorage.setItem('mcdu-scn',SC.id); }catch(e){} }
+  if(SC.cat!=='hidden'){ try{ localStorage.setItem('bb-mcdu-scn',SC.id); }catch(e){} }
   refresh();
 }
 function buildList(){
@@ -1453,7 +1453,7 @@ function init(){
   el('mreset').onclick=()=>loadScn(SC.id);
   fcuUi();
   const zi=el('mndin'), zo=el('mndout'); if(zi) zi.onclick=()=>{ NDR=Math.max(0,NDR-1); drawNd(); }; if(zo) zo.onclick=()=>{ NDR=Math.min(RANGES.length-1,NDR+1); drawNd(); };
-  let first='prep'; try{ const s=localStorage.getItem('mcdu-scn'); if(s&&SCN.some(x=>x.id===s)) first=s; }catch(e){}
+  let first='prep'; try{ const s=localStorage.getItem('bb-mcdu-scn'); if(s&&SCN.some(x=>x.id===s)) first=s; }catch(e){}
   const h=location.hash.replace('#',''); if(SCN.some(x=>x.id===h)) first=h;
   loadScn(first);
   courseUi(); refUi();
