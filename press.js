@@ -181,9 +181,9 @@ function drawChart(g,M,b){ const [bx,by,bw,bh]=b, c=P.CLS[S.cls], ph=ST.w<640, a
   for(let h=0;h<=topA;h+=topA>30000?10000:5000){ line(g,bx+pl,Y(h)+.5,bx+bw-pr,Y(h)+.5,C.grid,1); txt(g,h?nf(h/1000,0)+'k':'0',bx+pl-5,Y(h)+3.5,C.mut,'right',9.5); }
   if(!ph) txt(g,L(t2('altitude (ft)','høyde (ft)')),bx+pl,by+10,C.mut,'left',9.5,600,SANS);
   /* thresholds */
-  const thr=[]; if(c.press){ thr.push([10000,C.amb,t2('cabin altitude warning ≈ 10 000','kabinhøydevarsel ≈ 10 000')]); if(S.mode!=='norm') thr.push([14000,C.red,t2('passenger masks ≈ 14 000','passasjermasker ≈ 14 000')]); }
+  const thr=[]; if(c.press){ thr.push([10000,C.amb,t2('cabin alt. warning 10 000','kabinhøydevarsel 10 000')]); if(S.mode!=='norm') thr.push([14000,C.red,t2('masks drop 14 000','masker faller 14 000')]); }
   else { thr.push([10000,C.amb,t2('10 000: crew O₂ after 30 min (NCO)','10 000: O₂ for besetning etter 30 min (NCO)')],[13000,C.red,t2('13 000: everyone on O₂','13 000: alle på O₂')]); if(S.rule!=='nco'&&S.mode==='oxy') thr[0][2]=t2('10 000: crew O₂ (CAT)','10 000: O₂ for besetning (CAT)'); }
-  thr.forEach(([h,col,t],i)=>{ if(h>topA) return; line(g,bx+pl,Y(h)+.5,bx+bw-pr,Y(h)+.5,col,1,[4,4]); if(!ph||i===0) tag(g,L(t),bx+pl+(bw-pl-pr)*0.5,Y(h)-(i?9:-9),col,{al:'center',sz:9.5,wt:500,font:MONO,bg:true}); });
+  thr.forEach(([h,col,t],i)=>{ if(h>topA) return; line(g,bx+pl,Y(h)+.5,bx+bw-pr,Y(h)+.5,col,1,[4,4]); if(!ph||i===0) tag(g,L(t),S.mode==='norm'?bx+pl+(bw-pl-pr)*0.5:S.mode==='slow'?bx+pl+30:S.mode==='oxy'?bx+bw-pr-2:bx+pl+(bw-pl-pr)*0.3,Y(h)-9,col,{al:S.mode==='norm'?'center':S.mode==='oxy'?'right':'left',dir:-1,sz:9.5,wt:500,font:MONO,bg:true}); });
   /* reaction band in the rapid modes */
   if(TR.dec&&S.mode!=='slow'){ const x2=X(S.react); g.fillStyle='rgba(240,180,64,.08)'; g.fillRect(bx+pl,top0,x2-bx-pl,altB-top0); if(x2-bx-pl>40&&!ph) txt(g,L(t2('masks on','masker på')),bx+pl+4,top0+12,'#F0C470','left',9.5,600,SANS); }
   /* passenger oxygen bar */
@@ -196,7 +196,7 @@ function drawChart(g,M,b){ const [bx,by,bw,bh]=b, c=P.CLS[S.cls], ph=ST.w<640, a
   /* labels on the lines */
   const pick=f=>a[Math.round(clamp(f,0,1)*(a.length-1))]; const la=S.mode==='norm'&&TR.sched?a.find(p=>p.t>=TR.sched.tc*60*0.55):pick(0.25);
   tag(g,L(t2('aircraft','fly')),X(la.t)+(S.mode==='norm'?-8:0),Y(la.h)+(S.mode==='norm'?0:-10),C.ac,{al:S.mode==='norm'?'right':'center',sz:10.5,dir:-1,minX:bx+pl});
-  if(c.press){ const lc=pick(S.mode==='norm'?0.3:0.72); tag(g,L(t2('cabin','kabin')),X(lc.t),Y(lc.cab)+(lc.h-lc.cab<2500?-12:S.mode==='norm'?-12:12),C.cab,{al:'center',sz:10.5,minX:bx+pl}); }
+  if(c.press){ const lc=pick(S.mode==='norm'?0.82:0.72); tag(g,L(t2('cabin','kabin')),X(lc.t),Y(lc.cab)+(lc.h-lc.cab<2500?-12:S.mode==='norm'?-12:12),C.cab,{al:'center',sz:10.5,minX:bx+pl}); }
   if(S.mode==='norm'&&TR.sched){ const s=TR.sched, mid=(t0,t1,t)=>{ const x=(X(t0*60)+X(t1*60))/2; if(X(t1*60)-X(t0*60)>50&&!ph) txt(g,L(t),x,altB-6,C.dim,'center',9.5,600,SANS); };
     mid(0,s.tc,t2('climb','stigning')); mid(s.tc,s.tc+s.tcr,t2('cruise','marsj')); mid(s.tc+s.tcr,s.tc+s.tcr+s.td,t2('descent','nedstigning')); }
   if(TR.dec&&TR.dec.tEnd!=null&&S.mode!=='norm'){ const p=a.find(q=>q.t>(TR.dec.tEnd*0.55)); if(p&&!ph) tag(g,L(t2('emergency descent','nødnedstigning')),X(p.t)+8,Y(p.h)-2,C.mut,{sz:9.5,dir:-1}); }
@@ -233,7 +233,7 @@ function drawHypoxia(g,M,b){ const [bx,by,bw,bh]=b, ph=ST.w<760, maxH=45000, pl=
   (bh<170?[[60,'1 min'],[300,'5 min'],[1800,'30 min']]:[[30,'30 s'],[60,'1 min'],[300,'5 min'],[1800,'30 min']]).forEach(([s,t])=>{ line(g,x0,Y(s)+.5,x0+pw,Y(s)+.5,C.grid,1); txt(g,t,x0-5,Y(s)+3.5,C.mut,'right',9); });
   const curve=[]; for(let h=15000;h<=maxH;h+=250) curve.push([X(h),Y(P.tuc(h))]); poly(g,curve,'#EEF2F5',2);
   const rapid=TR.dec&&(TR.dec.kind==='rapid'||TR.dec.kind==='explosive')&&S.mode!=='slow';
-  if(rapid){ const c2=[]; for(let h=15000;h<=maxH;h+=250) c2.push([X(h),Y(P.tuc(h,true))]); poly(g,c2,'rgba(238,242,245,.45)',1.4,[4,3]); if(!ph) txt(g,L(t2('after rapid decompression: about half','etter rask dekompresjon: omtrent halvparten')),X(23000),y0+40,C.mut,'left',9); }
+  if(rapid){ const c2=[]; for(let h=15000;h<=maxH;h+=250) c2.push([X(h),Y(P.tuc(h,true))]); poly(g,c2,'rgba(238,242,245,.45)',1.4,[4,3]); if(!ph){ txt(g,L(t2('dashed: after rapid','stiplet: etter rask')),X(maxH)-4,Y(700),C.mut,'right',9); txt(g,L(t2('decompression, about half','dekompresjon, ca. halvparten')),X(maxH)-4,Y(700)+11,C.mut,'right',9); } }
   /* the cabin marker (no oxygen) and, with masks, the crew equivalent */
   const cab=M.cab, xc=X(cab); line(g,xc+.5,y0,xc+.5,y1,'rgba(240,154,200,.75)',1.5);
   const tu=P.tuc(cab,rapid); if(tu!=null) dot(g,xc,Y(tu),5,C.cab,'#0c1217',1.2);
