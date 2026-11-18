@@ -1,0 +1,21 @@
+# Weekly: has EASA published a new revision of the Easy Access Rules the rules library (easa.js) is built from?
+# A failed run e-mails the repository owner; the run summary says which publication changed.
+name: EASA rules check
+on:
+  schedule:
+    - cron: '41 5 * * 1'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['easa.js', 'tools/easa-watch.mjs', '.github/workflows/easa-watch.yml']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tools/easa-watch.mjs

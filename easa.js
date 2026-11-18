@@ -10,15 +10,17 @@
 const AO='https://www.easa.europa.eu/en/document-library/easy-access-rules/online-publications/easy-access-rules-air-operations?erules-id=';
 const SE='https://www.easa.europa.eu/en/document-library/easy-access-rules/online-publications/easy-access-rules-standardised-european?erules-id=';
 const SOURCES={
-  airops:{name:'Easy Access Rules for Air Operations',reg:'Regulation (EU) No 965/2012',rev:'Revision 24 (March 2026)',revNo:'Revisjon 24 (mars 2026)',short:'Rev. 24',
+  airops:{watch:'Revision 24, March 2026',name:'Easy Access Rules for Air Operations',reg:'Regulation (EU) No 965/2012',rev:'Revision 24 (March 2026)',revNo:'Revisjon 24 (mars 2026)',short:'Rev. 24',
     ear:'https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-air-operations',
     online:'https://www.easa.europa.eu/en/document-library/easy-access-rules/online-publications/easy-access-rules-air-operations',
     eurlex:'https://eur-lex.europa.eu/eli/reg/2012/965/oj'},
-  sera:{name:'Easy Access Rules for Standardised European Rules of the Air (SERA)',reg:'Implementing Regulation (EU) No 923/2012',rev:'Revision from August 2025',revNo:'Revisjon fra august 2025',short:'Aug. 2025',
+  sera:{watch:'Revision from August 2025',name:'Easy Access Rules for Standardised European Rules of the Air (SERA)',reg:'Implementing Regulation (EU) No 923/2012',rev:'Revision from August 2025',revNo:'Revisjon fra august 2025',short:'Aug. 2025',
     ear:'https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-standardised-european-rules-air-sera',
     online:'https://www.easa.europa.eu/en/document-library/easy-access-rules/online-publications/easy-access-rules-standardised-european',
     eurlex:'https://eur-lex.europa.eu/eli/reg_impl/2012/923/oj'},
-  aircrew:{name:'Easy Access Rules for Aircrew (Part-FCL)',reg:'Regulation (EU) No 1178/2011',rev:'Consolidated text of 30 April 2026',revNo:'Konsolidert tekst av 30. april 2026',short:'Apr. 2026',
+  /* Oct 2026 revision checked 18 Nov 2026: it adds gyroplane AMC/GM (ED Decision 2025/022/R) and the new FSTD framework (Reg. (EU)
+     2026/781, applicable from 30 April 2028, and ED Decision 2026/006/R); FCL.060 as summarised here is not affected. */
+  aircrew:{watch:'Revision from October 2026',name:'Easy Access Rules for Aircrew (Part-FCL)',reg:'Regulation (EU) No 1178/2011',rev:'Revision from October 2026',revNo:'Revisjon fra oktober 2026',short:'Oct. 2026',
     ear:'https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-aircrew',
     online:'https://www.easa.europa.eu/en/document-library/easy-access-rules/online-publications/easy-access-rules-aircrew',
     eurlex:'https://eur-lex.europa.eu/eli/reg/2011/1178/2026-04-30'}
