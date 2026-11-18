@@ -65,7 +65,7 @@ function draw(g,W,H,p,tm){
   if(a3>0.01){ g.save(); g.globalAlpha=a3; const gy=P.y+P.h*.9, Y=ft=>gy-(gy-P.y-10)*ft/3200;
     g.fillStyle='#1b2a22'; g.fillRect(P.x,gy,P.w,P.h*.1);
     deck(g,P.x+10,P.x+P.w*.6,x=>Y(1200),x=>Y(1650)+Math.sin(x*.04)*4,{alpha:.92,billow:12,dark:'96,108,122'});
-    cumulus(g,P.x+P.w*.8,Y(2500),P.y+18,P.w*.13,{dark:1,anvil:P.w*.12,seed:2});
+    g.save(); g.beginPath(); g.rect(P.x,P.y+26,P.w,P.h); g.clip(); cumulus(g,P.x+P.w*.8,Y(2500),P.y-H*.25,P.w*.1,{dark:1,seed:2}); g.restore(); pill(g,L({en:'↑ CB tops far above',no:'↑ CB-toppen langt over'}),P.x+P.w*.8,P.y+40,{size:10*fs,col:'#fff',al:'center'});
     for(let k=0;k<30;k++){ const ph=((tm*1.2+k*.618)%1), x=P.x+20+((k*37)%1000)/1000*P.w*.55, y=lerp(Y(1200),gy,ph); g.strokeStyle='rgba(127,198,238,.45)'; g.beginPath(); g.moveTo(x,y); g.lineTo(x-2,y+8); g.stroke(); }
     [[1200,'BKN012 · ceiling',C.amber],[2500,'SCT025CB','#FF8A78']].forEach(([h,l,c])=>{ g.strokeStyle=c; g.setLineDash([4,4]); g.beginPath(); g.moveTo(P.x,Y(h)); g.lineTo(P.x+P.w,Y(h)); g.stroke(); g.setLineDash([]); pill(g,l,P.x+P.w-8,Y(h)-12,{mono:1,size:10.5*fs,col:c,al:'right'}); });
     pill(g,L({en:'-SHRA: light rain showers',no:'-SHRA: svake regnbyger'}),P.x+P.w*.3,gy-16,{size:10.5*fs,col:'#9FD4F2',al:'center'});
