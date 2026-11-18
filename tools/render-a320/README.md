@@ -28,3 +28,10 @@ Needs Python 3 with `bpy` (Blender as a module), `numpy`, `Pillow`, `playwright`
 4. `python3 compose.py` puts the views on one sheet and writes the two webp files.
 5. `python3 snap.py` computes the rectangle of every named control from the model's geometry (`map.py` projects model
    points to sheet pixels) and writes `a320_targets.json`, which becomes `A320_T` in `flowsac.js` (sheet pixels / 4.92).
+
+## The 3D cockpit shell (a320-3d.html)
+
+`python3 shell.py <A320-family>/Models/FlightDeck/res ../../models` writes `models/a320-shell.bin` and the
+`models/a320-shell-*.jpg` textures from the same model: everything that is not on one of the rendered panel planes (glareshield,
+windshield and window frames, walls, consoles, sidesticks, tillers, seats, floor), without glass, sun blinds, HUD, EFBs and
+details under about 6 cm². A derived work of the model, GPL-2.0 as well.

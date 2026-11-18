@@ -30,6 +30,7 @@ function toP(wx,wy,off){ const k=viewOf(wx,wy); if(!k) return null; const v=VIEW
 function basis(v){ const m=new THREE.Matrix4(); m.makeBasis(v.EX,v.EY,v.FN); return m; }
 
 function init(o){
+  const o_R=o.R;
   const mobile=matchMedia('(pointer:coarse)').matches;
   const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(62,1,0.05,20);
   cam.position.copy(EYE);
@@ -39,11 +40,12 @@ function init(o){
   const K=mobile?1.6:3.0; // texture pixels per sheet unit
   const P={};
   for(const k in VIEWS){ const v=VIEWS[k], r=v.r, cv=document.createElement('canvas'); cv.width=Math.round(r[2]*K); cv.height=Math.round(r[3]*K);
-    const tex=new THREE.CanvasTexture(cv); tex.anisotropy=Math.min(4,o.R.capabilities.getMaxAnisotropy()); tex.minFilter=THREE.LinearMipmapLinearFilter; if(THREE.sRGBEncoding&&o.R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding;
+    const tex=new THREE.CanvasTexture(cv); tex.anisotropy=Math.min(2,o.R.capabilities.getMaxAnisotropy()); tex.minFilter=THREE.LinearMipmapLinearFilter; if(THREE.sRGBEncoding&&o.R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding;
     const mesh=new THREE.Mesh(new THREE.PlaneGeometry(v.W,v.H),new THREE.MeshBasicMaterial({map:tex,transparent:k.startsWith('side'),alphaTest:k.startsWith('side')?0.5:0}));
     mesh.matrixAutoUpdate=false; mesh.matrix.copy(basis(v)).setPosition(v.C); scene.add(mesh); P[k]={cv,g:cv.getContext('2d'),tex,mesh,v}; }
   /* ---- shell: one closed room around the panels (flat colours, double-sided, no gaps), with the windshield and side
      windows left open. Corners come from the panel planes themselves, so every piece meets its neighbour. ---- */
+  const ROOM=new THREE.Group(); scene.add(ROOM);
   const M_=c=>new THREE.MeshBasicMaterial({color:c,side:THREE.DoubleSide});
   const C_={wall:M_(0x3e4a57),wallD:M_(0x2f3842),ceil:M_(0x46525f),frame:M_(0x1f252c),floor:M_(0x1a1f25),coam:M_(0x23292f)};
   const PTS=[], quads={};
@@ -94,7 +96,23 @@ function init(o){
   for(const x of [0,-0.80,0.80]) bar(v3(x,gy,gz),v3(x*1.08,yT,zF),x?0.05:0.04,C_.frame);
   for(const sg of [-1,1]) bar(v3(sg*XW*0.98,gy,gz),v3(sg*XW*0.98,yT,zF),0.06,C_.frame);
   bar(v3(-XW,gy+0.01,gz),v3(XW,gy+0.01,gz),0.03,C_.frame); bar(v3(-XW,yT-0.01,zF),v3(XW,yT-0.01,zF),0.05,C_.frame);
-  for(const k in quads){ const q=quads[k], g=new THREE.BufferGeometry(), arr=new Float32Array(q.p.length*3); q.p.forEach((v,i)=>{ arr[i*3]=v.x; arr[i*3+1]=v.y; arr[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(arr,3)); scene.add(new THREE.Mesh(g,q.mat)); }
+  for(const k in quads){ const q=quads[k], g=new THREE.BufferGeometry(), arr=new Float32Array(q.p.length*3); q.p.forEach((v,i)=>{ arr[i*3]=v.x; arr[i*3+1]=v.y; arr[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(arr,3)); ROOM.add(new THREE.Mesh(g,q.mat)); }
+  /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
+     A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
+     from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
+  scene.add(new THREE.HemisphereLight(0xe8eef5,0x3a4048,0.95)); const sun=new THREE.DirectionalLight(0xffffff,0.55); sun.position.set(0.3,1,-0.6); scene.add(sun);
+  fetch('models/a320-shell.bin').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+    const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
+    for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
+      const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
+      const g=new THREE.BufferGeometry(); const pa=new THREE.BufferAttribute(P,3,true); g.setAttribute('position',pa);
+      const uv=new Float32Array(gr.nv*2); for(let i=0;i<gr.nv;i++){ uv[i*2]=gr.uv[0]+UV[i*2]/65535*gr.uv[2]; uv[i*2+1]=1-(gr.uv[1]+UV[i*2+1]/65535*gr.uv[3]); } g.setAttribute('uv',new THREE.BufferAttribute(uv,2));
+      g.setAttribute('normal',new THREE.InterleavedBufferAttribute(new THREE.InterleavedBuffer(N,4),3,0,true)); g.setIndex(new THREE.BufferAttribute(I,1));
+      const tex=TL.load('models/a320-shell-'+gr.tex+'.jpg'); tex.anisotropy=1; tex.flipY=false; if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding;
+      const mesh=new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:tex,side:THREE.FrontSide})); mesh.scale.setScalar(32767/hdr.S); mesh.matrixAutoUpdate=false; mesh.updateMatrix(); mesh.frustumCulled=false; grp.add(mesh); }
+    scene.add(grp); ROOM.visible=false; if(o.onShell) o.onShell();
+  }).catch(e=>console.warn('A320 shell',e));
+
   /* ---- screens: canvas textures on the panels ---- */
   const disp=[];
   for(const d of o.displays){ const [x,y,w,h]=d.r, c=toP(x+w/2,y+h/2,0.0015); const k=viewOf(x+w/2,y+h/2); if(!c||!k) continue; const v=VIEWS[k];
