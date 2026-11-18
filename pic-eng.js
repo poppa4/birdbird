@@ -38,7 +38,7 @@ const steps=[
 
 function draw(g,W,H,p,tm){
   const sm=W<640, fs=sm?.86:1;
-  const ex0=W*.06, ex1=W*.94, ecy=H*(sm?.38:.43), R=Math.min(H*(sm?.2:.24),W*(sm?.2:.13));
+  const ex0=W*.06, ex1=W*.94, ecy=H*(sm?.36:.4), R=Math.min(H*(sm?.17:.2),W*(sm?.2:.13));
   const X=u=>ex0+(ex1-ex0)*u;
   const hot=at(p,5,.8);
   const thrK=1-.28*hot;                                      // thrust factor on a hot/high day
@@ -49,7 +49,7 @@ function draw(g,W,H,p,tm){
   const fanEnd=.62;
   // core radius (outer) and hub
   const core=u=>u<.12?R*.32:u<.22?lerp(R*.62,R*.56,(u-.12)/.1):u<.42?lerp(R*.56,R*.4,(u-.22)/.2):u<.56?R*.42:u<.76?lerp(R*.42,R*.56,(u-.56)/.2):lerp(R*.56,R*.38,(u-.76)/.24);
-  const hub=u=>u<.12?R*.2*Math.sin(clamp(u/.12,0,1)*Math.PI/2):u<.42?lerp(R*.24,R*.3,(u-.12)/.3):u<.56?R*.3:u<.76?lerp(R*.3,R*.24,(u-.56)/.2):lerp(R*.24,R*.06,(u-.76)/.24);
+  const hub=u=>(u<.12?R*.2*Math.sin(clamp(u/.12,0,1)*Math.PI/2):u<.42?lerp(R*.24,R*.3,(u-.12)/.3):u<.56?R*.3:u<.76?lerp(R*.3,R*.24,(u-.56)/.2):lerp(R*.24,R*.06,(u-.76)/.24))*.62;
   // bypass duct air (cool blue streaks)
   const bpA=Math.max(.35,at(p,4,.8));
   g.save(); g.globalAlpha=bpA;
@@ -65,8 +65,14 @@ function draw(g,W,H,p,tm){
       g.beginPath(); g.moveTo(x+off-2,ecy-core(u)+1); g.lineTo(x-off+2,ecy-hub(u)-1); g.moveTo(x+off-2,ecy+hub(u)+1); g.lineTo(x-off+2,ecy+core(u)-1); g.stroke(); } };
   blades(.22,.42,10,'rgba(20,28,36,.55)'); blades(.56,.76,5,'rgba(20,28,36,.55)');
   // fan
-  const fanAt=()=>{ g.save(); g.translate(X(.125),ecy); const n=9; for(let i=0;i<n;i++){ const ph=(spin*.5+i/n)%1, y=Math.cos(ph*Math.PI*2)*nac(.12)*.93, vis=Math.sin(ph*Math.PI*2); if(Math.abs(y)<R*.22) continue;
-      g.fillStyle=`rgba(${200+40*vis|0},${210+35*vis|0},${220+30*vis|0},.9)`; g.beginPath(); g.moveTo(-6,y-(y>0?-1:1)*R*.02); g.quadraticCurveTo(0,y,8,y+(y>0?1:-1)*R*.05); g.lineTo(8,y+(y>0?1:-1)*R*.05+(y>0?-1:1)*R*.1); g.quadraticCurveTo(0,y-(y>0?1:-1)*R*.08,-6,y-(y>0?-1:1)*R*.02); g.closePath(); g.fill(); } g.restore(); };
+  const fanAt=()=>{ const x=X(.125), rf=nac(.12)*.95, rh=R*.14; g.save();
+    // fan disc seen edge-on: a band of blades from the spinner to the casing, turning
+    const dg=g.createLinearGradient(0,ecy-rf,0,ecy+rf); dg.addColorStop(0,'rgba(170,184,196,.25)'); dg.addColorStop(.5,'rgba(220,228,235,.08)'); dg.addColorStop(1,'rgba(170,184,196,.25)');
+    g.fillStyle=dg; g.fillRect(x-7,ecy-rf,16,rf*2);
+    const n=22; for(let i=0;i<n;i++){ const ph=((spin*.25+i/n)%1)*Math.PI*2, yr=Math.cos(ph)*rf, y=ecy+yr, vis=Math.sin(ph); if(Math.abs(yr)<rh) continue;
+      const w=2+Math.abs(vis)*3.5, a=.35+.55*Math.max(0,vis); g.fillStyle=`rgba(232,238,243,${a})`;
+      g.beginPath(); g.moveTo(x-6,y-w/2); g.lineTo(x+7,y-w/2+(yr>0?-2:2)); g.lineTo(x+7,y+w/2+(yr>0?-2:2)); g.lineTo(x-6,y+w/2); g.closePath(); g.fill(); }
+    g.strokeStyle='rgba(214,226,236,.5)'; g.lineWidth=1; g.strokeRect(x-7,ecy-rf,16,rf*2); g.restore(); };
   // combustor flame flicker
   for(let k=0;k<10;k++){ const u=lerp(.43,.55,k/9), r=lerp(hub(u),core(u),.5); const f=Math.sin(tm*9+k*1.7)*.5+.5; g.fillStyle=`rgba(255,${200+40*f|0},${120+80*f|0},${.5+.3*f})`; for(const sgn of [-1,1]){ g.beginPath(); g.ellipse(X(u),ecy+sgn*r,6+3*f,(core(u)-hub(u))*.32,0,0,7); g.fill(); } }
   // hardware: shaft and hub, core casing (splitter), nacelle with thickness
@@ -91,12 +97,12 @@ function draw(g,W,H,p,tm){
   // exhaust jet
   for(let k=0;k<8;k++){ const ph=((tm*1.6+k/8)%1); g.strokeStyle=`rgba(255,${180-60*ph|0},120,${.5*(1-ph)})`; g.lineWidth=2; const y=ecy+(k-3.5)/3.5*R*.3; g.beginPath(); g.moveTo(X(1)+ph*W*.04,y); g.lineTo(X(1)+ph*W*.04+14,y); g.stroke(); }
   // trace panel: pressure (white) and temperature (amber) along the engine
-  const ty0=sm?H*.66:H*.76, ty1=sm?H*.94:H*.95, trA=p<4.5?1:(sm?0:.5);
+  const ty0=sm?H*.7:H*.79, ty1=sm?H*.95:H*.95, trA=p<4.5?1:(sm?0:.5);
   if(trA>0){ g.save(); g.globalAlpha=trA; g.strokeStyle='rgba(255,255,255,.08)'; g.beginPath(); g.moveTo(X(0),ty1); g.lineTo(X(1),ty1); g.stroke();
     const prog=p<4?clamp((p+.9)/4,0,1):1;
     g.strokeStyle='#fff'; g.lineWidth=2; g.beginPath(); for(let u=0;u<=prog;u+=.005){ const y=ty1-(ty1-ty0)*lerpArr(ST,PRES,u)/32; u?g.lineTo(X(u),y):g.moveTo(X(u),y); } g.stroke();
     g.strokeStyle=C.amber; g.lineWidth=2; g.beginPath(); for(let u=0;u<=prog;u+=.005){ const y=ty1-(ty1-ty0)*lerpArr(ST,TEMP,u)/1600; u?g.lineTo(X(u),y):g.moveTo(X(u),y); } g.stroke();
-    txt(g,L({en:'pressure',no:'trykk'}),X(.36),ty0+4,{mono:1,size:10*fs,col:'#fff',al:'right'}); txt(g,L({en:'temperature',no:'temperatur'}),X(.6),ty0-2,{mono:1,size:10*fs,col:C.amber});
+    txt(g,L({en:'pressure',no:'trykk'}),X(.36),ty0+4,{mono:1,size:10*fs,col:'#fff',al:'right'}); txt(g,L({en:'temperature',no:'temperatur'}),X(.7),ty0+14,{mono:1,size:10*fs,col:C.amber});
     if(p>=1.5&&p<4.5) pill(g,'× 30',X(.42),ty1-(ty1-ty0)*30/32,{mono:1,size:10*fs,col:'#fff',al:'center'});
     if(p>=2.5&&p<4.5) pill(g,'≈ 1 500 °C',X(.56),ty1-(ty1-ty0)*1500/1600-10,{mono:1,size:10*fs,col:C.amber,al:'center'});
     if(p>=3.5&&p<4.5) pill(g,'EGT',X(.8),ty1-(ty1-ty0)*640/1600-12,{mono:1,size:10*fs,col:'#FF8A78',al:'center'});
