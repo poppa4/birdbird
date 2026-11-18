@@ -19,7 +19,10 @@ function parseMetar(raw) {
   if (!raw) return null;
   let s = ' ' + String(raw).toUpperCase().replace(/=\s*$/, '') + ' ';
   s = s.split(/ (?:TEMPO|BECMG|NOSIG|RMK|FM\d{6}) /)[0] + ' ';
-  const out = { vis: null, ceil: null, cavok: / CAVOK /.test(s) };
+  const out = { vis: null, ceil: null, cavok: / CAVOK /.test(s), rvr: [] };
+  /* RVR groups R18/0450, R01L/M0050, R36/P2000, R18/0450V0600FT/U: the lower value, in metres; M = less than, P = more than */
+  for (const m of s.matchAll(/ R(\d{2}[LCR]?)\/([PM])?(\d{4})(?:V([PM])?(\d{4}))?(FT)?(?:\/?[UDN])?(?= )/g)) {
+    const k = m[6] ? 0.3048 : 1; out.rvr.push({ rwy: m[1], m: Math.round(+m[3] * k), less: m[2] === 'M', more: m[2] === 'P' }); }
   if (/\bSM\b/.test(s)) return null; // statute miles: not a European report, not judged
   if (out.cavok) { out.vis = 10000; out.ceil = Infinity; return out; }
   const toks = s.trim().split(/\s+/); let windSeen = false;
@@ -103,11 +106,32 @@ async function getRadar(ap) {
 /* the coloured box on the METAR line: EASA/SERA wording on purpose, not the U.S. VFR/MVFR/IFR/LIFR categories */
 function badge(metar, L) {
   const st = status(metar); if (!st) return '';
-  const txt = st.cls === 'ok' ? 'VFR · SERA.5005' : st.svfr ? L({ en: 'Special VFR only · SERA.5010', no: 'Kun spesiell VFR · SERA.5010' }) : L({ en: 'Below VFR and special VFR minima', no: 'Under VFR- og spesiell VFR-minima' });
+  const txt = st.cls === 'ok' ? 'VFR · SERA.5005' : st.svfr ? L({ en: 'Special VFR only · SERA.5010', no: 'Kun spesiell VFR · SERA.5010' }) : L({ en: 'Below VFR and SVFR minima', no: 'Under VFR- og SVFR-minima' });
   const det = st.cavok ? 'CAVOK' : fmtVis(st.vis) + ' · ' + (fmtCeil(st.ceil) ? L({ en: 'ceiling ', no: 'skydekke ' }) + fmtCeil(st.ceil) : L({ en: 'no ceiling', no: 'ingen ceiling' }));
   const tip = L({ en: 'Control zone, SERA.5005: VFR needs ground visibility ≥ 5 km and ceiling ≥ 1500 ft. Special VFR, SERA.5010: 1500 m and 600 ft with ATC clearance. Only the SERA minima are used, no other categories. Planning aid only.',
     no: 'Kontrollsone, SERA.5005: VFR krever bakkesikt ≥ 5 km og skydekke ≥ 1500 ft. Spesiell VFR, SERA.5010: 1500 m og 600 ft med klarering. Bare SERA-minimaene brukes, ingen andre kategorier. Bare planleggingshjelp.' });
   return ` <span class="icb-badge ${st.cls}${st.svfr ? ' svfr' : ''}" title="${esc(tip + ' (' + det + ')')}">${esc(txt)}</span>`;
+}
+
+/* IFR, the EASA way: there is no IFR weather category. What a METAR alone can answer is the approach ban for non-commercial
+   operations, NCO.OP.210: with a controlling RVR below 550 m the approach is not continued below 1 000 ft above the aerodrome.
+   Everything else (NCO.OP.160: destination or alternate at or above the aerodrome operating minima) depends on the approach's
+   DA/MDA and RVR/VIS from the chart, so the box says to compare with them instead of guessing a colour. CAT operators use their
+   own minimum (CAT.OP.MPA.305). */
+function ifr(metar) {
+  const p = parseMetar(metar); if (!p) return null;
+  const low = p.rvr.filter(r => !r.more && r.m < 550);
+  return { ban: low.length > 0, low, rvr: p.rvr, vis: p.vis, ceil: p.ceil };
+}
+function ifrBadge(metar, L) {
+  const x = ifr(metar); if (!x) return '';
+  const rv = r => (r.less ? '<' : r.more ? '>' : '') + r.m + ' m';
+  const txt = x.ban ? L({ en: 'IFR · approach ban, NCO.OP.210', no: 'IFR · innflygingsforbud, NCO.OP.210' }) + ' (' + x.low.map(r => 'RWY ' + r.rwy + ' RVR ' + rv(r)).join(', ') + ')'
+    : x.rvr.length ? L({ en: 'IFR · RVR ', no: 'IFR · RVR ' }) + x.rvr.map(r => r.rwy + ' ' + rv(r)).join(', ') + L({ en: ' · compare with approach minima', no: ' · sammenlign med innflygingsminima' })
+    : L({ en: 'IFR · compare with approach minima', no: 'IFR · sammenlign med innflygingsminima' });
+  const tip = L({ en: 'EASA has no IFR weather category. NCO.OP.160: an IFR flight needs the destination, or a destination alternate, at or above the aerodrome operating minima (DA/MDA and RVR/VIS of the approach) at the estimated time of arrival. NCO.OP.210: with a controlling (touchdown) RVR below 550 m, do not continue the approach below 1 000 ft above the aerodrome. Commercial operators: their own minimum, CAT.OP.MPA.305. Planning aid only.',
+    no: 'EASA har ingen IFR-kategori for vær. NCO.OP.160: en IFR-flyging krever at destinasjonen, eller en alternativ flyplass, er på eller over aerodrome operating minima (DA/MDA og RVR/sikt for innflygingen) ved beregnet ankomst. NCO.OP.210: er styrende RVR (touchdown) under 550 m, fortsetter du ikke innflygingen under 1000 ft over flyplassen. Kommersielle operatører: eget minimum, CAT.OP.MPA.305. Bare planleggingshjelp.' });
+  return ` <span class="icb-badge ${x.ban ? 'no' : 'ifr'}" title="${esc(tip)}">${esc(txt)}</span>`;
 }
 
 /* ---------- fetching and the row ---------- */
@@ -142,14 +166,14 @@ const CSS = '.icb{display:flex;gap:12px;align-items:flex-start;width:100%}.icb-l
   + '.icb-l{font-size:13.5px}.icb-l small,.icb-st small{color:var(--ink-2,#5b6770)}.icb-sig b{color:#b35c00}.icb-n{color:var(--ink-2,#5b6770);font-size:11.5px;margin-top:2px}'
   + '.icb-st{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:13.5px}.icb-st i{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.12)}'
   + '.icb-st.ok i{background:#1e8e3e}.icb-st.near i{background:#e8a200}.icb-st.no i{background:#d93025}'
-  + '.icb-badge{display:inline-block;margin:0 0 0 8px;padding:1px 7px;border-radius:3px;font:600 11.5px/1.6 var(--f-mono,ui-monospace,monospace);letter-spacing:.02em;color:#fff;vertical-align:1px;white-space:nowrap}'
-  + '.icb-badge.ok{background:#1e8e3e}.icb-badge.no{background:#d93025}.icb-badge.svfr{background:#c2410c}'
+  + '.icb-badge{display:inline-block;margin:0 0 0 8px;padding:1px 7px;border-radius:3px;font:600 11.5px/1.6 var(--f-mono,ui-monospace,monospace);letter-spacing:.02em;color:#fff;vertical-align:1px;white-space:normal;max-width:100%;margin-top:2px}'
+  + '.icb-badge.ok{background:#1e8e3e}.icb-badge.no{background:#d93025}.icb-badge.svfr{background:#c2410c}.icb-badge.ifr{background:#3d5566}'
   + '.icb-rad{margin:0;flex:none;width:150px}.icb-rad img{display:block;width:150px;height:90px;border-radius:3px;border:1px solid var(--rule,#d5dce1)}'
   + '.icb-rad figcaption{font:10.5px/1.3 var(--f-mono,ui-monospace,monospace);color:var(--ink-2,#5b6770);margin-top:2px}'
   + '.icb-rad.wait{height:90px;border:1px dashed var(--rule,#d5dce1);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--ink-2,#5b6770)}'
   + '@media (max-width:560px){.icb{flex-direction:column}.icb-rad,.icb-rad img{width:100%;height:auto}.icb-rad.wait{width:100%}}';
 if (typeof document !== 'undefined' && !document.getElementById('icb-css')) { const s = document.createElement('style'); s.id = 'icb-css'; s.textContent = CSS; document.head.appendChild(s); }
-const API = { ensure, html, badge, status, parseMetar, inPoly };
+const API = { ensure, html, badge, ifr, ifrBadge, status, parseMetar, inPoly };
 G.ICB = API;
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);
