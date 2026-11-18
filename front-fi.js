@@ -170,7 +170,7 @@
     gk: t2('general knowledge', 'generell kunnskap') };
   const setPh = () => { if (inp) inp.placeholder = L(LT.ph); };
   const load = src => new Promise((ok, no) => { if (document.querySelector(`script[src="${src}"]`)) return ok(); const sc = document.createElement('script'); sc.src = src; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
-  function deps() { if (!loading) loading = Promise.all([window.NAI ? 0 : load('ai.js?v=8'), window.EASA ? 0 : load('easa.js?v=7'), window.THEORY ? 0 : load('theory.js?v=4')]).catch(() => {}); return loading; }
+  function deps() { if (!loading) loading = Promise.all([window.NAI ? 0 : load('ai.js?v=8'), window.EASA ? 0 : load('easa.js?v=7'), window.THEORY ? 0 : load('theory.js?v=5')]).catch(() => {}); return loading; }
 
   function md(text, list, th) {
     let h = esc(String(text || '').trim());

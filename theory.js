@@ -1,5 +1,5 @@
 /* NORDAP – theory library (curated) for Flight Intelligence: aviation THEORY only, never rules.
-   Organised by the EASA theoretical-knowledge subjects (081, 050, 022, 021, 040, 061, 062), which set
+   Organised by the EASA theoretical-knowledge subjects (081, 050, 022, 021, 040, 061, 062, 031, 032/034, 033, 070, 091/092), which set
    what is covered and how deep. Each entry is NORDAP's own explanation in EASA/ICAO terms and units (hPa, °C, ft, kt, ISA),
    written from these sources:
      - FAA Pilot's Handbook of Aeronautical Knowledge, FAA-H-8083-25C (a U.S. Government work, free to use): only the physics
@@ -21,7 +21,11 @@ const SRC={
   ch2:{n:'FAA PHAK (FAA-H-8083-25C) ch. 2, Aeronautical Decision-Making',u:FAA+'chapter-2-aeronautical-decision-making'},
   ch7:{n:'FAA PHAK (FAA-H-8083-25C) ch. 7, Aircraft Systems',u:FAA+'chapter-7-aircraft-systems'},
   ch16:{n:'FAA PHAK (FAA-H-8083-25C) ch. 16, Navigation',u:FAA+'chapter-16-navigation'},
-  ch17:{n:'FAA PHAK (FAA-H-8083-25C) ch. 17, Aeromedical Factors',u:FAA+'chapter-17-aeromedical-factors'}
+  ch17:{n:'FAA PHAK (FAA-H-8083-25C) ch. 17, Aeromedical Factors',u:FAA+'chapter-17-aeromedical-factors'},
+  ch10:{n:'FAA PHAK (FAA-H-8083-25C) ch. 10, Weight and Balance',u:'https://www.faa.gov/sites/faa.gov/files/12_phak_ch10.pdf'},
+  ch11:{n:'FAA PHAK (FAA-H-8083-25C) ch. 11, Aircraft Performance',u:'https://www.faa.gov/sites/faa.gov/files/13_phak_ch11.pdf'},
+  /* standard ATPL theory with no FAA chapter in EASA terms (PET/PSR, UTC, VHF range, readback): NORDAP's own explanation */
+  own:{n:'NORDAP, standard EASA ATPL theory',u:'quality.html'}
 };
 /* SKYbrary (owned and managed by EUROCONTROL): linked, never copied; the entry text is NORDAP's own. Its licence asks a copy
    to show "Source: www.skybrary.aero", so a SKYbrary reference always carries that name and the link (sky: article slug). */
@@ -33,7 +37,12 @@ const SUBJ={
   '021':{en:'021 Aircraft General Knowledge (systems and engines)',no:'021 Flykunnskap (systemer og motorer)'},
   '040':{en:'040 Human Performance and Limitations',no:'040 Menneskelig ytelse og begrensninger'},
   '061':{en:'061 General Navigation',no:'061 Generell navigasjon'},
-  '062':{en:'062 Radio Navigation',no:'062 Radionavigasjon'}
+  '062':{en:'062 Radio Navigation',no:'062 Radionavigasjon'},
+  '031':{en:'031 Mass and Balance',no:'031 Masse og balanse'},
+  '032':{en:'032/034 Performance',no:'032/034 Ytelse'},
+  '033':{en:'033 Flight Planning and Monitoring',no:'033 Flyplanlegging og overvåking'},
+  '070':{en:'070 Operational Procedures',no:'070 Operative prosedyrer'},
+  '090':{en:'091/092 Communications',no:'091/092 Kommunikasjon'}
 };
 const I=(id,subj,o)=>Object.assign({id,subj},o);
 const items=[
@@ -302,6 +311,65 @@ I('040-sa-tem','040',{title:{en:'Situational awareness and threat and error mana
 I('040-vision','040',{title:{en:'Vision and seeing other traffic',no:'Syn og å se annen trafikk'},src:'ch17',lab:'humanperf.html',
  kw:'vision eye rods cones night vision dark adaptation blind spot empty field myopia scanning see and avoid collision course constant bearing syn øye staver tapper nattsyn mørketilpasning blindsone avsøking',
  en:'The centre of the eye (cones) gives sharp, colour vision in good light; the edge (rods) sees movement and works in the dark, which is why at night you see dim objects better by looking slightly to the side. Full dark adaptation takes about 30 minutes and is lost in seconds by bright white light. With nothing to focus on, such as a blue sky or haze, the eye relaxes to a short focus distance (empty-field myopia). An aircraft on a collision course stays at a constant position in your view and does not seem to move, only growing slowly at first, so it is easy to miss. Scan the sky in short, overlapping sectors, pausing about a second on each.'})
+,
+
+/* ================= 031 MASS AND BALANCE ================= */
+I('031-cg-moments','031',{title:{en:'Centre of gravity, arms and moments',no:'Tyngdepunkt, arm og moment'},src:'ch10',lab:'massbalance.html',
+ kw:'centre of gravity center of gravity cg arm moment datum moment arm balance mass times arm loading calculation tyngdepunkt arm moment referanselinje datum masse og balanse',
+ en:'Each mass on board acts at a distance from a reference line, the datum, chosen by the manufacturer; that distance is its arm. Mass × arm is its moment. Add up all the masses and all the moments, and the centre of gravity (CG) is the total moment divided by the total mass. The CG must lie between the forward and aft limits for the mass you fly at, as the AFM shows on its loading envelope. Fuel burn moves the CG during the flight, so you check it at take-off and at landing (or at zero fuel), not only once.'}),
+I('031-cg-shift','031',{title:{en:'Moving or adding a mass: the CG shift',no:'Flytte eller legge til masse: CG-forskyvning'},src:'ch10',lab:'massbalance.html',
+ kw:'cg shift moving mass adding mass removing mass baggage passenger move cargo shift formula change in cg ballast forskyvning flytte last tyngdepunktsforskyvning',
+ en:'When a mass m is moved a distance d inside the aircraft, the CG moves by m × d divided by the total mass, in the same direction. When a mass is added or removed, find the new total moment and divide by the new total mass: CG = (old moment ± m × arm) / (old mass ± m). These two ideas solve most loading questions, such as how much baggage to move to bring the CG inside its limits. Use the calculator for the numbers and the AFM limits for the answer.'}),
+I('031-mass-terms','031',{title:{en:'Mass terms: DOM, ZFM, TOM and LM',no:'Massebegreper: DOM, ZFM, TOM og LM'},src:'ch10',lab:'massbalance.html',
+ kw:'dry operating mass dom basic empty mass zero fuel mass zfm mzfm take-off mass tom mtom landing mass lm mlm traffic load payload ramp mass taxi fuel trip fuel underload tørr operativ masse null drivstoff masse startmasse landingsmasse nyttelast',
+ en:'Basic empty mass is the aircraft with its fixed equipment and unusable fuel. Adding crew, their baggage, catering and removable equipment gives the dry operating mass (DOM). DOM plus the traffic load (passengers, baggage and cargo) is the zero fuel mass (ZFM); adding take-off fuel gives the take-off mass (TOM), and TOM minus trip fuel the landing mass (LM). Each has a structural maximum, and the lowest of the limits decides how much load or fuel can be carried. The maximum zero fuel mass exists because fuel in the wings relieves the bending of the wing roots; above it, extra mass must be fuel, not load.'}),
+I('031-cg-effects','031',{title:{en:'Effects of the CG position',no:'Virkningen av tyngdepunktets plassering'},src:'ch10',lab:'stability.html',
+ kw:'forward cg aft cg effects stability control stall speed elevator authority flare rotation fuel burn trim drag cruise fremre bakre tyngdepunkt virkning stabilitet steilefart',
+ en:'A forward CG makes the aircraft more stable but heavier on the controls, raises the stall speed, needs more tail download (more drag and fuel) and can leave too little elevator to rotate or flare. An aft CG lowers the stall speed slightly and the drag, but makes the aircraft less stable, lighter on the controls and, beyond the aft limit, possibly uncontrollable and hard to recover from a stall or spin. The limits in the AFM keep both effects acceptable.'}),
+
+/* ================= 032/034 PERFORMANCE ================= */
+I('032-takeoff-factors','032',{title:{en:'What changes take-off distance',no:'Hva endrer startdistansen'},src:'ch11',lab:'performance.html',
+ kw:'take-off distance takeoff run factors weight density altitude temperature pressure altitude headwind tailwind slope uphill runway surface grass wet contaminated flaps startdistanse startlengde faktorer motvind medvind helning gress',
+ en:'Take-off distance grows with mass (more speed and more energy needed), with high pressure altitude and temperature (thinner air: less thrust and a higher true airspeed for the same indicated speed), with a tailwind, an uphill slope and a soft, wet, grass or contaminated surface. A headwind shortens it. The effects multiply, so a hot day at a high, short grass strip with a heavy aircraft can need far more distance than the sea-level figure. The AFM performance charts, with the factors your operator or the rules require, give the numbers; this explains why they change.'}),
+I('032-landing-factors','032',{title:{en:'What changes landing distance',no:'Hva endrer landingsdistansen'},src:'ch11',lab:'performance.html',
+ kw:'landing distance factors approach speed too fast float tailwind downhill wet runway contaminated braking action aquaplaning hydroplaning landingsdistanse vannplaning bremsevirkning',
+ en:'Landing distance depends on the touchdown speed (energy grows with the square of speed, so a few knots too fast cost a lot), the mass, the density altitude, the wind and slope, and above all the braking friction of the surface. On a wet or contaminated runway the wheels can aquaplane: a layer of water lifts the tyres off the surface and braking and steering almost disappear. Floating in ground effect and a late touchdown add distance too. A stable approach at the right speed is the best way to make the AFM figure come true.'}),
+I('032-climb','032',{title:{en:'Climb gradient and rate of climb',no:'Stigegradient og stigerate'},src:'ch11',lab:'forces.html',
+ kw:'climb gradient rate of climb excess thrust excess power obstacle clearance percentage gradient vx vy ground speed headwind stigegradient stigerate hindringsklaring prosent',
+ en:'Climb gradient is height gained per distance travelled (in % or ft per NM); rate of climb is height gained per minute. Gradient depends on excess thrust and decides obstacle clearance; rate depends on excess power. A headwind steepens the gradient over the ground but leaves the rate of climb unchanged; a tailwind does the opposite. Rate of climb in ft/min ≈ gradient in % × ground speed in kt (for example 5 % at 120 kt ≈ 600 ft/min, more precisely % × kt × 1.013).'}),
+I('032-range-endurance','032',{title:{en:'Range and endurance',no:'Rekkevidde og utholdenhet'},src:'ch11',lab:'forces.html',
+ kw:'range endurance maximum range speed maximum endurance speed holding fuel flow specific range best economy long range cruise rekkevidde utholdenhet venting drivstofforbruk',
+ en:'Endurance (the longest time in the air) is achieved at the speed of minimum fuel flow, which for a propeller aircraft is near the speed of minimum power, slower than best range: that is why holding speeds are fairly low. Range (the furthest distance per kg of fuel) is achieved where fuel flow divided by ground speed is smallest: near the minimum-drag speed for a propeller aircraft and faster for a jet. A headwind raises the best-range speed and a tailwind lowers it. Jets also gain range by flying higher, because the engines are more efficient in the cold, thin air.'}),
+I('032-contaminated','032',{title:{en:'Contaminated runways and braking',no:'Kontaminerte rullebaner og bremsing'},src:'ch11',lab:'performance.html',
+ kw:'contaminated runway slush standing water snow ice braking action runway condition code rcc grf friction aquaplaning displacement drag kontaminert rullebane sørpe vann snø is bremsevirkning',
+ en:'Water, slush, snow or ice on the runway cut the friction between tyre and surface, so stopping takes longer and steering is weaker, and loose contaminant like slush or deep snow also drags on the wheels and slows the acceleration on take-off. In Europe the runway state is reported with the global reporting format (GRF): a runway condition code per third of the runway, from 6 (dry) down to 0, with the contaminant type and depth. The aircraft documents give correction factors for each condition; reported braking action is a guide, not a guarantee.'}),
+
+/* ================= 033 FLIGHT PLANNING ================= */
+I('033-fuel-components','033',{title:{en:'Fuel planning: the parts of the fuel load',no:'Drivstoffplanlegging: delene av drivstoffmengden'},src:'ch11',lab:'performance.html',
+ kw:'fuel planning taxi fuel trip fuel contingency fuel alternate fuel final reserve additional fuel extra fuel discretionary fuel components drivstoffplanlegging tripfuel reserve alternativ',
+ en:'A fuel load is built from parts with fixed meanings: taxi fuel; trip fuel from take-off to landing at the destination; contingency fuel for the unforeseen; alternate fuel to reach the alternate; final reserve fuel, which is protected and only used in an emergency; and any additional or extra fuel. Planning adds them up from the expected fuel flow, winds and levels. How much each part must be for your type of operation is set by the EASA rules [E] and your operator, not by this explanation.'}),
+I('033-pet-psr','033',{title:{en:'Point of equal time and point of safe return',no:'Punkt for lik tid og punkt for sikker retur'},src:'own',lab:'gennav.html',
+ kw:'point of equal time pet critical point point of safe return psr point of no return pnr equal time formula ground speed out home endurance punkt for lik tid sikker retur',
+ en:'The point of equal time (PET) is where it takes the same time to continue to the destination as to return. With total distance D, ground speed out O and ground speed home H: distance to PET = D × H / (O + H). With a headwind out it lies beyond the halfway point. The point of safe return (PSR) is the furthest point from which you can still return with the usable fuel (endurance E, in hours, excluding reserves): distance to PSR = E × O × H / (O + H). Use the ground speeds for the relevant case, for example with one engine inoperative.'}),
+I('033-time-zones','033',{title:{en:'Time: UTC, local time and the date line',no:'Tid: UTC, lokal tid og datogrensen'},src:'own',lab:'sun.html',
+ kw:'utc zulu local time time zone daylight saving summer time conversion eta etd flight time 15 degrees one hour utc zulu lokal tid tidssone sommertid',
+ en:'Aviation uses UTC (Zulu) for flight plans, NOTAMs and weather, so everyone works with the same clock. Local time is UTC plus the zone offset, which can change with summer time: Norway is UTC+1 in winter and UTC+2 in summer. The sun moves 15° of longitude per hour, so solar time differs by 4 minutes per degree of longitude; time zones round this to whole hours along borders. Always state which time you mean when you brief arrival or night times.'}),
+
+/* ================= 070 OPERATIONAL PROCEDURES (theory) ================= */
+I('070-deicing','070',{title:{en:'Ground de-icing and holdover time',no:'Avising på bakken og holdover-tid'},src:'ch12',lab:'hazards.html',
+ kw:'de-icing anti-icing type i type ii type iv fluid holdover time hot clean aircraft concept frost snow freezing precipitation two-step avising anti-ising væske holdover',
+ en:'An aircraft may only take off clean: even thin frost or snow on the wings can raise the stall speed and spoil the lift. De-icing removes the contamination, usually with heated Type I fluid; anti-icing adds a thickened fluid (Type II or IV) that protects the surfaces for a while. The holdover time is how long that protection is expected to last, and it depends on fluid, concentration, temperature and type and intensity of precipitation; it ends earlier in heavy precipitation. When it runs out, or the fluid shows signs of failing, the aircraft must be checked and treated again. The applicable tables and procedures come from the operator.'}),
+I('070-lvo','070',{title:{en:'Low-visibility operations: RVR and approach categories',no:'Lavsiktsoperasjoner: RVR og innflygingskategorier'},src:'ch8',lab:'approach.html',
+ kw:'low visibility operations lvo rvr runway visual range cat i cat ii cat iii decision height autoland visual reference touchdown midpoint stop end lavsikt rvr kategori beslutningshøyde',
+ en:'Runway visual range (RVR) is the distance a pilot on the centreline can see the runway lights or markings, measured by instruments at the touchdown zone, the midpoint and the stop end; it is often better than the meteorological visibility because runway lights are bright. Precision approaches are grouped by how low they go: CAT I to a decision height of about 200 ft, CAT II to about 100 ft, CAT III lower or with no decision height, with autoland. Lower categories need special aircraft equipment, crew training, aerodrome procedures and approval. The exact minima and what each operation needs are set by the EASA rules [E] and the approach chart.'}),
+
+/* ================= 091/092 COMMUNICATIONS ================= */
+I('090-vhf-range','090',{title:{en:'VHF radio range',no:'VHF-radioens rekkevidde'},src:'own',lab:'radio.html',
+ kw:'vhf range how far reach hear radio range line of sight radio horizon altitude 1.23 square root height communication reception frequency rekkevidde sikt linje radio horisont',
+ en:'VHF radio (118–137 MHz for communication, 108–118 MHz for VOR and ILS) travels in nearly straight lines and does not follow the curve of the Earth, so range depends on height: roughly 1.23 × √(height in ft) NM to the radio horizon for each end, added together for aircraft and ground station. At 1000 ft that is about 39 NM; at 10 000 ft about 123 NM. Terrain blocks it, which is why a station behind a mountain can go silent low down and come back after a climb.'}),
+I('090-readback','090',{title:{en:'Readback, phonetics and numbers',no:'Tilbakelesning, fonetikk og tall'},src:'own',lab:'radio.html',
+ kw:'readback read back clearance phonetic alphabet alpha bravo numbers niner tree fife callsign altimeter setting squawk heading level runway radio phraseology tilbakelesning fonetisk alfabet fraseologi',
+ en:'Radiotelephony follows ICAO standards so that messages survive noise and accents. Letters are spoken with the phonetic alphabet (Alfa, Bravo …), numbers digit by digit, and safety-critical items in a clearance are read back in full with the callsign: runway, level or altitude, heading and speed, altimeter setting, squawk code and frequency. A readback lets the controller hear an error before it becomes a deviation. Which items must be read back, and the exact wording, are set by the rules and the AIP.'})
 
 ];
 
