@@ -42,35 +42,59 @@ function init(o){
     const tex=new THREE.CanvasTexture(cv); tex.anisotropy=Math.min(4,o.R.capabilities.getMaxAnisotropy()); tex.minFilter=THREE.LinearMipmapLinearFilter; if(THREE.sRGBEncoding&&o.R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding;
     const mesh=new THREE.Mesh(new THREE.PlaneGeometry(v.W,v.H),new THREE.MeshBasicMaterial({map:tex,transparent:k.startsWith('side'),alphaTest:k.startsWith('side')?0.5:0}));
     mesh.matrixAutoUpdate=false; mesh.matrix.copy(basis(v)).setPosition(v.C); scene.add(mesh); P[k]={cv,g:cv.getContext('2d'),tex,mesh,v}; }
-  /* ---- shell: glareshield coaming, windshield frame, side walls, floor, ceiling (flat colours) ---- */
-  const dark=new THREE.MeshBasicMaterial({color:0x2a323b}), mid=new THREE.MeshBasicMaterial({color:0x3d4956}), floorM=new THREE.MeshBasicMaterial({color:0x1d2228});
-  const add=(geo,mat,pos,rot)=>{ const m=new THREE.Mesh(geo,mat); m.position.copy(pos); if(rot) m.rotation.set(rot[0],rot[1],rot[2]); scene.add(m); return m; };
-  const fv=VIEWS.front, top=fv.C.clone().addScaledVector(fv.EY,fv.H/2); // top edge of the main panel (three frame)
-  // coaming: from the panel top edge forward to the windshield
-  add(new THREE.BoxGeometry(1.66,0.02,0.40),dark,new THREE.Vector3(0,top.y-0.012,top.z-0.19));
-  const wsZ=top.z-0.38, wsY=top.y+0.05, ceilY=1.02;
-  // windshield posts (centre and two side posts) and the frame along the top
-  const post=(x,lean)=>{ const h=ceilY-wsY; const m=add(new THREE.BoxGeometry(0.045,h,0.04),dark,new THREE.Vector3(x,wsY+h/2,wsZ+0.16)); m.rotation.x=-0.42; return m; };
-  post(0); post(0.78); post(-0.78);
-  add(new THREE.BoxGeometry(1.75,0.08,0.10),dark,new THREE.Vector3(0,ceilY+0.02,wsZ+0.38));
-  // side windows: walls below and above the window line, frame posts behind
-  for(const s of [-1,1]){
-    add(new THREE.BoxGeometry(0.04,0.95,1.9),mid,new THREE.Vector3(s*1.02,-0.12,0.35));
-    add(new THREE.BoxGeometry(0.04,0.30,1.9),mid,new THREE.Vector3(s*1.02,1.00,0.35));
-    add(new THREE.BoxGeometry(0.05,0.55,0.07),dark,new THREE.Vector3(s*1.02,0.62,0.20));
-    add(new THREE.BoxGeometry(0.05,0.55,0.07),dark,new THREE.Vector3(s*1.02,0.62,1.10));
-    add(new THREE.BoxGeometry(0.06,0.06,1.9),dark,new THREE.Vector3(s*1.02,0.35,0.35));
-    // outboard panel between the main panel edge and the side wall, below the window line
-    add(new THREE.BoxGeometry(0.22,1.05,0.70),mid,new THREE.Vector3(s*0.93,-0.10,top.z+0.05));
-    add(new THREE.BoxGeometry(0.22,0.06,0.70),dark,new THREE.Vector3(s*0.93,0.45,top.z+0.05));
-    // side console under the side window
-    add(new THREE.BoxGeometry(0.30,0.55,1.4),mid,new THREE.Vector3(s*0.88,-0.30,0.75));
+  /* ---- shell: one closed room around the panels (flat colours, double-sided, no gaps), with the windshield and side
+     windows left open. Corners come from the panel planes themselves, so every piece meets its neighbour. ---- */
+  const M_=c=>new THREE.MeshBasicMaterial({color:c,side:THREE.DoubleSide});
+  const C_={wall:M_(0x3e4a57),wallD:M_(0x2f3842),ceil:M_(0x46525f),frame:M_(0x1f252c),floor:M_(0x1a1f25),coam:M_(0x23292f)};
+  const PTS=[], quads={};
+  function quad(a,b,c,d,mat){ const k=mat.uuid; (quads[k]=quads[k]||{mat,p:[]}).p.push(a,b,c,a,c,d); }
+  function bar(p0,p1,w,mat){ const ax=p1.clone().sub(p0), len=ax.length(); ax.normalize(); let side=new THREE.Vector3().crossVectors(ax,new THREE.Vector3(0,0,1)); if(side.lengthSq()<1e-4) side.set(1,0,0); side.normalize().multiplyScalar(w/2); const nrm=new THREE.Vector3().crossVectors(side,ax).normalize().multiplyScalar(w/2);
+    const c=[p0.clone().add(side).add(nrm),p0.clone().sub(side).add(nrm),p0.clone().sub(side).sub(nrm),p0.clone().add(side).sub(nrm)], d=c.map(x=>x.clone().addScaledVector(ax,len));
+    for(let i=0;i<4;i++){ const j=(i+1)%4; quad(c[i],c[j],d[j],d[i],mat); } }
+  const v3=(x,y,z)=>new THREE.Vector3(x,y,z);
+  const ov=VIEWS.ovh, fv=VIEWS.front, pv=VIEWS.ped;
+  const XW=1.04;                                        // side walls
+  const yF=-0.62, zB=1.75;                              // floor, back wall
+  const top=fv.C.clone().addScaledVector(fv.EY,fv.H/2); // top edge of the main panel (y .49, z -.56)
+  const gz=top.z-0.40, gy=top.y+0.005;                  // windshield sill (front edge of the coaming)
+  const cF=ov.C.clone().addScaledVector(ov.EY,-ov.H/2), cA=ov.C.clone().addScaledVector(ov.EY,ov.H/2); // overhead fwd / aft edge on the centre line
+  const ceilAt=(x,z)=>{ const t=(z-cF.z)/(cA.z-cF.z); return cF.y+t*(cA.y-cF.y)+0.006; }; // ceiling: the overhead plane, a little above it
+  const zF=cF.z-0.02, yT=ceilAt(0,zF);                  // windshield top line
+  // ceiling: the overhead plane extended to the side walls and to the back wall
+  quad(v3(-XW,ceilAt(0,zF),zF),v3(XW,ceilAt(0,zF),zF),v3(XW,ceilAt(0,zB),zB),v3(-XW,ceilAt(0,zB),zB),C_.ceil);
+  // coaming (top of the glareshield) from the panel top edge forward to the windshield sill
+  quad(v3(-XW,gy,gz),v3(XW,gy,gz),v3(XW,top.y,top.z),v3(-XW,top.y,top.z),C_.coam);
+  // below the main panel (knee area) and beside it (outboard of the PFDs) down to the floor
+  const bot=fv.C.clone().addScaledVector(fv.EY,-fv.H/2);
+  quad(v3(-0.82,bot.y,bot.z),v3(0.82,bot.y,bot.z),v3(0.82,yF,bot.z+0.05),v3(-0.82,yF,bot.z+0.05),C_.wallD);
+  for(const sg of [-1,1]){ quad(v3(sg*0.82,top.y,top.z),v3(sg*XW,top.y,top.z),v3(sg*XW,yF,bot.z+0.05),v3(sg*0.82,yF,bot.z+0.05),C_.wall); }
+  // pedestal sides
+  const pT=pv.C.clone().addScaledVector(pv.EY,pv.H/2), pB=pv.C.clone().addScaledVector(pv.EY,-pv.H/2);
+  for(const sg of [-1,1]) quad(v3(sg*0.29,pT.y,pT.z),v3(sg*0.29,pB.y,pB.z),v3(sg*0.29,yF,pB.z),v3(sg*0.29,yF,pT.z),C_.wallD);
+  quad(v3(-0.29,pB.y,pB.z),v3(0.29,pB.y,pB.z),v3(0.29,yF,pB.z),v3(-0.29,yF,pB.z),C_.wallD);
+  // floor and back wall
+  quad(v3(-XW,yF,bot.z),v3(XW,yF,bot.z),v3(XW,yF,zB),v3(-XW,yF,zB),C_.floor);
+  quad(v3(-XW,yF,zB),v3(XW,yF,zB),v3(XW,ceilAt(0,zB),zB),v3(-XW,ceilAt(0,zB),zB),C_.wallD);
+  // side walls with the side window (sill .52, top .90, from z -.70 to .62)
+  const wS=0.52, wT=0.90, wZ0=-0.70, wZ1=0.62;
+  for(const sg of [-1,1]){ const x=sg*XW;
+    quad(v3(x,yF,gz),v3(x,yF,zB),v3(x,wS,zB),v3(x,wS,gz),C_.wall);                 // below the sill
+    quad(v3(x,wT,wZ0),v3(x,wT,zB),v3(x,ceilAt(0,zB),zB),v3(x,ceilAt(0,wZ0),wZ0),C_.wall); // above the window
+    quad(v3(x,wS,wZ1),v3(x,wS,zB),v3(x,wT,zB),v3(x,wT,wZ1),C_.wall);               // aft of the window
+    quad(v3(x,wS,gz),v3(x,wS,wZ0),v3(x,ceilAt(0,wZ0),wZ0),v3(x,yT,zF),C_.wall);      // the corner piece between windshield and side window (approx.)
+    // side console (top surface beside the seat)
+    const sv=VIEWS[sg<0?'sideL':'sideR']; quad(v3(sg*0.80,0.02,-0.55),v3(x,0.10,-0.55),v3(x,0.10,1.1),v3(sg*0.80,0.02,1.1),C_.wallD);
+    quad(v3(sg*0.80,0.02,-0.55),v3(sg*0.80,0.02,1.1),v3(sg*0.80,yF,1.1),v3(sg*0.80,yF,-0.55),C_.wall);
+    // window frames
+    bar(v3(x-sg*0.01,wS,wZ0),v3(x-sg*0.01,wT,wZ0),0.05,C_.frame); bar(v3(x-sg*0.01,wS,wZ1),v3(x-sg*0.01,wT,wZ1),0.05,C_.frame);
+    bar(v3(x-sg*0.01,wS,wZ0),v3(x-sg*0.01,wS,wZ1),0.045,C_.frame); bar(v3(x-sg*0.01,wT,wZ0),v3(x-sg*0.01,wT,wZ1),0.045,C_.frame);
+    bar(v3(x-sg*0.01,wS,(wZ0+wZ1)/2),v3(x-sg*0.01,wT,(wZ0+wZ1)/2),0.035,C_.frame);
   }
-  add(new THREE.BoxGeometry(1.70,0.42,0.06),floorM,new THREE.Vector3(0,top.y-fv.H*0.98-0.20,top.z+0.08));
-  add(new THREE.BoxGeometry(2.1,0.04,2.4),floorM,new THREE.Vector3(0,-0.62,0.4));
-  add(new THREE.BoxGeometry(2.1,0.04,1.7),mid,new THREE.Vector3(0,1.40,0.75));
-  // overhead console sides
-  for(const s of [-1,1]) add(new THREE.BoxGeometry(0.05,0.32,1.4),dark,new THREE.Vector3(s*0.36,1.18,0.45)).rotation.x=0.37;
+  // windshield: centre post, two side posts, the frame along the sill and along the top
+  for(const x of [0,-0.80,0.80]) bar(v3(x,gy,gz),v3(x*1.08,yT,zF),x?0.05:0.04,C_.frame);
+  for(const sg of [-1,1]) bar(v3(sg*XW*0.98,gy,gz),v3(sg*XW*0.98,yT,zF),0.06,C_.frame);
+  bar(v3(-XW,gy+0.01,gz),v3(XW,gy+0.01,gz),0.03,C_.frame); bar(v3(-XW,yT-0.01,zF),v3(XW,yT-0.01,zF),0.05,C_.frame);
+  for(const k in quads){ const q=quads[k], g=new THREE.BufferGeometry(), arr=new Float32Array(q.p.length*3); q.p.forEach((v,i)=>{ arr[i*3]=v.x; arr[i*3+1]=v.y; arr[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(arr,3)); scene.add(new THREE.Mesh(g,q.mat)); }
   /* ---- screens: canvas textures on the panels ---- */
   const disp=[];
   for(const d of o.displays){ const [x,y,w,h]=d.r, c=toP(x+w/2,y+h/2,0.0015); const k=viewOf(x+w/2,y+h/2); if(!c||!k) continue; const v=VIEWS[k];

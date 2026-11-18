@@ -606,6 +606,7 @@ function clampPan(){ const w=SHEET.W*Z.s, h=SHEET.H*Z.s; Z.tx=clamp(Z.tx,Math.mi
 
 /* ================= pointer: controls ================= */
 function hit(wx,wy){
+  for(const side of [0,1]){ const r=RECT[side?'MCDU 2':'MCDU 1']; if(r&&wx>=r[1]&&wx<=r[1]+r[3]&&wy>=r[2]&&wy<=r[2]+r[4]) return MCDU_HIT[side]; }
   let best=null, ba=1e9;
   for(const c of CT){ const r=c.r; if(!r) continue; const pad=c.t==='mkey'?0.4:1.2; if(wx<r[0]-pad||wx>r[0]+r[2]+pad||wy<r[1]-pad||wy>r[1]+r[3]+pad) continue; if(c.t==='ann'&&!c.click) continue; if(c.t==='seg'||c.t==='fcu'||c.t==='gearInd') continue; const a=r[2]*r[3]; if(a<ba){ ba=a; best=c; } }
   return best; }
@@ -659,7 +660,7 @@ function press(c,wx,wy,e){
     case 'act': c.on(); tip(c); break;
     case 'bar': c.on(); tip(c); break;
     case 'key': c.on(); break;
-    case 'mkey': { const ch=MC.key(K,c.k,M,A,mcApi); dirty.all=true; break; }
+    case 'mkey': openMcdu(c.side); break;
     case 'sel': { const n=c.pos.length; A.sw[c.k]=clamp(A.sw[c.k]+(fx<0.5?-1:1),0,n-1); tip(c); break; }
     case 'selF': { const n=c.pos.length; c.set(clamp(c.get()+(fx<0.5?-1:1),0,n-1)); tip(c); break; }
     case 'cont': { A.sw[c.k]=clamp(+(A.sw[c.k]+(fx<0.5?-c.step:c.step)).toFixed(2),c.lo,c.hi); break; }
@@ -716,6 +717,41 @@ function tip(c,txt){ if(!c.r) return; if(D3){ TIP.textContent=txt||tipText(c); T
   const x=c.r[0]*Z.s+Z.tx+b.left-sb.left, y=c.r[1]*Z.s+Z.ty+b.top-sb.top; TIP.style.left=Math.round(clamp(x,4,sb.width-200))+'px'; TIP.style.top=Math.round(Math.max(4,y-26))+'px'; clearTimeout(tipT); tipT=setTimeout(()=>TIP.hidden=true,1800); }
 let hovC=null; function hover(e){ if(e.pointerType!=='mouse') return; const [wx,wy]=toWorld(e.clientX,e.clientY); const c=hit(wx,wy); VP.style.cursor=c?(c.t==='thr'?'ns-resize':c.t==='knob'||c.t==='sel'||c.t==='selF'?'ew-resize':'pointer'):(Z.free?'grab':'default'); if(c!==hovC){ hovC=c; if(c&&c.t!=='mkey') tip(c); } }
 const mcApi={say:m=>say(m),perf:d=>{ const a=M.ap; if(d.v1) a.v1=d.v1; if(d.vr) a.vr=d.vr; if(d.v2) a.v2=d.v2; a.thrRed=d.thrRed; a.acc=d.acc; M.flx=d.flex||0; if(d.ldgConf) A.sw.ldgF3=d.ldgConf==='3'?1:0; },weights:d=>{ if(d.zfw) A.zfw=d.zfw; },dirTo:()=>{ if(!M.gnd){ M.ap.lat='NAV'; M.ap.latArm=''; M.ap.hdg.preset=false; } }};
+
+/* ================= the big MCDU: a tap on either MCDU opens it full size ================= */
+const MCDU_HIT=[{t:'mkey',side:0,id:'MCDU 1|MCDU',r:RECT['MCDU 1']?RECT['MCDU 1'].slice(1,5):null},{t:'mkey',side:1,id:'MCDU 2|MCDU',r:RECT['MCDU 2']?RECT['MCDU 2'].slice(1,5):null}];
+let MOV=null;
+function openMcdu(side){
+  if(!MOV){
+    MOV=document.createElement('div'); MOV.className='mcduov'; MOV.setAttribute('role','dialog'); MOV.setAttribute('aria-label','MCDU');
+    const fk=[['DIR','PROG','PERF','INIT','DATA',''],['F-PLN','RAD NAV','FUEL PRED','SEC F-PLN','ATC COMM','MCDU MENU']];
+    const L6=n=>Array.from({length:6},(_,i)=>`<button type="button" data-k="${n}${i+1}" class="lsk" aria-label="${n==='L'?'Left':'Right'} line key ${i+1}"></button>`).join('');
+    MOV.innerHTML=`<div class="mtop"><div class="mtabs" role="tablist"><button type="button" class="on" data-t="live" role="tab">MCDU · this flight</button><button type="button" data-t="tr" role="tab">MCDU trainer (guided tasks)</button></div><button type="button" class="mx" aria-label="Close">×</button></div>
+      <div class="mpane" data-p="live"><div class="mu"><div class="mscr"><div class="lcol">${L6('L')}</div><canvas width="640" height="640"></canvas><div class="lcol">${L6('R')}</div></div>
+      <div class="mfk">${fk.flat().map(k=>k?`<button type="button" data-k="${k}">${k.replace(' ','<br>')}</button>`:'<span></span>').join('')}</div>
+      <div class="mkb"><div class="mnav"><button type="button" data-k="AIRPORT">AIR<br>PORT</button><span></span><button type="button" data-k="←">←</button><button type="button" data-k="↑">↑</button><button type="button" data-k="→">→</button><button type="button" data-k="↓">↓</button>
+        ${['1','2','3','4','5','6','7','8','9','.','0','+/-'].map(k=>`<button type="button" class="num" data-k="${k}">${k}</button>`).join('')}</div>
+        <div class="mabc">${'ABCDEFGHIJKLMNOPQRSTUVWXY'.split('').map(k=>`<button type="button" data-k="${k}">${k}</button>`).join('')}${['Z','/','SP','OVFY','CLR'].map(k=>`<button type="button" data-k="${k}">${k==='OVFY'?'OVFY':k}</button>`).join('')}</div></div>
+      <p class="mhint">Type with the keys (or your keyboard), then press a line key beside the field. CLR clears the scratchpad. This MCDU flies the aircraft: F-PLN, DIR TO, PERF and RAD NAV are used by the autopilot.</p></div></div>
+      <div class="mpane" data-p="tr" hidden><iframe title="MCDU trainer" loading="lazy"></iframe></div>`;
+    ST.appendChild(MOV);
+    const cv=MOV.querySelector('canvas'), g=cv.getContext('2d',{alpha:false});
+    MOV._draw=()=>{ DSP.mcdu(g,cv,{pwr:true,mcdu:MC.render(K,M,A)}); };
+    MOV.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+      if(b.classList.contains('mx')){ closeMcdu(); return; }
+      if(b.dataset.t){ MOV.querySelectorAll('.mtabs button').forEach(x=>x.classList.toggle('on',x===b)); MOV.querySelectorAll('.mpane').forEach(p=>p.hidden=p.dataset.p!==b.dataset.t);
+        if(b.dataset.t==='tr'){ const f=MOV.querySelector('iframe'); if(!f.src){ f.src='mcdu.html'; f.onload=()=>{ try{ const d=f.contentDocument, st=d.createElement('style'); st.textContent='header.site,.sitefoot,.skip,.trnav,.lhead,.snav,.nsearch,#how,.note{display:none!important} body{background:#0e1216} .page{padding-top:8px!important}'; d.head.appendChild(st); }catch(_){} }; } } return; }
+      const k=b.dataset.k; if(!k) return; snd('click'); MC.key(K,k,M,A,mcApi); MOV._draw(); dirty.all=true; });
+    ['pointerdown','pointermove','pointerup','wheel','dblclick'].forEach(t=>MOV.addEventListener(t,e=>e.stopPropagation(),{passive:true}));
+    MOV.addEventListener('keydown',e=>e.stopPropagation());
+    window.addEventListener('keydown',e=>{ if(!MOV||MOV.hidden||typing(e)) return; let k=null;
+      if(e.key==='Escape'){ closeMcdu(); e.preventDefault(); e.stopImmediatePropagation(); return; }
+      if(/^[a-zA-Z0-9]$/.test(e.key)) k=e.key.toUpperCase(); else if(e.key==='/'||e.key==='.') k=e.key; else if(e.key===' ') k='SP'; else if(e.key==='Backspace'||e.key==='Delete') k='CLR'; else if(e.key==='-') k='+/-';
+      if(k){ e.preventDefault(); e.stopImmediatePropagation(); MC.key(K,k,M,A,mcApi); MOV._draw(); } },true);
+  }
+  MOV.hidden=false; MOV.dataset.side=side; MOV._draw(); MOV._t=setInterval(()=>{ if(!MOV.hidden) MOV._draw(); },1000);
+}
+function closeMcdu(){ if(!MOV) return; MOV.hidden=true; clearInterval(MOV._t); dirty.all=true; }
 
 /* ================= flight-control pads below the cockpit ================= */
 (function(){ const st=$('stick'); if(!st) return; const dot=st.querySelector('.dot'); let id=null;
