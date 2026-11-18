@@ -12,9 +12,9 @@
    Left: the tasks, the paperwork and the steps. Right: the line "what to do now" and the MCDU itself.
    MCDU colours as in the aircraft: white titles and prompts, cyan for what you can enter, green for FMS data,
    amber for mandatory boxes and messages, magenta for constraints, yellow for the temporary flight plan. */
-.mapp{display:grid;grid-template-columns:minmax(0,1fr) minmax(330px,500px);grid-template-areas:"list mc" "docs mc" "steps mc" ". mc";grid-template-rows:auto auto auto 1fr;gap:16px 22px;align-items:start}
-.mlist{grid-area:list}.mdocs{grid-area:docs}.mstepw{grid-area:steps}.mcol{grid-area:mc;position:sticky;top:12px}
-@media (max-width:900px){.mapp{grid-template-columns:minmax(0,1fr);grid-template-areas:"list" "mc" "docs" "steps";grid-template-rows:none}.mcol{position:static}}
+.mapp{display:grid;grid-template-columns:minmax(0,1fr) minmax(330px,500px);grid-template-areas:"list mc" "mid mc" "steps mc" ". mc";grid-template-rows:auto auto auto 1fr;gap:16px 22px;align-items:start}
+.mlist{grid-area:list}.mmid{grid-area:mid;display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}.mmid .mdocs{flex:1 1 240px;min-width:0}.mstepw{grid-area:steps}.mcol{grid-area:mc;position:sticky;top:12px}
+@media (max-width:900px){.mapp{grid-template-columns:minmax(0,1fr);grid-template-areas:"list" "mc" "mid" "steps";grid-template-rows:none}.mcol{position:static}}
 .mbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:0 0 14px}
 .mbar h2{margin:0;font-size:20px}.mbar .kick{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2,#5A6570);font-weight:700}
 .mbar .r{display:flex;gap:8px;align-items:center}
@@ -28,7 +28,7 @@
 .mlg button{font:500 14px var(--f-body,inherit);padding:7px 11px;border:1px solid var(--rule);border-radius:999px;background:#fff;color:var(--ink);cursor:pointer;text-align:left}
 .mlg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 @media (max-width:900px){.mlg{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}.mlg>span{flex:0 0 auto;margin-right:4px}.mlg button{flex:0 0 auto;white-space:nowrap}}
-.mdocs h3,.mstepw h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2,#5A6570);margin:0 0 8px}
+.mdocs h3,.mstepw h3,.mndw h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2,#5A6570);margin:0 0 8px}
 .mdocg{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
 .mdoc{background:#FBFAF6;border:1px solid var(--rule);border-left:4px solid var(--ink);border-radius:4px;padding:9px 12px}
 .mdoc b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
@@ -81,6 +81,13 @@
 .mlet{display:grid;grid-template-columns:repeat(5,1fr);gap:1.6cqw}
 .mlet .ck{height:7cqw;font-size:3.2cqw}.mlet .ck.clr{font-size:2.6cqw}
 .mlet .ck[data-k="OVFY"]{font-size:1.9cqw}
+.mndw{flex:0 1 340px;min-width:260px}
+.mndw .ndb{background:#030604;border-radius:12px;padding:6px;box-shadow:inset 0 0 0 4px #1B1F23}
+.mndw svg{display:block;width:100%;height:auto}
+.ndt{font:600 13px "IBM Plex Mono",ui-monospace,monospace}.ndt.w{fill:#ECEFF1}.ndt.c{fill:#3CC8F5}.ndt.g{fill:#3BE37A}
+.ndbar{display:flex;align-items:center;justify-content:space-between;margin:0 0 6px}.ndbar h3{margin:0}
+.ndz{display:flex;gap:4px;align-items:center}.ndz button{width:30px;height:30px;border:1px solid var(--rule);border-radius:6px;background:#fff;font:700 16px/1 sans-serif;cursor:pointer}.ndz span{font:600 12px var(--f-mono,monospace);min-width:52px;text-align:center}
+@media (max-width:900px){.mndw{flex:1 1 100%}}
 @media print{.mcol,.mlist{display:none}}
 </style>
 </head>
@@ -107,7 +114,10 @@
     </div>
     <div class="mapp">
       <div class="mlist" id="mlist" aria-label="Tasks"></div>
-      <div class="mdocs"><h3>Paperwork</h3><div class="mdocg" id="mdocs"></div></div>
+      <div class="mmid">
+        <div class="mndw"><div class="ndbar"><h3>ND · Plan</h3><div class="ndz"><button type="button" id="mndin" aria-label="Range in">−</button><span id="mndr"></span><button type="button" id="mndout" aria-label="Range out">+</button></div></div><div class="ndb" id="mnd"></div></div>
+        <div class="mdocs"><h3>Paperwork</h3><div class="mdocg" id="mdocs"></div></div>
+      </div>
       <div class="mstepw"><h3>Steps</h3><div id="msteps"></div><p class="mres" id="mres" hidden role="status"></p></div>
       <div class="mcol">
         <div class="mnow" id="mnow" aria-live="polite"></div>
@@ -122,7 +132,7 @@
       <div class="box"><b class="t">Guided</b><p>One step at a time, in the order you would do it in the cockpit. Stuck? Hint shows the keys to press and what to type, and lights the keys on the MCDU.</p></div>
       <div class="box"><b class="t">Practice</b><p>The same task without the steps: only the clearance and the paperwork. Set it up your way, then check your setup and see what is missing.</p></div>
       <div class="box"><b class="t">The keyboard</b><p>Type letters and numbers on your computer keyboard, Backspace is CLR. After you tap the MCDU, the arrow keys work as the slew and scroll keys. Hold CLR to clear the whole scratchpad.</p></div>
-      <div class="box"><b class="t">The colours</b><p>Amber boxes must be filled, cyan is what you can enter, green is computed by the FMS, magenta are constraints and yellow is the temporary flight plan. Small letters are default or auto-tuned values, large letters are your own entries.</p></div>
+      <div class="box"><b class="t">The colours</b><p>The ND in plan mode shows what the FMS will fly: green is the active flight plan, yellow dashed the temporary one, cyan the missed approach and the alternate. It is centred on the waypoint on the second line of the F-PLN page, as in the aircraft. Amber boxes must be filled, cyan is what you can enter, green is computed by the FMS, magenta are constraints and yellow is the temporary flight plan. Small letters are default or auto-tuned values, large letters are your own entries.</p></div>
     </div>
     <p class="note">A generic, simplified A320-family MCDU for learning: not every page and function is modelled, and it is not an aircraft or simulator FMS. The navigation data is fictional (Nordvik XNDV, Skarhamn XSKH and Fjellby XFJB) and the fuel and speed figures are teaching values. Not for navigation or for operational use: follow your operator's FCOM and SOP.</p>
   </section>
@@ -131,16 +141,16 @@
 <script src="lab.js?v=52"></script>
 <script>
 LAB.add({},{
- 'MCDU trainer':'MCDU-trener','Trainer':'Trener','How it works':'Slik virker det','Task':'Oppgave','Guided':'Guidet','Practice':'Øv','Start again':'Start på nytt','Paperwork':'Papirer','Steps':'Steg','Tasks':'Oppgaver','Mode':'Modus','The keyboard':'Tastaturet','The colours':'Fargene',
+ 'MCDU trainer':'MCDU-trener','Trainer':'Trener','How it works':'Slik virker det','Task':'Oppgave','Guided':'Guidet','Practice':'Øv','Start again':'Start på nytt','Paperwork':'Papirer','ND · Plan':'ND · Plan','Range in':'Kortere rekkevidde','Range out':'Lengre rekkevidde','Steps':'Steg','Tasks':'Oppgaver','Mode':'Modus','The keyboard':'Tastaturet','The colours':'Fargene',
  'Learn the A320 MCDU before the simulator: the cockpit preparation in the order D-I-F-R-I-P, the FMS data crosscheck and the functions you use on every flight, from direct to and the approach to holding and diversion. Follow the steps, then do the same task from the paperwork alone.':'Lær A320-MCDU-en før simulatoren: cockpit preparation i rekkefølgen D-I-F-R-I-P, FMS data crosscheck og funksjonene du bruker på hver flyging, fra direct to og innflygingen til holding og diversjon. Følg stegene, og gjør så den samme oppgaven bare etter papirene.',
  'One step at a time, in the order you would do it in the cockpit. Stuck? Hint shows the keys to press and what to type, and lights the keys on the MCDU.':'Ett steg om gangen, i den rekkefølgen du ville gjort det i cockpit. Står du fast? Hint viser hvilke taster du skal trykke og hva du skal skrive, og lyser opp tastene på MCDU-en.',
  'The same task without the steps: only the clearance and the paperwork. Set it up your way, then check your setup and see what is missing.':'Samme oppgave uten stegene: bare klareringen og papirene. Sett det opp på din måte, sjekk oppsettet og se hva som mangler.',
  'Type letters and numbers on your computer keyboard, Backspace is CLR. After you tap the MCDU, the arrow keys work as the slew and scroll keys. Hold CLR to clear the whole scratchpad.':'Skriv bokstaver og tall på tastaturet, Backspace er CLR. Når du har trykket på MCDU-en, virker piltastene som slew- og scroll-tastene. Hold inne CLR for å tømme hele scratchpad.',
- 'Amber boxes must be filled, cyan is what you can enter, green is computed by the FMS, magenta are constraints and yellow is the temporary flight plan. Small letters are default or auto-tuned values, large letters are your own entries.':'Oransje bokser må fylles ut, cyan er det du kan legge inn, grønt er beregnet av FMS-en, magenta er restriksjoner og gult er den midlertidige flyplanen. Små bokstaver er standard- eller autotunede verdier, store bokstaver er dine egne verdier.',
+ 'The ND in plan mode shows what the FMS will fly: green is the active flight plan, yellow dashed the temporary one, cyan the missed approach and the alternate. It is centred on the waypoint on the second line of the F-PLN page, as in the aircraft. Amber boxes must be filled, cyan is what you can enter, green is computed by the FMS, magenta are constraints and yellow is the temporary flight plan. Small letters are default or auto-tuned values, large letters are your own entries.':'ND-en i plan-modus viser hva FMS-en vil fly: grønt er den aktive flyplanen, gul stiplet den midlertidige, cyan missed approach og alternativ flyplass. Den er sentrert på waypointet på andre linje av F-PLN-siden, som i flyet. Oransje bokser må fylles ut, cyan er det du kan legge inn, grønt er beregnet av FMS-en, magenta er restriksjoner og gult er den midlertidige flyplanen. Små bokstaver er standard- eller autotunede verdier, store bokstaver er dine egne verdier.',
  "A generic, simplified A320-family MCDU for learning: not every page and function is modelled, and it is not an aircraft or simulator FMS. The navigation data is fictional (Nordvik XNDV, Skarhamn XSKH and Fjellby XFJB) and the fuel and speed figures are teaching values. Not for navigation or for operational use: follow your operator's FCOM and SOP.":'En generisk, forenklet MCDU for A320-familien, laget for læring: ikke alle sider og funksjoner er med, og det er ikke en FMS fra fly eller simulator. Navigasjonsdataene er fiktive (Nordvik XNDV, Skarhamn XSKH og Fjellby XFJB), og drivstoff- og fartstallene er undervisningsverdier. Ikke for navigasjon eller operativ bruk: følg operatørens FCOM og SOP.'
 });
 LAB.start('mcdu');
 </script>
-<script src="mcdu.js?v=1"></script>
+<script src="mcdu.js?v=3"></script>
 </body>
 </html>

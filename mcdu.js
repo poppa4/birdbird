@@ -364,7 +364,9 @@ PG.fpln={
       else if(it.alt) alt='---/'+String(it.alt).padStart(6,' ');
       else if(fl&&it.seg==='enr'&&S.init.crz) alt='.78/ FL'+p3(S.init.crz);
       else alt='---/ -----';
-      putR(dr,alt,it.alt&&!tm&&!r.miss?'m':(tm?'y':(r.miss||r.alt?'c':'g')));
+      const base=tm?'y':(r.miss||r.alt?'c':'g');
+      putR(dr,alt,base);
+      if(it.alt&&it.k==='wpt'&&!tm) putR(dr,String(it.alt).padStart(6,' '),'m');
     }
     /* line 6 */
     if(tm){ prompt(6,'L','<ERASE','a'); prompt(6,'R','INSERT*','a'); put(LR(6),0,' TMPY','y',1); }
@@ -1052,6 +1054,84 @@ MSA GO-AROUND SECTOR 3700 FT`]
 
 /* =========================================================== UI */
 const el=id=>document.getElementById(id);
+/* =========================================================== ND (PLAN mode) */
+/* North up, centred like the aircraft: on the waypoint on the second line of the F-PLN page you are looking at.
+   Green = active F-PLN, yellow dashed = TMPY, white dashed = SEC, cyan dashed = missed approach and alternate. */
+const RANGES=[10,20,40,80,160,320];
+let NDR=2, NDC=null;
+function ndCentre(){
+  if(S.page==='fpln'){ const rows=fplnRows(S.view||'act'); for(const k of [1,0,2,3]){ const r=rows[S.off+k]; const c=r&&r.it?coord(r.it):null; if(c&&!(r.it.id==='T-P')){ NDC={x:c.x,y:c.y}; return NDC; } } }
+  if(S.page==='latrev'&&S.lr){ const it=planFor(S.lr.view).items[S.lr.i]; const c=coord(it); if(c){ NDC={x:c.x,y:c.y}; return NDC; } }
+  if(S.page==='hold'&&S.hold){ const h=planFor(S.hold.view).items[S.hold.i]; if(h&&P[h.at]){ NDC={x:P[h.at].x,y:P[h.at].y}; return NDC; } }
+  if(S.page==='dir'&&S.dir&&S.dir.tgt&&P[S.dir.tgt]){ NDC={x:P[S.dir.tgt].x,y:P[S.dir.tgt].y}; return NDC; }
+  if(NDC) return NDC;
+  if(S.phase!=='PRE') return NDC={x:S.pos.x,y:S.pos.y};
+  return NDC={x:0,y:0};
+}
+function ndSvg(){
+  const R=170, cx=200, cy=205, rng=RANGES[NDR], k=R/(rng/2), c=ndCentre();
+  const X=p=>cx+(p.x-c.x)*k, Y=p=>cy-(p.y-c.y)*k, IN=p=>Math.hypot(X(p)-cx,Y(p)-cy)<R-6;
+  const out=[];
+  out.push(`<defs><clipPath id="ndc"><circle cx="${cx}" cy="${cy}" r="${R+12}"/></clipPath></defs>`);
+  out.push(`<rect width="400" height="410" fill="#030604"/>`);
+  out.push(`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#ECEFF1" stroke-width="1.2"/><circle cx="${cx}" cy="${cy}" r="${R/2}" fill="none" stroke="#ECEFF1" stroke-width="1" stroke-dasharray="3 5" opacity=".7"/>`);
+  for(const a of [0,90,180,270]){ const s=Math.sin(a*R2), co=Math.cos(a*R2); out.push(`<line x1="${cx+s*(R-8)}" y1="${cy-co*(R-8)}" x2="${cx+s*(R+8)}" y2="${cy-co*(R+8)}" stroke="#ECEFF1"/>`); }
+  out.push(`<text x="${cx}" y="${cy-R-14}" class="ndt w" text-anchor="middle">N</text><text x="${cx+R/2*0.71+4}" y="${cy-R/2*0.71-4}" class="ndt c">${rng/4}</text>`);
+  out.push(`<g clip-path="url(#ndc)">`);
+  /* navaids and airports in the area (small, for orientation) */
+  for(const id in P){ const p=P[id]; if(p.t==='VOR'){ out.push(`<g transform="translate(${X(p)},${Y(p)})" opacity=".55"><path d="M-5 0L-2.5-4.3h5L5 0l-2.5 4.3h-5z" fill="none" stroke="#F45BFF" stroke-width="1"/></g>`); } }
+  const lines=[], marks=[], labels=new Set();
+  const plan=(p,col,dash,w,tag)=>{
+    if(!p||!p.items||!p.items.length) return;
+    let prev=null, segs=[], cur=[];
+    const fl=flyingPlan()&&tag==='act';
+    p.items.forEach((it,i)=>{
+      if(it.k==='disc'){ if(cur.length>1) segs.push(cur); cur=[]; prev=null; return; }
+      if(it.k==='hold'){ const f=P[it.at]; if(f) lines.push(holdPath(f,it,X,Y,col,dash)); return; }
+      const q=coord(it); if(!q) return;
+      cur.push(q); prev=q;
+      if(it.k==='wpt'&&it.id!=='T-P'&&IN(q)){ const lc=tag==='act'&&fl&&i===1?'#ECEFF1':col; marks.push(`<g transform="translate(${X(q)},${Y(q)})"><path d="M0-5L5 0 0 5-5 0z" fill="none" stroke="${lc}" stroke-width="1.4"/></g>`); if(!labels.has(it.id+tag)){ labels.add(it.id+tag); marks.push(`<text x="${X(q)+8}" y="${Y(q)+4}" class="ndt" fill="${lc}">${esc(it.id)}${it.ov?'Δ':''}</text>`); } }
+      if(it.rin!=null){ const o=along(q,it.rin,Math.min(rng*0.6,25)); lines.push(`<line x1="${X(q)}" y1="${Y(q)}" x2="${X(o)}" y2="${Y(o)}" stroke="${col}" stroke-width="${w}" stroke-dasharray="6 5"/>`); }
+    });
+    if(cur.length>1) segs.push(cur);
+    for(const sg of segs) lines.push(`<polyline points="${sg.map(q=>X(q).toFixed(1)+','+Y(q).toFixed(1)).join(' ')}" fill="none" stroke="${col}" stroke-width="${w}" ${dash?`stroke-dasharray="${dash}"`:''} stroke-linejoin="round"/>`);
+    /* missed approach */
+    const d=destOf(p); if(p.miss&&p.miss.length&&d){ let a=coord(d); for(const m of p.miss){ const b=coord(m); if(a&&b) lines.push(`<line x1="${X(a)}" y1="${Y(a)}" x2="${X(b)}" y2="${Y(b)}" stroke="#3CC8F5" stroke-width="1.6" stroke-dasharray="6 5"/>`); if(b&&IN(b)) marks.push(`<text x="${X(b)+8}" y="${Y(b)+4}" class="ndt c">${esc(m.id)}</text>`); a=b; } }
+  };
+  const act=S.act, tm=S.tmpy;
+  if(S.view==='sec'&&S.sec&&S.page==='fpln') plan(tm&&tm.tgt==='sec'?tm.plan:S.sec,'#ECEFF1','7 5',1.8,'sec');
+  plan(act,'#3BE37A',null,2.2,'act');
+  if(tm&&tm.tgt==='act') plan(tm.plan,'#FFE14D','8 5',2.2,'tmp');
+  /* alternate */
+  const al=act.altn||S.init.altn, dd=destOf(act); if(al&&dd&&P[al]&&dd.id!==al){ const a=coord(dd), b=P[al]; lines.push(`<line x1="${X(a)}" y1="${Y(a)}" x2="${X(b)}" y2="${Y(b)}" stroke="#3CC8F5" stroke-width="1.4" stroke-dasharray="4 6" opacity=".8"/>`); }
+  /* airports with the runway in use */
+  for(const a in AP){ const A=AP[a], p=P[a]; let rw=null; if(act.from===a&&act.dRwy) rw=act.dRwy; const de=destOf(act); if(de&&de.id===a&&de.rwy) rw=de.rwy;
+    const rws=rw?[rw]:Object.keys(A.rwy).slice(0,1);
+    for(const r of rws){ const R_=A.rwy[r], h=R_.len/1852/2, t1=along(p,R_.crs+180,h), t2=along(p,R_.crs,h); marks.push(`<line x1="${X(t1)}" y1="${Y(t1)}" x2="${X(t2)}" y2="${Y(t2)}" stroke="#ECEFF1" stroke-width="${rw?3:2}"/>`); }
+    if(IN(p)) marks.push(`<text x="${X(p)+9}" y="${Y(p)+14}" class="ndt w">${a}${rw?rw:''}</text>`); }
+  /* pending DIR TO */
+  if(S.page==='dir'&&S.dir&&S.dir.tgt&&P[S.dir.tgt]&&S.phase!=='PRE'){ const t=P[S.dir.tgt]; lines.push(`<line x1="${X(S.pos)}" y1="${Y(S.pos)}" x2="${X(t)}" y2="${Y(t)}" stroke="#FFE14D" stroke-width="2.2" stroke-dasharray="8 5"/>`); if(S.dir.rin!=null){ const o=along(t,S.dir.rin,Math.min(rng*0.6,25)); lines.push(`<line x1="${X(t)}" y1="${Y(t)}" x2="${X(o)}" y2="${Y(o)}" stroke="#FFE14D" stroke-width="2" stroke-dasharray="6 5"/>`); } }
+  out.push(lines.join(''), marks.join(''));
+  /* aircraft */
+  if(S.phase!=='PRE'){ const to=coord(act.items[1]); const hd=to?brg(S.pos,to):0; out.push(`<g transform="translate(${X(S.pos)},${Y(S.pos)}) rotate(${hd})"><path d="M0-11V12M-10-1H10M-4 9H4" stroke="#FFE14D" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>`); }
+  out.push('</g>');
+  const tl=S.phase==='PRE'?'':`GS 450 TAS 470`;
+  out.push(`<text x="10" y="18" class="ndt w">${tl}</text><text x="390" y="18" class="ndt g" text-anchor="end">${esc(act.items[1]&&isW(act.items[1])&&S.phase!=='PRE'?act.items[1].id:'')}</text>`);
+  out.push(`<text x="10" y="400" class="ndt c">PLAN</text><text x="390" y="400" class="ndt w" text-anchor="end">${rng} NM</text>`);
+  return `<svg viewBox="0 0 400 410" role="img" aria-label="Navigation display, plan mode">${out.join('')}</svg>`;
+}
+function holdPath(f,h,X,Y,col,dash){
+  /* racetrack: inbound leg ends at the fix */
+  const leg=Math.max(3,(h.time||1)*3.8), rad=1.6, crs=h.crs, side=h.turn==='L'?-1:1;
+  const b=f, a=along(b,crs+180,leg);                 /* start of inbound leg */
+  const off=along(b,crs+90*side,2*rad), off2=along(a,crs+90*side,2*rad);
+  const P1=`${X(a)},${Y(a)}`, P2=`${X(b)},${Y(b)}`, P3=`${X(off)},${Y(off)}`, P4=`${X(off2)},${Y(off2)}`;
+  const r=Math.abs(X(along(b,90,rad))-X(b)), sw=side>0?1:0;
+  return `<path d="M${P1}L${P2}A${r} ${r} 0 0 ${sw} ${P3}L${P4}A${r} ${r} 0 0 ${sw} ${P1}" fill="none" stroke="${col}" stroke-width="2" ${dash?`stroke-dasharray="${dash}"`:''}/>`;
+}
+function drawNd(){ const n=el('mnd'); if(!n) return; n.innerHTML=ndSvg(); const r=el('mndr'); if(r) r.textContent=RANGES[NDR]+' NM'; }
+
+
 let SC=null, MODE='guided', DONE=false, CHECKED=false, HINT=-1;
 const KEYS_TOP=[['DIR','DIR'],['PROG','PROG'],['PERF','PERF'],['INIT','INIT'],['DATA','DATA'],['',''],['BRT','BRT'],['FPLN','F-PLN'],['RAD','RAD NAV'],['FUEL','FUEL PRED'],['SEC','SEC F-PLN'],['ATC','ATC COMM'],['MENU','MCDU MENU'],['DIM','DIM'],['AIRPORT','AIR PORT']];
 function buildMcdu(){
@@ -1089,7 +1169,7 @@ let LATCH=[];
 function stepIdx(){ if(!SC) return -1; for(let i=0;i<SC.steps.length;i++){ if(LATCH[i]) continue; if(SC.steps[i].ok()){ LATCH[i]=true; continue; } return i; } return SC.steps.length; }
 const stepOk=i=>!!LATCH[i]||SC.steps[i].ok();
 function refresh(){
-  el('mscr').innerHTML=draw();
+  el('mscr').innerHTML=draw(); drawNd();
   if(!SC) return;
   const n=SC.steps.length, i=stepIdx();
   const now=el('mnow');
@@ -1119,7 +1199,7 @@ function drawSteps(cur){
 }
 function check(){ CHECKED=true; stepIdx(); const n=SC.steps.length, ok=SC.steps.filter((s,i)=>stepOk(i)).length; drawSteps(stepIdx()); const r=el('mres'); r.hidden=false; r.className='mres '+(ok===n?'ok':'part'); r.textContent=ok===n?Lx(tt(`All ${n} items correct.`,`Alle ${n} punktene er riktige.`)):Lx(tt(`${ok} of ${n} correct. The list shows what is missing.`,`${ok} av ${n} riktige. Listen viser hva som mangler.`)); }
 function loadScn(id){
-  SC=SCN.find(s=>s.id===id)||SCN[0]; S=blank(); SC.setup(); S.log=[]; S.seen={}; HINT=-1; LATCH=[];
+  SC=SCN.find(s=>s.id===id)||SCN[0]; S=blank(); SC.setup(); S.log=[]; S.seen={}; HINT=-1; LATCH=[]; NDC=null; NDR=S.phase==='PRE'?2:3;
   DONE=false; CHECKED=false; const r=el('mres'); if(r) r.hidden=true;
   const ph=el('mphase'); if(ph) ph.textContent=S.phase==='PRE'?Lx(tt('On stand, XNDV','På standplass, XNDV')):S.phase==='CRZ'?Lx(tt('Cruise FL350','Marsj FL350')):Lx(tt('Descent','Nedstigning'));
   el('mdocs').innerHTML=SC.docs.map(docHtml).join('');
@@ -1140,6 +1220,7 @@ function init(){
   buildMcdu(); buildList();
   el('mmode').onclick=e=>{ const b=e.target.closest('button[data-m]'); if(b) setMode(b.dataset.m); };
   el('mreset').onclick=()=>loadScn(SC.id);
+  const zi=el('mndin'), zo=el('mndout'); if(zi) zi.onclick=()=>{ NDR=Math.max(0,NDR-1); drawNd(); }; if(zo) zo.onclick=()=>{ NDR=Math.min(RANGES.length-1,NDR+1); drawNd(); };
   let first='prep'; try{ const s=localStorage.getItem('mcdu-scn'); if(s&&SCN.some(x=>x.id===s)) first=s; }catch(e){}
   const h=location.hash.replace('#',''); if(SCN.some(x=>x.id===h)) first=h;
   loadScn(first);
