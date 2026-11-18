@@ -40,8 +40,8 @@ for (const [q, id] of CASES) {
 
 test('the CMV entry carries the conversion table and its limits', () => {
   const x = EASA.get('CMV conversion');
-  for (const s of ['1.5', '2.0', 'take-off', '800 m', 'RVR is reported']) assert.ok(x.en.includes(s), s);
-  for (const s of ['1,5', '2,0', 'avgangsminima', '800 m']) assert.ok(x.no.includes(s), s);
+  for (const s of ['1.5', '2.0', 'take-off', 'flight planning the factor is 1.0', 'LVO', 'RVR is reported']) assert.ok(x.en.includes(s), s);
+  for (const s of ['1,5', '2,0', 'avgangsminima', 'faktoren 1,0', 'LVO']) assert.ok(x.no.includes(s), s);
 });
 
 test('prompts tell the AI to read pilot shorthand and to answer when the library has no match', () => {

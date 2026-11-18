@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="description" content="The rules and numbers you use on every flight, on one page. Short and clean, with the source so you can check the full text. National rules in the AIP and…">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>VFR and IFR Essentials</title>
+<title>VFR and IFR essentials</title>
 <link rel="stylesheet" href="lab.css?v=14">
 <link rel="stylesheet" href="site.css?v=35">
 <style>
@@ -24,8 +24,8 @@
 @media (pointer:coarse){.filter>a{display:inline-flex;align-items:center;min-height:44px}}
 </style>
 </head>
-<body data-title="VFR and IFR Essentials">
-<script src="site.js?v=100"></script>
+<body data-title="VFR and IFR essentials">
+<script src="site.js?v=101"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -86,7 +86,7 @@ const B=[
 ];
 function draw(){ const f=(arr,id)=>{ el(id).innerHTML=arr.map(c=>`<div class="ec"><h3>${esc(L(c.t))}</h3>${c.body()}<span class="src">${c.src}</span></div>`).join(''); }; f(V,'ev'); f(I,'ei'); f(B,'eb'); }
 const show=v=>{ el('vfr').hidden=v==='ifr'; el('ifr').hidden=v==='vfr'; };
-LAB.add({},{'NORDAP · Flight planning':'NORDAP · Flyplanlegging','VFR and IFR essentials':'Det viktigste i VFR og IFR','VFR and IFR Essentials':'Det viktigste i VFR og IFR',
+LAB.add({},{'NORDAP · Flight planning':'NORDAP · Flyplanlegging','VFR and IFR essentials':'Det viktigste i VFR og IFR','VFR and IFR essentials':'Det viktigste i VFR og IFR',
  'The rules and numbers you use on every flight, on one page. Short and clean, with the source so you can check the full text. National rules in the AIP and your operations manual always come first.':'Reglene og tallene du bruker på hver tur, på én side. Kort og ryddig, med kilden så du kan sjekke hele teksten. Nasjonale regler i AIP og operasjonsmanualen går alltid foran.',
  'Pitot-static system lab →':'Lab: pitot-statisk system →','Both':'Begge','All':'Alle',
  'Summaries of EASA SERA, Part-FCL, Part-NCO and ICAO PANS-OPS as commonly applied. They are not legal text. Check the AIP and the current regulation before you rely on a number.':'Sammendrag av EASA SERA, Part-FCL, Part-NCO og ICAO PANS-OPS slik de vanligvis brukes. Dette er ikke lovtekst. Sjekk AIP og gjeldende regelverk før du stoler på et tall.'});

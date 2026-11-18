@@ -6,7 +6,7 @@
            Merge is per item id, newest updatedAt wins, and a concurrent edit of the same note is kept as a version.
            Absence never means deletion. A namespace that is too big is gzipped, then loses old note versions in the
            synced copy (the device keeps them), then leaves the largest notes on the device, and says so.
-   Backup  one .zip (stored, no compression): birdbird-backup.json + documents/ (original files and extracted text). */
+   Backup  one .zip (stored, no compression): nordap-backup.json + documents/ (original files and extracted text). */
 (function (G) {
   'use strict';
   const DAY = 864e5;
@@ -462,7 +462,9 @@
   }
 
   /* ---------- backup ---------- */
-  const BACKUP_FORMAT = 'birdbird-workspace-backup', BACKUP_NAME = 'birdbird-backup.json';
+  const BACKUP_FORMAT = 'nordap-workspace-backup', BACKUP_NAME = 'nordap-backup.json';
+  /* backups made before the rename (Birdbird) are still read */
+  const OLD_FORMAT = 'birdbird-workspace-backup', OLD_NAME = 'birdbird-backup.json';
   /* input: { items, local:{ localStorage key: string }, docs:[{ doc (stored record with chunks), fileName, fileType,
        file: Uint8Array|null  or  load(): Promise<{ u8, keep: Blob|null }|null> (one file in memory at a time) }] } */
   async function buildBackup(input, now) {
@@ -483,9 +485,10 @@
     const fail = m => { const e = new Error(m); e.code = 'bad_backup'; return e; };
     let entries; try { entries = await zipRead(src); } catch (e) { if (e.code === 'bad_zip') throw fail('This is not a NORDAP backup file.'); throw e; }
     const by = {}; entries.forEach(e => { by[e.name] = e; });
-    if (!by[BACKUP_NAME]) throw fail('This is not a NORDAP backup file.');
-    let j; try { j = JSON.parse(dec.decode(await by[BACKUP_NAME].read())); } catch (e) { if (e.code === 'bad_crc') throw e; throw fail('The backup file could not be read.'); }
-    if (!j || j.format !== BACKUP_FORMAT) throw fail('This is not a NORDAP backup file.');
+    const entry = by[BACKUP_NAME] || by[OLD_NAME];
+    if (!entry) throw fail('This is not a NORDAP backup file.');
+    let j; try { j = JSON.parse(dec.decode(await entry.read())); } catch (e) { if (e.code === 'bad_crc') throw e; throw fail('The backup file could not be read.'); }
+    if (!j || (j.format !== BACKUP_FORMAT && j.format !== OLD_FORMAT)) throw fail('This is not a NORDAP backup file.');
     const items = await unpackNs({ items: j.items });
     for (const id in items) { const it = items[id]; if (it.kind === 'note' && !it.gone) { it.body = sanitizeHtml(it.body); it.versions = (it.versions || []).map(v => ({ at: +v.at || 0, title: String(v.title || ''), body: sanitizeHtml(v.body), conflict: v.conflict ? 1 : undefined })); } }
     const docs = [];

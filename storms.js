@@ -445,7 +445,7 @@ LAB.quiz(el('qbox'),'storms',()=>LAB.shuffle([
 ]),10);
 
 /* ---------------- static strings, start ---------------- */
-LAB.add({},{'Thunderstorms and Wind Shear':'Tordenvær og vindskjær','Thunderstorms and wind shear':'Tordenvær og vindskjær','NORDAP Virtual Labs · Meteorology':'NORDAP Virtual Labs · Meteorologi',
+LAB.add({},{'Thunderstorms and wind shear':'Tordenvær og vindskjær','Thunderstorms and wind shear':'Tordenvær og vindskjær','NORDAP Virtual Labs · Meteorology':'NORDAP Virtual Labs · Meteorologi',
  'Key concepts':'Nøkkelbegreper','The storm lab':'Stormlabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv','Deep dive':'Dypdykk',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Controls':'Kontroller','Conditions':'Forhold','Instability':'Ustabilitet','Wind shear with height':'Vindskjær med høyden','Development':'Utvikling','Fly':'Fly','Stage':'Stadium','Pilot':'Pilot','Radar':'Radar','Range':'Rekkevidde','Gain':'Gain','Show':'Vis','Cloud':'Sky','Scenarios':'Scenarioer','Advanced':'Avansert',
  'Navigation display':'Navigasjonsskjerm','Virtual Labs':'Virtual Labs','Sections':'Seksjoner','View':'Visning',

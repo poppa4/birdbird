@@ -17,7 +17,7 @@ const MONO='IBM Plex Mono, monospace', SANS='"Public Sans", sans-serif';
    Strings for rich prose (the page holds the English)
    ===================================================================== */
 LAB.add({},{
- 'Clouds, Stability and Fog':'Skyer, stabilitet og tåke','Clouds, stability and fog':'Skyer, stabilitet og tåke','NORDAP Virtual Labs · Meteorology':'NORDAP Virtual Labs · Meteorologi',
+ 'Clouds, stability and fog':'Skyer, stabilitet og tåke','Clouds, stability and fog':'Skyer, stabilitet og tåke','NORDAP Virtual Labs · Meteorology':'NORDAP Virtual Labs · Meteorologi',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Key points':'3 · Det viktigste','3 · Test yourself':'3 · Test deg selv',
  'Key concepts':'Nøkkelbegreper','Clouds and stability lab':'Sky- og stabilitetslabben','Try it':'Prøv selv','What happened, and why it matters':'Hva som skjedde, og hvorfor det betyr noe','Pilot takeaways':'Dette tar piloten med seg','Key points':'Det viktigste','Test yourself':'Test deg selv',
  'Controls':'Kontroller','Conditions':'Forhold','Values':'Verdier','Scenarios':'Scenarier','Advanced':'Avansert','What lifts the air':'Hva løfter luften','Type of fog':'Type tåke','The ten cloud types':'De ti skyslagene',
