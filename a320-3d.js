@@ -31,7 +31,7 @@ function basis(v){ const m=new THREE.Matrix4(); m.makeBasis(v.EX,v.EY,v.FN); ret
 
 function init(o){
   const o_R=o.R;
-  const mobile=matchMedia('(pointer:coarse)').matches&&Math.min(screen.width,screen.height)<=500; // phones only: tablets get full detail
+  const mobile=(navigator.deviceMemory||8)<3; // only devices with very little memory get the light textures: phones zoom in to read, so they need full detail
   const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(62,1,0.05,20);
   cam.position.copy(EYE);
   const head={yaw:0,pitch:-11*D2R,fov:62,tYaw:0,tPitch:-11*D2R,tFov:62,eye:EYE.clone(),tEye:EYE.clone()};
@@ -131,7 +131,7 @@ function init(o){
   // how many screen pixels a display covers now (for its canvas size: sharp when zoomed in, cheap when far away)
   function pxSize(d,vh){ const x=disp.find(z=>z.d===d); if(!x) return 256; const dist=Math.max(0.2,x.c.distanceTo(cam.position)); return x.wm/dist/(2*Math.tan(cam.fov*D2R/2))*vh; }
   function visible(d){ const x=disp.find(z=>z.d===d); if(!x) return false; sph.center.copy(x.c); sph.radius=0.12; return frus.intersectsSphere(sph); }
-  function lookAt(p,fov,lean){ head.tEye.copy(EYE); if(lean!=null) head.tEye.x=lean; const dv=p.clone().sub(head.tEye).normalize(); head.tYaw=Math.atan2(-dv.x,-dv.z); head.tPitch=Math.asin(Math.max(-1,Math.min(1,dv.y))); if(fov) head.tFov=fov; }
+  function lookAt(p,fov,lean){ head.tEye.copy(EYE); if(lean!=null) head.tEye.x=lean; const asp=o.aspect(); if(fov&&asp>1.9&&fov<50) fov*=Math.max(0.6,1.9/asp); /* wide phone screens: closer, so the labels are big enough to read */ const dv=p.clone().sub(head.tEye).normalize(); head.tYaw=Math.atan2(-dv.x,-dv.z); head.tPitch=Math.asin(Math.max(-1,Math.min(1,dv.y))); if(fov) head.tFov=fov; }
   // the overhead and the pedestal: the pilot leans in towards the centre line (as in the aircraft), so the panel is seen square
   const LOOK={main:()=>{ head.tEye.copy(EYE); head.tYaw=-0.04; head.tPitch=-11*D2R; head.tFov=62; },ovhd:()=>lookAt(toP(500,610),62,-0.02),aft:()=>lookAt(toP(500,230),64,-0.02),ped:()=>lookAt(toP(500,1300),58,-0.18),fcu:()=>lookAt(toP(500,845),26),ecam:()=>lookAt(toP(507,1000),32,-0.3),mcdu:()=>lookAt(toP(500,1196),33,-0.16),pfd:()=>lookAt(toP(225,955),36)};
   /* ---- picking: ray from the eye through the pointer to the nearest panel ---- */
@@ -150,7 +150,7 @@ function init(o){
   function draw(R){ R.render(scene,cam); }
   return {scene,cam,head,updCam,draw,pick,LOOK,visible,pxSize,setImage,repaint,K,disp,mobile,
     drag(dx,dy){ const s=head.fov/62*0.0042; head.tYaw+=dx*s; head.tPitch=Math.max(-80*D2R,Math.min(85*D2R,head.tPitch+dy*s)); head.yaw=head.tYaw; head.pitch=head.tPitch; },
-    zoom(f){ head.tFov=Math.max(18,Math.min(80,head.tFov*f)); },
+    zoom(f){ head.tFov=Math.max(8,Math.min(80,head.tFov*f)); },
     qHead(){ return q; }, fov(){ return cam.fov; }};
 }
 G.A3D={init,VIEWS,toP,viewOf};

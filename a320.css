@@ -88,3 +88,4 @@
 /* 2D screens: cover glass (a faint sheen and edge shading) and the glareshield shadow on the main panel; drawn once */
 .a320 .world .glass{position:absolute;pointer-events:none;border-radius:1px;background:linear-gradient(160deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,0) 38%),radial-gradient(130% 120% at 50% 45%,rgba(0,0,0,0) 62%,rgba(0,0,0,.28) 100%);box-shadow:inset 0 0 0 .5px rgba(0,0,0,.6)}
 .a320 .world .gshade{position:absolute;left:0;width:1000px;pointer-events:none;background:linear-gradient(rgba(0,0,0,.34),rgba(0,0,0,0))}
+.a320 .stage,.a320 .stage canvas,.a320 .vp{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}

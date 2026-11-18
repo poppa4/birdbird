@@ -406,7 +406,7 @@ function buildOverlay(){
   // display canvases
   DISP.forEach(d=>{ const r=d.rect||RECT[d.id]; if(!r) return; const [x,y,w,h]=d.rect?d.rect:[r[1],r[2],r[3],r[4]]; d.r=[x,y,w,h];
     const cv=document.createElement('canvas');
-    if(D3){ const mob=matchMedia('(pointer:coarse)').matches; const px=d.k==='isis'?192:d.k==='mcdu'?(mob?256:384):(mob?320:448); cv.width=cv.height=px; d.px=px; }
+    if(D3){ const mob=(navigator.deviceMemory||8)<3; const px=d.k==='isis'?192:d.k==='mcdu'?(mob?256:384):(mob?320:448); cv.width=cv.height=px; d.px=px; }
     else { Object.assign(cv.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'}); $('world').insertBefore(cv,ovl); d.px=0; }
     d.cv=cv; d.g=cv.getContext('2d',{alpha:false}); d.t=0;
     if(!D3){ const gl=document.createElement('div'); gl.className='glass'; Object.assign(gl.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'}); $('world').insertBefore(gl,ovl); } });
@@ -578,7 +578,7 @@ function displayTick(dt){
   if(D3&&CK){ const vh=ST.clientHeight*Math.min(devicePixelRatio||1,2);
     for(const d of DISP){ if(!d.cv||!d.tex) continue; if(!CK.visible(d)){ d.hidden=true; continue; } d.t+=dt;
       // canvas size follows how big the screen is on the display (zoomed in: up to 1024 px, sharp; far away: small, cheap)
-      const want=Math.max(192,Math.min(CK.mobile?640:1024,Math.round(CK.pxSize(d,vh)*1.1/64)*64)); if(Math.abs(want-d.px)>Math.max(64,d.px*0.25)){ d.cv.width=d.cv.height=want; d.px=want; d.sig=''; d.t=99; d.tex.needsUpdate=true; }
+      const want=Math.max(192,Math.min(CK.mobile?768:1024,Math.round(CK.pxSize(d,vh)*1.1/64)*64)); if(Math.abs(want-d.px)>Math.max(64,d.px*0.25)){ d.cv.width=d.cv.height=want; d.px=want; d.sig=''; d.t=99; d.tex.needsUpdate=true; }
       if(d.k==='mcdu'){ const sig=K.changed+'|'+side_pw(d)+'|'+(K.page==='fpln'||K.page==='prog'?Math.round(UI.t):0)+'|'+d.hidden; if(sig===d.sig) continue; d.sig=sig; }
       else { const capt=(d.k==='pfd'||d.k==='nd')&&!d.side, hz=[capt?20:8,capt?12:6,capt?8:4][GOV.lvl]; if(d.t<1/hz&&!d.hidden) continue; }
       d.hidden=false; d.t=0; DSP[d.k](d.g,d.cv,dispData(d)); d.tex.needsUpdate=true; }
@@ -747,6 +747,16 @@ function tip(c,txt){ if(!c.r) return; if(D3){ TIP.textContent=txt||tipText(c); T
   const x=c.r[0]*Z.s+Z.tx+b.left-sb.left, y=c.r[1]*Z.s+Z.ty+b.top-sb.top; TIP.style.left=Math.round(clamp(x,4,sb.width-200))+'px'; TIP.style.top=Math.round(Math.max(4,y-26))+'px'; clearTimeout(tipT); tipT=setTimeout(()=>TIP.hidden=true,1800); }
 let hovC=null; function hover(e){ if(e.pointerType!=='mouse') return; const [wx,wy]=toWorld(e.clientX,e.clientY); const c=hit(wx,wy); VP.style.cursor=c?(c.t==='thr'?'ns-resize':c.t==='knob'||c.t==='sel'||c.t==='selF'?'ew-resize':'pointer'):(Z.free?'grab':'default'); if(c!==hovC){ hovC=c; if(c&&c.t!=='mkey') tip(c); } }
 const mcApi={say:m=>say(m),perf:d=>{ const a=M.ap; if(d.v1) a.v1=d.v1; if(d.vr) a.vr=d.vr; if(d.v2) a.v2=d.v2; a.thrRed=d.thrRed; a.acc=d.acc; M.flx=d.flex||0; if(d.ldgConf) A.sw.ldgF3=d.ldgConf==='3'?1:0; },weights:d=>{ if(d.zfw) A.zfw=d.zfw; },dirTo:()=>{ if(!M.gnd){ M.ap.lat='NAV'; M.ap.latArm=''; M.ap.hdg.preset=false; } }};
+
+/* Safari (iPad / iPhone) zooms the whole web page on a pinch and on a double tap unless told not to; that only magnifies the
+   picture (blurred text). Inside the cockpit the pinch must zoom the cockpit itself: block the page zoom here and use the
+   gesture's own scale. */
+{ let g0=1;
+  ST.addEventListener('gesturestart',e=>{ e.preventDefault(); g0=1; },{passive:false});
+  ST.addEventListener('gesturechange',e=>{ e.preventDefault(); const f=e.scale/g0; g0=e.scale; if(D3){ if(CK) CK.zoom(1/f); } else zoomAt(e.clientX||ST.clientWidth/2,e.clientY||ST.clientHeight/2,f); },{passive:false});
+  ST.addEventListener('gestureend',e=>e.preventDefault(),{passive:false});
+  ST.addEventListener('touchmove',e=>{ if(e.touches.length>1) e.preventDefault(); },{passive:false});
+  let lastT=0; ST.addEventListener('touchend',e=>{ const t=Date.now(); if(t-lastT<320&&e.changedTouches.length===1) e.preventDefault(); lastT=t; },{passive:false}); }
 
 /* ================= the big MCDU: a tap on either MCDU opens it full size ================= */
 const MCDU_HIT=[{t:'mkey',side:0,id:'MCDU 1|MCDU',r:RECT['MCDU 1']?RECT['MCDU 1'].slice(1,5):null},{t:'mkey',side:1,id:'MCDU 2|MCDU',r:RECT['MCDU 2']?RECT['MCDU 2'].slice(1,5):null}];
