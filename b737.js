@@ -312,7 +312,7 @@ function reset(kind){
   if(kind==='air'){ B.flap=0; ap.spd.man=true; ap.spd.v=250; M.trimSpd=250; ap.hdgHold=false; }
   if(kind==='appr'){ B.flap=4; A.sw.flapLv=2; B.fpos=10; ap.spd.man=true; ap.spd.v=180; M.trimSpd=180; UI.efis.mode=0; UI.efis.range=1; UI.efis2.mode=0; UI.efis2.range=1; B.minsRA=false; B.mins=200; }
   if(kind==='cold'){ A.sw.flapLv=0; ap.fd1=ap.fd2=false; Object.assign(A.sw,{pk1:1,pk2:1,eb1:1,eb2:1,apuBl:0,ext:0,gen1:0,gen2:0,apuGen:0}); }
-  if(kind!=='cold'){ A.sw.probe=1; A.sw.xb=1; B.apu=0; A.sw.apuM=0; }
+  if(kind!=='cold'){ A.sw.probe=1; A.sw.xb=1; B.apu=0; A.sw.apuM=0; A.sw.hyY=1; A.sw.ptu=1; }
   if(kind==='air'||kind==='appr'){ A.sw.gearLv=0; A.sw.spArm=0; B.ab=1; A.sw.abrk=0; }
   if(kind==='appr'){ A.sw.gearLv=1; M.gear=1; M.gearDown=true; }
   B.fpos=FLAPS[B.flap]; UI.ls=[false,false];
@@ -344,7 +344,8 @@ function postSys(dt){
   if(!M.gnd) B.air=true;
 }
 /* thrust lever, flap and speed brake handling */
-function thrTxt(i){ const v=UI.tla[i]; if(v<0) return 'REV'; const e=X.A.eng[i]; return e.run?e.n1.toFixed(1):'--'; }
+const D3=document.body.hasAttribute('data-d3'); // 3D: the panel textures repaint when a label changes, so no running N1 numbers on the levers
+function thrTxt(i){ const v=UI.tla[i]; if(v<0) return 'REV'; if(D3) return v>40?'TO':v<1?'IDLE':''; const e=X.A.eng[i]; return e.run?e.n1.toFixed(1):'--'; }
 function levTxt(k){ const S=X.A.sw; if(k==='flaps') return String(FLAPS[B.flap]); if(k==='gear') return S.gearLv?'DN':'UP'; if(k==='spd') return S.spArm?'ARMED':S.spdBrk>0?(S.spdBrk>=0.99?'UP':'FLT '+Math.round(S.spdBrk*100)+'%'):'DOWN'; return null; }
 function flapSay(){ X.say('Flaps '+FLAPS[B.flap]+(FLAPLIM[B.flap]?' (limit '+FLAPLIM[B.flap]+' kt)':'')); }
 function lever(c,fy){ if(c.kind==='flaps'){ B.flap=clamp(B.flap+(fy<0.5?-1:1),0,8); flapSay(); return true; } return false; }
@@ -365,17 +366,23 @@ function keydown(c,e){
 function cduHTML(){
   const L6=n=>Array.from({length:6},(_,i)=>`<button type="button" data-k="${n}${i+1}" class="lsk" aria-label="${n==='L'?'Left':'Right'} line key ${i+1}"></button>`).join('');
   const fk=['INIT REF','RTE','CLB','CRZ','DES','MENU','LEGS','DEP ARR','HOLD','PROG','EXEC','N1 LIMIT','FIX','PREV PAGE','NEXT PAGE'];
-  return `<div class="mtop"><div class="mtabs" role="tablist"><button type="button" class="on" role="tab">CDU · this flight</button></div><button type="button" class="mx" aria-label="Close">×</button></div>
+  return `<div class="mtop"><div class="mtabs" role="tablist"><button type="button" class="on" data-t="live" role="tab">CDU · this flight</button><button type="button" data-t="tr" role="tab">FMC trainer (guided tasks)</button></div><button type="button" class="mx" aria-label="Close">×</button></div>
   <div class="mpane" data-p="live"><div class="mu bcdu"><div class="mscr"><div class="lcol">${L6('L')}</div><canvas width="710" height="637"></canvas><div class="lcol">${L6('R')}</div></div>
   <div class="mfk bfk">${fk.map(k=>`<button type="button" data-k="${k}"${k==='EXEC'?' class="exec"':''}>${k.replace(' ','<br>')}</button>`).join('')}</div>
   <div class="mkb"><div class="mnav">${['1','2','3','4','5','6','7','8','9','.','0','+/-'].map(k=>`<button type="button" class="num" data-k="${k}">${k}</button>`).join('')}</div>
   <div class="mabc">${'ABCDEFGHIJKLMNOPQRSTUVWXY'.split('').map(k=>`<button type="button" data-k="${k}">${k}</button>`).join('')}${['Z','SP','DEL','/','CLR'].map(k=>`<button type="button" data-k="${k}">${k}</button>`).join('')}</div></div>
-  <p class="mhint">Type with the keys (or your keyboard), then press a line key beside the field. A change to the active route lights EXEC: press it to make it active. CLR deletes a character, DEL then a line key deletes a waypoint or a constraint.</p></div></div>`; }
+  <p class="mhint">Type with the keys (or your keyboard), then press a line key beside the field. A change to the active route lights EXEC: press it to make it active. CLR deletes a character, DEL then a line key deletes a waypoint or a constraint.</p></div></div><div class="mpane" data-p="tr" hidden><iframe title="FMC trainer" loading="lazy"></iframe></div>`; }
 window.SIMAC={T:window.B737T,H:1520,key:'bb-b737-start',img:['img/cockpits/b738-deck-1500.webp','img/cockpits/b738-deck-3000.webp'],cduIds:['CDU L','CDU R'],gshade:null,
   REG:{ovhd:[282,38,436,428],main:[70,536,860,258],mcp:[250,540,500,56],eng:[425,664,152,290],cdu:[330,815,345,175],ped:[332,992,336,528],side:[0,1300,1000,120]},
   REGN:{ovhd:'Overhead',main:'Panel',mcp:'MCP and EFIS',eng:'Engine displays',cdu:'CDU',ped:'Pedestal'},
-  DISP,draw:{pfd:DSP7.pfd,nd:DSP7.nd,eng:DSP7.eng,eng2:DSP7.eng2,mcdu:DSP7.mcdu,flapind:DSP7.flapind,gearl:DSP7.gearl},cdu:CDU,cduCls:'b737cdu',cduHTML,detents:[0,45],
+  DISP,draw:{pfd:DSP7.pfd,nd:DSP7.nd,eng:DSP7.eng,eng2:DSP7.eng2,mcdu:DSP7.mcdu,flapind:DSP7.flapind,gearl:DSP7.gearl},cdu:CDU,cduCls:'b737cdu',trainer:'fmc.html',cduHTML,detents:[0,45],
+  d3:{VIEWS:{ovh:{c:[0.895,1.53,0.025],n:[-0.396,0.918,0],up:[0.918,0.396,0],W:0.74,H:0.76,r:[262.8,0,474.3,487.2]},
+      front:{c:[0.434,0.9608,0],n:[-0.96,-0.278,0],up:[0,1,0],W:1.56,H:0.4767,r:[0,495.6,1000,305.7]},
+      cdu:{c:[0.5705,0.6582,0.02],n:[-0.49,-0.872,0],up:[-0.872,0.49,0],W:0.58,H:0.2667,r:[314.2,809.9,371.7,170.9]},
+      ped:{c:[1.0958,0.6,0.02],n:[0,-1,0],up:[-1,0,0],W:0.5,H:0.8283,r:[339.8,989.4,320.5,530.9]}},
+    eye:[1.34,1.28,0.51],pitch:-15,yaw:-0.16,shell:'models/b737-shell.bin',shellTex:'models/b737-shell-',
+    look:{main:1,ovhd:[500,240,64,-0.02],ped:[500,1180,58,-0.2],mcp:[500,568,28],eng:[500,760,36,-0.25],cdu:[500,880,36,-0.2]}},
   speedsPane(el){ const K=X.K, A=X.A, r=(t,v)=>`<div class="row"><span>${t}</span><b>${v==null?'—':Math.round(v)+' kt'}</b></div>`, vr=CDU.vrefs(A);
     el.innerHTML='<div class="sgrp">Speeds at '+(A.gw/1000).toFixed(1)+' t</div>'+r('V1',K.d.v1)+r('VR',K.d.vr)+r('V2',K.d.v2)+vr.map(([f,v])=>r('VREF '+f,v)).join('')+r('VMO','340')+'<p class="pdisc">MMO 0.82. Flap placards: 1, 2, 5 250 kt · 10 210 · 15 200 · 25 190 · 30 175 · 40 162. Gear: extend 270 kt / .82, retract 235 kt.</p>'; },
-  init(x){ X=x; UI=x.UI; bReset(false); },defs,dispData,reset,postSys,tla,thrTxt,levTxt,lever,keydown};
+  init(x){ X=x; UI=x.UI; bReset(false); Object.assign(x.F.AC,{S:124.6,T0:117000,wheelbase:15.6}); /* 737-800 wing area, CFM56-7B26 thrust, wheelbase */ },defs,dispData,reset,postSys,tla,thrTxt,levTxt,lever,keydown};
 })();

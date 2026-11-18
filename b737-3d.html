@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="A Boeing 737-800 cockpit procedure trainer in the browser: the real flight deck, a working overhead panel with its lights, the MCP and autopilot with the Boeing FMA, PFD, ND and engine displays, the CDU with LNAV and VNAV, and conventional flight controls with stabilizer trim.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Boeing 737-800 3D cockpit (beta)</title>
+
+<link rel="stylesheet" href="lab.css?v=15">
+<link rel="stylesheet" href="site.css?v=35">
+<link rel="stylesheet" href="b200.css?v=20">
+<link rel="stylesheet" href="simshell.css?v=11">
+<link rel="stylesheet" href="a320.css?v=6">
+</head>
+<body data-title="Boeing 737-800 3D cockpit" data-d3="b737.html">
+<script src="site.js?v=103"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">NORDAP · Simulators</div>
+      <h1>Boeing 737-800 3D cockpit <small>beta</small></h1>
+      <p>The 737-800 flight deck as it is: overhead panel, glareshield, main instrument panel and control stand, with the system logic behind the switches and lights. Bring the aircraft from cold and dark to the runway, set up the MCP and the CDU, and fly it by hand with the trim or on the autopilot and autothrottle.</p>
+    </div>
+    <div class="hright"><div class="status ok" id="stat">On ground</div></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#cockpit">Cockpit</a><a href="#controls">Flight controls</a><a href="#read">How it works</a></nav>
+
+  <section id="cockpit" class="ckp a320 b737 d3" aria-label="Cockpit">
+    <div class="ctop" role="toolbar" aria-label="Cockpit tools">
+      <a class="cbhome" href="training.html" aria-label="NORDAP: training overview"><span aria-hidden="true">‹</span><b>NORDAP</b></a>
+      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html">DA42</option><option value="b200.html">King Air B200</option><option value="c172.html">Cessna 172</option><option value="a320.html">Airbus A320</option><option value="b737.html" selected>Boeing 737-800</option></select>
+      <span class="dseg" role="group" aria-label="View"><a href="b737.html">2D</a><a href="b737-3d.html" class=on aria-current=page>3D <small>beta</small></a></span>
+      <select class="cb afsel" id="apSel" aria-label="Start"><option value="air">✈︎ In the air, 5,000 ft</option><option value="cold">✈︎ Cold and dark</option><option value="ready">✈︎ Ready for take-off</option><option value="appr">✈︎ ILS 36, 12 NM</option></select>
+      <span class="vseg" role="group" aria-label="Look"><button class="cb" data-v="ovhd" type="button">Overhead</button><button class="cb on" data-v="main" type="button">Panel</button><button class="cb" data-v="ped" type="button">Pedestal</button></span>
+      <button class="cb" id="bDrawer" type="button" aria-pressed="false">Procedures</button>
+      <button class="cb" id="bPause" type="button">Pause</button>
+      <button class="cb" id="bReset" type="button" aria-label="Restart"><i aria-hidden="true">↺</i><span>Restart</span></button>
+      <span class="sp"></span>
+      <button class="cb" id="bMore" type="button" aria-controls="moreMenu" aria-expanded="false" aria-label="More">⋯</button>
+    </div>
+    <div class="cbody">
+      <div class="stage" id="stage">
+        <div class="otwsky" id="otwSky" aria-hidden="true"></div><canvas id="otw" role="img" aria-label="View out of the window"></canvas>
+        <div class="otwmsg" id="otwMsg" hidden>3D needs WebGL, which this browser does not offer. <a href="b737.html">Open the 2D cockpit</a></div>
+        <div class="vp" id="vp"><div class="world" id="world"><img id="deck" src="img/cockpits/b738-deck-1500.webp" alt="" width="1000" height="1520" decoding="async" draggable="false"><div class="ovl" id="ovl"></div></div></div>
+        <button class="zback" id="zBack" type="button">← Back</button>
+        <div class="more" id="moreMenu" hidden role="group" aria-label="Settings"><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bAlign" type="button" aria-pressed="false">Fast IRS alignment</button><button class="cb" id="bHelp" type="button">Controls</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
+        <div class="tip" id="tip" hidden></div>
+        <div class="perfm" id="perfm" hidden></div>
+        <div class="pill" id="pill" aria-live="polite"></div>
+        <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.<a class="rotback" href="training.html">← Back to NORDAP</a></div></div>
+      </div>
+      <aside class="drawer" id="drawer" aria-label="Procedures"><div class="din">
+        <div class="tabs" role="tablist" aria-label="Procedures"><button data-t="fl" class="on" role="tab" aria-selected="true">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
+        <div id="tabFl"></div><div id="tabSp" hidden></div>
+      </div></aside>
+    </div>
+  </section>
+
+  <section class="card" id="controls">
+    <div class="eyebrow">Fly it</div>
+    <h2>Flight controls</h2>
+    <p class="lead">Fly with the keyboard, a gamepad or joystick, the touch stick or this pad. The 737 has conventional controls: the column moves the elevator, the aircraft holds the speed it is trimmed for, so trim the stabilizer (Home / End, or the trim wheel) to take the force off. The autopilot trims by itself.</p>
+    <div class="ctlgrid" style="margin-top:12px">
+      <div class="box">
+        <b class="t">Control column</b>
+        <div class="stick" id="stick"><span class="dot"></span><small>Drag · springs back to neutral</small></div>
+      </div>
+      <div class="box">
+        <b class="t">Thrust levers</b>
+        <div class="thrbox" id="thrBox"></div>
+        <div class="btns" style="margin-top:12px"><button class="btn" id="brk">Hold for brakes</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="read">
+    <div class="eyebrow">Understand</div>
+    <h2>How the trainer works</h2>
+    <div class="legend">
+      <div class="box"><b class="t">Electrical</b><p>Two transfer buses, each fed by its engine generator, the APU generator or ground power. GEN OFF BUS (blue) means that generator is not powering its bus; TRANSFER BUS OFF and SOURCE OFF (amber) mean the bus has no power. With the battery only on the ground, connect ground power (GRD PWR) or start the APU and put its generators on the buses.</p></div>
+      <div class="box"><b class="t">APU and engine start</b><p>APU switch to START (it springs back to ON); the APU is ready when the APU GEN OFF BUS light comes on. With the APU bleed on and the isolation valve open, engine start switch to GRD, then at 25 % N2 the start lever to IDLE: fuel and ignition, light-off, starter cut-out at 56 % (the switch goes back to OFF). START VALVE OPEN shows on the upper display while the starter runs.</p></div>
+      <div class="box"><b class="t">Hydraulics and fuel</b><p>System A (engine 1 pump, electric pump 2) and system B (engine 2 pump, electric pump 1); a LOW PRESSURE light stays on until its pump delivers. Six fuel pumps: forward and aft in each main tank, two in the centre tank; the crossfeed valve joins the left and right manifolds.</p></div>
+      <div class="box"><b class="t">MCP and FMA</b><p>N1, SPEED, LVL CHG, VNAV, HDG SEL, LNAV, VOR/LOC, APP, ALT HLD and V/S engage the autothrottle, roll and pitch modes the FMA shows above the attitude: engaged modes in green, armed in white, a box for 10 s after a change. CMD A / B engage the autopilot. The autothrottle moves the thrust levers; push them and it lets you, then takes them back.</p></div>
+      <div class="box"><b class="t">CDU</b><p>Tap either CDU to open it full size. RTE, LEGS, PERF INIT, TAKEOFF REF and APPROACH REF set up the flight; a change to the active route lights EXEC. LNAV follows the route, VNAV the altitude constraints on the LEGS page. Practice-area data: NORDAP field ENRD, runway 36, the fixes of the A320 and King Air sims.</p></div>
+      <div class="box"><b class="t">What is simplified</b><p>The engine, systems and flight model are teaching models shared with the A320 trainer and tuned to typical 737-800 numbers; CWS, the IRS mode panel (aft overhead), the standby hydraulics, pressurization schedules and the communications panels are pictures only. Our own drawings of the display formats.</p></div>
+    </div>
+    <h3 style="margin-top:6px">Keyboard</h3>
+    <table class="keys">
+      <tr><td><kbd>W</kbd> <kbd>S</kbd> · <kbd>A</kbd> <kbd>D</kbd> or the arrow keys</td><td>Column and wheel: nose down and up, roll left and right</td></tr>
+      <tr><td><kbd>Home</kbd> <kbd>End</kbd> (or <kbd>[</kbd> <kbd>]</kbd>)</td><td>Stabilizer trim: nose down, nose up</td></tr>
+      <tr><td><kbd>Q</kbd> <kbd>E</kbd></td><td>Rudder pedals (and nose wheel steering)</td></tr>
+      <tr><td><kbd>+</kbd> <kbd>−</kbd> · <kbd>T</kbd> · <kbd>I</kbd> · <kbd>R</kbd></td><td>Thrust levers · TO/GA · idle · reverse (on the ground)</td></tr>
+      <tr><td><kbd>F</kbd> <kbd>V</kbd> · <kbd>G</kbd> · <kbd>B</kbd></td><td>Flap lever down and up · gear lever · brakes while held</td></tr>
+      <tr><td><kbd>K</kbd> <kbd>J</kbd> · <kbd>L</kbd></td><td>Speed brake out and in · speed brake ARMED</td></tr>
+      <tr><td><kbd>Space</kbd> · <kbd>Z</kbd> · <kbd>P</kbd></td><td>A/P disconnect · A/T disconnect · pause</td></tr>
+      <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> … <kbd>Esc</kbd></td><td>Overhead, panel, pedestal, MCP, engine displays, CDU · back to the panel</td></tr>
+    </table>
+  </section>
+
+  <p class="note simnote">Training aid, not a certified simulator or a substitute for the aircraft's approved documents. No procedures are included: use your operator's FCOM, QRH and SOP.</p>
+  <p class="note">Not affiliated with Boeing, CFM or any operator. The flight deck picture is rendered from the FlightGear 737-800YV model (GPL-2.0, see <a href="sources.html">data sources</a>); the display formats are our own drawings. Numbers are typical values for learning.</p>
+</div>
+
+<script>window.OTW_RWY=3000; window.CK3D=window.CK3D||{b737:1};</script>
+<script src="three.min.js?v=128"></script>
+<script src="simterrain.js?v=5"></script>
+<script src="otw.js?v=17"></script>
+<script src="lab.js?v=54"></script>
+<script src="simshell.js?v=10"></script>
+<script src="b737t.js?v=1"></script>
+<script src="a320sys.js?v=2"></script>
+<script src="a320fm.js?v=4"></script>
+<script src="a320disp.js?v=3"></script>
+<script src="a320mcdu.js?v=2"></script>
+<script src="b737disp.js?v=2"></script>
+<script src="b737cdu.js?v=1"></script>
+<script src="b737.js?v=2"></script>
+<script src="a320-3d.js?v=21"></script>
+<script src="a320-app.js?v=15"></script>
+</body>
+</html>

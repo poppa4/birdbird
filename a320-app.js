@@ -439,7 +439,7 @@ function stateSig(){ const test=A.sw.annLt===2&&A.dc; let s=test?'T':'';
 function paint3d(force){ if(!CK) return; const s=stateSig(); if(!force&&s===sig3) return; sig3=s; CK.repaint(paintPanel); }
 function paintPanel(g,R){
   const test=A.sw.annLt===2&&A.dc, inR=c=>c.r&&c.r[0]+c.r[2]>R[0]&&c.r[0]<R[0]+R[2]&&c.r[1]+c.r[3]>R[1]&&c.r[1]<R[1]+R[3];
-  const lit=(x,y,w,h,txt,col,fill)=>{ g.fillStyle=fill||'#0b0c0d'; g.fillRect(x+w*0.08,y+h*0.06,w*0.84,h*0.88); g.shadowColor=COL[col]; g.shadowBlur=1.6; g.fillStyle=COL[col]; g.font='700 '+Math.min(h*0.62,w*0.30).toFixed(2)+'px Archivo,Arial'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(txt,x+w/2,y+h/2+0.1); g.shadowBlur=0; };
+  const lit=(x,y,w,h,txt,col,fill)=>{ g.fillStyle=fill||'#0b0c0d'; g.fillRect(x+w*0.08,y+h*0.06,w*0.84,h*0.88); g.shadowColor=COL[col]; g.shadowBlur=1.6; g.fillStyle=COL[col]; const L=String(txt).split('\n'), n=L.length, mw=Math.max(...L.map(t=>t.length)); g.font='700 '+Math.min(h*0.62/n,w*1.7/Math.max(4,mw),w*0.30).toFixed(2)+'px Archivo,Arial'; g.textAlign='center'; g.textBaseline='middle'; const fh=Math.min(h*0.62/n,w*1.7/Math.max(4,mw),w*0.30)*1.08; L.forEach((t,i)=>g.fillText(t,x+w/2,y+h/2+0.1+(i-(n-1)/2)*fh)); g.shadowBlur=0; };
   for(const c of OV){ if(!inR(c)) continue; const [x,y,w,h]=c.r;
     switch(c.t){
       case 'pb': case 'mom': case 'ann': { if(!A.dc) break; const big=c.cls&&c.cls.includes('big'); const u=c.up&&(test||c.up[2]()), d=c.dn&&(test||c.dn[2]());
@@ -594,7 +594,7 @@ function displayTick(dt){
   if(D3&&CK){ const vh=ST.clientHeight*Math.min(devicePixelRatio||1,2);
     for(const d of DISP){ if(!d.cv||!d.tex) continue; if(!CK.visible(d)){ d.hidden=true; continue; } d.t+=dt;
       // canvas size follows how big the screen is on the display (zoomed in: up to 1024 px, sharp; far away: small, cheap)
-      const want=Math.max(192,Math.min(CK.mobile?768:1024,Math.round(CK.pxSize(d,vh)*1.1/64)*64)); if(Math.abs(want-d.px)>Math.max(64,d.px*0.25)){ d.cv.width=d.cv.height=want; d.px=want; d.sig=''; d.t=99; d.tex.needsUpdate=true; }
+      const want=Math.max(192,Math.min(CK.mobile?768:1024,Math.round(CK.pxSize(d,vh)*1.1/64)*64)); if(Math.abs(want-d.px)>Math.max(64,d.px*0.25)){ d.cv.width=want; d.cv.height=Math.round(want*(d.asp||1)); d.px=want; d.sig=''; d.t=99; d.tex.needsUpdate=true; }
       if(d.k==='mcdu'){ const sig=K.changed+'|'+side_pw(d)+'|'+(K.page==='fpln'||K.page==='prog'?Math.round(UI.t):0)+'|'+d.hidden; if(sig===d.sig) continue; d.sig=sig; }
       else { const capt=(d.k==='pfd'||d.k==='nd')&&!d.side, hz=[capt?20:8,capt?12:6,capt?8:4][GOV.lvl]; if(d.t<1/hz&&!d.hidden) continue; }
       d.hidden=false; d.t=0; drawD(d,dispData(d)); d.tex.needsUpdate=true; }
@@ -799,7 +799,7 @@ function openMcdu(side){
     MOV.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
       if(b.classList.contains('mx')){ closeMcdu(); return; }
       if(b.dataset.t){ MOV.querySelectorAll('.mtabs button').forEach(x=>x.classList.toggle('on',x===b)); MOV.querySelectorAll('.mpane').forEach(p=>p.hidden=p.dataset.p!==b.dataset.t);
-        if(b.dataset.t==='tr'){ const f=MOV.querySelector('iframe'); if(!f.src){ f.src='mcdu.html'; f.onload=()=>{ try{ const d=f.contentDocument, st=d.createElement('style'); st.textContent='header.site,.sitefoot,.skip,.trnav,.lhead,.snav,.nsearch,#how,.note{display:none!important} body{background:#0e1216} .page{padding-top:8px!important}'; d.head.appendChild(st); }catch(_){} }; } } return; }
+        if(b.dataset.t==='tr'){ const f=MOV.querySelector('iframe'); if(!f.src){ f.src=CF&&CF.trainer||'mcdu.html'; f.onload=()=>{ try{ const d=f.contentDocument, st=d.createElement('style'); st.textContent='header.site,.sitefoot,.skip,.trnav,.lhead,.snav,.nsearch,#how,.note{display:none!important} body{background:#0e1216} .page{padding-top:8px!important}'; d.head.appendChild(st); }catch(_){} }; } } return; }
       const k=b.dataset.k; if(!k) return; snd('click'); (CF?CF.cdu:MC).key(K,k,M,A,mcApi); MOV._draw(); dirty.all=true; });
     ['pointerdown','pointermove','pointerup','wheel','dblclick'].forEach(t=>MOV.addEventListener(t,e=>e.stopPropagation(),{passive:true}));
     MOV.addEventListener('keydown',e=>e.stopPropagation());

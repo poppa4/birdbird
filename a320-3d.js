@@ -13,7 +13,8 @@ const THREE=G.THREE; if(!THREE) return;
 const D2R=Math.PI/180;
 const V=(x,y,z)=>new THREE.Vector3(-z,y,x); // model -> three
 /* the orthographic views the sheet was rendered from: centre, view direction, up, size (m), and where they are on the sheet (units) */
-const VIEWS={
+const CF3=G.SIMAC&&G.SIMAC.d3; // another aircraft (b737.js): its views, eye, shell and looks
+const VIEWS=CF3?CF3.VIEWS:{
   ovh:{c:[0.385,1.10,0],n:[-0.362,0.932,0],up:[0.932,0.362,0],W:0.66,H:1.30,r:[298.8,0,402.4,792.7]},
   front:{c:[-0.478,0.229,0],n:[-0.955,-0.297,0],up:[0,1,0],W:1.64,H:0.54,r:[0,800.8,1000,329.3]},
   ped:{c:[-0.02289,-0.07831,0],n:[-0.13,-0.99,0],up:[-1,0,0],W:0.58,H:0.886,r:[323.2,1138.2,353.7,540.2]},
@@ -22,7 +23,8 @@ const VIEWS={
 for(const k in VIEWS){ const v=VIEWS[k]; const n=new THREE.Vector3(...v.n).normalize(); let up=new THREE.Vector3(...v.up); up.addScaledVector(n,-up.dot(n)).normalize();
   const x=new THREE.Vector3().crossVectors(up,n.clone().negate());
   v.C=V(...v.c); v.N=V(n.x,n.y,n.z); v.EY=V(up.x,up.y,up.z); v.EX=V(x.x,x.y,x.z); v.FN=v.N.clone().negate(); }
-const EYE=V(0.31,0.63,0.53); // captain's eye (model frame)
+const EYE=CF3?V(...CF3.eye):V(0.31,0.63,0.53); // captain's eye (model frame)
+const P0=(CF3&&CF3.pitch||-11)*D2R;
 
 function viewOf(wx,wy){ for(const k in VIEWS){ const r=VIEWS[k].r; if(wx>=r[0]&&wx<=r[0]+r[2]&&wy>=r[1]&&wy<=r[1]+r[3]) return k; } return null; }
 function toP(wx,wy,off){ const k=viewOf(wx,wy); if(!k) return null; const v=VIEWS[k], r=v.r, u=(wx-r[0])/r[2], t=(wy-r[1])/r[3];
@@ -34,7 +36,7 @@ function init(o){
   const mobile=(navigator.deviceMemory||8)<3; // only devices with very little memory get the light textures: phones zoom in to read, so they need full detail
   const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(62,1,0.05,20);
   cam.position.copy(EYE);
-  const head={yaw:0,pitch:-11*D2R,fov:62,tYaw:0,tPitch:-11*D2R,tFov:62,eye:EYE.clone(),tEye:EYE.clone()};
+  const head={yaw:CF3&&CF3.yaw||0,pitch:P0,fov:62,tYaw:CF3&&CF3.yaw||0,tPitch:P0,tFov:62,eye:EYE.clone(),tEye:EYE.clone()};
   const q=new THREE.Quaternion(), e=new THREE.Euler(0,0,0,'YXZ');
   /* ---- panels: one canvas texture each (picture + lit legends) ---- */
   const K=mobile?1.6:3.0; // texture pixels per sheet unit
@@ -101,15 +103,15 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch('models/a320-shell.bin').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:'models/a320-shell.bin').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
       const g=new THREE.BufferGeometry(); const pa=new THREE.BufferAttribute(P,3,true); g.setAttribute('position',pa);
       const uv=new Float32Array(gr.nv*2); for(let i=0;i<gr.nv;i++){ uv[i*2]=gr.uv[0]+UV[i*2]/65535*gr.uv[2]; uv[i*2+1]=gr.uv[1]+UV[i*2+1]/65535*gr.uv[3]; } g.setAttribute('uv',new THREE.BufferAttribute(uv,2));
       g.setAttribute('color',new THREE.InterleavedBufferAttribute(new THREE.InterleavedBuffer(new Uint8Array(buf,N.byteOffset,gr.nv*4),4),3,0,true)); g.setIndex(new THREE.BufferAttribute(I,1));
-      const tex=TL.load('models/a320-shell-'+gr.tex+'.jpg'); tex.anisotropy=1; tex.flipY=false; tex.wrapS=tex.wrapT=THREE.RepeatWrapping; if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding;
-      const mat=new THREE.MeshBasicMaterial({map:tex,vertexColors:true,side:THREE.FrontSide}); mat.color.setScalar((hdr.lmax||1)*1.22); const mesh=new THREE.Mesh(g,mat); mesh.scale.setScalar(32767/hdr.S); mesh.matrixAutoUpdate=false; mesh.updateMatrix(); mesh.frustumCulled=false; grp.add(mesh); }
+      const tex=TL.load((CF3?CF3.shellTex:'models/a320-shell-')+gr.tex+'.jpg'); tex.anisotropy=1; tex.flipY=false; tex.wrapS=tex.wrapT=THREE.RepeatWrapping; if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding;
+      const mat=new THREE.MeshBasicMaterial({map:tex,vertexColors:true,side:hdr.double?THREE.DoubleSide:THREE.FrontSide}); mat.color.setScalar((hdr.lmax||1)*1.22); const mesh=new THREE.Mesh(g,mat); mesh.scale.setScalar(32767/hdr.S); mesh.matrixAutoUpdate=false; mesh.updateMatrix(); mesh.frustumCulled=false; grp.add(mesh); }
     if(hdr.panels) for(const k in hdr.panels){ const pb=hdr.panels[k], p=P[k]; if(!p) continue; const col=p.mesh.geometry.attributes.color, n=24;
       for(let j=0;j<=n;j++) for(let i=0;i<=n;i++){ const x=i/n*pb.nx, y=j/n*pb.ny, x0=Math.min(pb.nx-1,Math.floor(x)), y0=Math.min(pb.ny-1,Math.floor(y)), fx=x-x0, fy=y-y0, at=(a,b)=>pb.v[b*(pb.nx+1)+a];
         const L=(at(x0,y0)*(1-fx)+at(x0+1,y0)*fx)*(1-fy)+(at(x0,y0+1)*(1-fx)+at(x0+1,y0+1)*fx)*fy, c=Math.min(1,0.12+0.9*L); col.setXYZ(j*(n+1)+i,c,c,c*1.01); } col.needsUpdate=true; }
@@ -133,7 +135,7 @@ function init(o){
   function visible(d){ const x=disp.find(z=>z.d===d); if(!x) return false; sph.center.copy(x.c); sph.radius=0.12; return frus.intersectsSphere(sph); }
   function lookAt(p,fov,lean){ head.tEye.copy(EYE); if(lean!=null) head.tEye.x=lean; const asp=o.aspect(); if(fov&&asp>1.9&&fov<50) fov*=Math.max(0.6,1.9/asp); /* wide phone screens: closer, so the labels are big enough to read */ const dv=p.clone().sub(head.tEye).normalize(); head.tYaw=Math.atan2(-dv.x,-dv.z); head.tPitch=Math.asin(Math.max(-1,Math.min(1,dv.y))); if(fov) head.tFov=fov; }
   // the overhead and the pedestal: the pilot leans in towards the centre line (as in the aircraft), so the panel is seen square
-  const LOOK={main:()=>{ head.tEye.copy(EYE); head.tYaw=-0.04; head.tPitch=-11*D2R; head.tFov=62; },ovhd:()=>lookAt(toP(500,610),62,-0.02),aft:()=>lookAt(toP(500,230),64,-0.02),ped:()=>lookAt(toP(500,1300),58,-0.18),fcu:()=>lookAt(toP(500,845),26),ecam:()=>lookAt(toP(507,1000),32,-0.3),mcdu:()=>lookAt(toP(500,1196),33,-0.16),pfd:()=>lookAt(toP(225,955),36)};
+  const LOOK=CF3?Object.fromEntries(Object.entries(CF3.look).map(([k,a])=>[k,k==='main'?()=>{ head.tEye.copy(EYE); head.tYaw=CF3.yaw||-0.04; head.tPitch=P0; head.tFov=62; }:()=>lookAt(toP(a[0],a[1]),a[2],a[3])])):{main:()=>{ head.tEye.copy(EYE); head.tYaw=-0.04; head.tPitch=-11*D2R; head.tFov=62; },ovhd:()=>lookAt(toP(500,610),62,-0.02),aft:()=>lookAt(toP(500,230),64,-0.02),ped:()=>lookAt(toP(500,1300),58,-0.18),fcu:()=>lookAt(toP(500,845),26),ecam:()=>lookAt(toP(507,1000),32,-0.3),mcdu:()=>lookAt(toP(500,1196),33,-0.16),pfd:()=>lookAt(toP(225,955),36)};
   /* ---- picking: ray from the eye through the pointer to the nearest panel ---- */
   const ray=new THREE.Ray(), hitP=new THREE.Vector3(), pl=new THREE.Plane();
   function pick(nx,ny){ // nx, ny in -1..1
