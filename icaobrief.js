@@ -1,8 +1,7 @@
 /* NORDAP – "now at the aerodrome" in the search bar, for an ICAO code (loaded by search.js the first time one is typed).
    Four lines, each from data the site already serves, worked out here:
-     1. SERA status light from the current METAR: VFR in a control zone (visibility ≥ 5 km and ceiling ≥ 1500 ft, SERA.5005),
-        close to those limits (amber: under 8 km or under 2000 ft, NORDAP's own margin), or below them, with whether special
-        VFR (1500 m / 600 ft, SERA.5010) is still possible. A planning aid, not a decision: ATC, the ATIS and the rules decide.
+     1. SERA status from the current METAR, the EASA way only: the SERA minima met or not, VFR in a control zone (visibility
+        ≥ 5 km and ceiling ≥ 1500 ft, SERA.5005), else special VFR (1500 m / 600 ft, SERA.5010), else neither. No other categories. A planning aid, not a decision: ATC, the ATIS and the rules decide.
      2. SIGMETs in force over the aerodrome (/api/sigmet: MET Norway in Norway, aviationweather.gov elsewhere): the ones whose
         area contains the aerodrome, or that cover its FIR when no area is given.
      3. Freezing level over the aerodrome from the GFS forecast (/api/clouds, NOAA, public domain).
@@ -35,8 +34,8 @@ function parseMetar(raw) {
 }
 function status(raw) {
   const p = parseMetar(raw); if (!p) return null;
-  const ok = p.vis >= 5000 && p.ceil >= 1500, svfr = p.vis >= 1500 && p.ceil >= 600, near = ok && (p.vis < 8000 || p.ceil < 2000);
-  return { cls: !ok ? 'no' : near ? 'near' : 'ok', vis: p.vis, ceil: p.ceil, svfr: !ok && svfr, cavok: p.cavok };
+  const ok = p.vis >= 5000 && p.ceil >= 1500, svfr = p.vis >= 1500 && p.ceil >= 600;
+  return { cls: ok ? 'ok' : 'no', vis: p.vis, ceil: p.ceil, svfr: !ok && svfr, cavok: p.cavok };
 }
 const fmtVis = v => v >= 10000 ? '10 km+' : v >= 5000 ? Math.round(v / 1000) + ' km' : v + ' m';
 const fmtCeil = c => c === Infinity ? null : c + ' ft';
@@ -104,10 +103,10 @@ async function getRadar(ap) {
 /* the coloured box on the METAR line: EASA/SERA wording on purpose, not the U.S. VFR/MVFR/IFR/LIFR categories */
 function badge(metar, L) {
   const st = status(metar); if (!st) return '';
-  const txt = st.cls === 'ok' ? 'VFR' : st.cls === 'near' ? L({ en: 'VFR · near limits', no: 'VFR · nær grensene' }) : st.svfr ? L({ en: 'Special VFR only', no: 'Kun spesiell VFR' }) : L({ en: 'Below VFR', no: 'Under VFR' });
+  const txt = st.cls === 'ok' ? 'VFR · SERA.5005' : st.svfr ? L({ en: 'Special VFR only · SERA.5010', no: 'Kun spesiell VFR · SERA.5010' }) : L({ en: 'Below VFR and special VFR minima', no: 'Under VFR- og spesiell VFR-minima' });
   const det = st.cavok ? 'CAVOK' : fmtVis(st.vis) + ' · ' + (fmtCeil(st.ceil) ? L({ en: 'ceiling ', no: 'skydekke ' }) + fmtCeil(st.ceil) : L({ en: 'no ceiling', no: 'ingen ceiling' }));
-  const tip = L({ en: 'Control zone, SERA.5005: VFR needs ground visibility ≥ 5 km and ceiling ≥ 1500 ft. Special VFR, SERA.5010: 1500 m and 600 ft with ATC clearance. Amber: under 8 km or 2000 ft (NORDAP margin). Planning aid only.',
-    no: 'Kontrollsone, SERA.5005: VFR krever bakkesikt ≥ 5 km og skydekke ≥ 1500 ft. Spesiell VFR, SERA.5010: 1500 m og 600 ft med klarering. Gult: under 8 km eller 2000 ft (NORDAPs margin). Bare planleggingshjelp.' });
+  const tip = L({ en: 'Control zone, SERA.5005: VFR needs ground visibility ≥ 5 km and ceiling ≥ 1500 ft. Special VFR, SERA.5010: 1500 m and 600 ft with ATC clearance. Only the SERA minima are used, no other categories. Planning aid only.',
+    no: 'Kontrollsone, SERA.5005: VFR krever bakkesikt ≥ 5 km og skydekke ≥ 1500 ft. Spesiell VFR, SERA.5010: 1500 m og 600 ft med klarering. Bare SERA-minimaene brukes, ingen andre kategorier. Bare planleggingshjelp.' });
   return ` <span class="icb-badge ${st.cls}${st.svfr ? ' svfr' : ''}" title="${esc(tip + ' (' + det + ')')}">${esc(txt)}</span>`;
 }
 
@@ -144,7 +143,7 @@ const CSS = '.icb{display:flex;gap:12px;align-items:flex-start;width:100%}.icb-l
   + '.icb-st{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:13.5px}.icb-st i{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.12)}'
   + '.icb-st.ok i{background:#1e8e3e}.icb-st.near i{background:#e8a200}.icb-st.no i{background:#d93025}'
   + '.icb-badge{display:inline-block;margin:0 0 0 8px;padding:1px 7px;border-radius:3px;font:600 11.5px/1.6 var(--f-mono,ui-monospace,monospace);letter-spacing:.02em;color:#fff;vertical-align:1px;white-space:nowrap}'
-  + '.icb-badge.ok{background:#1e8e3e}.icb-badge.near{background:#e8a200;color:#2b2100}.icb-badge.no{background:#d93025}.icb-badge.svfr{background:#c2410c}'
+  + '.icb-badge.ok{background:#1e8e3e}.icb-badge.no{background:#d93025}.icb-badge.svfr{background:#c2410c}'
   + '.icb-rad{margin:0;flex:none;width:150px}.icb-rad img{display:block;width:150px;height:90px;border-radius:3px;border:1px solid var(--rule,#d5dce1)}'
   + '.icb-rad figcaption{font:10.5px/1.3 var(--f-mono,ui-monospace,monospace);color:var(--ink-2,#5b6770);margin-top:2px}'
   + '.icb-rad.wait{height:90px;border:1px dashed var(--rule,#d5dce1);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--ink-2,#5b6770)}'
