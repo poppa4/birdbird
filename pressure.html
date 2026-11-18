@@ -691,7 +691,7 @@ function lbuild(){ const W=CL.w,H=CL.h,d=CL.dpr; if(!W||!LS.st) return; if(!LG) 
   if(LW.w==='coast'){ g.fillStyle=st.day?LG.day:st.night?LG.night:LG.dusk; g.fillRect(0,0,W,H);
     g.fillStyle='#1D4566'; g.fillRect(0,gy,W*0.45,H-gy); g.fillStyle='#4F4838'; g.fillRect(W*0.45,gy-6,W*0.55,H-gy+6);
     g.fillStyle='#C9D3DB'; g.fillRect(W*0.6,gy-8,W*0.14,2);
-    if(st.day){ const k=Math.max(0.5,st.str/14); g.fillStyle='#E9EEF2'; g.beginPath(); puff(g,W*0.72,H*0.33,22*k); puff(g,W*0.75,H*0.28,26*k); puff(g,W*0.79,H*0.31,20*k); puff(g,W*0.69,H*0.34,15*k); g.fill(); g.fillRect(W*0.69-14*k,H*0.33,W*0.1+18*k,10*k);
+    if(st.day){ const k=Math.max(0.5,st.str/14); if(window.CORE){ CORE.U.cumulus(g,W*0.8,H*0.36,H*0.36-H*0.2*k,W*0.09*k,{seed:3}); CORE.U.cumulus(g,W*0.66,H*0.37,H*0.37-H*0.11*k,W*0.055*k,{seed:8}); } else { g.fillStyle='#E9EEF2'; g.beginPath(); puff(g,W*0.72,H*0.33,22*k); puff(g,W*0.75,H*0.28,26*k); puff(g,W*0.79,H*0.31,20*k); puff(g,W*0.69,H*0.34,15*k); g.fill(); g.fillRect(W*0.69-14*k,H*0.33,W*0.1+18*k,10*k); }
       g.fillStyle='#F2C14E'; g.beginPath(); g.arc(W*0.9,H*0.13,12,0,7); g.fill(); }
     else if(st.night){ g.fillStyle='#E6EBEF'; g.beginPath(); g.arc(W*0.88,H*0.13,9,0,7); g.fill(); }
     g.font=LS.f3; g.fillStyle='#C9D3DB'; g.fillText(L(t2('sea ','sjø '))+st.sea+' °C',W*0.03,gy+24); g.fillText(L(t2('land ','land '))+Math.round(st.land)+' °C',W*0.47,gy+24); }
@@ -719,9 +719,21 @@ function ld(){ const g=CL.ctx,W=CL.w,H=CL.h; if(!W||view!=='local'||!LS.st) retu
   const st=LS.st, tt=reduced()?0:performance.now()/900, gy=H*0.8;
   g.clearRect(0,0,W,H); g.drawImage(lbg,0,0,W,H);
   g.strokeStyle='rgba(228,107,174,.85)'; g.lineDashOffset=-tt*20; g.setLineDash(DASH);
-  if(LW.w==='coast'){ const dir= st.day?1:st.night?-1:0; if(dir){ const x0=W*0.15,x1=W*0.8,y0=gy-16,y1=H*0.42; const P=dir>0?LP1:LP2; P[0]=dir>0?x0:x1; P[1]=y0; P[2]=dir>0?x1:x0; P[3]=y0; P[4]=P[2]; P[5]=y1; P[6]=P[0]; P[7]=y1;
-      g.lineWidth=dir>0?2.6:1.8; g.beginPath(); g.moveTo(P[0],P[1]); g.lineTo(P[2],P[3]); g.lineTo(P[4],P[5]); g.lineTo(P[6],P[7]); g.closePath(); g.stroke(); g.setLineDash(NODASH);
-      for(let i=0;i<4;i++){ const ax=P[i*2],ay=P[i*2+1],bx=P[(i*2+2)%8],by=P[(i*2+3)%8]; head(g,(ax+bx)/2,(ay+by)/2,Math.atan2(by-ay,bx-ax)); } } }
+  if(LW.w==='coast'){ const dir= st.day?1:st.night?-1:0; if(dir){ g.setLineDash(NODASH);
+      /* one closed circulation: onshore (day) or offshore (night) near the ground, return flow aloft; particles show speed */
+      const cx=W*0.47, cy=(gy-18+H*0.4)/2, rx=W*0.33, ry=(gy-18-H*0.4)/2, k=Math.max(.35,(st.str||8)/14);
+      const pt=a=>[cx+rx*Math.cos(a),cy+ry*Math.sin(a)];                       // a=π/2 is the bottom (screen y down)
+      g.lineWidth=(dir>0?12:7)*k; g.strokeStyle=dir>0?'rgba(127,198,238,.16)':'rgba(127,198,238,.1)'; g.beginPath(); g.ellipse(cx,cy,rx,ry,0,0,7); g.stroke();
+      g.lineWidth=dir>0?2.2:1.6; g.strokeStyle='rgba(228,107,174,.7)'; g.beginPath(); g.ellipse(cx,cy,rx,ry,0,0,7); g.stroke();
+      // bottom flows left→right by day (sea → land): with y down that is decreasing angle at the bottom, i.e. anticlockwise on screen
+      const sp=(dir>0?1:-1)*(reduced()?0:0.22*k);
+      for(let i=0;i<28;i++){ const a=(Math.PI/2)-(tt*sp+i/28)*Math.PI*2*(dir>0?1:1), p=pt(dir>0?a:Math.PI-a), near=Math.sin(dir>0?a:Math.PI-a);
+        g.fillStyle=near>0.3?'rgba(159,212,242,.95)':'rgba(220,230,238,.55)'; g.beginPath(); g.arc(p[0],p[1],near>0.3?2.6:1.8,0,7); g.fill(); }
+      [Math.PI/2,0,-Math.PI/2,Math.PI].forEach(a=>{ const p=pt(a); const t=dir>0?a-Math.PI/2:a+Math.PI/2; head(g,p[0],p[1],t); });
+      g.font=LS.f3; const lbl=dir>0?L(t2('sea breeze ','sjøbris '))+Math.round(st.str||12)+' kt →':'← '+L(t2('land breeze ','landbris '))+Math.round(st.str||4)+' kt';
+      const tw=g.measureText(lbl).width; g.fillStyle='rgba(12,16,20,.82)'; g.fillRect(cx-tw/2-6,gy-40,tw+12,18); g.fillStyle='#BFE3F6'; g.fillText(lbl,cx-tw/2,gy-27);
+      const up=dir>0?L(t2('warm air rises over the land','varm luft stiger over land')):L(t2('air sinks over the cooling land','luft synker over land som kjøles')); const uw=g.measureText(up).width, ux=Math.min(W-uw-12,cx+rx-uw/2); g.fillStyle='rgba(12,16,20,.82)'; g.fillRect(ux-6,cy-9,uw+12,18); g.fillStyle='#E6EBEF'; g.fillText(up,ux,cy+4);
+    } }
   else if(LW.w==='valley'){ const dir=st.day?-1:st.night?1:0; if(dir){ g.lineWidth=2.6;
       for(let k=0;k<2;k++){ const xa=k?W*0.94:W*0.06, ya=H*0.38, xb=k?W*0.62:W*0.38, yb=gy-14, sx=dir>0?xa:xb, sy=(dir>0?ya:yb)-12, ex=dir>0?xb:xa, ey=(dir>0?yb:ya)-12; g.setLineDash(DASH); g.beginPath(); g.moveTo(sx,sy); g.lineTo(ex,ey); g.stroke(); g.setLineDash(NODASH); head(g,ex,ey,Math.atan2(ey-sy,ex-sx)); } } }
   else { const f=LS.f, G=lgeo(), Y=G.Y, cx=G.cx, hw=G.hw; g.lineWidth=2.4; g.lineDashOffset=-tt*24; g.beginPath();
@@ -801,7 +813,7 @@ document.addEventListener('labdepth',()=>{ bgDirty=true; changed(); ufig(); });
 LAB.onLang(()=>{ drawStage(); drawPre(); drawPreA(); drawTasks(); drawMaid(); drawTabs(); legend(); ufig(); bgDirty=true; changed(); altU(); lu(); });
 })();
 </script>
-<script src="corepic.js?v=7"></script>
+<script src="corepic.js?v=8"></script>
 <script src="pic-press-wind.js?v=1"></script>
 </body>
 </html>

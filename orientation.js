@@ -29,10 +29,10 @@ function row(){ if(!SIM) return null; const i=clamp(Math.round(S.t/SIM.dt),0,SIM
 /* the approach */
 const RL=2500;                                   // runway length (m)
 function appModel(){ const s=H.pct2deg(S.slope), gEye=H.eyeAngle(s,S.width), d=S.dist, m=d*1852;
-  const h3=m*Math.tan(3*D2R)/0.3048, hEye=eyeH(d);
+  const h3=(m+300)*Math.tan(3*D2R)/0.3048, hEye=eyeH(d);        // the 3° path runs through the PAPI, 300 m past the threshold (TCH ≈ 50 ft)
   const h=S.path==='eye'?Math.max(10,hEye):h3; const papiA=Math.atan((h*0.3048-300*Math.tan(s*D2R))/(m+300))/D2R;
   return {s,gEye,h3,hEye,h,papiA,lights:H.papi(papiA),diff:h-h3}; }
-function eyeH(d){ const s=H.pct2deg(S.slope), g=H.eyeAngle(s,S.width), m=d*1852, h3=m*Math.tan(3*D2R)/0.3048; let h=m*Math.tan(g*D2R)/0.3048; if(S.night==='bh') h*=H.blackHoleH(d)/h3; return Math.max(0,h); }
+function eyeH(d){ const s=H.pct2deg(S.slope), g=H.eyeAngle(s,S.width), m=d*1852+300, h3=m*Math.tan(3*D2R)/0.3048; let h=m*Math.tan(g*D2R)/0.3048; if(S.night==='bh') h*=H.blackHoleH(d)/h3; return Math.max(0,h); }
 
 /* ---------------- canvas helpers ---------------- */
 const cv=el('orv'); const ST=LAB.fit(cv,()=>draw(),2);
@@ -167,8 +167,8 @@ function drawApp(g,W,Hh){ const ph=W<640, cl=chipLeft(), M=appModel();
   g.strokeStyle='#E6ECF0'; g.lineWidth=3; g.beginPath(); g.moveTo(pr,Y(0)); g.lineTo(pr+rwPx,Y(rise)); g.stroke();
   if(Math.abs(S.slope)>0.1) txt(g,L(S.slope>0?t2('upslope','oppoverbakke'):t2('downslope','nedoverbakke'))+' ×4',pr+rwPx/2,Y(Math.max(0,rise))-8,C.mut,'center',9);
   /* the 3° path and the path your eyes fly */
-  poly(g,[[X(0),Y(0)],[X(DM),Y(DM*1852*Math.tan(3*D2R)/0.3048)]],C.gs,2,[7,4]);
-  const ep=[]; for(let d=0.2;d<=DM;d+=0.1) ep.push([X(d),Y(eyeH(d))]); ep.unshift([X(0),Y(0)]); poly(g,ep,C.felt,2.2);
+  const p3=d=>(d*1852+300)*Math.tan(3*D2R)/0.3048; poly(g,[[X(0),Y(p3(0))],[X(DM),Y(p3(DM))]],C.gs,2,[7,4]);
+  const ep=[]; for(let d=0.2;d<=DM;d+=0.1) ep.push([X(d),Y(eyeH(d))]); ep.unshift([X(0),Y(eyeH(0))]); poly(g,ep,C.felt,2.2);
   txt(g,L(t2('3° path (PAPI / ILS)','3°-bane (PAPI / ILS)')),X(DM*0.8),Y(DM*0.8*1852*Math.tan(3*D2R)/0.3048)-8,C.gs,'left',ph?9:10,600,SANS);
   const ey=eyeH(DM*0.8); txt(g,L(t2('what your eyes fly','det øynene dine flyr')),X(DM*0.8),Y(ey)+(ey<DM*0.8*1852*Math.tan(3*D2R)/0.3048-60?18:ey>DM*0.8*1852*Math.tan(3*D2R)/0.3048+60?-8:24),C.felt,'right',ph?9:10,600,SANS);
   /* the aircraft */

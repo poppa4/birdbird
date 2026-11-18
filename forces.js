@@ -189,7 +189,7 @@ function sideView(st,g,n){ const W=st.w, H=st.h, fs=n?10:11.5;
   const lx=cx+nrm[0]*Lp, ly=cy+nrm[1]*Lp; arrow(g,cx,cy,lx,ly,COL.L,3,10); txt(g,'L '+nf(R.Lf/1000,2)+' kN',lx+8,ly+12,{col:COL.L,size:fs,bg:BG});
   const nose=[cx+u[0]*sc*3.9,cy+u[1]*sc*3.9], tail=[cx-u[0]*sc*4.9,cy-u[1]*sc*4.9];
   if(Tp>1){ arrow(g,nose[0],nose[1],nose[0]+u[0]*Tp,nose[1]+u[1]*Tp,COL.T,3,10); txt(g,'T '+nf(R.T/1000,2)+' kN',clamp(nose[0]+u[0]*Tp,44,W-44),nose[1]+u[1]*Tp-10,{col:COL.T,al:'center',size:fs,bg:BG}); }
-  arrow(g,tail[0],tail[1],tail[0]-u[0]*Dp,tail[1]-u[1]*Dp,COL.D,3,10); txt(g,'D '+nf(R.D/1000,2)+' kN',clamp(tail[0]-u[0]*Dp,44,W-44),tail[1]-u[1]*Dp-10,{col:COL.D,al:'center',size:fs,bg:BG});
+  arrow(g,tail[0],tail[1],tail[0]-u[0]*Dp,tail[1]-u[1]*Dp,COL.D,3,10); txt(g,'D '+nf(R.D/1000,2)+' kN',clamp(tail[0]-u[0]*Dp,44,W-44),tail[1]-u[1]*Dp+18,{col:COL.D,al:'center',size:fs,bg:BG});
   el('mag').textContent=L({en:'Thrust and drag ×',no:'Skyv og motstand ×'})+MAG(n); if(F.mag) txt(g,L({en:'T and D drawn ×',no:'T og D tegnet ×'})+MAG(n),W-10,H-10,{col:INK.mute,al:'right',size:10,mono:1});
   // force polygon: true scale, closed when steady
   polygon(g,n?{x:62,y:H*0.06,s:H*0.15}:{x:W-118,y:H*0.13,s:H*0.2},fs);

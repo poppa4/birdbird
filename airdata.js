@@ -16,7 +16,7 @@ const deepOn=()=>depth()!=='short';
 const ft=v=>nf(Math.round(v/10)*10,0)+' ft';
 const hp=v=>nf(v,v%1?2:0)+' hPa';
 const sg=v=>(v>0?'+':v<0?'−':'')+nf(Math.abs(v),0);
-const ELEV=700, RIDGE=3300, TAU=3, TIMEX=4, ALTDP=1.5;   // aerodrome elevation, ridge top (ft), VSI lag (s), time speed-up, alternate static suction (hPa)
+const ELEV=700, RIDGE=2000, TAU=3, TIMEX=4, ALTDP=1.5;   // aerodrome elevation, ridge top (ft), VSI lag (s), time speed-up, alternate static suction (hPa)
 
 /* ---------------- state ---------------- */
 const S={mode:'set',qnhA:1013,qnhSet:1013,set:'qnh',dT:0,alt:3000,vs:0,ias:120,pe:0,fault:'none',altSt:false,trap:null,ice:false};

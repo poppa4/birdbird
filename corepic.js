@@ -53,6 +53,13 @@ const css=`
 .cpic-ls li.c-past i{border-color:rgba(228,107,174,.55);color:#E9A9CC}
 .cpic-ls .ft{margin:0;padding:10px 16px 12px;border-top:1px solid rgba(255,255,255,.06);font-size:11.5px;line-height:1.45;color:#7F8B96}
 .cpic-cap{display:none}
+.cpic-more{margin:22px 0 0;border-top:1px solid var(--rule-2)}
+.cpic-more>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:10px;padding:14px 0 4px;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;color:var(--ink)}
+.cpic-more>summary::-webkit-details-marker{display:none}
+.cpic-more>summary::before{content:"+";font-family:var(--f-mono);color:var(--accent);width:14px}
+.cpic-more[open]>summary::before{content:"−"}
+.cpic-more>summary small{font-family:var(--f-body);font-weight:400;font-size:13.5px;color:var(--ink-2)}
+.cpic-more>summary:hover{color:var(--accent)}
 body.depth-instructor .cpic-ls li b{font-size:16px}
 body.depth-instructor .cpic-ls li p{font-size:15.5px}
 body.depth-instructor .cpic-g{grid-template-columns:minmax(0,1fr) 360px}
@@ -208,7 +215,7 @@ function mount(host,cfg){
   const cv=root.querySelector('canvas'), g=cv.getContext('2d'), ol=root.querySelector('ol'), sc=root.querySelector('.sc input'),
     pl=root.querySelector('.pl'), nEl=root.querySelector('.n'), cap=root.querySelector('.cpic-cap'), live=root.querySelector('[aria-live]');
   cv.style.aspectRatio=String(asp);
-  const api={}; let p=0, from=0, to=0, t0=0, dur=1, playing=false, arrived=0, cur=0, vis=true, raf=0, W=0, H=0, dpr=1, dragging=false;
+  const api={}; let VG=null, touched=false, autoDone=false; let p=0, from=0, to=0, t0=0, dur=1, playing=false, arrived=0, cur=0, vis=true, raf=0, W=0, H=0, dpr=1, dragging=false;
   const now=()=>performance.now();
   function size(){ const a=root.getBoundingClientRect().width<600?(cfg.aspectSm||asp):asp; if(cv.style.aspectRatio!==String(a)) cv.style.aspectRatio=String(a);
     const r=cv.getBoundingClientRect(); dpr=Math.min(2,window.devicePixelRatio||1); W=Math.max(1,r.width); H=Math.max(1,r.width/a);
@@ -240,6 +247,8 @@ function mount(host,cfg){
     if(Math.round(p)!==cur) list();
     g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
     try{ cfg.draw(g,W,H,p,t/1000); }catch(e){ if(!api.err){ api.err=1; console.error(e); } }
+    if(!VG||VG.w!==W||VG.h!==H){ VG=g.createRadialGradient(W/2,H*.45,Math.min(W,H)*.35,W/2,H*.5,Math.max(W,H)*.75); VG.addColorStop(0,'rgba(0,0,0,0)'); VG.addColorStop(1,'rgba(0,0,0,.28)'); VG.w=W; VG.h=H; }
+    g.fillStyle=VG; g.fillRect(0,0,W,H);
     if(vis) raf=requestAnimationFrame(frame);
   }
   function kick(){ if(!raf&&vis) raf=requestAnimationFrame(frame); }
@@ -253,9 +262,17 @@ function mount(host,cfg){
   sc.addEventListener('change',rel); sc.addEventListener('pointerup',rel); sc.addEventListener('blur',rel);
   cv.addEventListener('keydown',e=>{ if(e.key==='ArrowRight'){ playing=false; go(Math.floor(p+1e-6)+1); e.preventDefault(); } else if(e.key==='ArrowLeft'){ playing=false; go(Math.ceil(p-1e-6)-1); e.preventDefault(); } else if(e.key===' '){ setPlay(!playing); e.preventDefault(); } });
   cv.addEventListener('click',()=>{ if(!playing) go(Math.floor(p+1e-6)+1>n-1?0:Math.floor(p+1e-6)+1); });
-  if('IntersectionObserver' in window){ new IntersectionObserver(es=>{ vis=es[0].isIntersecting; if(vis) kick(); }).observe(cv); }
+  root.addEventListener('pointerdown',()=>{ touched=true; },true); root.addEventListener('keydown',()=>{ touched=true; },true);
+  if('IntersectionObserver' in window){ new IntersectionObserver(es=>{ vis=es[0].isIntersecting; if(vis) kick(); }).observe(cv);
+    new IntersectionObserver(es=>{ const e=es[0]; if(e.isIntersecting&&e.intersectionRatio>=.55&&!autoDone&&!touched&&!reduced()){ autoDone=true; setTimeout(()=>{ if(!touched&&!playing) setPlay(true); },500); } },{threshold:[.55]}).observe(cv); }
   new ResizeObserver(()=>{ size(); kick(); }).observe(cv);
   size(); list();
+  const fold=()=>{ const sec=root.closest('section'); if(!sec||sec.querySelector('.cpic-more')) return; const grid=sec.querySelector('.kcgrid,#kcGrid'); if(!grid||!grid.children.length) return false;
+    const intro=sec.querySelector('.kintro'); const d=document.createElement('details'); d.className='cpic-more';
+    const sm=document.createElement('summary'); d.appendChild(sm); grid.parentNode.insertBefore(d,grid); if(intro&&intro.compareDocumentPosition(grid)&Node.DOCUMENT_POSITION_FOLLOWING) d.appendChild(intro); d.appendChild(grid);
+    const lab=()=>{ sm.innerHTML=`${L({en:'All key concepts',no:'Alle nøkkelbegreper'})} <small>${grid.children.length} ${L({en:'cards, each linked to the model',no:'kort, hvert koblet til modellen'})}</small>`; }; lab(); if(window.LAB&&LAB.onLang) LAB.onLang(lab);
+    grid.addEventListener('click',e=>{ if(e.target.closest('.kgo')) d.open=true; }); return true; };
+  if(cfg.fold!==false){ let n=0; const tryFold=()=>{ if(fold()===false&&n++<20) setTimeout(tryFold,150); }; setTimeout(tryFold,0); }
   if(window.LAB&&LAB.onLang) LAB.onLang(()=>{ list(); kick(); });
   document.addEventListener('labdepth',()=>{ setTimeout(()=>{ size(); kick(); },30); });
   Object.assign(api,{go:i=>{ playing=false; go(i); }, step:()=>cur, el:root, redraw:kick});
