@@ -4,7 +4,9 @@
                          Flight Intelligence uses, so a document added in either place shows in both.
    Synced to the account aircraft, the document index (name, category, links, tags), pack and route marks, topics
                          (groups you name yourself; where an item lives is its 'grp', see workspacecore.js) -> namespace 'workspace';
-                         notes with their version history -> namespace 'notes'. Document files are never uploaded.
+                         notes with their version history -> namespace 'notes'. Document files: kept on the device, and when the
+                         site has cloud storage switched on (/api/files, Cloudflare R2) also in the signed-in user's private
+                         cloud space, so they come back on another device or after the browser is cleared (CLOUD below).
    The desk             desk.js draws the default view (#/): panes with tabs, saved as 'desk' items (positions only) in the
                          'workspace' namespace. The list views below are the Library (#/library, #/documents …).
    Pen notebooks         items of kind 'notebook' (and 'ink' for the ink on a PDF page) in the 'ink' namespace; drawn by
@@ -111,6 +113,50 @@
   const notebooksAll = () => liveOf('notebook').sort((a, b) => b.updatedAt - a.updatedAt);
   const hasFile = id => S.blobs.has(id);
   const onDevice = id => !!S.docs[id];
+  /* ---------- document files in the cloud (/api/files, R2; functions/_lib/files.js) ----------
+     When the site has it switched on and the user is signed in: every document file is uploaded once, a document listed in the
+     library but missing on this device is fetched back, and a document deleted for good is deleted there too. Files in the
+     trash stay in the cloud until they are deleted for good. Nothing is deleted in the cloud only because this device lacks it. */
+  const CL = { on: false, files: {}, used: 0, quota: 0, busy: false, failed: 0, at: 0 };
+  async function cloudList() {
+    try { const r = await fetch('/api/files', { headers: { accept: 'application/json' }, credentials: 'same-origin' }); const j = await r.json();
+      if (!j || !j.ok || !j.enabled) { CL.on = false; return false; }
+      CL.on = true; CL.used = j.used || 0; CL.quota = j.quota || 0; CL.files = {}; (j.files || []).forEach(f => { CL.files[f.id] = f; }); return true; }
+    catch (e) { CL.on = false; return false; }
+  }
+  async function cloudUp(id) {
+    if (!CL.on || !user() || !hasFile(id)) return false; const d = S.docs[id], blob = await FI.getBlob(id); if (!blob) return false;
+    const name = (d && d.file && d.file.name) || ((d && d.name) || id) + (d && d.blob ? '.pdf' : '');
+    try { const r = await fetch('/api/files/' + encodeURIComponent(id), { method: 'PUT', credentials: 'same-origin', headers: { 'content-type': blob.type || (d && d.file && d.file.type) || 'application/octet-stream', 'x-file-name': encodeURIComponent(name) }, body: blob });
+      const j = await r.json().catch(() => ({})); if (!r.ok || !j.ok) { CL.failed++; CL.err = j.message || ''; return false; }
+      CL.files[id] = { id, size: j.size, name }; CL.used = j.used || CL.used; return true; }
+    catch (e) { CL.failed++; return false; }
+  }
+  async function cloudRestore(e) {
+    if (!CL.on || !FI.db || !CL.files[e.id]) return false;
+    try { const r = await fetch('/api/files/' + encodeURIComponent(e.id), { credentials: 'same-origin' }); if (!r.ok) return false;
+      const blob = await r.blob(); let name = ''; try { name = decodeURIComponent(r.headers.get('x-file-name') || ''); } catch (er) {}
+      if (!name) name = (e.name || e.id) + (e.ext ? '.' + e.ext : '');
+      const f = new File([blob], name, { type: blob.type || '' });
+      let rr = { pages: e.pages || 1, chunks: [] }; try { rr = await readText(f, () => {}); } catch (er) { /* no text: the file is still kept */ }
+      await FI.put({ id: e.id, ac: 'gen', name: e.name || name, kind: W.guessKind(name), rev: e.rev || '', old: false, on: true, added: Date.now(), pages: rr.pages, chunks: rr.chunks, blob: extOf(name) === 'pdf', file: { name, type: f.type, size: f.size } }, f);
+      await pushDocToFi(e).catch(() => {}); return true; }
+    catch (er) { return false; }
+  }
+  async function cloudDel(id) { if (!CL.on || !user()) return; try { const r = await fetch('/api/files/' + encodeURIComponent(id), { method: 'DELETE', credentials: 'same-origin' }); if (r.ok) delete CL.files[id]; } catch (e) {} }
+  /* one pass: fetch back what is missing here, upload what the cloud lacks, remove files of documents deleted for good */
+  async function cloudSync() {
+    if (!user() || CL.busy || !S.ready) return; CL.busy = true; let back = 0;
+    try {
+      if (!await cloudList()) return;
+      for (const e of liveOf('doc')) if (!onDevice(e.id) && CL.files[e.id]) { if (await cloudRestore(e)) back++; }
+      for (const id of Object.keys(S.docs)) { const e = item(id); if (e && !e.gone && !CL.files[id] && hasFile(id)) await cloudUp(id); }
+      for (const id of Object.keys(CL.files)) { const e = item(id); if (e && e.gone) await cloudDel(id); }
+      CL.at = Date.now();
+    } finally { CL.busy = false; }
+    if (back) { await storageInfo(); render(); toast(t(back + (back === 1 ? ' document was' : ' documents were') + ' fetched from your cloud storage.', back + (back === 1 ? ' dokument ble hentet' : ' dokumenter ble hentet') + ' fra skylagringen din.')); }
+    else if (CL.on) drawStatus();
+  }
   const packMark = id => { const m = S.items['pk:' + id]; return m && W.isLive(m) ? m : null; };
   const normReg = s => String(s || '').toUpperCase().replace(/[\s-]/g, '');
   function packAc(p) { const m = packMark(p.id); if (m && m.acId && W.isLive(item(m.acId))) return item(m.acId); const r = normReg(p.f && p.f.reg); if (r) return aircraft().find(a => normReg(a.reg) === r) || null; return window.FLIGHT ? window.FLIGHT.matchAircraft(p, aircraft(), a => W.typeOf(a.typeKey).name) : null; }
@@ -199,6 +245,7 @@
         if (twin) e = W.patch(twin, { pages: r.pages, size: f.size, ext: extOf(f.name) });
         else e = W.newDocEntry({ id, name: base, cat: W.guessCat(f.name), acIds: opts.acId ? [opts.acId] : [], pages: r.pages, size: f.size, ext: extOf(f.name) });
         await commit(e); await pushDocToFi(e);
+        if (CL.on && user()) cloudUp(id).then(ok => { if (ok) drawStatus(); });
         done.push(e.name); lastId = id;
       } catch (e) { failed.push(f.name + ': ' + (e && e.name === 'QuotaExceededError' ? t('not enough free space on this device', 'ikke nok ledig plass på denne enheten') : t('could not be saved', 'kunne ikke lagres'))); }
     }
@@ -207,7 +254,7 @@
     const onDesk = deskMode() && window.WSDESK;
     if (onDesk && lastId && !opts.replaceId) window.WSDESK.openItem('doc', lastId);
     if (failed.length) toast(failed.join(' · '));
-    else if (done.length) toast(t('Saved on this device: ', 'Lagret på denne enheten: ') + done.join(', '), done.length === 1 && lastId && !onDesk && !/^documents\//.test(route().path) ? [t('Open', 'Åpne'), () => go('documents/' + lastId)] : null);
+    else if (done.length) toast((CL.on && user() ? t('Saved on this device and in your cloud storage: ', 'Lagret på denne enheten og i skylagringen din: ') : t('Saved on this device: ', 'Lagret på denne enheten: ')) + done.join(', '), done.length === 1 && lastId && !onDesk && !/^documents\//.test(route().path) ? [t('Open', 'Åpne'), () => go('documents/' + lastId)] : null);
   }
   /* attach a document to an aircraft (from the aircraft card on the desk) */
   async function linkDoc(docId, acId) { const d = item(docId); if (!W.isLive(d) || (d.acIds || []).includes(acId)) return; const e = W.patch(d, { acIds: (d.acIds || []).concat([acId]), grp: '' }); await commit(e); await pushDocToFi(e); render(); }
@@ -627,6 +674,7 @@
     const hasText = pages.length > 0;
     if (!mode) mode = isPdf || isImg ? 'file' : 'text';
     const bar = `<div class="vbar"><span>${isPdf && mode === 'file' ? `<span id="vCount">${d.pages || ''} ${t('pages', 'sider')}</span>` : hasText && mode === 'text' ? t('Text found in the document', 'Tekst funnet i dokumentet') : ''}</span>${(isPdf || isImg) && hasText ? `<div class="seg" role="group" aria-label="${t('View', 'Visning')}"><button type="button" data-vm="file" class="${mode === 'file' ? 'on' : ''}" aria-pressed="${mode === 'file'}">${isImg ? t('Image', 'Bilde') : 'PDF'}</button><button type="button" data-vm="text" class="${mode === 'text' ? 'on' : ''}" aria-pressed="${mode === 'text'}">${t('Text', 'Tekst')}</button></div>` : ''}</div>`;
+    if (!doc && CL.on && CL.files[d.id]) { box.innerHTML = `<div class="vmsg"><p>${t('Fetching the file from your cloud storage…', 'Henter filen fra skylagringen din …')}</p></div>`; if (await cloudRestore(d) && route().path === 'documents/' + d.id) return drawViewer(d, mode, page); }
     if (!doc) { box.innerHTML = `<div class="vmsg"><p><b>${t('The file is not on this device.', 'Filen er ikke på denne enheten.')}</b></p><p>${t('Your account keeps this document’s name, category, links and tags, but never the file itself. Add the file again on this device, or import a backup file that contains it.', 'Kontoen din tar vare på navn, kategori, koblinger og emneknagger for dette dokumentet, men aldri selve filen. Legg til filen på nytt på denne enheten, eller importer en sikkerhetskopi som inneholder den.')}</p><p><button type="button" class="btn pri" data-act="doc-file" data-id="${esc(d.id)}">${t('Add the file', 'Legg til filen')}</button></p></div>`; return; }
     if (mode === 'text' || !(isPdf || isImg)) {
       box.innerHTML = bar + (hasText ? `<div class="txt">${pages.map(p => `<h4 id="pg${p.p}">${t('Page', 'Side')} ${p.p}${p.s ? ' · ' + esc(p.s) : ''}</h4><p>${esc(p.t)}</p>`).join('')}</div>` : `<div class="vmsg"><p>${blob ? t('This file has no text NORDAP can show (it may be scanned or protected). The file itself is kept; download it to open it in another app.', 'Denne filen har ingen tekst NORDAP kan vise (den kan være skannet eller beskyttet). Selve filen er lagret; last den ned for å åpne den i en annen app.') : t('Only the text of this document was kept when it was added. Add the file again to read the original here.', 'Bare teksten i dette dokumentet ble tatt vare på da det ble lagt til. Legg til filen på nytt for å lese originalen her.')}</p></div>`);
@@ -667,7 +715,7 @@
         <div class="fld"><label for="dTags">${t('Tags, separated by commas', 'Emneknagger, skilt med komma')}</label><input id="dTags" value="${esc((d.tags || []).join(', '))}" placeholder="${esc(t('e.g. rev 9, g1000', 'f.eks. rev 9, g1000'))}"></div>
         <div class="fld"><label for="dRev">${t('Revision or date, as printed on it', 'Revisjon eller dato, slik det står på dokumentet')}</label><input id="dRev" maxlength="40" value="${esc(d.rev || '')}"></div>
         <span class="savedmark" id="dSaved" role="status"></span>
-        <div class="keptbox ${here ? '' : 'miss'}">${here ? `<b>${t('Kept on this device', 'Lagret på denne enheten')}</b>${d.size ? ' · ' + W.fmtBytes(d.size) : ''}<br>${t('The file is private to this browser and is never uploaded. Your account keeps only this page’s details so the library looks the same on your other devices.', 'Filen er privat for denne nettleseren og lastes aldri opp. Kontoen din tar bare vare på opplysningene på denne siden, slik at biblioteket ser likt ut på de andre enhetene dine.')}` : `<b>${t('File not on this device', 'Filen er ikke på denne enheten')}</b><br>${t('Add it again here, or import a backup file.', 'Legg den til på nytt her, eller importer en sikkerhetskopi.')}`}</div>
+        <div class="keptbox ${here ? '' : 'miss'}">${here ? `<b>${t('Kept on this device', 'Lagret på denne enheten')}</b>${d.size ? ' · ' + W.fmtBytes(d.size) : ''}<br>${CL.on && CL.files[id] ? t('A private copy is also in your cloud storage, so it comes back on your other devices or if this browser is cleared.', 'En privat kopi ligger også i skylagringen din, så den kommer tilbake på de andre enhetene dine eller hvis nettleseren tømmes.') : t('The file is private to this browser. Your account keeps this page’s details so the library looks the same on your other devices.', 'Filen er privat for denne nettleseren. Kontoen din tar vare på opplysningene på denne siden, slik at biblioteket ser likt ut på de andre enhetene dine.')}` : `<b>${t('File not on this device', 'Filen er ikke på denne enheten')}</b><br>${CL.on && CL.files[id] ? t('It is in your cloud storage and is fetched when you open it.', 'Den ligger i skylagringen din og hentes når du åpner den.') : t('Add it again here, or import a backup file.', 'Legg den til på nytt her, eller importer en sikkerhetskopi.')}`}</div>
         <div class="chips">${file ? `<button type="button" class="btn sm" data-act="doc-dl" data-id="${esc(id)}">${t('Download the file', 'Last ned filen')}</button>` : ''}<button type="button" class="btn sm" data-act="doc-file" data-id="${esc(id)}">${here ? t('Replace the file', 'Bytt ut filen') : t('Add the file', 'Legg til filen')}</button>${here ? `<a class="btn sm" href="fi.html#docs">${t('Ask about it in Flight Intelligence', 'Spør om det i Flight Intelligence')}</a>` : ''}</div>
         ${here && ockCan(d) ? `<div class="fld"><span>${t('Your own checklist in the cockpit trainers', 'Din egen sjekkliste i cockpit-trenerne')}</span><div class="chips">${ockLinks(id)}</div><small style="color:var(--ink-3,#6b7680)">${t('The trainer shows it in its Procedures drawer and ticks items as you fly. It stays on this device.', 'Treneren viser den i prosedyreskuffen og krysser av punkter mens du flyr. Den blir på denne enheten.')}</small></div>` : ''}
         <button type="button" class="lk danger" data-act="trash" data-id="${esc(id)}" style="align-self:flex-start">${t('Move to trash', 'Flytt til papirkurv')}</button>
@@ -1113,7 +1161,7 @@
     toast(t('Moved to the trash: ', 'Flyttet til papirkurven: ') + itemName(it), [t('Undo', 'Angre'), () => doRestore(id)]);
   }
   async function doRestore(id) { const it = item(id); if (!W.inTrash(it)) return; await commit(W.restore(it)); if (it.kind === 'doc') await untrashFile(id); render(); toast(t('Restored: ', 'Gjenopprettet: ') + itemName(it)); }
-  async function doPurge(ids) { const list = ids.map(item).filter(W.inTrash); if (!list.length) return; await commit(list.map(it => W.tombstone(it))); for (const it of list) if (it.kind === 'doc') await ST.tdDel(it.id); await storageInfo(); render(); }
+  async function doPurge(ids) { const list = ids.map(item).filter(W.inTrash); if (!list.length) return; await commit(list.map(it => W.tombstone(it))); for (const it of list) if (it.kind === 'doc') { await ST.tdDel(it.id); cloudDel(it.id); } await storageInfo(); render(); }
   async function exportAll() {
     const note = el('bkNote'); toast(t('Preparing the backup file…', 'Lager sikkerhetskopien …'));
     try {
@@ -1237,7 +1285,7 @@
     if (meta && typeof meta === 'object') M = Object.assign(M, meta, { sync: Object.assign(M.sync, meta.sync || {}) });
     M.hideAdopt = M.hideAdopt || {}; M.recent = M.recent || [];
     const pg = W.purgeExpired(items); S.items = pg.items; itemsIn = true; readyRes();
-    if (pg.purged.length) { ST.putItems(pg.purged.map(it => S.items[it.id])).catch(() => {}); pg.purged.forEach(it => { if (it.kind === 'doc') ST.tdDel(it.id); }); }
+    if (pg.purged.length) { ST.putItems(pg.purged.map(it => S.items[it.id])).catch(() => {}); pg.purged.forEach(it => { if (it.kind === 'doc') ST.tdDel(it.id); }); } /* their cloud copies are removed by cloudSync once the tombstones are synced */
     await Promise.all([fiP, lsP]); pmark('data');
     await reconcile();
     S.ready = true;
@@ -1245,10 +1293,11 @@
     /* the storage estimate is only shown on the Overview and Storage pages: it is read after the first paint */
     storageInfo().then(() => { if (W.live(S.items).length && S.est.persisted === false) askPersist(); if (/^(storage|library)$/.test(route().path)) render(); });
     if (user()) syncNow();
+    if (user()) setTimeout(cloudSync, 1500);
   }
   window.addEventListener('hashchange', () => { if (route().path !== 'search') { clearTimeout(qT); } render(); const r = route(); if (r.path !== 'search' && lastPath !== null && document.activeElement === document.body) main.focus({ preventScroll: true }); });
   LAB.onLang(() => { drawChrome(); render(); dockLabels(); });
-  document.addEventListener('bb-account', () => { drawStatus(); if (S.ready && user() && SY.state !== 'syncing' && Date.now() - SY.lastRun > 8000) syncNow(); if (S.ready && !user()) { SY.state = 'idle'; const p = route().path; if (p === '' || p === 'storage') render(); } });
+  document.addEventListener('bb-account', () => { drawStatus(); if (S.ready && user()) setTimeout(cloudSync, 1500); if (S.ready && user() && SY.state !== 'syncing' && Date.now() - SY.lastRun > 8000) syncNow(); if (S.ready && !user()) { SY.state = 'idle'; const p = route().path; if (p === '' || p === 'storage') render(); } });
   document.addEventListener('visibilitychange', async () => { if (document.visibilityState !== 'visible' || !S.ready) return; await loadStores(); await FI.load(); await reconcile(); const a = document.activeElement; if (!(a && main.contains(a) && (a.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(a.tagName))) && !dlg.open) render(); else drawRail(); if (user() && Date.now() - (M.sync.last || 0) > 30000) syncNow(); });
   window.addEventListener('online', () => { if (user()) syncNow(); });
   window.addEventListener('storage', e => { if (e.key && /^naeroson-store-/.test(e.key)) loadStores().then(() => { drawRail(); }); });

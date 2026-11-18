@@ -26,6 +26,7 @@
    - WebAuthn challenges are single use (deleted when read) and expire after 5 minutes.
    - Responses: application/json, no-store, nosniff. Error bodies: { ok:false, error, message } where message says what to do. */
 
+import { deleteAllFiles } from './files.js';
 import { b64u, unb64u, randomBytes, sha256, peekChallenge, verifyRegistration, verifyAuthentication, WAError, COSE_ES256, COSE_RS256 } from './webauthn.js';
 
 export const COOKIE = '__Host-bb_session';
@@ -637,6 +638,7 @@ async function meDelete(c) {
     c.db.prepare('DELETE FROM users WHERE id = ?1').bind(id)
   ]);
   await c.db.prepare('DELETE FROM ai_usage WHERE user_id = ?1').bind(id).run().catch(() => {}); // Flight Intelligence counters (table from migration 0002; absent is fine)
+  await deleteAllFiles(c.env, id).catch(e => console.error('nordap files delete', e && e.message)); // document files in the cloud (R2), if switched on
   return json({ ok: true, deleted: true }, 200, { 'set-cookie': cookieHeader('', 0) });
 }
 /* GET /api/me/export – everything the server holds about the signed-in user, as one JSON (no hashes, no keys) */

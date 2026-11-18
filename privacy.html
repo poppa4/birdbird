@@ -68,7 +68,7 @@
 
   <section class="card" id="stored">
     <h2>What is stored, and where</h2>
-    <p class="lead">NORDAP uses two kinds of storage that belong to your browser: local storage for small settings and progress, and IndexedDB for documents and larger files. Neither is sent to a NORDAP server.</p>
+    <p class="lead">NORDAP uses two kinds of storage that belong to your browser: local storage for small settings and progress, and IndexedDB for documents and larger files. Neither is sent to a NORDAP server, except document files when you are signed in and cloud storage for documents is switched on (see Accounts and sync).</p>
     <table class="reg">
       <thead><tr><th>What</th><th>Why</th><th>Where</th></tr></thead>
       <tbody>
@@ -97,16 +97,17 @@
         <tr><td>Name (optional)</td><td>Shown to you on My training and in your passkey list.</td><td class="w">Until you delete the account</td></tr>
         <tr><td>Session</td><td>A random sign-in id in a cookie (HttpOnly, Secure, SameSite=Lax). The server stores only a hash of it, with a short device label.</td><td class="w">60 days after last use, or until you sign out</td></tr>
         <tr><td>Synced data: progress and results, briefing packs and saved aircraft, routes, fixes and map notes, settings such as language</td><td>So your training and plans follow you from one device to another.</td><td class="w">Until you delete it or the account</td></tr>
+        <tr><td>Document files in My workspace (AFM, SOP, checklists), when cloud storage for documents is switched on</td><td>So a document is not lost if this browser is cleared or a device is lost, and so it opens on your other devices. Each file is stored privately in Cloudflare R2 in the EU, can only be fetched by you while signed in, is never public and is used for nothing else.</td><td class="w">Until you delete the document for good or delete the account</td></tr>
         <tr><td>Attempt counters</td><td>To slow down anyone guessing at sign-in. Counted per hashed IP address; the address itself is not stored.</td><td class="w">At most one day</td></tr>
       </tbody>
     </table>
     <div class="pv-two" style="margin-top:20px">
       <div class="pv-text">
         <p><b>Where.</b> Account data is stored in a Cloudflare D1 database that runs NORDAP’s server functions, created in Cloudflare’s EU jurisdiction so that the data is stored in the European Union. Cloudflare processes it on NORDAP’s behalf.</p>
-        <p><b>Not synced.</b> Documents you upload to Flight Intelligence (AFM, QRH, SOP) and attachments in briefing packs stay in your browser on that device. Keys you enter for map layers are not synced either.</p>
+        <p><b>Not synced.</b> Attachments in briefing packs and keys you enter for map layers stay in your browser on that device. Your documents (AFM, QRH, SOP) stay there too, unless you are signed in and cloud storage for documents is switched on; then a private copy of each file is kept as described in the table.</p>
       </div>
       <div class="pv-text">
-        <p><b>Delete your account.</b> Go to My page, then Account, and choose Delete account. The account, its passkeys, sessions and all synced data are deleted from the server straight away. You can also tick a box to clear this browser at the same time.</p>
+        <p><b>Delete your account.</b> Go to My page, then Account, and choose Delete account. The account, its passkeys, sessions, all synced data and any document files in cloud storage are deleted from the server straight away. You can also tick a box to clear this browser at the same time.</p>
         <p><b>Sign out.</b> Signing out ends the session on the server. Your data stays in that browser until you clear it.</p>
         <p class="btns"><a class="btn" href="profile.html#account">Manage your account</a></p>
       </div>
@@ -195,7 +196,7 @@ LAB.add({'Sections':'Sections'},{
  'No analytics, no tracking cookies and no advertising.':'Ingen analyseverktøy, ingen sporingscookies og ingen reklame.',
  'Fonts are served from NORDAP itself, not from Google or another third party.':'Skrifttypene leveres fra NORDAP selv, ikke fra Google eller en annen tredjepart.',
  'What is stored, and where':'Hva som lagres, og hvor',
- 'NORDAP uses two kinds of storage that belong to your browser: local storage for small settings and progress, and IndexedDB for documents and larger files. Neither is sent to a NORDAP server.':'NORDAP bruker to typer lagring som hører til nettleseren din: lokal lagring for små innstillinger og progresjon, og IndexedDB for dokumenter og større filer. Ingen av dem sendes til en NORDAP-server.',
+ 'NORDAP uses two kinds of storage that belong to your browser: local storage for small settings and progress, and IndexedDB for documents and larger files. Neither is sent to a NORDAP server, except document files when you are signed in and cloud storage for documents is switched on (see Accounts and sync).':'NORDAP bruker to typer lagring som hører til nettleseren din: lokal lagring for små innstillinger og progresjon, og IndexedDB for dokumenter og større filer. Ingen av dem sendes til en NORDAP-server, bortsett fra dokumentfiler når du er logget inn og skylagring for dokumenter er slått på (se Kontoer og synkronisering).',
  'What':'Hva','Why':'Hvorfor','Where':'Hvor',
  'Progress, test results and rank':'Progresjon, testresultater og rang','To show which labs you have done and your rank.':'For å vise hvilke labber du har tatt, og rangen din.','Local storage':'Lokal lagring',
  'Language and display choices':'Språk- og visningsvalg','To remember English or Norwegian and how you left a page.':'For å huske engelsk eller norsk og hvordan du forlot en side.',
@@ -255,10 +256,13 @@ LAB.add({'Sections':'Sections'},{
  "At most one day":"Høyst ett døgn",
  "Where.":"Hvor.",
  "Account data is stored in a Cloudflare D1 database that runs NORDAP’s server functions, created in Cloudflare’s EU jurisdiction so that the data is stored in the European Union. Cloudflare processes it on NORDAP’s behalf.":"Kontodata lagres i en Cloudflare D1-database som kjører NORDAPs serverfunksjoner, opprettet i Cloudflares EU-jurisdiksjon slik at dataene lagres i EU. Cloudflare behandler dem på vegne av NORDAP.",
+ "Document files in My workspace (AFM, SOP, checklists), when cloud storage for documents is switched on":"Dokumentfiler i Mitt arbeidsområde (AFM, SOP, sjekklister), når skylagring for dokumenter er slått på",
+ "So a document is not lost if this browser is cleared or a device is lost, and so it opens on your other devices. Each file is stored privately in Cloudflare R2 in the EU, can only be fetched by you while signed in, is never public and is used for nothing else.":"Slik at et dokument ikke går tapt hvis nettleseren tømmes eller en enhet blir borte, og slik at det åpnes på de andre enhetene dine. Hver fil lagres privat i Cloudflare R2 i EU, kan bare hentes av deg når du er logget inn, er aldri offentlig og brukes ikke til noe annet.",
+ "Until you delete the document for good or delete the account":"Til du sletter dokumentet for godt eller sletter kontoen",
  "Not synced.":"Synkroniseres ikke.",
- "Documents you upload to Flight Intelligence (AFM, QRH, SOP) and attachments in briefing packs stay in your browser on that device. Keys you enter for map layers are not synced either.":"Dokumenter du laster opp til Flight Intelligence (AFM, QRH, SOP) og vedlegg i briefingpakker blir i nettleseren på den enheten. Nøkler du legger inn for kartlag synkroniseres heller ikke.",
+ "Attachments in briefing packs and keys you enter for map layers stay in your browser on that device. Your documents (AFM, QRH, SOP) stay there too, unless you are signed in and cloud storage for documents is switched on; then a private copy of each file is kept as described in the table.":"Vedlegg i briefingpakker og nøkler du legger inn for kartlag blir i nettleseren på den enheten. Dokumentene dine (AFM, QRH, SOP) blir også der, med mindre du er logget inn og skylagring for dokumenter er slått på; da lagres en privat kopi av hver fil slik tabellen beskriver.",
  "Delete your account.":"Slett kontoen.",
- "Go to My page, then Account, and choose Delete account. The account, its passkeys, sessions and all synced data are deleted from the server straight away. You can also tick a box to clear this browser at the same time.":"Gå til Min side, så Konto, og velg Slett kontoen. Kontoen, passnøklene, øktene og alle synkroniserte data slettes fra serveren med en gang. Du kan også krysse av for å tømme denne nettleseren samtidig.",
+ "Go to My page, then Account, and choose Delete account. The account, its passkeys, sessions, all synced data and any document files in cloud storage are deleted from the server straight away. You can also tick a box to clear this browser at the same time.":"Gå til Min side, så Konto, og velg Slett kontoen. Kontoen, passnøklene, øktene, alle synkroniserte data og eventuelle dokumentfiler i skylagringen slettes fra serveren med en gang. Du kan også krysse av for å tømme denne nettleseren samtidig.",
  "Sign out.":"Logg ut.",
  "Signing out ends the session on the server. Your data stays in that browser until you clear it.":"Når du logger ut, avsluttes økten på serveren. Dataene blir liggende i den nettleseren til du sletter dem.",
  "Manage your account":"Administrer kontoen",
