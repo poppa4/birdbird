@@ -380,7 +380,7 @@ window.SIMAC={T:window.B737T,H:1520,key:'bb-b737-start',img:['img/cockpits/b738-
       front:{c:[0.434,0.9608,0],n:[-0.96,-0.278,0],up:[0,1,0],W:1.56,H:0.4767,r:[0,495.6,1000,305.7]},
       cdu:{c:[0.5705,0.6582,0.02],n:[-0.49,-0.872,0],up:[-0.872,0.49,0],W:0.58,H:0.2667,r:[314.2,809.9,371.7,170.9]},
       ped:{c:[1.0958,0.6,0.02],n:[0,-1,0],up:[-1,0,0],W:0.5,H:0.8283,r:[339.8,989.4,320.5,530.9]}},
-    eye:[1.34,1.28,0.51],pitch:-15,yaw:-0.16,shell:'models/b737-shell.bin',shellTex:'models/b737-shell-',
+    eye:[1.34,1.28,0.51],pitch:-15,yaw:-0.16,phoneMain:[270,655,44],shell:'models/b737-shell.bin',shellTex:'models/b737-shell-',
     look:{main:1,ovhd:[500,240,64,-0.02],ped:[500,1180,58,-0.2],mcp:[500,568,28],eng:[500,760,36,-0.25],cdu:[500,880,36,-0.2]}},
   speedsPane(el){ const K=X.K, A=X.A, r=(t,v)=>`<div class="row"><span>${t}</span><b>${v==null?'—':Math.round(v)+' kt'}</b></div>`, vr=CDU.vrefs(A);
     el.innerHTML='<div class="sgrp">Speeds at '+(A.gw/1000).toFixed(1)+' t</div>'+r('V1',K.d.v1)+r('VR',K.d.vr)+r('V2',K.d.v2)+vr.map(([f,v])=>r('VREF '+f,v)).join('')+r('VMO','340')+'<p class="pdisc">MMO 0.82. Flap placards: 1, 2, 5 250 kt · 10 210 · 15 200 · 25 190 · 30 175 · 40 162. Gear: extend 270 kt / .82, retract 235 kt.</p>'; },
