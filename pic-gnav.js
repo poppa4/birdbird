@@ -43,7 +43,8 @@ function plane(g,x,y,hdg,col,sc){ g.save(); g.translate(x,y); g.rotate(hdg*d2r);
 function draw(g,W,H,p,tm){
   const sm=W<640, fs=sm?.86:1;
   const nav=at(p,4,.9), tri=1-nav;
-  const A=[W*.08,H*(sm?.42:.5)], B=[W*(sm?.92:.66),A[1]];
+  const t3g=at(p,2,.8)*(1-nav), y0=H*(sm?.42:.5), yA=lerp(y0,H*(sm?.36:.26),t3g);
+  const A=[W*.08,yA], B=[W*(sm?.92:.66),yA];
   const tw=B[0]-A[0];
   // map grid
   g.strokeStyle='rgba(255,255,255,.04)'; g.lineWidth=1; for(let x=0;x<W;x+=40){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,H); g.stroke(); } for(let y=0;y<H;y+=40){ g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke(); }
@@ -51,12 +52,13 @@ function draw(g,W,H,p,tm){
   const wdir=(WD+180)*d2r, ux=Math.sin(wdir), uy=-Math.cos(wdir);
   for(let k=0;k<26;k++){ const ph=((tm*.08+k*.137)%1), bx=(k*97%W), by=(k*53%H); const x=bx+ux*ph*160-80*ux, y=by+uy*ph*160-80*uy; g.strokeStyle=`rgba(127,198,238,${.18*Math.sin(ph*Math.PI)})`; g.lineWidth=1.3; g.beginPath(); g.moveTo(x,y); g.lineTo(x+ux*18,y+uy*18); g.stroke(); }
   // wind arrow legend
-  const lx=W*(sm?.8:.86), ly=H*.14; arrow(g,lx-ux*26,ly-uy*26,lx+ux*26,ly+uy*26,C.blue,{lw:3,head:10}); txt(g,`${L({en:'wind',no:'vind'})} ${String(WD).padStart(3,'0')}°/${WS} kt`,lx,ly+44,{mono:1,size:10.5*fs,col:'#9FD4F2',al:'center'});
+  const lx=W*(sm?.8:.86), ly=H*(sm?.1:.16); arrow(g,lx-ux*26,ly-uy*26,lx+ux*26,ly+uy*26,C.blue,{lw:3,head:10}); txt(g,`${L({en:'wind',no:'vind'})} ${String(WD).padStart(3,'0')}°/${WS} kt`,lx,sm?ly+44:ly-34,{mono:1,size:10.5*fs,col:'#9FD4F2',al:'center'});
   // A and B
   const pt=(q,l)=>{ g.fillStyle='#fff'; g.beginPath(); g.arc(q[0],q[1],5,0,7); g.fill(); txt(g,l,q[0],q[1]-12,{mono:1,size:12*fs,col:'#fff',al:'center',w:600}); };
   // planned track
   g.strokeStyle='rgba(228,107,174,.8)'; g.lineWidth=2.2; g.beginPath(); g.moveTo(A[0],A[1]); g.lineTo(B[0],B[1]); g.stroke();
-  pill(g,L({en:'track 090°',no:'spor 090°'}),A[0]+tw*.82,A[1]-18,{mono:1,size:10.5*fs,col:'#F29AC8',al:'center',a:tri});
+  if(sm) pill(g,L({en:'track 090°',no:'spor 090°'}),A[0],A[1]+22,{mono:1,size:10.5*fs,col:'#F29AC8',a:tri});
+  else pill(g,L({en:'track 090°',no:'spor 090°'}),B[0]+14,A[1],{mono:1,size:10.5*fs,col:'#F29AC8',a:tri});
   pt(A,'A'); pt(B,'B');
   if(tri>0.01){ g.save(); g.globalAlpha=tri;
     // step 1: drifting path without correction (track = heading + drift to the right)
@@ -66,26 +68,33 @@ function draw(g,W,H,p,tm){
       const px=lerp(A[0],ex,k), py=lerp(A[1],ey,k); plane(g,px,py,TRK,'#fff',1.2*fs); pill(g,L({en:'heading 090°: drifts right',no:'kurs 090°: driver til høyre'}),ex,ey+18,{size:10.5*fs,col:'#FF8A78',al:'right',fit:W}); g.globalAlpha=tri; }
     // step 2+: crabbed, on track
     const t2=at(p,1,.6);
-    if(t2>0.01){ g.globalAlpha=tri*t2; const px=lerp(A[0],B[0],k), py=A[1]; plane(g,px,py,HDG,'#fff',1.3*fs);
+    if(t2>0.01){ g.globalAlpha=tri*t2; const px=lerp(A[0],B[0],sm?.35+.65*k:k), py=A[1]; plane(g,px,py,HDG,'#fff',1.3*fs);
       g.strokeStyle='rgba(255,255,255,.55)'; g.setLineDash([3,4]); g.beginPath(); g.moveTo(px,py); g.lineTo(px+Math.sin(HDG*d2r)*70,py-Math.cos(HDG*d2r)*70); g.stroke(); g.setLineDash([]);
       txt(g,`HDG ${String(Math.round(HDG)).padStart(3,'0')}°`,px+Math.sin(HDG*d2r)*76,py-Math.cos(HDG*d2r)*76-4,{mono:1,size:11*fs,col:'#fff',al:'center'});
       pill(g,`WCA ${nf(WCA,0)}° ${L({en:"left",no:"venstre"})}`,px+20,py+30,{mono:1,size:10.5*fs,col:C.amber,fit:W});
       g.globalAlpha=tri; }
     // step 3+: the triangle
     const t3=at(p,2,.8);
-    if(t3>0.01){ g.globalAlpha=tri*t3; const S=(sm?1.05:1.5)*fs, o=[W*(sm?.12:.08),H*(sm?.84:.86)];
+    if(t3>0.01){ g.globalAlpha=tri*t3; const S=(sm?W*.62:W*.42)/TAS, o=[W*(sm?.1:.08),H*(sm?.8:.78)];
       const h=[o[0]+TAS*Math.sin(HDG*d2r)*S, o[1]-TAS*Math.cos(HDG*d2r)*S], w=[h[0]+wx*S, h[1]+wy*S];
-      rr(g,o[0]-16,Math.min(h[1],o[1])-44,Math.max(h[0],w[0])-o[0]+40,Math.abs(o[1]-Math.min(h[1],o[1]))+70,10); g.fillStyle='rgba(10,15,20,.82)'; g.fill(); g.strokeStyle='rgba(255,255,255,.1)'; g.stroke();
-      arrow(g,o[0],o[1],h[0],h[1],'#fff',{lw:3,head:11}); arrow(g,h[0],h[1],w[0],w[1],C.blue,{lw:3,head:11}); arrow(g,o[0],o[1],w[0],w[1],C.mag,{lw:3.2,head:12});
-      pill(g,`HDG/TAS ${String(Math.round(HDG)).padStart(3,'0')}°/${TAS}`,(o[0]+h[0])/2-8,Math.min(o[1],h[1])-24,{mono:1,size:10*fs,col:'#fff',al:'center'});
-      pill(g,`W/V ${String(WD).padStart(3,'0')}/${WS}`,Math.max(h[0],w[0])+8,(h[1]+w[1])/2,{mono:1,size:10*fs,col:'#9FD4F2'});
-      pill(g,`TR/GS 090°/${nf(GS,0)}`,(o[0]+w[0])/2,o[1]+14,{mono:1,size:10*fs,col:'#F29AC8',al:'center'});
+      txt(g,L({en:'TRIANGLE OF VELOCITIES',no:'HASTIGHETSTREKANTEN'}),o[0],h[1]-34,{mono:1,size:10*fs,col:'#AEB8C1'});
+      // soft fill of the triangle
+      g.fillStyle='rgba(228,107,174,.07)'; g.beginPath(); g.moveTo(o[0],o[1]); g.lineTo(h[0],h[1]); g.lineTo(w[0],w[1]); g.closePath(); g.fill();
+      arrow(g,o[0],o[1],h[0],h[1],'#fff',{lw:3,head:12}); arrow(g,h[0],h[1],w[0],w[1],C.blue,{lw:3,head:12}); arrow(g,o[0],o[1],w[0],w[1],C.mag,{lw:3.4,head:13});
+      // WCA arc at the origin
+      const aH=Math.atan2(h[1]-o[1],h[0]-o[0]), aT=Math.atan2(w[1]-o[1],w[0]-o[0]), ar=Math.min(W*.12,90);
+      g.strokeStyle=C.amber; g.lineWidth=1.8; g.beginPath(); g.arc(o[0],o[1],ar,aH,aT); g.stroke();
+      txt(g,`WCA ${nf(WCA,0)}°`,o[0]+ar+6,o[1]-ar*Math.sin((aT-aH)/2)*.2-4,{mono:1,size:10.5*fs,col:C.amber});
+      pill(g,`HDG/TAS ${String(Math.round(HDG)).padStart(3,'0')}°/${TAS} kt`,(o[0]+h[0])/2,(o[1]+h[1])/2-20,{mono:1,size:10*fs,col:'#fff',al:'center'});
+      pill(g,`W/V ${String(WD).padStart(3,'0')}°/${WS} kt`,Math.max(h[0],w[0])+10,(h[1]+w[1])/2,{mono:1,size:10*fs,col:'#9FD4F2',fit:W});
+      pill(g,`TR/GS 090°/${nf(GS,0)} kt`,(o[0]+w[0])/2,o[1]+18,{mono:1,size:10*fs,col:'#F29AC8',al:'center'});
+      if(!sm) txt(g,L({en:'air + wind = ground',no:'luft + vind = bakke'}),o[0],o[1]+44,{size:11*fs,col:'#8E99A4'});
       g.globalAlpha=tri; }
     // step 4: numbers card
     const t4=at(p,3,.7);
-    if(t4>0.01&&!sm){ g.globalAlpha=tri*t4; const x=W*.6, y=H*.66; rr(g,x,y,W*.36,H*.28,8); g.fillStyle='rgba(10,15,20,.85)'; g.fill(); g.strokeStyle='rgba(255,255,255,.12)'; g.stroke();
+    if(t4>0.01&&!sm){ g.globalAlpha=tri*t4; const x=W*.655, y=H*.5, cw=W*.32; rr(g,x,y,cw,26+5*22,8); g.fillStyle='rgba(10,15,20,.85)'; g.fill(); g.strokeStyle='rgba(255,255,255,.12)'; g.stroke();
       const ln=[[L({en:'angle wind–track',no:'vinkel vind–spor'}),`${Math.abs(WD-TRK)}°`],[L({en:'crosswind',no:'sidevind'}),`${WS} × sin ${Math.abs(WD-TRK)}° ≈ ${nf(xw,0)} kt`],['WCA',`${nf(xw,0)} ÷ ${TAS/60} ≈ ${nf(WCA,0)}°`],[L({en:'headwind',no:'motvind'}),`${WS} × cos ${Math.abs(WD-TRK)}° ≈ ${nf(WS*Math.cos((WD-TRK)*d2r),0)} kt`],['GS',`≈ ${nf(GS,0)} kt`]];
-      ln.forEach(([a,b],i)=>{ txt(g,a,x+14,y+26+i*22,{size:12,col:'#AEB8C1'}); txt(g,b,x+W*.36-14,y+26+i*22,{mono:1,size:12,col:i===2||i===4?C.amber:'#fff',al:'right'}); });
+      ln.forEach(([a,b],i)=>{ txt(g,a,x+14,y+26+i*22,{size:12,col:'#AEB8C1'}); txt(g,b,x+cw-14,y+26+i*22,{mono:1,size:12,col:i===2||i===4?C.amber:'#fff',al:'right'}); });
       g.globalAlpha=tri; }
     g.restore(); }
   if(nav>0.01){ g.save(); g.globalAlpha=nav;
