@@ -50,7 +50,7 @@ function reset(kind){
   K=MC.create(FIX);
   if(kind!=='cold'){ Object.assign(K.d,{from:'ENRD',to:'ENRD',fltNbr:'NRD320',ci:30,crzFl:100,zfw:A.zfw,zfwcg:28,block:A.fuel.lo+A.fuel.li+A.fuel.ri+A.fuel.ro+A.fuel.c,flaps:1,ths:'UP0.4',v1:131,vr:134,v2:139,flex:null,qnh:1013,temp:15,wind:'360/05',dh:200,ldgConf:'FULL'}); K.fpln=MC.build(K); K.act=kind==='appr'?K.fpln.findIndex(p=>p.id==='FAPSO'):1; }
   if(kind==='air'){ K.act=K.fpln.findIndex(p=>p.id==='RONAX'); }
-  M.lnavFn=m=>MC.lnav(K,m);
+  M.lnavFn=m=>MC.lnav(K,m); M.vnavFn=(m,climb,fcu)=>MC.vnav(K,m,climb,fcu);
   const ap=M.ap; ap.fd1=ap.fd2=kind!=='cold'; UI.fd=[ap.fd1,ap.fd2];
   ap.alt.v=kind==='appr'?3000:5000; ap.hdg.v=kind==='cold'?270:360;
   if(kind!=='cold'){ ap.v1=K.d.v1; ap.vr=K.d.vr; ap.v2=K.d.v2; ap.thrRed=K.d.thrRed; ap.acc=K.d.acc; UI.ls=[kind==='appr',kind==='appr']; }
@@ -89,6 +89,7 @@ function simTick(dt){
   while(acc>=h&&n<6){ syncCtl(); F.step(M,h,A); sysAcc+=h; if(sysAcc>=0.05){ sysStep(sysAcc); sysAcc=0; } acc-=h; n++; }
   if(acc>h*6) acc=0;
   UI.t+=dt;
+  if(UI.v1cut&&M.gnd&&M.toPower&&K.d.v1&&M.ias>=K.d.v1){ UI.v1cut=false; A.fail.v1cut=false; A.fail.eng1=true; }
   events();
   if(M.crash&&!UI.crashed){ UI.crashed=true; say(T('Crashed')+': '+M.crash,'bad',8000); setStat(); }
 }
@@ -774,9 +775,12 @@ function setStat(){ const s=$('stat'); if(!s) return; const t=UI.crashed?T('Cras
 function pause(){ UI.paused=!UI.paused; setStat(); if(CH) CH.sync(); }
 let CH=null;
 if(SH){ SH.init(); CH=SH.chrome({paused:()=>UI.paused,pause,restart:()=>reset(UI.start),sound:()=>UI.sound,setSound:v=>{ UI.sound=v; },refit:()=>layout(true)});
-  SH.pane('fl',el=>{ const L_=[['eng1','Engine 1 failure'],['fire1','Engine 1 fire'],['fire2','Engine 2 fire'],['fireApu','APU fire'],['gen1','Generator 1'],['idg1','IDG 1 oil pressure'],['acBus1','AC BUS 1'],['bothGen','Both generators'],['hydG','Green hydraulics'],['hydY','Yellow hydraulics'],['edp1','Engine 1 pump (green)'],['fuelL1','Left tank pump 1'],['bleed1','Engine 1 bleed'],['pack1','Pack 1'],['elac1','ELAC 1'],['sec1','SEC 1'],['ir1','IR 1'],['decomp','Decompression'],['cabLeak','Slow cabin leak']];
+  SH.pane('fl',el=>{ const L_=[['v1cut','Engine 1 failure at V1 (next take-off)'],['hydGY','Green + yellow hydraulics (G+Y SYS LO PR)'],['eng1','Engine 1 failure'],['fire1','Engine 1 fire'],['fire2','Engine 2 fire'],['fireApu','APU fire'],['gen1','Generator 1'],['idg1','IDG 1 oil pressure'],['acBus1','AC BUS 1'],['bothGen','Both generators'],['hydG','Green hydraulics'],['hydY','Yellow hydraulics'],['edp1','Engine 1 pump (green)'],['fuelL1','Left tank pump 1'],['bleed1','Engine 1 bleed'],['pack1','Pack 1'],['elac1','ELAC 1'],['sec1','SEC 1'],['ir1','IR 1'],['decomp','Decompression'],['cabLeak','Slow cabin leak']];
     el.innerHTML='<div class="sgrp">'+T('Failures')+'</div><div class="fbtns">'+L_.map(([k,t])=>`<button type="button" data-f="${k}" class="${A.fail[k]?'on':''}">${t}</button>`).join('')+'<button type="button" class="rs" data-f="__clr">Clear all failures</button></div>';
-    el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=b.dataset.f; if(k==='__clr'){ A.fail={}; A.idgOK=[true,true]; A.eng.forEach(e=>{ e.fail=false; e.fire=false; }); A.apu.fire=false; A.irs.forEach(r=>{ if(r.st===4) r.st=0; }); } else { A.fail[k]=!A.fail[k]; if(k==='decomp'&&A.fail[k]) say('Decompression'); }
+    el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=b.dataset.f;
+      if(k==='v1cut'){ UI.v1cut=!UI.v1cut; A.fail.v1cut=UI.v1cut; say(UI.v1cut?'Engine 1 will fail at V1 on the next take-off':'V1 cut cancelled'); el.querySelectorAll('button[data-f]').forEach(x=>x.classList.toggle('on',!!A.fail[x.dataset.f])); return; }
+      if(k==='hydGY'){ const on=!A.fail.hydGY; A.fail.hydGY=on; A.fail.hydG=on; A.fail.hydY=on; el.querySelectorAll('button[data-f]').forEach(x=>x.classList.toggle('on',!!A.fail[x.dataset.f])); return; }
+      if(k==='__clr'){ UI.v1cut=false; A.fail={}; A.idgOK=[true,true]; A.eng.forEach(e=>{ e.fail=false; e.fire=false; }); A.apu.fire=false; A.irs.forEach(r=>{ if(r.st===4) r.st=0; }); } else { A.fail[k]=!A.fail[k]; if(k==='decomp'&&A.fail[k]) say('Decompression'); }
       el.querySelectorAll('button[data-f]').forEach(x=>x.classList.toggle('on',!!A.fail[x.dataset.f])); }); });
   SH.pane('sp',el=>{ const s=M.spds||{}; const r=(t,v)=>`<div class="row"><span>${t}</span><b>${v==null?'—':Math.round(v)+' kt'}</b></div>`;
     el.innerHTML='<div class="sgrp">Speeds at '+(A.gw/1000).toFixed(1)+' t</div>'+r('V1',K.d.v1)+r('VR',K.d.vr)+r('V2',K.d.v2)+r('VS1G (this config)',s.vs1g)+r('VLS',s.vls)+r('F',s.F)+r('S',s.S)+r('Green dot',s.gd)+r('VFE (this config)',s.vfe)+r('VMO','350')+'<p class="pdisc">MMO 0.82. VLE 280 kt, VLO 250 kt (retraction 220 kt). VFE: 1 230, 1+F 215, 2 200, 3 185, FULL 177 kt.</p>'; });

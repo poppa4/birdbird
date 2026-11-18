@@ -109,18 +109,26 @@ function apLogic(M,dt,sys,sp,nav){
   A.lvrClb=red&&(tla[0]>TLA.CL+0.5||tla[1]>TLA.CL+0.5);
   if(A.athrArm&&!onG&&tla.every(x=>x<=TLA.CL+0.5&&x>0.5)){ A.athr=true; A.athrArm=false; M.flxLatched=false; }
   // ----- acceleration altitude: SRS -> CLB (or OP CLB), speed target to managed climb speed
-  if(A.vert==='SRS'&&!onG&&ra>A.acc){ A.vert=A.vertArm==='CLB'?'OP CLB':'OP CLB'; A.vertArm='ALT'; if(A.gaMode){ A.gaMode=false; } A.toga=false; }
+  if(A.vert==='SRS'&&!onG&&ra>A.acc){ A.vert=A.lat==='NAV'&&M.vnavFn?'CLB':'OP CLB'; A.vertArm='ALT'; if(A.gaMode){ A.gaMode=false; } A.toga=false; }
   if(A.vert==='SRS'&&!onG&&A.lat.startsWith('RWY')&&ra>30) A.lat='HDG';
   if(A.latArm==='NAV'&&nav.fp&&!onG&&ra>30){ A.lat='NAV'; A.latArm=''; }
   if(A.lat==='NAV'&&!nav.fp) A.lat='HDG';
+  // ----- managed vertical (CLB / DES): constraints from the flight plan limit the altitude target
+  const managedV=A.vert==='CLB'||A.vert==='DES'||A.vert.startsWith('ALT CST');
+  const climbingM=A.vert==='CLB'||(A.vert.startsWith('ALT CST')&&A.cstClimb);
+  const vn=managedV&&M.vnavFn?M.vnavFn(M,climbingM,A.alt.v):null; A.vn=vn;
+  if(managedV&&A.lat!=='NAV'&&!onG){ A.vert=A.vert==='DES'||(!A.cstClimb&&A.vert.startsWith('ALT CST'))?'V/S':(A.vert==='CLB'?'OP CLB':'V/S'); if(A.vert==='V/S'){ A.vs.v=Math.round(vs/100)*100; A.vs.dash=false; } }
+  if(A.vert==='ALT CST'&&vn&&Math.abs(vn.alt-(A.altHold||vn.alt))>60){ A.vert=A.cstClimb?'CLB':'DES'; } // constraint passed: climb / descend on
+  if(A.vert==='ALT CST'&&!vn&&Math.abs(A.alt.v-h)>250){ A.vert=A.cstClimb?'CLB':'DES'; }
   // ----- altitude capture logic
-  const altT=A.alt.v, dAlt=altT-h;
+  const altT=(A.vert==='CLB'||A.vert==='DES')&&vn?vn.alt:A.alt.v, dAlt=altT-h, cstCap=(A.vert==='CLB'||A.vert==='DES')&&vn&&vn.alt!==A.alt.v;
   if(['OP CLB','CLB','OP DES','DES','V/S','FPA','EXPED CLB','EXPED DES'].includes(A.vert)){
-    const climbing=A.vert.includes('CLB')||(A.vert==='V/S'&&A.vs.v>0);
+    const climbing=A.vert.includes('CLB')||(A.vert==='V/S'&&A.vs.v>0)||((A.vert==='FPA')&&A.vs.fpaV>0);
     const capt=Math.max(150,Math.abs(vs)*0.18);
-    if((climbing&&dAlt>0&&dAlt<capt)||(!climbing&&dAlt<0&&-dAlt<capt)){ A.vert='ALT*'; A.capT=0; }
+    if((climbing&&dAlt>0&&dAlt<capt)||(!climbing&&dAlt<0&&-dAlt<capt)){ if(cstCap){ A.cstClimb=climbing; A.vert='ALT CST*'; A.cstAlt=altT; } else A.vert='ALT*'; A.capT=0; }
   }
   if(A.vert==='ALT*'&&Math.abs(dAlt)<25&&Math.abs(vs)<150){ A.vert='ALT'; A.altHold=altT; }
+  if(A.vert==='ALT CST*'){ const e=(A.cstAlt||h)-h; if(Math.abs(e)<25&&Math.abs(vs)<150){ A.vert='ALT CST'; A.altHold=A.cstAlt; } }
   if(A.vert==='ALT'&&Math.abs(altT-(A.altHold||altT))>0&&A.altHold!=null&&false){}
   // ----- LOC / G/S
   const L=nav.loc, Gs=nav.gs;
@@ -142,16 +150,21 @@ function apLogic(M,dt,sys,sp,nav){
       const e=(vt-ias), acc=M.accel||0; gamC=clamp(M.gam+(-e*0.0035+acc*0.06)*-1*-1*-1,-0.02,18*D2R-M.alpha);
       gamC=clamp(M.gam-(e*0.004-acc*0.05),M.gnd?0:0.02,18*D2R-M.alpha); if(ra<35&&!A.gaMode) gamC=Math.min(gamC,0.16); break; }
     case 'OP CLB': case 'CLB': case 'EXPED CLB': { const e=(tgtSpd-ias), acc=M.accel||0; gamC=clamp(M.gam-(e*0.004-acc*0.05),0.005,15*D2R); break; }
-    case 'OP DES': case 'DES': case 'EXPED DES': { const e=(tgtSpd-ias), acc=M.accel||0; gamC=clamp(M.gam-(e*0.004-acc*0.05),-12*D2R,-0.003); break; }
+    case 'DES': if(A.vn&&A.vn.pathAlt!=null&&A.vn.dist>0.3){ // geometric path to the next constraint: the V/S it needs at this ground speed
+        const need=(h-A.vn.pathAlt)/Math.max(0.3,A.vn.dist-5)*(M.gs/KT)/60; /* reach it a little before the waypoint (turn anticipation) */ A.desSpd=need<1700; const vsT=-clamp(need,300,3500); gamC=gamFromVs(vsT); if(!A.desSpd){ const e=(tgtSpd-ias); gamC=Math.max(gamC,clamp(M.gam-(e*0.004-(M.accel||0)*0.05),-12*D2R,-0.003)); } break; }
+      // fall through: no constraint ahead, idle descent on speed
+    case 'OP DES': case 'EXPED DES': { A.desSpd=false; const e=(tgtSpd-ias), acc=M.accel||0; gamC=clamp(M.gam-(e*0.004-acc*0.05),-12*D2R,-0.003); break; }
     case 'V/S': gamC=gamFromVs(A.vs.v); break;
     case 'FPA': gamC=A.vs.fpaV*D2R; break;
+    case 'ALT CST*': { const vsC=clamp(((A.cstAlt||h)-h)*4.2,-Math.abs(A.capVs||2000),Math.abs(A.capVs||2000)); gamC=gamFromVs(vsC); break; }
+    case 'ALT CST': { const vsC=clamp(((A.altHold!=null?A.altHold:h)-h)*2.5,-900,900); gamC=gamFromVs(vsC); break; }
     case 'ALT*': { const vsC=clamp(dAlt*4.2,-Math.abs(A.capVs||2000),Math.abs(A.capVs||2000)); gamC=gamFromVs(vsC); break; }
     case 'ALT': { const vsC=clamp(((A.altHold!=null?A.altHold:altT)-h)*2.5,-900,900); gamC=gamFromVs(vsC); break; }
     case 'G/S*': case 'G/S': case 'LAND': { const dev=Gs.valid?Gs.dev:0; gamC=-ILS.gp*D2R+clamp(dev*0.35*2.6,-1.6,1.6)*D2R; break; }
     case 'FLARE': { const vsT=clamp(-ra*9-60,-800,-120); gamC=gamFromVs(vsT); break; }
     case 'ROLL OUT': gamC=0; break;
   }
-  if(A.vert!=='ALT*') A.capVs=Math.max(500,Math.abs(vs));
+  if(A.vert!=='ALT*'&&A.vert!=='ALT CST*') A.capVs=Math.max(500,Math.abs(vs));
   // ----- lateral command (bank, rad) -----
   const trk=w360(M.chi*R2D), hdg=w360(M.psi*R2D);
   const bankLim=A.lat==='LOC*'||A.lat==='LOC'?25:(ias<200?25:30);
@@ -173,7 +186,8 @@ function apLogic(M,dt,sys,sp,nav){
   const active=A.athr&&!onG||A.athr&&A.vert==='ROLL OUT';
   if(A.athr){
     if(['OP CLB','CLB','SRS','EXPED CLB'].includes(A.vert)) thrMode='THR CLB';
-    else if(['OP DES','DES','EXPED DES'].includes(A.vert)) thrMode='THR IDLE';
+    else if(A.vert==='DES') thrMode=A.desSpd?(A.spd.mach?'MACH':'SPEED'):'THR IDLE';
+    else if(['OP DES','EXPED DES'].includes(A.vert)) thrMode='THR IDLE';
     else thrMode=A.spd.mach?'MACH':'SPEED';
     if((A.vert==='FLARE'&&ra<30)||A.vert==='ROLL OUT') { thrMode='THR IDLE'; A.retard=true; } else A.retard=false;
     if(A.alphaFloor) thrMode='A.FLOOR';
@@ -432,7 +446,7 @@ function fcu(M,k,v){
     case 'altTurn': A.alt.v=clamp(Math.round((A.alt.v+v*A.alt.step)/A.alt.step)*A.alt.step,100,39000); break;
     case 'altStep': A.alt.step=A.alt.step===100?1000:100; break;
     case 'altPull': if(Math.abs(A.alt.v-h)>250){ A.vert=A.alt.v>h?'OP CLB':'OP DES'; A.exped=false; A.vertArm=''; } break;
-    case 'altPush': if(Math.abs(A.alt.v-h)>250){ A.vert=A.alt.v>h?'OP CLB':'OP DES'; } break; // managed CLB / DES needs the flight plan: shown as OP until the FMS phase
+    case 'altPush': if(Math.abs(A.alt.v-h)>250||A.vert==='ALT CST'){ const nav=A.lat==='NAV'&&M.vnavFn; A.vert=A.alt.v>h?(nav?'CLB':'OP CLB'):(nav?'DES':'OP DES'); A.cstClimb=A.alt.v>h; } break; // managed CLB / DES with NAV, else open
     case 'vsTurn': A.vs.dash=false; if(A.vert!=='V/S'&&A.vert!=='FPA'&&!M.gnd){ A.vs.v=Math.round(M.vs/FPM/100)*100; A.vert=A.vs.fpa?'FPA':'V/S'; A.vs.fpaV=Math.round(M.gam*R2D*10)/10; } if(A.vs.fpa) A.vs.fpaV=clamp(Math.round((A.vs.fpaV+v*0.1)*10)/10,-9.9,9.9); else A.vs.v=clamp(A.vs.v+v*100,-6000,6000); break;
     case 'vsPull': if(!M.gnd){ A.vert=A.vs.fpa?'FPA':'V/S'; A.vs.dash=false; if(A.vs.v==null) A.vs.v=0; } break;
     case 'vsPush': if(!M.gnd){ A.vert='V/S'; A.vs.v=0; A.vs.dash=false; } break; // level off

@@ -72,6 +72,25 @@ function run(R,sec,each){ const {A,M}=R; for(let i=0;i<sec*50;i++){ const C=M.ct
   ok('ILS 36 autoland: no crash',!crash,crash); ok('autoland: LOC and G/S captured, touchdown below 400 ft/min',M.touch&&M.touch.vs<400&&M.touch.vs>20,M.touch&&Math.round(M.touch.vs));
   ok('autoland: on the centre line (within 5 m)',M.touch&&Math.abs(M.touch.e)<5,M.touch&&M.touch.e.toFixed(1)); ok('autoland: stopped on the runway',M.gs<1&&M.N<F.RWY.len); }
 
+
+/* ---------- managed vertical: CLB / DES with the flight plan's constraints ---------- */
+{ const R=rig({sys:{cold:false},fm:{air:true,h:3000*FT,ias:250,hdg:360},gw:60000}); const A=R.A, M=R.M; A.sw.park=0; M.ctl.park=0; A.sw.gearLv=0; M.N=2*NM;
+  const K=MC.create({HOLAN:{N:9*NM,E:0},OSVIK:{N:18*NM,E:-14*NM},TUSKA:{N:-22*NM,E:-8*NM},ALPOR:{N:-10*NM,E:-5*NM},RONAX:{N:-10*NM,E:0},FAPSO:{N:-5*NM,E:0}});
+  K.d.from='ENRD'; K.fpln=MC.build(K); K.act=1; M.lnavFn=m=>MC.lnav(K,m); M.vnavFn=(m,c,f)=>MC.vnav(K,m,c,f);
+  M.ctl.tla=[25,25]; F.fcu(M,'athr'); F.fcu(M,'ap1'); M.ap.lat='NAV'; M.ap.vert='ALT'; M.ap.altHold=3000; M.ap.alt.v=9000; F.fcu(M,'altPush');
+  ok('ALT push with NAV: managed CLB',M.ap.vert==='CLB'); let cst=false, cstAt=null;
+  run(R,400,()=>{ if(M.ap.vert==='ALT CST'&&!cst){ cst=true; cstAt=Math.round(M.h/FT); } });
+  ok('managed CLB levels at the OSVIK constraint (AT 6000) below the FCU altitude',cst&&Math.abs(cstAt-6000)<80,cstAt);
+  run(R,400); ok('after OSVIK: climbs on to the FCU altitude',Math.abs(M.h/FT-9000)<100,Math.round(M.h/FT)+' '+M.ap.vert+' act '+K.act);
+}
+{ const R=rig({sys:{cold:false},fm:{air:true,h:9000*FT,ias:250,hdg:200},gw:60000}); const A=R.A, M=R.M; A.sw.park=0; M.ctl.park=0; A.sw.gearLv=0; M.N=15*NM; M.E=-12*NM;
+  const K=MC.create({HOLAN:{N:9*NM,E:0},OSVIK:{N:18*NM,E:-14*NM},TUSKA:{N:-22*NM,E:-8*NM},ALPOR:{N:-10*NM,E:-5*NM},RONAX:{N:-10*NM,E:0},FAPSO:{N:-5*NM,E:0}});
+  K.d.from='ENRD'; K.fpln=MC.build(K); K.act=3; M.lnavFn=m=>MC.lnav(K,m); M.vnavFn=(m,c,f)=>MC.vnav(K,m,c,f);
+  M.ctl.tla=[25,25]; F.fcu(M,'athr'); F.fcu(M,'ap1'); M.ap.lat='NAV'; M.ap.vert='ALT'; M.ap.altHold=9000; M.ap.alt.v=2000; F.fcu(M,'altPush');
+  ok('ALT push below with NAV: managed DES',M.ap.vert==='DES');
+  let hT=null, hA=null; run(R,900,()=>{ const p=K.fpln[K.act]; if(p&&p.id==='ALPOR'&&hT==null) hT=Math.round(M.h/FT); if(p&&p.id==='RONAX'&&hA==null) hA=Math.round(M.h/FT); });
+  ok('managed DES: at or below 5000 at TUSKA (B5000)',hT!=null&&hT<=5150,hT); ok('managed DES: at 3000 at ALPOR (AT 3000)',hA!=null&&Math.abs(hA-3000)<250,hA); }
+
 /* ---------- MCDU ---------- */
 { const K=MC.create({HOLAN:{N:9*NM,E:0},OSVIK:{N:18*NM,E:-14*NM},TUSKA:{N:-22*NM,E:-8*NM},ALPOR:{N:-10*NM,E:-5*NM},RONAX:{N:-10*NM,E:0},FAPSO:{N:-5*NM,E:0}});
   const type=s=>s.split('').forEach(c=>MC.key(K,c===' '?'SP':c));

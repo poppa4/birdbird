@@ -21,7 +21,17 @@ const ROUTES={
   PATTERN:['RW36','HOLAN','OSVIK','TUSKA','ALPOR','RONAX','FAPSO','RW36']
 };
 function wp(K,id){ const f=K.fixes[id]; if(f) return {id,N:f.N,E:f.E}; if(id==='D005') return {id,N:5*NM,E:0}; return null; }
-function build(K){ const L=[]; if(K.d.from) L.push({id:'ENRD36',N:0,E:0,rwy:true}); ROUTES.PATTERN.slice(1).forEach(id=>{ const p=wp(K,id); if(p) L.push(p); }); return L; }
+/* altitude constraints on the practice circuit (ft): A at or above, B at or below, AT at */
+const CST={HOLAN:{alt:4000,t:'A'},OSVIK:{alt:6000,t:'AT'},TUSKA:{alt:5000,t:'B'},ALPOR:{alt:3000,t:'AT'},RONAX:{alt:3000,t:'AT'},FAPSO:{alt:1650,t:'AT'}};
+function build(K){ const L=[]; if(K.d.from) L.push({id:'ENRD36',N:0,E:0,rwy:true}); ROUTES.PATTERN.slice(1).forEach(id=>{ const p=wp(K,id); if(p){ if(CST[id]) p.cst=Object.assign({},CST[id]); L.push(p); } }); return L; }
+function cstTxt(c){ return c?(c.t==='A'?'+':c.t==='B'?'-':'')+c.alt:''; }
+/* vertical guidance for managed CLB / DES: the next constraint that limits the climb or the descent, and the distance to it */
+function vnav(K,M,climb,fcuAlt){
+  if(!K.fpln.length||K.act<1) return null; let d=0, prev={N:M.N,E:M.E}; const h=M.h/0.3048;
+  for(let i=K.act;i<K.fpln.length;i++){ const p=K.fpln[i]; d+=Math.hypot(p.N-prev.N,p.E-prev.E)/NM; prev=p; const c=p.cst; if(!c) continue;
+    if(climb){ if((c.t==='B'||c.t==='AT')&&c.alt<fcuAlt&&c.alt>h-50) return {alt:c.alt,dist:d,id:p.id,t:c.t}; }
+    else { if(c.alt<h-50){ const floor=(c.t==='A'||c.t==='AT')&&c.alt>fcuAlt; return {alt:floor?c.alt:Math.max(fcuAlt,c.alt),pathAlt:c.alt,dist:d,id:p.id,t:c.t,floor}; } if((c.t==='A'||c.t==='AT')&&c.alt>fcuAlt&&Math.abs(c.alt-h)<=50) return {alt:c.alt,pathAlt:c.alt,dist:d,id:p.id,t:c.t,floor:true}; } }
+  return null; }
 function fmt(n,w){ return String(n).padStart(w||3,' '); }
 function v3(v){ return v==null?'___':String(v); }
 
@@ -47,7 +57,7 @@ function render(K,M,A){
       const st=K.sub; for(let i=0;i<5;i++){ const k=st+i; const row=2+i*2; if(k>=fp.length){ if(k===fp.length) l(row,'------END OF F-PLN------',C.w,'c'); break; }
         const p=fp[k], col=k===K.act?C.w:C.g, prev=fp[k-1];
         if(prev){ const brg=Math.round(((Math.atan2(p.E-prev.E,p.N-prev.N)*180/Math.PI)+360)%360), dst=Math.round(Math.hypot(p.N-prev.N,p.E-prev.E)/NM); l(row-1,' C'+String(brg).padStart(3,'0')+'°   '+dst+'NM',k===K.act?C.w:C.g,'l',36); }
-        l(row,(p.id).padEnd(8,' '),col); l(row,(k===0?'0000 ':'---- ')+'  '+(p.alt?p.alt:(k===0?'0':'-----')),k===K.act?C.w:C.g,'r'); }
+        l(row,(p.id).padEnd(8,' '),col); l(row,(k===0?'0000 ':'---- ')+'  '+(p.cst?cstTxt(p.cst):(k===0?'0':'-----')),p.cst?C.m:(k===K.act?C.w:C.g),'r'); }
       l(11,'DEST    TIME  DIST  EFOB',C.w); l(12,(d.to||'ENRD')+'36  ----  '+String(Math.round(remDist(K,M))).padStart(4,' ')+'  '+(A?(A.fuel.fob/1000).toFixed(1):'--.-'),C.w); break; }
     case 'dir': P.title='DIR TO'; l(1,' WAYPOINT',C.w); l(2,K.dirSel?'['+K.dirSel+']':'[     ]',C.c); K.fpln.slice(K.act,K.act+5).forEach((p,i)=>l(4+i*2,'<'+p.id,C.c)); break;
     case 'perf': { const ph=K.perfPh||'to';
@@ -166,5 +176,5 @@ function lnav(K,M){
   if(toGo<ant&&K.act<K.fpln.length-1){ K.act++; K.changed++; return lnav(K,M); }
   return {dtk,xtkCorr:Math.max(-35,Math.min(35,-xtk/NM*35)),toWpt:b.id,toDist:Math.hypot(b.N-M.N,b.E-M.E)/NM,toBrg:((Math.atan2(b.E-M.E,b.N-M.N)*180/Math.PI)+360)%360,xtk:xtk/NM};
 }
-G.A320MCDU={create,render,key,lnav,build};
+G.A320MCDU={create,render,key,lnav,vnav,build,CST};
 })(typeof window!=='undefined'?window:globalThis);
