@@ -575,9 +575,12 @@ function displayTick(dt){
   if(!cockpitVis) return;
   dispFrame++;
   const vw=VPW, vh=VPH;
-  if(D3&&CK){ for(const d of DISP){ if(!d.cv||!d.tex) continue; if(!CK.visible(d)){ d.hidden=true; continue; } d.t+=dt;
+  if(D3&&CK){ const vh=ST.clientHeight*Math.min(devicePixelRatio||1,2);
+    for(const d of DISP){ if(!d.cv||!d.tex) continue; if(!CK.visible(d)){ d.hidden=true; continue; } d.t+=dt;
+      // canvas size follows how big the screen is on the display (zoomed in: up to 1024 px, sharp; far away: small, cheap)
+      const want=Math.max(192,Math.min(CK.mobile?640:1024,Math.round(CK.pxSize(d,vh)*1.1/64)*64)); if(Math.abs(want-d.px)>Math.max(64,d.px*0.25)){ d.cv.width=d.cv.height=want; d.px=want; d.sig=''; d.t=99; d.tex.needsUpdate=true; }
       if(d.k==='mcdu'){ const sig=K.changed+'|'+side_pw(d)+'|'+(K.page==='fpln'||K.page==='prog'?Math.round(UI.t):0)+'|'+d.hidden; if(sig===d.sig) continue; d.sig=sig; }
-      else { const hz=Math.min(d.hz,GOV.lvl>1?6:GOV.lvl?10:d.side?8:d.hz>=30?20:8); if(d.t<1/hz&&!d.hidden) continue; }
+      else { const capt=(d.k==='pfd'||d.k==='nd')&&!d.side, hz=[capt?20:8,capt?12:6,capt?8:4][GOV.lvl]; if(d.t<1/hz&&!d.hidden) continue; }
       d.hidden=false; d.t=0; DSP[d.k](d.g,d.cv,dispData(d)); d.tex.needsUpdate=true; }
     return; }
   for(const d of DISP){
@@ -589,7 +592,7 @@ function displayTick(dt){
     if(px!==d.px){ d.px=px; d.cv.width=d.cv.height=px; d.t=99; d.sig=''; }
     d.t+=dt;
     if(d.k==='mcdu'){ const sig=K.changed+'|'+(side_pw(d))+'|'+(K.page==='fpln'||K.page==='prog'?Math.round(UI.t):0)+'|'+d.px+'|'+d.hidden; if(sig===d.sig) continue; d.sig=sig; }
-    else { const hz=GOV.lvl>1?Math.min(d.hz,15):d.hz; if(d.t<1/hz&&!d.hidden) continue; }
+    else { const capt=d.k==='pfd'||d.k==='nd'?!d.side:false, hz=Math.min(d.hz,[capt?30:12,capt?20:8,capt?12:5][GOV.lvl]); if(d.t<1/hz&&!d.hidden) continue; } // the frame governor steps the screens down with the outside view
     d.hidden=false; d.t=0;
     const D=dispData(d);
     DSP[d.k](d.g,d.cv,D);
@@ -824,7 +827,7 @@ function hasWebGL(){ try{ const c=document.createElement('canvas'); return !!(c.
 let CK=null;
 (window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=!!(window.OTW&&window.THREE&&hasWebGL()&&OTW.init($('otw'))); }catch(e){ otwReady=false; } ST.classList.toggle('otwlive',otwReady);
   if(D3){ if(otwReady&&window.A3D){ try{ CK=A3D.init({R:OTW.renderer(),displays:DISP.filter(d=>d.cv),aspect:()=>ST.clientWidth/Math.max(1,ST.clientHeight)});
-      const im=new Image(); im.decoding='async'; im.src=matchMedia('(pointer:coarse)').matches?'img/cockpits/a320-deck-1500.webp':'img/cockpits/a320-deck-3000.webp'; im.decode().then(()=>{ CK.setImage(im); paint3d(true); }).catch(()=>{});
+      const im=new Image(); im.decoding='async'; im.src=CK.mobile?'img/cockpits/a320-deck-1500.webp':'img/cockpits/a320-deck-3000.webp'; im.decode().then(()=>{ CK.setImage(im); paint3d(true); }).catch(()=>{});
       if(CK.LOOK[Z.reg]) CK.LOOK[Z.reg](); }catch(err){ console.warn('A320 3D',err); CK=null; } }
     if(!CK){ $('otwMsg')&&($('otwMsg').hidden=false); } }
   layout(true); },{timeout:500});

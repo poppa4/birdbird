@@ -31,7 +31,7 @@ function basis(v){ const m=new THREE.Matrix4(); m.makeBasis(v.EX,v.EY,v.FN); ret
 
 function init(o){
   const o_R=o.R;
-  const mobile=matchMedia('(pointer:coarse)').matches;
+  const mobile=matchMedia('(pointer:coarse)').matches&&Math.min(screen.width,screen.height)<=500; // phones only: tablets get full detail
   const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(62,1,0.05,20);
   cam.position.copy(EYE);
   const head={yaw:0,pitch:-11*D2R,fov:62,tYaw:0,tPitch:-11*D2R,tFov:62,eye:EYE.clone(),tEye:EYE.clone()};
@@ -40,7 +40,7 @@ function init(o){
   const K=mobile?1.6:3.0; // texture pixels per sheet unit
   const P={};
   for(const k in VIEWS){ const v=VIEWS[k], r=v.r, cv=document.createElement('canvas'); cv.width=Math.round(r[2]*K); cv.height=Math.round(r[3]*K);
-    const tex=new THREE.CanvasTexture(cv); tex.anisotropy=Math.min(2,o.R.capabilities.getMaxAnisotropy()); tex.minFilter=THREE.LinearMipmapLinearFilter; if(THREE.sRGBEncoding&&o.R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding;
+    const tex=new THREE.CanvasTexture(cv); tex.anisotropy=Math.min(8,o.R.capabilities.getMaxAnisotropy()); tex.minFilter=THREE.LinearMipmapLinearFilter; if(THREE.sRGBEncoding&&o.R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding;
     const pg=new THREE.PlaneGeometry(v.W,v.H,24,24); pg.setAttribute('color',new THREE.BufferAttribute(new Float32Array(pg.attributes.position.count*3).fill(1),3));
     const mesh=new THREE.Mesh(pg,new THREE.MeshBasicMaterial({map:tex,vertexColors:true,transparent:k.startsWith('side'),alphaTest:k.startsWith('side')?0.5:0}));
     mesh.matrixAutoUpdate=false; mesh.matrix.copy(basis(v)).setPosition(v.C); scene.add(mesh); P[k]={cv,g:cv.getContext('2d'),tex,mesh,v}; }
@@ -121,13 +121,15 @@ function init(o){
   for(const d of o.displays){ const [x,y,w,h]=d.r, c=toP(x+w/2,y+h/2,0.0015); const k=viewOf(x+w/2,y+h/2); if(!c||!k) continue; const v=VIEWS[k];
     const tex=new THREE.CanvasTexture(d.cv); tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false;
     const m=new THREE.Mesh(new THREE.PlaneGeometry(w/v.r[2]*v.W,h/v.r[3]*v.H),new THREE.MeshBasicMaterial({map:tex}));
-    m.matrixAutoUpdate=false; m.matrix.copy(basis(v)).setPosition(c); scene.add(m); m.geometry.computeBoundingSphere(); disp.push({d,tex,m,c}); d.tex=tex; d.mesh=m; }
+    m.matrixAutoUpdate=false; m.matrix.copy(basis(v)).setPosition(c); scene.add(m); m.geometry.computeBoundingSphere(); disp.push({d,tex,m,c,wm:w/v.r[2]*v.W}); d.tex=tex; d.mesh=m; }
   /* ---- camera ---- */
   const frus=new THREE.Frustum(), pm=new THREE.Matrix4(), sph=new THREE.Sphere();
   function updCam(dt){
     const k=dt?1-Math.exp(-dt/0.12):1; head.yaw+=(head.tYaw-head.yaw)*k; head.pitch+=(head.tPitch-head.pitch)*k; head.fov+=(head.tFov-head.fov)*k; head.eye.lerp(head.tEye,k); cam.position.copy(head.eye);
     e.set(head.pitch,head.yaw,0,'YXZ'); q.setFromEuler(e); cam.quaternion.copy(q); cam.fov=head.fov; cam.aspect=o.aspect(); cam.updateProjectionMatrix(); cam.updateMatrixWorld();
     pm.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); frus.setFromProjectionMatrix(pm); }
+  // how many screen pixels a display covers now (for its canvas size: sharp when zoomed in, cheap when far away)
+  function pxSize(d,vh){ const x=disp.find(z=>z.d===d); if(!x) return 256; const dist=Math.max(0.2,x.c.distanceTo(cam.position)); return x.wm/dist/(2*Math.tan(cam.fov*D2R/2))*vh; }
   function visible(d){ const x=disp.find(z=>z.d===d); if(!x) return false; sph.center.copy(x.c); sph.radius=0.12; return frus.intersectsSphere(sph); }
   function lookAt(p,fov,lean){ head.tEye.copy(EYE); if(lean!=null) head.tEye.x=lean; const dv=p.clone().sub(head.tEye).normalize(); head.tYaw=Math.atan2(-dv.x,-dv.z); head.tPitch=Math.asin(Math.max(-1,Math.min(1,dv.y))); if(fov) head.tFov=fov; }
   // the overhead and the pedestal: the pilot leans in towards the centre line (as in the aircraft), so the panel is seen square
@@ -146,7 +148,7 @@ function init(o){
   function repaint(painter){ if(!img) return; for(const k in P){ const p=P[k], r=p.v.r, sx=img.naturalWidth/1000; p.g.setTransform(1,0,0,1,0,0); p.g.clearRect(0,0,p.cv.width,p.cv.height); p.g.drawImage(img,r[0]*sx,r[1]*sx,r[2]*sx,r[3]*sx,0,0,p.cv.width,p.cv.height);
       p.g.setTransform(K,0,0,K,-r[0]*K,-r[1]*K); painter(p.g,r); p.tex.needsUpdate=true; } }
   function draw(R){ R.render(scene,cam); }
-  return {scene,cam,head,updCam,draw,pick,LOOK,visible,setImage,repaint,K,disp,
+  return {scene,cam,head,updCam,draw,pick,LOOK,visible,pxSize,setImage,repaint,K,disp,mobile,
     drag(dx,dy){ const s=head.fov/62*0.0042; head.tYaw+=dx*s; head.tPitch=Math.max(-80*D2R,Math.min(85*D2R,head.tPitch+dy*s)); head.yaw=head.tYaw; head.pitch=head.tPitch; },
     zoom(f){ head.tFov=Math.max(18,Math.min(80,head.tFov*f)); },
     qHead(){ return q; }, fov(){ return cam.fov; }};
