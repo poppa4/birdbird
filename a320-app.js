@@ -384,7 +384,9 @@ function buildOverlay(){
     const cv=document.createElement('canvas');
     if(D3){ const mob=matchMedia('(pointer:coarse)').matches; const px=d.k==='isis'?256:d.k==='mcdu'?(mob?320:448):(mob?384:576); cv.width=cv.height=px; d.px=px; }
     else { Object.assign(cv.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'}); $('world').insertBefore(cv,ovl); d.px=0; }
-    d.cv=cv; d.g=cv.getContext('2d',{alpha:false}); d.t=0; });
+    d.cv=cv; d.g=cv.getContext('2d',{alpha:false}); d.t=0;
+    if(!D3){ const gl=document.createElement('div'); gl.className='glass'; Object.assign(gl.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'}); $('world').insertBefore(gl,ovl); } });
+  if(!D3){ const sh=document.createElement('div'); sh.className='gshade'; Object.assign(sh.style,{top:'887px',height:'26px'}); $('world').insertBefore(sh,ovl); }
 }
 const lastSig=new Map();
 /* ---- 3D: paint lit legends, switches and the FCU window into the panel textures (sheet units), only when something changed ---- */

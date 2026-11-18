@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="site.css?v=35">
 <link rel="stylesheet" href="b200.css?v=20">
 <link rel="stylesheet" href="simshell.css?v=11">
-<link rel="stylesheet" href="a320.css?v=3">
+<link rel="stylesheet" href="a320.css?v=4">
 </head>
 <body data-title="Airbus A320 cockpit procedure trainer">
 <script src="site.js?v=103"></script>
@@ -40,7 +40,7 @@
     </div>
     <div class="cbody">
       <div class="stage" id="stage">
-        <div class="otwsky" id="otwSky" aria-hidden="true"></div><canvas id="otw" role="img" aria-label="View out of the window"></canvas>
+        <div class="otwsky" id="otwSky" aria-hidden="true"></div><canvas id="otw" role="img" aria-label="View out of the window"></canvas><svg class="wsf" id="wsf" viewBox="0 0 1000 300" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="wsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b333c"/><stop offset="1" stop-color="#1b2026"/></linearGradient><linearGradient id="wsl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#151a1f"/><stop offset=".5" stop-color="#323b45"/><stop offset="1" stop-color="#151a1f"/></linearGradient></defs><path fill="url(#wsg)" d="M0 0H1000V300H985L940 40Q500 18 60 40L15 300H0Z"/><path fill="url(#wsl)" d="M491 26H509L515 300H485Z"/><path fill="url(#wsl)" d="M128 34L150 32L118 300H86Z"/><path fill="url(#wsl)" d="M872 34L850 32L882 300H914Z"/><path fill="none" stroke="#0e1114" stroke-width="2" d="M60 40Q500 18 940 40"/></svg>
         <div class="vp" id="vp"><div class="world" id="world"><img id="deck" src="img/cockpits/a320-deck-1500.webp" alt="" width="1000" height="1678" decoding="async" draggable="false"><div class="ovl" id="ovl"></div></div></div>
         <button class="zback" id="zBack" type="button">← Back</button>
         <div class="more" id="moreMenu" hidden role="group" aria-label="Settings"><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bAlign" type="button" aria-pressed="false">Fast ADIRS alignment</button><button class="cb" id="bHelp" type="button">Controls</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
@@ -111,6 +111,6 @@
 <script src="a320fm.js?v=3"></script>
 <script src="a320disp.js?v=2"></script>
 <script src="a320mcdu.js?v=2"></script>
-<script src="a320-app.js?v=4"></script>
+<script src="a320-app.js?v=5"></script>
 </body>
 </html>
