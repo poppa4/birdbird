@@ -270,7 +270,7 @@ function vprof(p){
 }
 function delV(){ const P_=S.perf; if(P_.v1!=null||P_.vr!=null||P_.v2!=null){ P_.v1=P_.vr=P_.v2=null; msg('TAKEOFF SPEEDS DELETED'); } }
 const gw=()=>S.fb.zfw!=null&&S.fb.block!=null?+(S.fb.zfw+S.fb.block).toFixed(1):null;
-function toSpeeds(){ const g=gw(), f=S.perf.flaps; if(g==null||f==null||S.b.tocg==null) return null; const adj={1:0,5:5,10:7,15:9,25:12}[f]||5; const v2=Math.round(118+(g-50)*1.9-adj); return {v1:v2-7-(S.to2&&S.to2.cond==='WET'?4:0),vr:v2-4,v2}; }
+function toSpeeds(){ const g=gw(), f=S.perf.flaps; if(g==null||f==null||S.b.tocg==null) return null; const adj={1:0,5:5,10:7,15:9,25:12}[f]||5; const v2=Math.round(118+(g-50)*1.9-adj); return {v1:v2-7-(S.to2&&S.to2.cond==='WET'?4:S.to2&&S.to2.cond==='SK-R'?2:0),vr:v2-4,v2}; }
 const trimOf=cg=>(7.5-cg*0.12).toFixed(2);
 const n1Of=()=>{ const sel=S.n1.sel, base={TO:95.8,'TO-1':93.1,'TO-2':90.4}[S.n1.rating]; return (sel!=null?base-Math.max(0,(sel-S.n1.oat)*0.21):base).toFixed(1); };
 function vrefs(){ const F=fuel(); const lw=F&&F.lw!=null?F.lw:(gw()!=null?gw()-1.9:60); const v30=Math.round(97+lw*0.73); return {lw,v15:v30+7,v30,v40:v30-4}; }
@@ -537,16 +537,18 @@ PG.hold={
     const p=cur(), h=p.items[S.hpg]; if(!h||h.k!=='hold'){ go('legs'); return; }
     put(0,1,(isMod()?'MOD ':'ACT ')+'RTE 1 HOLD','w');
     lbl(1,'L',' FIX'); prompt(1,'L',h.at,'w');
-    lbl(2,'L',' QUAD/RADIAL'); prompt(2,'L','--/---','w');
+    lbl(2,'L',' QUAD/RADIAL'); prompt(2,'L',h.qr||'--/---','w');
     lbl(3,'L',' INBD CRS/DIR'); prompt(3,'L',p3(h.crs)+'°/'+h.turn+' TURN','w'); if(h.dflt&&!h.pc) scr[DR(3)].forEach((x,i)=>{ if(i<12) x.s=1; });
-    lbl(4,'L',' LEG TIME'); prompt(4,'L',(h.time||1).toFixed(1)+' MIN','w'); if(!h.ptm) scr[DR(4)].forEach((x,i)=>{ if(i<8) x.s=1; });
-    lbl(5,'L',' LEG DIST'); prompt(5,'L','--.-NM','w');
+    lbl(4,'L',' LEG TIME'); prompt(4,'L',h.ld?'---- MIN':(h.time||1).toFixed(1)+' MIN','w'); if(!h.ptm) scr[DR(4)].forEach((x,i)=>{ if(i<8) x.s=1; });
+    lbl(5,'L',' LEG DIST'); prompt(5,'L',h.ld?h.ld.toFixed(1)+' NM':'--.- NM','w');
     const F=fuel();
-    lbl(1,'R','SPD/TGT ALT '); prompt(1,'R','220/FL'+p3(Math.round(S.alt/100)||350),'w'); scr[DR(1)].forEach((x,i)=>{ if(i>13) x.s=1; });
-    lbl(2,'R','FIX ETA '); prompt(2,'R',hhmm(S.utc+(S.phase==='PRE'?0:8))+'z','w');
+    const bs=Math.round(210+((curGw()||64)-60)*1.6), ta=h.tgt||(S.phase==='PRE'?'FL'+p3(S.init.crz||350):(S.alt>=10000?'FL'+p3(Math.round(S.alt/100)):String(Math.round(S.alt/10)*10)));
+    lbl(1,'R','SPD/TGT ALT '); prompt(1,'R',(h.spd||bs)+'/'+ta,'w'); if(!h.spd&&!h.tgt) scr[DR(1)].forEach((x,i)=>{ if(i>13) x.s=1; });
+    const fq=coord(p.items[S.hpg-1])||P[h.at]; const fd=fq?(S.phase==='PRE'?remainDist({items:[{k:'apt',id:S.act.from}].concat(p.items.slice(1,S.hpg))}):remainDist({items:[null].concat(p.items.slice(1,S.hpg))})):0;
+    lbl(2,'R','FIX ETA '); prompt(2,'R',hhmm((S.phase==='PRE'?S.utc+14:S.utc)+fd/((gsNow()||420)/60))+'z','w');
     lbl(3,'R','EFC TIME '); prompt(3,'R',S.efc?S.efc+'z':'----z','w');
     lbl(4,'R','HOLD AVAIL '); prompt(4,'R',F&&F.fob!=null?(()=>{ const m=Math.max(0,((F.efob-S.b.res)/2.2)*60); return Math.floor(m/60)+'+'+String(Math.round(m%60)).padStart(2,'0'); })():'-+--','w');
-    lbl(5,'R','BEST SPEED '); prompt(5,'R','220KT','w');
+    lbl(5,'R','BEST SPEED '); prompt(5,'R',bs+'KT','w');
     put(LR(6),0,'------------------------','w',1);
     if(isMod()) prompt(6,'L','<ERASE'); else prompt(6,'L','<NEXT HOLD');
     if(!isMod()&&flyingPlan()&&S.hz) prompt(6,'R',S.exitArm?'EXIT ARMED':'EXIT HOLD>','w');
@@ -559,7 +561,10 @@ PG.hold={
     if(!v) return;
     const p=modPlan(), h=p.items[S.hpg];
     if(s==='L'&&n===3){ const m=/^(\d{1,3})?(?:\/([LR]))?$/.exec(v); if(!m||(!m[1]&&!m[2])){ msg('INVALID ENTRY'); return; } if(m[1]){ const c=+m[1]; if(c>360){ msg('INVALID ENTRY'); return; } h.crs=c===0?360:c; h.pc=1; } if(m[2]){ h.turn=m[2]; h.pc=1; } take(); return; }
-    if(s==='L'&&n===4){ const t=parseFloat(v); if(!(t>=0.5&&t<=9.9)){ msg('INVALID ENTRY'); return; } h.time=t; h.ptm=1; take(); return; }
+    if(s==='L'&&n===4){ const t=parseFloat(v); if(!/^\d(\.\d)?$/.test(v)||!(t>=0.5&&t<=9.9)){ msg('INVALID ENTRY'); return; } h.time=t; h.ptm=1; h.ld=null; take(); return; }
+    if(s==='L'&&n===5){ const d=parseFloat(v); if(!/^\d{1,2}(\.\d)?$/.test(v)||!(d>=1&&d<=50)){ msg('INVALID ENTRY'); return; } h.ld=d; take(); return; }
+    if(s==='L'&&n===2){ const m=/^(N|NE|E|SE|S|SW|W|NW)\/(\d{3})$/.exec(v); if(!m||+m[2]>360){ msg('INVALID ENTRY'); return; } h.qr=m[1]+'/'+m[2]; h.crs=w360(+m[2]+180); h.pc=1; take(); return; }
+    if(s==='R'&&n===1){ const m=/^(\d{3})?(?:\/(?:FL(\d{3})|(\d{3,5})))?$/.exec(v); if(!m||(!m[1]&&!m[2]&&!m[3])){ msg('INVALID ENTRY'); return; } if(m[1]){ if(+m[1]<150||+m[1]>340){ msg('INVALID ENTRY'); return; } h.spd=+m[1]; } if(m[2]||m[3]) h.tgt=m[2]?'FL'+m[2]:m[3]; take(); return; }
     msg('INVALID ENTRY');
   }
 };
@@ -574,10 +579,13 @@ PG.perfinit={
     lbl(3,'L',' ZFW'); prompt(3,'L',f.zfw!=null?f.zfw.toFixed(1):'§§§.§','w');
     lbl(4,'L',' RESERVES'); prompt(4,'L',B.res!=null?B.res.toFixed(1):'§§.§','w');
     lbl(5,'L',' COST INDEX'); prompt(5,'L',S.init.ci!=null?String(S.init.ci):'§§§§','w');
-    lbl(1,'R','CRZ ALT '); prompt(1,'R',S.init.crz?'FL'+p3(S.init.crz):'§§§§§','w');
+    const tripAlt=(()=>{ const d=totalDist(S.act); if(!(d>0)||g==null||S.init.ci==null) return '-----'; return 'FL'+p3(Math.min(maxAlt(),Math.max(150,Math.round((d*0.9+100)/10)*10))); })();
+    lbl(1,'R','TRIP/CRZ ALT '); prompt(1,'R',tripAlt+'/'+(S.init.crz?'FL'+p3(S.init.crz):'§§§§§'),'w'); scr[DR(1)].forEach((x,i)=>{ if(i<COLS-6&&i>=COLS-12) x.s=1; });
     lbl(2,'R','CRZ WIND '); prompt(2,'R',B.wind||'---°/---','w');
-    lbl(3,'R','ISA DEV  T/C OAT '); prompt(3,'R',(B.oat!=null?(B.oat+55>0?'+':'')+(B.oat+55)+'°C':'---°C')+'  '+(B.oat!=null?(B.oat>0?'+':'')+B.oat+'°C':'---°C'),'w'); scr[DR(3)].forEach((x,i)=>{ if(i>=COLS-17&&i<COLS-7) x.s=1; });
-    lbl(4,'R','TRANS ALT '); prompt(4,'R',String(S.perf.ta||7000),'w'); if(!S.perf.ta) scr[DR(4)].forEach((x,i)=>{ if(i>18) x.s=1; });
+    const isa=B.oat!=null&&S.init.crz?Math.round(B.oat-(15-2*S.init.crz/10)):null;
+    lbl(3,'R','ISA DEV '); prompt(3,'R',isa!=null?(isa>0?'+':'')+isa+'°C':'---°C','w'); scr[DR(3)].forEach(x=>x.s=1);
+    lbl(4,'R','T/C OAT '); prompt(4,'R',B.oat!=null?(B.oat>0?'+':'')+B.oat+'°C':'---°C','w');
+    lbl(5,'R','TRANS ALT '); prompt(5,'R',String(S.perf.ta||(S.act.from&&AP[S.act.from]?AP[S.act.from].ta:18000)),'w'); if(!S.perf.ta) scr[DR(5)].forEach((x,i)=>{ if(i>18) x.s=1; });
     put(LR(6),0,'------------------------','w',1); prompt(6,'L','<INDEX'); prompt(6,'R','N1 LIMIT>');
   },
   lsk(s,n){
@@ -590,8 +598,9 @@ PG.perfinit={
     if(s==='L'&&n===5){ const c=num(v,0,500); if(c==null||Number.isNaN(c)){ msg('INVALID ENTRY'); return; } S.init.ci=c; take(); pend(); return; }
     if(s==='R'&&n===1){ const m=/^\/?(?:FL)?(\d{3}|\d{5})$/.exec(v); if(!m){ msg('INVALID ENTRY'); return; } let a=+m[1]; if(a>1000) a=Math.round(a/100); if(a<10||a>410){ msg('INVALID ENTRY'); return; } S.init.crz=a; take(); pend(); return; }
     if(s==='R'&&n===2){ if(!/^\d{3}\/\d{1,3}$/.test(v)){ msg('INVALID ENTRY'); return; } B.wind=v.replace('/','°/'); take(); return; }
-    if(s==='R'&&n===3){ const c=num(v.replace(/^\+/,''),-99,30); if(c==null||Number.isNaN(c)){ msg('INVALID ENTRY'); return; } B.oat=c; take(); return; }
-    if(s==='R'&&n===4){ const c=num(v.replace(/^FL/,''),1000,18000); if(c==null||Number.isNaN(c)){ msg('INVALID ENTRY'); return; } S.perf.ta=c; take(); return; }
+    if(s==='R'&&n===3){ if(!S.init.crz){ msg('INVALID ENTRY'); return; } const c=num(v.replace(/^\+/,''),-50,50); if(c==null||Number.isNaN(c)){ msg('INVALID ENTRY'); return; } B.oat=Math.round(c+(15-2*S.init.crz/10)); take(); return; }
+    if(s==='R'&&n===4){ const c=num(v.replace(/^\+/,''),-99,30); if(c==null||Number.isNaN(c)){ msg('INVALID ENTRY'); return; } B.oat=c; take(); return; }
+    if(s==='R'&&n===5){ const c=num(v.replace(/^FL/,''),1000,18000); if(c==null||Number.isNaN(c)){ msg('INVALID ENTRY'); return; } S.perf.ta=c; take(); return; }
     if(s==='L'&&n===1){ msg('INVALID ENTRY'); return; }
     msg('INVALID ENTRY');
   },
@@ -622,7 +631,7 @@ PG.n1={
 /* ---------- TAKEOFF REF ---------- */
 PG.takeoff={
   draw(){
-    const P_=S.perf, B=S.b, c=toSpeeds(), g=gw();
+    const P_=S.perf, B=S.b, c=S.qrh!==false?toSpeeds():null, g=gw();
     title('TAKEOFF REF'); putR(0,'1/2 ','w',1);
     lbl(1,'L',' FLAPS'); prompt(1,'L',P_.flaps!=null?P_.flaps+'°':'§§°','w');
     lbl(2,'L',' 26K N1'); prompt(2,'L',n1Of()+'/'+n1Of(),'w'); scr[DR(2)].forEach((x,i)=>{ if(i<10) x.s=1; });
@@ -633,16 +642,16 @@ PG.takeoff={
     lbl(4,'R','GW/TOW '); prompt(4,'R',g!=null?g.toFixed(1)+'/'+(g-0.2).toFixed(1):'---.-/---.-','w'); scr[DR(4)].forEach((x,i)=>{ if(i>12) x.s=1; });
     const miss=preMiss();
     put(LR(6),0,miss?'------------------------':'----PRE-FLT COMPLETE----','w',1);
-    prompt(6,'L','<INDEX'); if(miss&&miss[1]) prompt(6,'R',miss[1]);
+    prompt(6,'L','<INDEX'); if(miss&&miss[1]) prompt(6,'R',miss[1]); else prompt(6,'R',S.qrh===false?'QRH ON>':'QRH OFF>');
   },
   lsk(s,n){
     const v=S.sp, P_=S.perf, B=S.b;
-    if(n===6){ if(s==='L') go('index'); else { const m=preMiss(); if(m&&m[1]) go(m[0],m[0]==='rte'?{rpg:1}:null); } return; }
+    if(n===6){ if(s==='L') go('index'); else { const m=preMiss(); if(m&&m[1]) go(m[0],m[0]==='rte'?{rpg:1}:null); else if(!v) S.qrh=S.qrh===false; } return; }
     if(s==='L'&&n===1){ if(!v) return; const f=+v; if(![1,5,10,15,25].includes(f)||!/^\d{1,2}$/.test(v)){ msg('INVALID ENTRY'); return; } const ch=P_.flaps!==f; P_.flaps=f; take(); if(ch) delV(); return; }
     if(s==='L'&&n===3){ if(!v) return; const c=num(v,5,35,1); if(c==null||Number.isNaN(c)){ msg('INVALID ENTRY'); return; } const ch=B.tocg!==c; B.tocg=c; take(); if(ch) delV(); return; }
     if(s==='R'&&n>=1&&n<=3){ const k=['v1','vr','v2'][n-1];
       if(v==='DELETE'){ P_[k]=null; take(); return; }
-      if(!v){ const c=toSpeeds(); if(!c||P_[k]!=null) return; P_[k]=c[k]; vchk(); return; }
+      if(!v){ const c=S.qrh!==false?toSpeeds():null; if(!c||P_[k]!=null) return; P_[k]=c[k]; vchk(); return; }
       const x=num(v,90,200); if(x==null||Number.isNaN(x)){ msg('INVALID ENTRY'); return; } P_[k]=x; take(); vchk(); return; }
     if(v) msg('INVALID ENTRY');
   },
@@ -674,6 +683,11 @@ PG.appref={
 };
 
 /* ---------- CLB / CRZ / DES (VNAV) ---------- */
+const gsNow=()=>S.hz?230:(S.phase==='CRZ'?450:S.phase==='PRE'?0:290);
+/* distance (NM) and time (min) to a pseudo waypoint such as (T/C) or (T/D), from the vertical profile */
+function toPw(n){ const V=vprof(); if(!V) return null; const ps=V.ps.find(x=>x.n===n); if(!ps||ps.d<0) return null; const gs=S.phase==='PRE'?420:gsNow()||420; return {d:ps.d,t:(S.phase==='PRE'?S.utc+14:S.utc)+ps.d/(gs/60)}; }
+const pwTxt=n=>{ const x=toPw(n); return x?hhmm(x.t)+'z/'+String(Math.round(x.d)).padStart(4,' ')+'NM':'----z/----NM'; };
+function crzN1(){ const g=curGw()||66, a=(S.init.crz||350); return (84.5+(a-330)*0.12+(g-60)*0.35).toFixed(1); }
 /* Changes on these pages become a performance MOD: the old values are kept in S.vmod until EXEC (or ERASE puts them back). */
 function vmodStart(){ if(!rteAct()) return; if(!S.vmod) S.vmod={crz:S.init.crz,vn:clone(S.vn),des:false}; }
 function curGw(){ if(S.fb.zfw==null) return null; return +(S.fb.zfw+(S.phase!=='PRE'&&S.fob!=null?S.fob:S.fb.block)).toFixed(1); }
@@ -701,14 +715,13 @@ PG.vnav={
       lbl(2,'L',sel?' SEL SPD':' ECON SPD'); prompt(2,'L',spdTxt(sel,280,'.780'),'w'); if(!sel) scr[DR(2)].forEach(x=>x.s=1);
       lbl(3,'L',' SPD REST'); prompt(3,'L',V.clbRest||'---/-----','w');
       lbl(1,'R',nx?'AT '+nx.id+' ':'AT '); prompt(1,'R',nx?(nx.spd||'---')+'/'+cstrTxt(nx.alt):'---/-----','w');
-      lbl(2,'R','TO T/C '); prompt(2,'R',S.phase==='PRE'?'----z/ --NM':hhmm(S.utc+4)+'z/ 30NM','w'); scr[DR(2)].forEach((x,i)=>{ if(i>12) x.s=1; });
-      lbl(4,'L',' MAX ANGLE'); prompt(4,'L','210','w'); scr[DR(4)].forEach((x,i)=>{ if(i<4) x.s=1; });
+      lbl(2,'R','TO T/C '); prompt(2,'R',pwTxt('(T/C)'),'w'); scr[DR(2)].forEach((x,i)=>{ if(i>11) x.s=1; });
     } else if(ph==='CRZ'){
       lbl(1,'L',' CRZ ALT'); prompt(1,'L',crz,'w');
       lbl(2,'L',sel?(sel.lrc?' LRC SPD':' SEL SPD'):' ECON SPD'); prompt(2,'L',sel&&sel.m?sel.m:(sel&&sel.c?String(sel.c):'.780'),'w'); if(!sel) scr[DR(2)].forEach(x=>x.s=1);
       lbl(1,'R','STEP TO '); prompt(1,'R',V.step?'FL'+p3(V.step):'NONE','w');
-      lbl(2,'R','TO T/D '); prompt(2,'R',S.phase==='CRZ'?hhmm(S.utc+14)+'z/ 98NM':'----z/----NM','w'); scr[DR(2)].forEach((x,i)=>{ if(i>12) x.s=1; });
-      lbl(3,'L',' N1'); prompt(3,'L','87.2/87.2%','w'); scr[DR(3)].forEach((x,i)=>{ if(i<11) x.s=1; });
+      lbl(2,'R','TO T/D '); prompt(2,'R',pwTxt('(T/D)'),'w'); scr[DR(2)].forEach((x,i)=>{ if(i>11) x.s=1; });
+      lbl(3,'L',' N1'); prompt(3,'L',crzN1()+'/'+crzN1()+'%','w'); scr[DR(3)].forEach((x,i)=>{ if(i<11) x.s=1; });
       lbl(4,'L',' OPT     MAX     RECMD'); prompt(4,'L','FL'+p3(optAlt())+'   FL'+p3(maxAlt())+'   FL'+p3(optAlt()),'w'); scr[DR(4)].forEach(x=>x.s=1);
       prompt(5,'L','<ECON'); prompt(5,'R','LRC>');
     } else {
@@ -717,11 +730,13 @@ PG.vnav={
       lbl(2,'L',sel?' SEL SPD':' ECON SPD'); prompt(2,'L',sel?spdTxt(sel,280,'.780').replace(/^(.*)\/(.*)$/,'$2/$1'):'.780/280','w'); if(!sel) scr[DR(2)].forEach(x=>x.s=1);
       lbl(3,'L',' SPD REST'); prompt(3,'L',V.desRest||'---/-----','w');
       lbl(1,'R',nx?'AT '+nx.id+' ':'AT '+ed+' '); prompt(1,'R',nx?(nx.spd||'---')+'/'+cstrTxt(nx.alt):'---/-----','w');
-      lbl(2,'R','TO T/D '); prompt(2,'R',S.phase==='CRZ'?hhmm(S.utc+14)+'z/ 98NM':'----z/----NM','w'); scr[DR(2)].forEach((x,i)=>{ if(i>12) x.s=1; });
-      prompt(5,'L','<ECON'); prompt(5,'R','FORECAST>');
+      lbl(2,'R','TO T/D '); prompt(2,'R',S.phase==='DES'?'----z/----NM':pwTxt('(T/D)'),'w'); scr[DR(2)].forEach((x,i)=>{ if(i>11) x.s=1; });
+      lbl(3,'R','WPT/ALT '); prompt(3,'R',S.dwa?S.dwa.id+'/'+S.dwa.t:'-----/-----','w');
+      lbl(4,'R','FPA V/B V/S '); prompt(4,'R',(()=>{ const w=S.dwa, q=w&&coord({k:'wpt',id:w.id}); if(!q||S.phase==='PRE') return '---  ---  ----'; const dn=Math.max(0.1,dist(S.pos,q)), dh=S.alt-w.a; const vb=Math.atan2(dh,dn*6076)/R2, gs=gsNow()||290, vs=Math.round(dh/(dn/gs*60)/10)*10; return (Math.max(0,vb).toFixed(1)+'  '+Math.max(0,vb).toFixed(1)+'  '+Math.max(0,vs)).replace(/^/,''); })(),'w'); scr[DR(4)].forEach((x,i)=>{ if(i>9) x.s=1; });
+      prompt(5,'L','<ECON');
     }
     put(LR(6),0,'------------------------','w',1);
-    const l6=mod?'<ERASE':(ph==='CRZ'?'<ENG OUT':ph==='CLB'?'<ECON':''); if(l6) prompt(6,'L',l6);
+    const l6=mod?'<ERASE':(ph==='CRZ'?'<ENG OUT':ph==='CLB'?'<ECON':'<FORECAST'); prompt(6,'L',l6);
     if(ph==='DES') prompt(6,'R',S.phase==='CRZ'?'DES NOW>':'DES DIR>'); else if(ph==='CLB') prompt(6,'R','ENG OUT>');
   },
   lsk(s,n){
@@ -730,6 +745,7 @@ PG.vnav={
       if(s==='L'&&S.vmod){ S.init.crz=S.vmod.crz; S.vn=S.vmod.vn; S.vmod=null; return; }
       if(s==='R'&&ph==='DES'&&S.phase==='CRZ'){ if(!rteAct()){ msg('INVALID ENTRY'); return; } vmodStart(); S.vmod.des=true; return; }
       if(s==='L'&&ph==='CLB'&&!v){ if(V.clb){ vmodStart(); V.clb=null; } return; }
+      if(s==='L'&&ph==='DES'&&!S.vmod){ if(v){ msg('INVALID ENTRY'); return; } go('desfc'); return; }
       if(v) msg('INVALID ENTRY'); return;
     }
     if(s==='L'&&n===1&&ph!=='DES'){ if(!v) return; setCrz(v); return; }
@@ -741,21 +757,22 @@ PG.vnav={
       const m=/^(\d{3})\/(\d{4,5})$/.exec(v); if(!m||+m[1]<100||+m[1]>340){ msg('INVALID ENTRY'); return; } vmodStart(); V[k]=m[1]+'/'+m[2]; take(); return; }
     if(s==='L'&&n===5&&ph!=='CLB'){ if(v){ msg('INVALID ENTRY'); return; } const k=ph==='CRZ'?'crzs':'des'; if(V[k]){ vmodStart(); V[k]=null; } return; }
     if(s==='R'&&n===5&&ph==='CRZ'){ if(v){ msg('INVALID ENTRY'); return; } vmodStart(); V.crzs={c:null,m:'.790',lrc:1}; return; }
-    if(s==='R'&&n===5&&ph==='DES'){ if(v){ msg('INVALID ENTRY'); return; } go('desfc'); return; }
+    if(s==='R'&&n===3&&ph==='DES'){ if(!v) return; if(v==='DELETE'){ S.dwa=null; take(); return; } const m=/^([A-Z0-9]{2,5})\/(?:FL(\d{3})|(\d{3,5}))$/.exec(v); if(!m||!P[m[1]]){ msg(m&&!P[m[1]]?'NOT IN DATA BASE':'INVALID ENTRY'); return; } const a=m[2]?+m[2]*100:+m[3]; S.dwa={id:m[1],a,t:m[2]?'FL'+m[2]:String(a)}; take(); return; }
     if(s==='R'&&n===1&&ph==='CRZ'){ if(!v) return; if(v==='DELETE'){ V.step=null; take(); return; } const m=/^(?:FL)?(\d{3})$/.exec(v); if(!m){ msg('INVALID ENTRY'); return; } const a=+m[1]; if(a>maxAlt()){ msg('MAX ALT FL'+p3(maxAlt())); return; } if(a<=(S.init.crz||0)){ msg('INVALID ENTRY'); return; } V.step=a; take(); return; }
     if(v) msg('INVALID ENTRY');
   },
   next(){ S.vpg={CLB:'CRZ',CRZ:'DES',DES:'CLB'}[S.vpg||actVp()]; }, prev(){ S.vpg={CLB:'DES',CRZ:'CLB',DES:'CRZ'}[S.vpg||actVp()]; }
 };
 /* ---------- DES FORECASTS ---------- */
+/* 1L TRANS LVL · 1R TAI/ON ALT · 2L CABIN RATE (display) · 2R ISA DEV/QNH · 3–5 ALT and WIND DIR/SPD */
 PG.desfc={
   draw(){
     const F=S.dfc, d=destOf(S.act), tlD=d&&AP[d.id]?'FL'+p3(Math.round((AP[d.id].ta+1000)/100)):'FL060';
     title('DES FORECASTS'); putR(0,'1/1 ','w',1);
     lbl(1,'L',' TRANS LVL'); prompt(1,'L',F.tl?'FL'+p3(F.tl):tlD,'w'); if(!F.tl) scr[DR(1)].forEach((x,i)=>{ if(i<5) x.s=1; });
     lbl(1,'R','TAI/ON ALT '); prompt(1,'R',F.tai!=null?String(F.tai):'-----','w');
-    lbl(2,'L',' ISA DEV'); prompt(2,'L',F.isa!=null?(F.isa>0?'+':'')+F.isa+'°C':'---°C','w');
-    lbl(2,'R','QNH '); prompt(2,'R',F.qnh!=null?String(F.qnh):'----','w');
+    lbl(2,'L',' CABIN RATE'); prompt(2,'L',S.init.crz?(()=>{ const d=destOf(S.act), el=d&&P[d.id]?P[d.id].elev:0, cab=Math.min(8000,S.init.crz*20); return '-'+Math.max(100,Math.round((cab-el)/(S.init.crz*100/2200)/10)*10)+' FPM'; })():'---- FPM','w'); scr[DR(2)].forEach((x,i)=>{ if(i<11) x.s=1; });
+    lbl(2,'R','ISA DEV/QNH '); prompt(2,'R',(F.isa!=null?(F.isa>0?'+':'')+F.isa+'°C':'---°C')+'  '+(F.qnh!=null?String(F.qnh):'----'),'w');
     lbl(3,'L',' ALT'); lbl(3,'R','WIND DIR/SPD ');
     for(let j=0;j<3;j++){ const w=F.w[j]; prompt(3+j,'L',w&&w.a?(w.a>=10000?'FL'+p3(w.a/100):String(w.a)):'-----','w'); prompt(3+j,'R',w&&w.d?w.d:'---°/---','w'); }
     put(LR(6),0,'------------------------','w',1); prompt(6,'L','<DES');
@@ -765,9 +782,11 @@ PG.desfc={
     if(n===6&&s==='L'){ go('vnav',{vpg:'DES'}); return; }
     if(!v) return;
     if(s==='L'&&n===1){ const m=/^(?:FL)?(\d{2,3})$/.exec(v); if(!m||+m[1]<20||+m[1]>180){ msg('INVALID ENTRY'); return; } F.tl=+m[1]; take(); return; }
-    if(s==='R'&&n===1){ const a=num(v,0,41000); if(a==null||Number.isNaN(a)){ msg('INVALID ENTRY'); return; } F.tai=a; take(); return; }
-    if(s==='L'&&n===2){ const a=num(v.replace(/^\+/,''),-60,60); if(a==null||Number.isNaN(a)){ msg('INVALID ENTRY'); return; } F.isa=a; take(); return; }
-    if(s==='R'&&n===2){ if(/^\d{4}$/.test(v)&&+v>=900&&+v<=1060){ F.qnh=+v; take(); return; } if(/^\d{2}\.\d{2}$/.test(v)&&+v>=26&&+v<=32){ F.qnh=v; take(); return; } msg('INVALID ENTRY'); return; }
+    if(s==='R'&&n===1){ const m=/^(\d{3,5})?(?:\/(\d{3,5}))?$/.exec(v); if(!m||(!m[1]&&!m[2])){ msg('INVALID ENTRY'); return; } F.tai=v; take(); return; }
+    if(s==='R'&&n===2){ const m=/^\d{4}$/.test(v)?[v,null,v]:/^([-+]?\d{1,2})?(?:\/(\d{4}|\d{2}\.\d{2}))?$/.exec(v); if(!m||(m[1]==null&&m[2]==null)){ msg('INVALID ENTRY'); return; }
+      if(m[1]!=null){ const a=+m[1]; if(a<-60||a>60){ msg('INVALID ENTRY'); return; } F.isa=a; }
+      if(m[2]!=null){ const q=m[2]; if(/^\d{4}$/.test(q)&&(+q<900||+q>1060)||/\./.test(q)&&(+q<26||+q>32)){ msg('INVALID ENTRY'); return; } F.qnh=/\./.test(q)?q:+q; }
+      take(); return; }
     if(n>=3&&n<=5){ const j=n-3; F.w[j]=F.w[j]||{};
       if(s==='L'){ const m=/^(?:FL(\d{3})|(\d{3,5}))$/.exec(v); if(!m){ msg('INVALID ENTRY'); return; } const a=m[1]?+m[1]*100:+m[2]; if(a<1000||a>41000){ msg('INVALID ENTRY'); return; } F.w[j].a=a; take(); return; }
       if(!F.w[j].a){ msg('INVALID ENTRY'); return; }
@@ -782,27 +801,31 @@ PG.prog={
     const p=S.act, F=fuel(), fl=flyingPlan();
     put(0,1,(S.init.flt||'')+' PROGRESS','w'); putR(0,'1/2 ','w',1);
     lbl(1,'L',' FROM'); put(LR(1),8,'ALT','w',1); put(LR(1),14,'ATA','w',1); putR(LR(1),'FUEL','w',1);
-    if(fl&&p.items[0]){ prompt(1,'L',p.items[0].id,'w'); put(DR(1),7,S.alt>=10000?'FL'+p3(Math.round(S.alt/100)):String(Math.round(S.alt/10)*10),'w'); put(DR(1),14,hhmm(S.utc-6)+'z','w'); putR(DR(1),F&&F.fob!=null?F.fob.toFixed(1):'--.-','w'); }
+    if(fl&&p.items[0]){ prompt(1,'L',p.items[0].id,'w'); put(DR(1),7,S.alt>=10000?'FL'+p3(Math.round(S.alt/100)):String(Math.round(S.alt/10)*10),'w'); put(DR(1),14,hhmm(S.ata!=null?S.ata:S.utc-6)+'z','w'); putR(DR(1),F&&F.fob!=null?F.fob.toFixed(1):'--.-','w'); }
     put(LR(2),9,'DTG','w',1); put(LR(2),14,'ETA','w',1); putR(LR(2),'FUEL','w',1);
     const rows=[]; if(fl){ const t=p.items[1]; if(t&&coord(t)) rows.push([t.id||t.at,dist(S.pos,coord(t))]); const nx=p.items.slice(2).find(x=>isW(x)); if(nx) rows.push([nx.id,remainDist({items:p.items.slice(0,p.items.indexOf(nx)+1)})]); }
     const d=destOf(p); if(d) rows.push([d.id,fl?remainDist(p):totalDist(p)]);
     rows.slice(0,3).forEach(([id,dg],j)=>{ const n=2+j; prompt(n,'L',id,j===0&&fl?'m':'w'); put(DR(n),8,String(Math.round(dg)).padStart(4,' '),'w'); put(DR(n),14,fl?hhmm(S.utc+dg/7.2)+'z':'----z','w'); putR(DR(n),F&&F.fob!=null?(F.fob-0.0058*dg).toFixed(1):'--.-','w'); });
-    lbl(5,'L',S.phase==='DES'?' TO E/D':' TO T/D'); prompt(5,'L',fl&&S.phase==='CRZ'?hhmm(S.utc+8)+'z/ 60NM':'----z/----NM','w');
+    lbl(5,'L',S.phase==='DES'?' TO E/D':' TO T/D'); prompt(5,'L',S.phase==='DES'?'----z/----NM':pwTxt('(T/D)'),'w');
     lbl(6,'L',' FUEL QTY'); prompt(6,'L',F&&F.fob!=null?'TOTALIZER':'CALCULATED','w'); scr[DR(6)].forEach(x=>x.s=1);
     prompt(6,'R','POS REF>');
   },
   lsk(s,n){ if(s==='R'&&n===6&&(S.ppg||1)===1){ go('posref'); return; } if(S.sp) msg('INVALID ENTRY'); },
   next(){ S.ppg=(S.ppg||1)===1?2:1; }, prev(){ S.ppg=(S.ppg||1)===1?2:1; }
 };
+const WIND={d:240,s:30};   /* the training area's upper wind */
 function progPage2(){
   const fl=flyingPlan(), F=fuel(), used=fl&&F&&F.fob!=null?(S.fb.block-S.fb.taxi-F.fob):null;
+  const rel=(WIND.d-S.trk)*R2, hw=Math.round(WIND.s*Math.cos(rel)), xw=Math.round(WIND.s*Math.sin(rel));
+  const p=S.act, a=coord(p.items[0]), b=coord(p.items[1]); let xtk=0; if(fl&&a&&b){ const L=dist(a,b)||1; xtk=((b.x-a.x)*(S.pos.y-a.y)-(b.y-a.y)*(S.pos.x-a.x))/L; }
+  const sat=Math.max(-56,Math.round(15-2*S.alt/1000)), gs=gsNow();
   put(0,1,(S.init.flt||'')+' PROGRESS','w'); putR(0,'2/2 ','w',1);
   lbl(1,'L',' H/WIND'); lbl(1,'C','WIND'); lbl(1,'R','X/WIND ');
-  prompt(1,'L',fl?'H12KT':'---','w'); putC(DR(1),fl?'240°/ 30':'---°/---','w'); prompt(1,'R',fl?'L26KT':'---','w');
-  lbl(2,'L',' XTK ERROR'); lbl(2,'R','VTK ERROR '); prompt(2,'L',fl?(S.ap==='NAV'?'L0.0NM':'R'+Math.min(9.9,Math.abs(w180(S.trk-(S.act.items[1]&&coord(S.act.items[1])?brg(S.pos,coord(S.act.items[1])):S.trk))/10)).toFixed(1)+'NM'):'---','w'); prompt(2,'R',fl?'+0FT':'---','w');
-  lbl(3,'L',' TAS'); lbl(3,'R','SAT '); prompt(3,'L',fl?(S.hz?250:(S.phase==='CRZ'?470:310))+'KT':'---','w'); prompt(3,'R',fl?'-52°C':'---','w');
+  prompt(1,'L',fl?(hw>=0?'H':'T')+Math.abs(hw)+'KT':'---','w'); putC(DR(1),fl?p3(WIND.d)+'°/'+WIND.s:'---°/---','w'); prompt(1,'R',fl?(xw>=0?'R':'L')+Math.abs(xw)+'KT':'---','w');
+  lbl(2,'L',' XTK ERROR'); lbl(2,'R','VTK ERROR '); prompt(2,'L',fl?(xtk>=0?'L':'R')+Math.min(99.9,Math.abs(xtk)).toFixed(1)+'NM':'---','w'); prompt(2,'R',fl?'+0FT':'---','w');
+  lbl(3,'L',' TAS'); lbl(3,'R','SAT '); prompt(3,'L',fl?(gs+hw)+'KT':'---','w'); prompt(3,'R',fl?sat+'°C':'---','w');
   lbl(4,'L',' FUEL USED'); lbl(4,'R','TOT '); prompt(4,'L',used!=null?(used/2).toFixed(1)+'   '+(used/2).toFixed(1):'---   ---','w'); prompt(4,'R',used!=null?used.toFixed(1):'---','w');
-  lbl(5,'L',' FUEL QTY'); prompt(5,'L',F&&F.fob!=null?'TOTALIZER '+F.fob.toFixed(1):'TOTALIZER '+S.fb.block.toFixed(1),'w');
+  lbl(5,'L',' FUEL QTY'); prompt(5,'L','TOTALIZER '+(F&&F.fob!=null?F.fob:S.fb.block).toFixed(1),'w');
   put(LR(6),0,'------------------------','w',1);
 }
 /* ---------- POS REF (POS INIT 2/3) ---------- */
@@ -847,26 +870,29 @@ PG.navdata={
   }
 };
 /* ---------- TAKEOFF REF 2/2 ---------- */
+/* 1L RW WIND · 1R RW COND (toggle) · 2L RW SLOPE/HDG · 3R ACCEL HT · 4L SEL/OAT · 4R EO ACCEL HT · 5R THR REDUCTION */
 PG.takeoff2={
   draw(){
-    const T=S.to2, d=S.act.dRwy, rw=d&&AP[S.act.from]?AP[S.act.from].rwy[d]:null;
+    const T=S.to2, N=S.n1, d=S.act.dRwy, rw=d&&AP[S.act.from]?AP[S.act.from].rwy[d]:null;
     title('TAKEOFF REF'); putR(0,'2/2 ','w',1);
-    lbl(1,'L',' RW WIND'); prompt(1,'L',T.wind||'---°/---','w');
-    lbl(2,'L',' SLOPE/HDG'); prompt(2,'L',(T.slope||'U0.0')+'/'+(rw?p3(rw.crs):'---'),'w'); if(!T.slope) scr[DR(2)].forEach(x=>x.s=1);
-    lbl(3,'L',' RW COND'); prompt(3,'L',T.cond,'w'); if(T.cond==='DRY'&&!T.cset) scr[DR(3)].forEach(x=>x.s=1);
-    lbl(1,'R','ACCEL HT '); prompt(1,'R',T.acc+' AGL','w'); if(!T.accSet) scr[DR(1)].forEach((x,i)=>{ if(i>12) x.s=1; });
-    lbl(2,'R','EO ACCEL HT '); prompt(2,'R',T.eoa+' AGL','w'); if(!T.eoaSet) scr[DR(2)].forEach((x,i)=>{ if(i>12) x.s=1; });
-    lbl(3,'R','THR REDUCTION '); prompt(3,'R',T.red+' AGL','w'); if(!T.redSet) scr[DR(3)].forEach((x,i)=>{ if(i>12) x.s=1; });
+    lbl(1,'L',' RW WIND'); prompt(1,'L',T.wind||'---°/--','w');
+    lbl(1,'R','RW COND '); const cs=['DRY','WET','SK-R'], ct=cs.map(c=>c).join('/'); prompt(1,'R',ct,'w'); { let x=COLS-ct.length; cs.forEach(c=>{ for(let i=0;i<c.length;i++) scr[DR(1)][x+i].k=c===T.cond?'g':'w', scr[DR(1)][x+i].s=c===T.cond?0:1; x+=c.length+1; }); }
+    lbl(2,'L',' RW SLOPE/HDG'); prompt(2,'L',(T.slope||'U0.0')+'/'+(rw?p3(rw.crs):'---'),'w'); if(!T.slope) scr[DR(2)].forEach(x=>x.s=1);
+    lbl(3,'R','ACCEL HT '); prompt(3,'R',T.acc+' AGL','w'); if(!T.accSet) scr[DR(3)].forEach((x,i)=>{ if(i>12) x.s=1; });
+    lbl(4,'L',' SEL/OAT'); prompt(4,'L',(N.sel!=null?N.sel+'°':'--°')+'/'+(N.oat>0?'+':'')+N.oat+'°C','w');
+    lbl(4,'R','EO ACCEL HT '); prompt(4,'R',T.eoa+' AGL','w'); if(!T.eoaSet) scr[DR(4)].forEach((x,i)=>{ if(i>12) x.s=1; });
+    lbl(5,'R','THR REDUCTION '); prompt(5,'R',T.red+' AGL','w'); if(!T.redSet) scr[DR(5)].forEach((x,i)=>{ if(i>12) x.s=1; });
     put(LR(6),0,'------------------------','w',1); prompt(6,'L','<INDEX');
   },
   lsk(s,n){
-    const v=S.sp, T=S.to2;
+    const v=S.sp, T=S.to2, N=S.n1;
     if(n===6&&s==='L'){ go('index'); return; }
+    if(s==='R'&&n===1){ if(v){ msg('INVALID ENTRY'); return; } T.cond={DRY:'WET',WET:'SK-R','SK-R':'DRY'}[T.cond]; T.cset=1; delV(); return; }
     if(!v) return;
-    if(s==='L'&&n===1){ const m=/^(\d{3})\/(\d{1,2})$/.exec(v); if(!m||+m[1]>360){ msg('INVALID ENTRY'); return; } T.wind=m[1]+'°/'+m[2]; take(); delV(); return; }
+    if(s==='L'&&n===1){ const m=/^(\d{3})\/(\d{1,2})$/.exec(v)||/^([HT])(\d{1,2})$/.exec(v); if(!m||(/^\d/.test(m[1])&&+m[1]>360)){ msg('INVALID ENTRY'); return; } T.wind=/^[HT]/.test(m[1])?m[1]+m[2]:m[1]+'°/'+m[2]; take(); delV(); return; }
     if(s==='L'&&n===2){ const m=/^([UD])(\d(?:\.\d)?)$/.exec(v); if(!m||+m[2]>2){ msg('INVALID ENTRY'); return; } T.slope=m[1]+(+m[2]).toFixed(1); take(); delV(); return; }
-    if(s==='L'&&n===3){ const c={D:'DRY',DRY:'DRY',W:'WET',WET:'WET'}[v]; if(!c){ msg('INVALID ENTRY'); return; } const ch=c!==T.cond; T.cond=c; T.cset=1; take(); if(ch) delV(); return; }
-    if(s==='R'&&n>=1&&n<=3){ const a=num(v,400,9999); if(a==null||Number.isNaN(a)){ msg('INVALID ENTRY'); return; } const k=['acc','eoa','red'][n-1]; T[k]=a; T[k+'Set']=1; take(); return; }
+    if(s==='L'&&n===4){ PG.n1.lsk('L',1); return; }
+    if(s==='R'&&(n===3||n===4||n===5)){ const a=num(v,400,9999); if(a==null||Number.isNaN(a)){ msg('INVALID ENTRY'); return; } const k={3:'acc',4:'eoa',5:'red'}[n]; T[k]=a; T[k+'Set']=1; take(); return; }
     msg('INVALID ENTRY');
   },
   prev(){ go('takeoff'); }, next(){ go('takeoff'); }
@@ -955,7 +981,7 @@ function stepFlight(dt){
   if(S.ap==='NAV'&&!S.hz&&t&&(isW(t)||t.k==='dest')){ const c=coord(t), lim=Math.max(0.8,d*1.5);
     const wrongSide=t.rin!=null&&Math.abs(w180(S.trk-(t.rin+180)))>60;
     if(dist(S.pos,c)<lim&&!wrongSide){ if(t.k==='dest'){ S.run=false; msg('END OF ROUTE'); return; }
-      p.items.shift(); if(p.items[1]&&p.items[1].k==='hold'&&p.items[1].at===t.id) S.hz={st:'turn1'}; } }
+      S.ata=S.utc; p.items.shift(); if(p.items[1]&&p.items[1].k==='hold'&&p.items[1].at===t.id) S.hz={st:'turn1'}; } }
 }
 function fcu(cmd,val){
   if(!S||S.phase==='PRE') return;
@@ -1084,9 +1110,9 @@ const SCN=[
   docs:['perf3'],
   steps:[
    {t:tt('TAKEOFF REF: NEXT PAGE to page 2.','TAKEOFF REF: NEXT PAGE til side 2.'),keys:['INITREF','NEXT'],ok:()=>S.page==='takeoff2'||S.to2.cond==='WET'},
-   {t:tt('RW COND WET (3L). The selected V-speeds are deleted: a wet runway gives a lower V1.','RW COND WET (3L). De valgte V-hastighetene slettes: våt rullebane gir lavere V1.'),keys:['L3'],type:'WET',ok:()=>S.to2.cond==='WET'},
+   {t:tt('RW COND (1R) toggles DRY, WET and SK-R: press it once for WET. The selected V-speeds are deleted: a wet runway gives a lower V1.','RW COND (1R) veksler mellom DRY, WET og SK-R: trykk én gang for WET. De valgte V-hastighetene slettes: våt rullebane gir lavere V1.'),keys:['R1'],ok:()=>S.to2.cond==='WET'},
    {t:tt('RW WIND 240/10 (1L).','RW WIND 240/10 (1L).'),keys:['L1'],type:'240/10',ok:()=>S.to2.wind==='240°/10'},
-   {t:tt('EO ACCEL HT 800 (2R). ACCEL HT and THR REDUCTION stay at the defaults in small letters.','EO ACCEL HT 800 (2R). ACCEL HT og THR REDUCTION blir stående på standardverdiene med små bokstaver.'),keys:['R2'],type:'800',ok:()=>S.to2.eoa===800},
+   {t:tt('EO ACCEL HT 800 (4R). ACCEL HT and THR REDUCTION stay at the defaults in small letters.','EO ACCEL HT 800 (4R). ACCEL HT og THR REDUCTION blir stående på standardverdiene med små bokstaver.'),keys:['R4'],type:'800',ok:()=>S.to2.eoa===800},
    {t:tt('PREV PAGE to page 1 and select V1, VR and V2 again. V1 is now 133.','PREV PAGE til side 1 og velg V1, VR og V2 på nytt. V1 er nå 133.'),keys:['PREV','R1','R2','R3'],ok:()=>S.to2.cond==='WET'&&spdOk()&&S.perf.v1===133}
   ]},
  {id:'dct',cat:'fly',
@@ -1199,9 +1225,9 @@ const SCN=[
   setup(){ buildPrep(); setArrival(S.act,'ILS25','ODRUP2W','SK260'); fly('SELKA',0.4); go('legs',{lpg:1}); },
   docs:['atis3'],
   steps:[
-   {t:tt('DES, then FORECAST> (5R).','DES, så FORECAST> (5R).'),keys:['DES','R5'],ok:()=>S.page==='desfc'||S.dfc.tl===70},
+   {t:tt('DES, then <FORECAST (6L).','DES, så <FORECAST (6L).'),keys:['DES','L6'],ok:()=>S.page==='desfc'||S.dfc.tl===70},
    {t:tt('TRANS LVL FL070 (1L).','TRANS LVL FL070 (1L).'),keys:['L1'],type:'FL070',ok:()=>S.dfc.tl===70},
-   {t:tt('QNH 1008 (2R).','QNH 1008 (2R).'),keys:['R2'],type:'1008',ok:()=>S.dfc.qnh===1008},
+   {t:tt('ISA DEV/QNH (2R): type /1008 for the QNH only.','ISA DEV/QNH (2R): skriv /1008 for bare QNH.'),keys:['R2'],type:'/1008',ok:()=>S.dfc.qnh===1008},
    {t:tt('Wind: ALT FL100 (3L), then 240/30 (3R). The FMC uses it for the descent path.','Vind: ALT FL100 (3L), så 240/30 (3R). FMC-en bruker den til nedstigningsprofilen.'),keys:['L3','R3'],type:'FL100 · 240/30',ok:()=>S.dfc.w.some(w=>w&&w.a===10000&&w.d==='240°/30')},
    {t:tt('ATC clears the descent before T/D: <DES (6L), DES NOW> (6R), EXEC. The aircraft starts down at about 1000 ft/min until it meets the path.','ATC klarerer nedstigning før T/D: <DES (6L), DES NOW> (6R), EXEC. Flyet begynner ned med rundt 1000 ft/min til det treffer profilen.'),keys:['L6','R6','EXEC'],ok:()=>S.phase==='DES'&&!S.vmod}
   ]},
@@ -1330,9 +1356,9 @@ function ndSvg(){
   const ca=Math.cos(hd*R2), sa=Math.sin(hd*R2);
   const X=map?(p=>{ const dx=p.x-c.x, dy=p.y-c.y; return cx+(dx*ca-dy*sa)*k; }):(p=>cx+(p.x-c.x)*k);
   const Y=map?(p=>{ const dx=p.x-c.x, dy=p.y-c.y; return cy-(dx*sa+dy*ca)*k; }):(p=>cy-(p.y-c.y)*k);
-  const IN=p=>{ const x=X(p), y=Y(p); return Math.hypot(x-cx,y-cy)<R-6&&y<(map?cy+30:999)&&y>24; };
+  const IN=p=>{ const x=X(p), y=Y(p); return Math.hypot(x-cx,y-cy)<R-6&&y<(map?cy+30:999)&&y>(map?60:24); };
   const out=[];
-  out.push(`<defs><clipPath id="ndc">${map?`<rect x="0" y="22" width="400" height="${cy+40-22}"/>`:`<circle cx="${cx}" cy="${cy}" r="${R+12}"/>`}</clipPath></defs>`);
+  out.push(`<defs><clipPath id="ndc">${map?`<rect x="0" y="54" width="400" height="${cy+40-54}"/>`:`<circle cx="${cx}" cy="${cy}" r="${R+12}"/>`}</clipPath></defs>`);
   out.push(`<rect width="400" height="410" fill="#030604"/>`);
   if(map){
     const a0=-52, a1=52, pt=(a,r)=>[cx+r*Math.sin(a*R2),cy-r*Math.cos(a*R2)];
@@ -1540,7 +1566,7 @@ const DRILL_T=[
  {id:'ci',q:tt('Enter the cost index','Legg inn cost index'),pg:()=>S.page==='perfinit',k:'L5',a:'PERF INIT · 5L'},
  {id:'crz',q:tt('Enter the cruise altitude','Legg inn marsjhøyden'),pg:()=>S.page==='perfinit',k:'R1',a:'PERF INIT · 1R'},
  {id:'wind',q:tt('Enter the cruise wind','Legg inn vinden i marsjhøyde'),pg:()=>S.page==='perfinit',k:'R2',a:'PERF INIT · 2R'},
- {id:'ta',q:tt('Change the transition altitude','Endre overgangshøyden'),pg:()=>S.page==='perfinit',k:'R4',a:'PERF INIT · 4R'},
+ {id:'ta',q:tt('Change the transition altitude','Endre overgangshøyden'),pg:()=>S.page==='perfinit',k:'R5',a:'PERF INIT · 5R'},
  {id:'sel',q:tt('Enter the assumed temperature','Legg inn antatt temperatur'),pg:()=>S.page==='n1',k:'L1',a:'N1 LIMIT · 1L'},
  {id:'to2',q:tt('Select the take-off derate TO-2','Velg avgangsderate TO-2'),pg:()=>S.page==='n1',k:'L4',a:'N1 LIMIT · 4L'},
  {id:'clb1',q:tt('Select climb derate CLB-1','Velg stigederate CLB-1'),pg:()=>S.page==='n1',k:'R3',a:'N1 LIMIT · 3R'},
@@ -1564,12 +1590,12 @@ const DRILL_T=[
  {id:'lrc',q:tt('Select long-range cruise speed','Velg long-range cruise-fart'),pg:()=>S.page==='vnav'&&(S.vpg||actVp())==='CRZ',k:'R5',a:'CRZ · 5R'},
  {id:'clbrest',q:tt('Change the climb speed restriction','Endre fartsbegrensningen i stigning'),pg:()=>S.page==='vnav'&&(S.vpg||actVp())==='CLB',k:'L3',a:'CLB · 3L'},
  {id:'clbspd',q:tt('Select a climb speed','Velg en stigefart'),pg:()=>S.page==='vnav'&&(S.vpg||actVp())==='CLB',k:'L2',a:'CLB · 2L'},
- {id:'tl',q:tt('Enter the transition level','Legg inn transition level'),pg:()=>S.page==='desfc',k:'L1',a:'DES · 5R · 1L'},
- {id:'qnh',q:tt('Enter the destination QNH','Legg inn QNH på destinasjonen'),pg:()=>S.page==='desfc',k:'R2',a:'DES · 5R · 2R'},
- {id:'dwind',q:tt('Enter a descent wind','Legg inn vind for nedstigningen'),pg:()=>S.page==='desfc',k:'R3',a:'DES · 5R · 3R'},
- {id:'rwcond',q:tt('Enter a wet runway','Legg inn våt rullebane'),pg:()=>S.page==='takeoff2',k:'L3',a:'TAKEOFF REF · NEXT PAGE · 3L'},
- {id:'eoacc',q:tt('Change the engine-out acceleration height','Endre akselerasjonshøyden med motorstans'),pg:()=>S.page==='takeoff2',k:'R2',a:'TAKEOFF REF · NEXT PAGE · 2R'},
- {id:'thrred',q:tt('Change the thrust reduction height','Endre høyden for thrust reduction'),pg:()=>S.page==='takeoff2',k:'R3',a:'TAKEOFF REF · NEXT PAGE · 3R'},
+ {id:'tl',q:tt('Enter the transition level','Legg inn transition level'),pg:()=>S.page==='desfc',k:'L1',a:'DES · 6L · 1L'},
+ {id:'qnh',q:tt('Enter the destination QNH','Legg inn QNH på destinasjonen'),pg:()=>S.page==='desfc',k:'R2',a:'DES · 6L · 2R'},
+ {id:'dwind',q:tt('Enter a descent wind','Legg inn vind for nedstigningen'),pg:()=>S.page==='desfc',k:'R3',a:'DES · 6L · 3R'},
+ {id:'rwcond',q:tt('Change the runway condition to WET','Endre rullebanetilstanden til WET'),pg:()=>S.page==='takeoff2',k:'R1',a:'TAKEOFF REF · NEXT PAGE · 1R'},
+ {id:'eoacc',q:tt('Change the engine-out acceleration height','Endre akselerasjonshøyden med motorstans'),pg:()=>S.page==='takeoff2',k:'R4',a:'TAKEOFF REF · NEXT PAGE · 4R'},
+ {id:'thrred',q:tt('Change the thrust reduction height','Endre høyden for thrust reduction'),pg:()=>S.page==='takeoff2',k:'R5',a:'TAKEOFF REF · NEXT PAGE · 5R'},
  {id:'stepctr',q:tt('Move the PLAN centre to the next waypoint','Flytt PLAN-senteret til neste waypoint'),pg:()=>S.page==='legs'&&NDM==='PLAN'&&!S.holdAt&&!(isMod()&&flyingPlan()&&S.tmpy.dir),k:'R6',a:'LEGS · 6R (STEP)'},
  {id:'inbd',q:tt('Enter the hold inbound course and turn','Legg inn inbound kurs og svingretning for holdingen'),pg:()=>S.page==='hold',k:'L3',a:tt('HOLD · fix at 6L · 3L','HOLD · fix på 6L · 3L')},
  {id:'legt',q:tt('Change the hold leg time','Endre legtiden i holdingen'),pg:()=>S.page==='hold',k:'L4',a:tt('HOLD · fix at 6L · 4L','HOLD · fix på 6L · 4L')}
@@ -1636,7 +1662,7 @@ const COURSE=[
   pts:[tt('CLB, CRZ and DES show the vertical plan for each phase. ECON speeds are in small letters; a speed you enter makes the page SEL SPD (or LRC on CRZ).','CLB, CRZ og DES viser den vertikale planen for hver fase. ECON-farter står med små bokstaver; en fart du legger inn gjør siden til SEL SPD (eller LRC på CRZ).'),
        tt('Changes on these pages are a MOD as well: check, then EXEC. SPD REST (3L) is the speed limit below an altitude, normally 250/10000.','Endringer på disse sidene er også en MOD: sjekk, så EXEC. SPD REST (3L) er fartsgrensen under en høyde, normalt 250/10000.'),
        tt('New cruise altitude: CRZ page, CRZ ALT (1L), EXEC, and the MCP altitude. Check MAX first: it falls as the weight goes up.','Ny marsjhøyde: CRZ-siden, CRZ ALT (1L), EXEC, og høyden på MCP-en. Sjekk MAX først: den synker når vekten øker.'),
-       tt('DES FORECASTS (DES, 5R): transition level, QNH and the winds on the way down. Better winds give a better descent path.','DES FORECASTS (DES, 5R): transition level, QNH og vinden på vei ned. Bedre vind gir en bedre nedstigningsprofil.'),
+       tt('DES FORECASTS (DES, 6L): transition level, QNH and the winds on the way down. Better winds give a better descent path.','DES FORECASTS (DES, 6L): transition level, QNH og vinden på vei ned. Bedre vind gir en bedre nedstigningsprofil.'),
        tt('Cleared down before T/D? DES NOW (6R on DES) and EXEC: the aircraft descends at about 1000 ft/min until it meets the path.','Klarert ned før T/D? DES NOW (6R på DES) og EXEC: flyet går ned med rundt 1000 ft/min til det treffer profilen.'),
        tt('The ND shows T/C and T/D in green on the route, so you can see where the climb ends and the descent starts.','ND-en viser T/C og T/D i grønt på ruten, så du ser hvor stigningen slutter og nedstigningen starter.')],
   tasks:['crz','des'],drill:['crzalt','step','lrc','clbrest','clbspd','tl','qnh','dwind'],
@@ -1722,16 +1748,16 @@ function refUi(){
    ['DEP ARR','DEP/ARR INDEX',tt('SID, STAR, approach','SID, STAR, innflyging'),tt('1L <DEP (origin) · 2R ARR> (destination). DEPARTURES: SIDs left, runways right. ARRIVALS: STARs left, approaches and transitions right','1L <DEP (avgang) · 2R ARR> (destinasjon). DEPARTURES: SID-er til venstre, rullebaner til høyre. ARRIVALS: STAR-er til venstre, innflyginger og transitions til høyre')],
    ['LEGS','RTE LEGS',tt('The route, leg by leg','Ruten, leg for leg'),tt('Left key: waypoint (copy, insert, 1L = direct to, DEL) · right key: speed/altitude · 6R INTC CRS after a direct to · 6L ERASE on a MOD','Venstre tast: waypoint (kopier, sett inn, 1L = direct to, DEL) · høyre tast: fart/høyde · 6R INTC CRS etter direct to · 6L ERASE på en MOD')],
    ['EXEC','EXEC',tt('Makes a MOD active','Gjør en MOD aktiv'),tt('Lit when a modification (MOD) waits: route, ACTIVATE, PERF INIT, EXIT HOLD','Lyser når en modifikasjon (MOD) venter: rute, ACTIVATE, PERF INIT, EXIT HOLD')],
-   ['INIT REF','PERF INIT',tt('Weights and cruise','Vekter og marsj'),'1L GW/CRZ CG · 2L FUEL · 3L ZFW · 4L RESERVES · 5L COST INDEX · 1R CRZ ALT · 2R CRZ WIND · 3R T/C OAT · 4R TRANS ALT · 6R N1 LIMIT'],
+   ['INIT REF','PERF INIT',tt('Weights and cruise','Vekter og marsj'),'1L GW/CRZ CG · 2L PLAN/FUEL · 3L ZFW · 4L RESERVES · 5L COST INDEX · 1R TRIP/CRZ ALT · 2R CRZ WIND · 3R ISA DEV · 4R T/C OAT · 5R TRANS ALT · 6R N1 LIMIT'],
    ['N1 LIMIT','N1 LIMIT',tt('Thrust','Skyvekraft'),'1L SEL/OAT · 2L–4L TO, TO-1, TO-2 · 2R–4R CLB, CLB-1, CLB-2 · 6R TAKEOFF'],
-   ['INIT REF','TAKEOFF REF',tt('Take-off','Avgang'),'1L FLAPS · 2L N1 · 3L CG/TRIM · 4L RUNWAY · 1R V1 · 2R VR · 3R V2 · 4R GW/TOW'],
+   ['INIT REF','TAKEOFF REF',tt('Take-off','Avgang'),'1L FLAPS · 2L N1 · 3L CG/TRIM · 4L RUNWAY · 1R V1 · 2R VR · 3R V2 · 4R GW/TOW · 6R QRH ON/OFF'],
    ['HOLD','HOLD',tt('Holding','Holding'),tt('LEGS: 6L HOLD AT (fix) · 6R PPOS. HOLD page: 1L FIX · 3L INBD CRS/DIR · 4L LEG TIME · 3R EFC TIME · 4R HOLD AVAIL · 6R EXIT HOLD','LEGS: 6L HOLD AT (fix) · 6R PPOS. HOLD-siden: 1L FIX · 3L INBD CRS/DIR · 4L LEG TIME · 3R EFC TIME · 4R HOLD AVAIL · 6R EXIT HOLD')],
    [tt('INIT REF (in flight)','INIT REF (i lufta)'),'APPROACH REF',tt('Landing','Landing'),'1L GROSS WT · 1R–3R VREF 15/30/40 · 4R FLAP/SPD'],
    ['PROG','PROGRESS 1/2 · 2/2',tt('Progress and fuel','Fremdrift og drivstoff'),tt('Page 1: FROM · next waypoints · DEST: DTG, ETA, FUEL · TO T/D · 6R POS REF. Page 2: wind, XTK ERROR, TAS, FUEL USED','Side 1: FROM · neste waypoints · DEST: DTG, ETA, FUEL · TO T/D · 6R POS REF. Side 2: vind, XTK ERROR, TAS, FUEL USED')],
    ['CLB','CLB',tt('Climb','Stigning'),'1L CRZ ALT · 2L SPD · 3L SPD REST · 1R AT (next constraint) · 6L <ECON'],
    ['CRZ','CRZ',tt('Cruise','Marsj'),'1L CRZ ALT · 2L SPD · 1R STEP TO · 4L OPT/MAX · 5L <ECON · 5R LRC>'],
-   ['DES','DES · DES FORECASTS',tt('Descent','Nedstigning'),tt('DES: 1L E/D ALT · 2L SPD · 3L SPD REST · 5R FORECAST · 6R DES NOW. FORECASTS: 1L TRANS LVL · 2R QNH · 3L–5L ALT · 3R–5R WIND','DES: 1L E/D ALT · 2L SPD · 3L SPD REST · 5R FORECAST · 6R DES NOW. FORECASTS: 1L TRANS LVL · 2R QNH · 3L–5L ALT · 3R–5R WIND')],
-   ['INIT REF · NEXT','TAKEOFF REF 2/2',tt('Runway and heights','Rullebane og høyder'),'1L RW WIND · 2L RW SLOPE/HDG · 3L RW COND · 1R ACCEL HT · 2R EO ACCEL HT · 3R THR REDUCTION'],
+   ['DES','DES · DES FORECASTS',tt('Descent','Nedstigning'),tt('DES: 1L E/D ALT · 2L SPD · 3L SPD REST · 1R AT · 2R TO T/D · 3R WPT/ALT · 4R FPA V/B V/S · 6L FORECAST · 6R DES NOW. FORECASTS: 1L TRANS LVL · 1R TAI/ON ALT · 2L CABIN RATE · 2R ISA DEV/QNH · 3L–5L ALT · 3R–5R WIND','DES: 1L E/D ALT · 2L SPD · 3L SPD REST · 1R AT · 2R TO T/D · 3R WPT/ALT · 4R FPA V/B V/S · 6L FORECAST · 6R DES NOW. FORECASTS: 1L TRANS LVL · 1R TAI/ON ALT · 2L CABIN RATE · 2R ISA DEV/QNH · 3L–5L ALT · 3R–5R WIND')],
+   ['INIT REF · NEXT','TAKEOFF REF 2/2',tt('Runway and heights','Rullebane og høyder'),'1L RW WIND · 1R RW COND · 2L RW SLOPE/HDG · 3R ACCEL HT · 4L SEL/OAT · 4R EO ACCEL HT · 5R THR REDUCTION'],
    ['FIX','FIX INFO',tt('Rings and radials on the ND','Ringer og radialer på ND-en'),tt('1L FIX · 2L–4L RAD/DIS (070, /15 or 070/15) with ETA, DTG, ALT · 5L ABEAM · 6L ERASE FIX','1L FIX · 2L–4L RAD/DIS (070, /15 eller 070/15) med ETA, DTG, ALT · 5L ABEAM · 6L ERASE FIX')],
    ['INIT REF · INDEX · 1R','REF NAV DATA',tt('Navaid data and inhibit','Navaid-data og inhibit'),'1L IDENT · 5L/5R NAVAID INHIBIT · 6L/6R VOR ONLY INHIBIT'],
    ['LEGS · 6R','STEP · RTE DATA',tt('ND centre or route data','ND-senter eller rutedata'),tt('ND in PLAN: STEP moves <CTR>. ND in MAP: RTE DATA with ETA, fuel and wind for each waypoint','ND i PLAN: STEP flytter <CTR>. ND i MAP: RTE DATA med ETA, drivstoff og vind for hvert waypoint')],

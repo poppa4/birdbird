@@ -923,10 +923,12 @@ PG.posmon={
     prompt(6,'L','<FREEZE'); lbl(6,'R','SEL '); prompt(6,'R','NAVAIDS>'); },
   lsk(s,n){ if(S.sp){ msg('NOT ALLOWED'); return; } msg('NOT AVAILABLE'); }
 };
+/* REC MAX falls with weight (teaching formula: about FL390 at 60 t, FL370 at 66 t) */
+function recMax(){ const g=S.fb.zfw!=null?S.fb.zfw+(S.phase!=='PRE'&&S.fob!=null?S.fob:(S.fb.block!=null?S.fb.block-S.fb.taxi:7.6)):64; return Math.min(398,Math.floor((590-3.3*g)/10)*10); }
 PG.prog={
   draw(){ const ph={PRE:'PREFLIGHT',CRZ:'CRZ',DES:'DES',APP:'APPR'}[S.phase]; put(0,1,ph,'g'); putR(0,S.init.flt||'','w',1,1);
     const crz=S.init.crz; lbl(1,'L',' CRZ'); putC(LR(1),'OPT','w',1); lbl(1,'R','REC MAX ');
-    prompt(1,'L',crz&&S.phase!=='DES'&&S.phase!=='APP'?'FL'+p3(crz):'-----','c'); putC(DR(1),crz?'FL'+p3(Math.min(390,crz+10)):'-----','g'); prompt(1,'R','FL398','m');
+    prompt(1,'L',crz&&S.phase!=='DES'&&S.phase!=='APP'?'FL'+p3(crz):'-----','c'); putC(DR(1),S.fb.zfw!=null?'FL'+p3(recMax()-20):'-----','g'); prompt(1,'R','FL'+p3(recMax()),'m');
     prompt(2,'L','<REPORT');
     lbl(3,'L',' UPDATE AT'); prompt(3,'L','*[    ]','c');
     lbl(4,'L','  BRG /DIST'); const t=S.progTo&&P[S.progTo]; const from=S.phase==='PRE'?(P[S.act.from]||{x:0,y:0}):S.pos;
@@ -1277,24 +1279,41 @@ function ndCentre(){
   if(S.phase!=='PRE') return NDC={x:S.pos.x,y:S.pos.y};
   return NDC={x:0,y:0};
 }
+let NDM='PLAN';
 function ndSvg(){
-  const R=170, cx=200, cy=205, rng=RANGES[NDR], k=R/(rng/2), c=ndCentre();
-  const X=p=>cx+(p.x-c.x)*k, Y=p=>cy-(p.y-c.y)*k, IN=p=>Math.hypot(X(p)-cx,Y(p)-cy)<R-6;
+  const arc=NDM==='ARC', fl=S.phase!=='PRE', rng=RANGES[NDR];
+  const own=fl?S.pos:(()=>{ const a=S.act; return a.from&&a.dRwy?thr(a.from,a.dRwy):(P[a.from||'XNDV']); })();
+  const hd=fl?S.trk:(S.act.from&&S.act.dRwy?AP[S.act.from].rwy[S.act.dRwy].crs:360);
+  const R=arc?285:170, cx=200, cy=arc?345:205, k=arc?R/rng:R/(rng/2), c=arc?own:ndCentre();
+  const ca=Math.cos(hd*R2), sa=Math.sin(hd*R2);
+  const X=arc?(p=>cx+((p.x-c.x)*ca-(p.y-c.y)*sa)*k):(p=>cx+(p.x-c.x)*k), Y=arc?(p=>cy-((p.x-c.x)*sa+(p.y-c.y)*ca)*k):(p=>cy-(p.y-c.y)*k);
+  const IN=p=>{ const x=X(p), y=Y(p); return Math.hypot(x-cx,y-cy)<R-6&&y<(arc?cy+30:999)&&y>(arc?60:24); };
   const out=[];
-  out.push(`<defs><clipPath id="ndc"><circle cx="${cx}" cy="${cy}" r="${R+12}"/></clipPath></defs>`);
+  out.push(`<defs><clipPath id="ndc">${arc?`<rect x="0" y="54" width="400" height="${cy+40-54}"/>`:`<circle cx="${cx}" cy="${cy}" r="${R+12}"/>`}</clipPath></defs>`);
   out.push(`<rect width="400" height="410" fill="#030604"/>`);
-  out.push(`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#ECEFF1" stroke-width="1.2"/><circle cx="${cx}" cy="${cy}" r="${R/2}" fill="none" stroke="#ECEFF1" stroke-width="1" stroke-dasharray="3 5" opacity=".7"/>`);
-  for(const a of [0,90,180,270]){ const s=Math.sin(a*R2), co=Math.cos(a*R2); out.push(`<line x1="${cx+s*(R-8)}" y1="${cy-co*(R-8)}" x2="${cx+s*(R+8)}" y2="${cy-co*(R+8)}" stroke="#ECEFF1"/>`); }
-  out.push(`<text x="${cx}" y="${cy-R-14}" class="ndt w" text-anchor="middle">N</text><text x="${cx+R/2*0.71+4}" y="${cy-R/2*0.71-4}" class="ndt c">${rng/4}</text>`);
+  if(arc){
+    const a0=-52, a1=52, pt=(a,r)=>[cx+r*Math.sin(a*R2),cy-r*Math.cos(a*R2)];
+    const ap=r=>{ const [x0,y0]=pt(a0,r), [x1,y1]=pt(a1,r); return `M${x0} ${y0}A${r} ${r} 0 0 1 ${x1} ${y1}`; };
+    out.push(`<path d="${ap(R)}" fill="none" stroke="#ECEFF1" stroke-width="1.2"/><path d="${ap(R/2)}" fill="none" stroke="#ECEFF1" stroke-width="1" stroke-dasharray="3 5" opacity=".7"/>`);
+    for(let h=Math.ceil((hd+a0)/5)*5;h<=hd+a1;h+=5){ const a=h-hd, big=h%10===0, [x0,y0]=pt(a,R), [x1,y1]=pt(a,R+(big?10:5)); out.push(`<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="#ECEFF1"/>`); if(h%30===0){ const [tx,ty]=pt(a,R+20), hh=((Math.round(h)%360)+360)%360; out.push(`<text x="${tx}" y="${ty+4}" class="ndt w" text-anchor="middle">${hh/10}</text>`); } }
+    out.push(`<path d="M${cx} 34V48" stroke="#FFE14D" stroke-width="3"/><text x="${cx}" y="28" class="ndt w" text-anchor="middle">HDG ${p3(hd)}</text>`);
+    const [rx,ry]=pt(-40,R/2); out.push(`<text x="${rx-4}" y="${ry}" class="ndt c" text-anchor="end">${rng/2}</text>`);
+  } else {
+    out.push(`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#ECEFF1" stroke-width="1.2"/><circle cx="${cx}" cy="${cy}" r="${R/2}" fill="none" stroke="#ECEFF1" stroke-width="1" stroke-dasharray="3 5" opacity=".7"/>`);
+    for(const a of [0,90,180,270]){ const s=Math.sin(a*R2), co=Math.cos(a*R2); out.push(`<line x1="${cx+s*(R-8)}" y1="${cy-co*(R-8)}" x2="${cx+s*(R+8)}" y2="${cy-co*(R+8)}" stroke="#ECEFF1"/>`); }
+    out.push(`<text x="${cx}" y="${cy-R-14}" class="ndt w" text-anchor="middle">N</text><text x="${cx+R/2*0.71+4}" y="${cy-R/2*0.71-4}" class="ndt c">${rng/4}</text>`);
+  }
   out.push(`<g clip-path="url(#ndc)">`);
   /* navaids and airports in the area (small, for orientation) */
-  for(const id in P){ const p=P[id]; if(p.t==='VOR'){ out.push(`<g transform="translate(${X(p)},${Y(p)})" opacity=".55"><path d="M-5 0L-2.5-4.3h5L5 0l-2.5 4.3h-5z" fill="none" stroke="#F45BFF" stroke-width="1"/></g>`); } }
+  for(const id in P){ const p=P[id]; if(p.t==='VOR'&&IN(p)){ out.push(`<g transform="translate(${X(p)},${Y(p)})" opacity=".55"><path d="M-5 0L-2.5-4.3h5L5 0l-2.5 4.3h-5z" fill="none" stroke="#F45BFF" stroke-width="1"/></g>`); } }
   const lines=[], marks=[], labels=new Set();
   const plan=(p,col,dash,w,tag)=>{
     if(!p||!p.items||!p.items.length) return;
     let prev=null, segs=[], cur=[];
     const fl=flyingPlan()&&tag==='act';
+    if(fl) cur.push(S.pos);
     p.items.forEach((it,i)=>{
+      if(fl&&i===0) return;
       if(it.k==='disc'){ if(cur.length>1) segs.push(cur); cur=[]; prev=null; return; }
       if(it.k==='hold'){ const f=P[it.at]; if(f) lines.push(holdPath(f,it,X,Y,col,dash)); return; }
       const q=coord(it); if(!q) return;
@@ -1324,12 +1343,14 @@ function ndSvg(){
   { const V=!S.tmpy?vprof('act'):null; if(V){ const it=act.items; for(const ps of V.ps){ let k=-1; for(let i=1;i<it.length;i++){ if(V.cum[i]!=null&&coord(it[i])&&V.cum[i]>=ps.d){ k=i; break; } } if(k<1) continue; let j=k-1; while(j>0&&!coord(it[j])) j--; const a=j===0&&V.fl?S.pos:coord(it[j]), b=coord(it[k]); if(!a||!b||it[k-1].k==='disc') continue; const seg=(V.cum[k]-(j===0&&V.fl?0:V.cum[j]))||1, f=Math.max(0,Math.min(1,1-(V.cum[k]-ps.d)/seg)); const q={x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f}; if(!IN(q)) continue; const col=ps.decel?'#F45BFF':'#3BE37A'; marks.push(`<circle cx="${X(q)}" cy="${Y(q)}" r="3.2" fill="none" stroke="${col}" stroke-width="1.4"/><text x="${X(q)+6}" y="${Y(q)-6}" class="ndt" style="font-size:11px" fill="${col}">${esc(ps.n.replace(/[()]/g,''))}</text>`); } } }
   out.push(lines.join(''), marks.join(''));
   /* aircraft */
-  if(S.phase!=='PRE'){ const to=coord(act.items[1]); const hd=to?brg(S.pos,to):0; out.push(`<g transform="translate(${X(S.pos)},${Y(S.pos)}) rotate(${hd})"><path d="M0-11V12M-10-1H10M-4 9H4" stroke="#FFE14D" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>`); }
+  if(arc) out.push(`<g transform="translate(${cx},${cy})"><path d="M0-11V12M-10-1H10M-4 9H4" stroke="#FFE14D" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>`);
+  else if(S.phase!=='PRE'){ out.push(`<g transform="translate(${X(S.pos)},${Y(S.pos)}) rotate(${S.trk})"><path d="M0-11V12M-10-1H10M-4 9H4" stroke="#FFE14D" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>`); }
   out.push('</g>');
   const gsn=S.hz?230:(S.phase==='CRZ'?450:290); const tl=S.phase==='PRE'?'':`GS ${gsn} TAS ${gsn+20}`;
-  out.push(`<text x="10" y="18" class="ndt w">${tl}</text><text x="390" y="18" class="ndt g" text-anchor="end">${esc(act.items[1]&&isW(act.items[1])&&S.phase!=='PRE'?act.items[1].id:'')}</text>`);
-  out.push(`<text x="10" y="400" class="ndt c">PLAN</text><text x="390" y="400" class="ndt w" text-anchor="end">${rng} NM</text>`);
-  return `<svg viewBox="0 0 400 410" role="img" aria-label="Navigation display, plan mode">${out.join('')}</svg>`;
+  const ty=arc?44:18; out.push(`<text x="10" y="${ty}" class="ndt w">${tl}</text>`);
+  const t=act.items[1]; if(S.phase!=='PRE'&&t&&(isW(t)||t.k==='dest')&&coord(t)){ const q=coord(t), dg=dist(S.pos,q); out.push(`<text x="390" y="${ty}" class="ndt w" text-anchor="end">${esc(t.k==='dest'?(t.rwy?'RW'+t.rwy:t.id):t.id)}  <tspan fill="#3BE37A">${p3(brg(S.pos,q))}°</tspan></text><text x="390" y="${ty+16}" class="ndt" fill="#3BE37A" text-anchor="end">${dg.toFixed(dg<20?1:0)} NM</text><text x="390" y="${ty+32}" class="ndt" fill="#3BE37A" text-anchor="end">${hhmm(S.utc+dg/(gsn/60))}</text>`); }
+  out.push(`<text x="10" y="400" class="ndt c">${arc?'ARC':'PLAN'}</text><text x="390" y="400" class="ndt w" text-anchor="end">${rng} NM</text>`);
+  return `<svg viewBox="0 0 400 410" role="img" aria-label="Navigation display, ${arc?'arc':'plan'} mode">${out.join('')}</svg>`;
 }
 function holdPath(f,h,X,Y,col,dash){
   /* racetrack: inbound leg ends at the fix */
@@ -1337,7 +1358,7 @@ function holdPath(f,h,X,Y,col,dash){
   const b=f, a=along(b,crs+180,leg);                 /* start of inbound leg */
   const off=along(b,crs+90*side,2*rad), off2=along(a,crs+90*side,2*rad);
   const P1=`${X(a)},${Y(a)}`, P2=`${X(b)},${Y(b)}`, P3=`${X(off)},${Y(off)}`, P4=`${X(off2)},${Y(off2)}`;
-  const r=Math.abs(X(along(b,90,rad))-X(b)), sw=side>0?1:0;
+  const r=Math.hypot(X(off)-X(b),Y(off)-Y(b))/2, sw=side>0?1:0;
   return `<path d="M${P1}L${P2}A${r} ${r} 0 0 ${sw} ${P3}L${P4}A${r} ${r} 0 0 ${sw} ${P1}" fill="none" stroke="${col}" stroke-width="2" ${dash?`stroke-dasharray="${dash}"`:''}/>`;
 }
 function drawNd(){ const n=el('mnd'); if(!n) return; const sv=ndSvg(); if(sv!==LASTND){ n.innerHTML=sv; LASTND=sv; } const r=el('mndr'); if(r) r.textContent=RANGES[NDR]+' NM'; drawFcu(); }
@@ -1452,6 +1473,7 @@ function init(){
   el('mmode').onclick=e=>{ const b=e.target.closest('button[data-m]'); if(b) setMode(b.dataset.m); };
   el('mreset').onclick=()=>loadScn(SC.id);
   fcuUi();
+  const nm=el('mndm'); if(nm) nm.onclick=e=>{ const b=e.target.closest('button[data-nd]'); if(!b) return; NDM=b.dataset.nd; nm.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false')); refresh(); };
   const zi=el('mndin'), zo=el('mndout'); if(zi) zi.onclick=()=>{ NDR=Math.max(0,NDR-1); drawNd(); }; if(zo) zo.onclick=()=>{ NDR=Math.min(RANGES.length-1,NDR+1); drawNd(); };
   let first='prep'; try{ const s=localStorage.getItem('bb-mcdu-scn'); if(s&&SCN.some(x=>x.id===s)) first=s; }catch(e){}
   const h=location.hash.replace('#',''); if(SCN.some(x=>x.id===h)) first=h;
@@ -1638,6 +1660,6 @@ function refUi(){
   r.innerHTML=`<table class="mreft"><thead><tr><th>${esc(Lx(tt('Key','Tast')))}</th><th>${esc(Lx(tt('Page','Side')))}</th><th>${esc(Lx(tt('For','Til')))}</th><th>${esc(Lx(tt('Line keys','Linjetaster')))}</th></tr></thead><tbody>${R.map(x=>`<tr><td><kbd>${esc(S2(x[0]))}</kbd></td><td><b>${esc(x[1])}</b></td><td>${esc(S2(x[2]))}</td><td>${esc(S2(x[3]))}</td></tr>`).join('')}</tbody></table>`;
 }
 
-window.MCDU={drill:startDrill,drillState:()=>DRL,course:COURSE,drillT:DRILL_T,progress:()=>stepIdx(),tick:(n,dt)=>{ for(let i=0;i<(n||1);i++) stepFlight(dt||0.8); refresh(); },fcu:(c,v)=>{ fcu(c,v); refresh(); },press:k=>{ key(k); },state:()=>S,load:loadScn,scn:SCN,mode:setMode,screen:()=>{ cls(); (PG[S.page]||PG.menu).draw(); if(S.page!=='fpln') scratch(); return scr.map(r=>r.map(c=>c.c==='§'?'#':c.c).join('')).join('\n'); }};
+window.MCDU={nd:m=>{ NDM=m; refresh(); },drill:startDrill,drillState:()=>DRL,course:COURSE,drillT:DRILL_T,progress:()=>stepIdx(),tick:(n,dt)=>{ for(let i=0;i<(n||1);i++) stepFlight(dt||0.8); refresh(); },fcu:(c,v)=>{ fcu(c,v); refresh(); },press:k=>{ key(k); },state:()=>S,load:loadScn,scn:SCN,mode:setMode,screen:()=>{ cls(); (PG[S.page]||PG.menu).draw(); if(S.page!=='fpln') scratch(); return scr.map(r=>r.map(c=>c.c==='§'?'#':c.c).join('')).join('\n'); }};
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
