@@ -30,7 +30,15 @@ const steps=[
      no:'I <em>rett, horisontal flyging uten akselerasjon</em> viser kompasset riktig: <em>still kursgyroen etter kompasset</em> omtrent hvert 15. minutt. Fly så kurser på kursgyroen. Moderne AHRS gjør det samme automatisk med et magnetometer.'},
   go:{en:'Open the attitude and heading lab',no:'Åpne holdnings- og kurslabben',fn:()=>{ const v=document.querySelector('[data-lab-model],.atl-model'); if(v) v.scrollIntoView({behavior:'smooth',block:'start'}); }}}];
 
+function bezel(g,cx,cy,r,kind){ // instrument case: square bezel with screws, round glass
+  const R=r*1.22; const bg=g.createLinearGradient(cx-R,cy-R,cx+R,cy+R); bg.addColorStop(0,'#2c343c'); bg.addColorStop(1,'#11161b');
+  g.fillStyle=bg; rr(g,cx-R,cy-R,2*R,2*R,R*.18); g.fill(); g.strokeStyle='rgba(255,255,255,.12)'; g.lineWidth=1; g.stroke();
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{ const x=cx+a*R*.8, y=cy+b*R*.8; g.fillStyle='#3a434c'; g.beginPath(); g.arc(x,y,R*.055,0,7); g.fill(); g.strokeStyle='#151a1f'; g.beginPath(); g.moveTo(x-R*.035,y); g.lineTo(x+R*.035,y); g.stroke(); });
+  const ring=g.createRadialGradient(cx,cy,r*.9,cx,cy,r*1.08); ring.addColorStop(0,'#05080b'); ring.addColorStop(1,'#3a434c'); g.fillStyle=ring; g.beginPath(); g.arc(cx,cy,r*1.08,0,7); g.fill(); }
+function glass(g,cx,cy,r){ const gl=g.createLinearGradient(cx-r,cy-r,cx+r*.2,cy+r*.4); gl.addColorStop(0,'rgba(255,255,255,.14)'); gl.addColorStop(.45,'rgba(255,255,255,.03)'); gl.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=gl; g.beginPath(); g.arc(cx,cy,r,0,7); g.fill(); }
 function card(g,cx,cy,r,hdg,o){ o=o||{};
+  bezel(g,cx,cy,r);
   g.save(); g.fillStyle='#0b1116'; g.strokeStyle='rgba(255,255,255,.25)'; g.lineWidth=1.5; g.beginPath(); g.arc(cx,cy,r,0,7); g.fill(); g.stroke();
   g.translate(cx,cy); g.rotate(-hdg*Math.PI/180);
   for(let d=0;d<360;d+=5){ const a=d*Math.PI/180-Math.PI/2, maj=d%30===0, mid=d%10===0; g.strokeStyle=maj?'#E2E8EE':'rgba(255,255,255,.4)'; g.lineWidth=maj?1.6:1; const l=maj?10:mid?7:4;
@@ -40,11 +48,11 @@ function card(g,cx,cy,r,hdg,o){ o=o||{};
   // lubber line and aircraft symbol
   g.fillStyle=o.col||C.amber; g.beginPath(); g.moveTo(cx,cy-r+2); g.lineTo(cx-6,cy-r-8); g.lineTo(cx+6,cy-r-8); g.closePath(); g.fill();
   g.save(); g.translate(cx,cy); g.fillStyle='rgba(255,255,255,.85)'; const s=r/60; g.beginPath(); g.moveTo(0,-14*s); g.lineTo(2*s,-4*s); g.lineTo(14*s,2*s); g.lineTo(14*s,5*s); g.lineTo(2*s,2*s); g.lineTo(1.5*s,10*s); g.lineTo(5*s,13*s); g.lineTo(5*s,15*s); g.lineTo(0,14*s); g.lineTo(-5*s,15*s); g.lineTo(-5*s,13*s); g.lineTo(-1.5*s,10*s); g.lineTo(-2*s,2*s); g.lineTo(-14*s,5*s); g.lineTo(-14*s,2*s); g.lineTo(-2*s,-4*s); g.closePath(); g.fill(); g.restore();
-  pill(g,String(Math.round(wrap(hdg))).padStart(3,'0')+'°',cx,cy+r+18,{mono:1,size:12,col:'#fff',al:'center'}); }
+  glass(g,cx,cy,r); pill(g,String(Math.round(wrap(hdg))).padStart(3,'0')+'°',cx,cy+r*1.22+16,{mono:1,size:12,col:'#fff',al:'center'}); }
 
 function draw(g,W,H,p,tm){
   const sm=W<640, fs=sm?.86:1;
-  const r=Math.min(W*(sm?.2:.13),H*.24);
+  const r=Math.min(W*(sm?.17:.12),H*.22);
   const c1=[W*(sm?.27:.3),H*(sm?.62:.56)], c2=[W*(sm?.73:.68),H*(sm?.62:.56)];
   let trueH=90, comp=90, hi=90, note=null, acc=0;
   const ph=(tm*.12)%1;
@@ -58,13 +66,13 @@ function draw(g,W,H,p,tm){
   else if(p<4.5){ trueH=90; comp=90; hi=90+lerp(0,6,ease(clamp((p-3.5)/.8,0,1)))+Math.sin(tm*.7)*.4; note=L({en:'HI has drifted 6° in 15 min',no:'kursgyroen har drevet 6° på 15 min'}); }
   else { trueH=90; comp=90; const k=clamp((p-5)*1.5,0,1); hi=lerp(96,90,ease(k)); note=k<1?L({en:'set HI to the compass',no:'still kursgyroen etter kompasset'}):L({en:'aligned: fly the HI',no:'stemmer: fly etter kursgyroen'}); }
   // labels
-  txt(g,L({en:'MAGNETIC COMPASS',no:'MAGNETKOMPASS'}),c1[0],c1[1]-r-24,{mono:1,size:10*fs,col:'#AEB8C1',al:'center'});
-  txt(g,L({en:'HEADING INDICATOR (gyro)',no:'KURSGYRO'}),c2[0],c2[1]-r-24,{mono:1,size:10*fs,col:'#AEB8C1',al:'center',a:at(p,1,.6)});
+  txt(g,L({en:'MAGNETIC COMPASS',no:'MAGNETKOMPASS'}),c1[0],c1[1]-r*1.22-12,{mono:1,size:10*fs,col:'#AEB8C1',al:'center'});
+  txt(g,L({en:'HEADING INDICATOR (gyro)',no:'KURSGYRO'}),c2[0],c2[1]-r*1.22-12,{mono:1,size:10*fs,col:'#AEB8C1',al:'center',a:at(p,1,.6)});
   card(g,c1[0],c1[1],r,comp,{col:C.amber}); { const dA=1-at(p,1,.6); g.save(); g.globalAlpha=1-dA; card(g,c2[0],c2[1],r,hi,{col:C.blue}); g.restore(); }
   // the true heading reference
   pill(g,`${L({en:'actual heading',no:'faktisk kurs'})} ${String(Math.round(wrap(trueH))).padStart(3,'0')}°`,W/2,H*.08,{mono:1,size:11.5*fs,col:'#8EDDB0',al:'center'});
   const err=((comp-trueH+540)%360)-180;
-  if(Math.abs(err)>1.5&&p>=.5&&p<3.5) pill(g,`${L({en:'compass error',no:'kompassfeil'})} ${err>0?'+':''}${nf(err)}°`,c1[0],c1[1]+r+44,{mono:1,size:11*fs,col:'#FF8A78',al:'center'});
+  if(Math.abs(err)>1.5&&p>=.5&&p<3.5) pill(g,`${L({en:'compass error',no:'kompassfeil'})} ${err>0?'+':''}${nf(err)}°`,c1[0],c1[1]+r*1.22+44,{mono:1,size:11*fs,col:'#FF8A78',al:'center'});
   if(note) pill(g,note,W/2,H*(sm?.18:.16),{size:11*fs,col:'#fff',al:'center',fit:W});
   // dip illustration (step 1), in place of the heading indicator
   const d0=1-at(p,1,.6);
@@ -86,8 +94,8 @@ function draw(g,W,H,p,tm){
     for(let k=0;k<8;k++){ const a=tm*8+k*Math.PI/4; g.fillStyle='rgba(127,198,238,.6)'; g.beginPath(); g.arc(gx+Math.cos(a)*rr2,gy+Math.sin(a)*rr2*.35,2.5,0,7); g.fill(); }
     g.strokeStyle='#fff'; g.beginPath(); g.moveTo(gx,gy-rr2*1.2); g.lineTo(gx,gy+rr2*1.2); g.stroke(); txt(g,L({en:'axis fixed in space',no:'aksen står fast i rommet'}),gx,gy+rr2*1.6,{size:10.5*fs,col:'#9FD4F2',al:'center'}); g.restore(); }
   // memory aids
-  if(p>=.8&&p<1.6) pill(g,'ANDS',c1[0],c1[1]-r-48,{mono:1,size:14*fs,col:C.amber,al:'center'});
-  if(p>=1.8&&p<2.6) pill(g,'UNOS',c1[0],c1[1]-r-48,{mono:1,size:14*fs,col:C.amber,al:'center'});
+  if(p>=.8&&p<1.6) pill(g,'ANDS',c1[0],c1[1]-r*1.22-40,{mono:1,size:14*fs,col:C.amber,al:'center'});
+  if(p>=1.8&&p<2.6) pill(g,'UNOS',c1[0],c1[1]-r*1.22-40,{mono:1,size:14*fs,col:C.amber,al:'center'});
   txt(g,L({en:'northern hemisphere · illustrative',no:'nordlige halvkule · illustrerende'}),W-10,H-6,{mono:1,size:9*fs,col:'#5F6D77',al:'right'});
 }
 
