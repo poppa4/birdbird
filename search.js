@@ -255,7 +255,7 @@ const ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-wi
 const EX={en:['crosswind 270/15 rwy 24','ENTO','alternates NCO','3° 120 kt','holding entry','elev 1500 qnh 1003 t 25','what is an occlusion?'],no:['sidevind 270/15 bane 24','ENTO','alternativer NCO','3° 120 kt','holding entry','elev 1500 qnh 1003 t 25','hva er en okklusjon?']};
 /* NOTAM: no free, open NOTAM feed for Europe, so the search bar links to the state's official briefing (same list as the
    briefing pack's NOTAM page); elsewhere the FAA NOTAM Search, which is free and takes ICAO codes worldwide */
-const NOTAMSRC={EN:['Avinor IPPC','https://www.ippc.no/ippc/index.jsp'],ES:['LFV AROWeb','https://aro.lfv.se/'],EK:['Naviair briefing','https://briefing.naviair.dk'],EF:['Fintraffic AIS bulletins','https://www.ais.fi/ais/bulletins/']};
+const NOTAMSRC={EN:['Avinor IPPC → Briefing → Aerodrome and/or FIR','https://www.ippc.no/ippc/index.jsp'],ES:['LFV AROWeb','https://aro.lfv.se/'],EK:['Naviair briefing','https://briefing.naviair.dk'],EF:['Fintraffic AIS bulletins','https://www.ais.fi/ais/bulletins/']};
 /* ICAO code of a European aerodrome → AIP link (the server finds the AD 2 page in force, or the state's portal) */
 const icaoOf=q=>{ const m=String(q).trim().toUpperCase().match(/^([A-Z]{2}[A-Z0-9]{2})$/); return m&&/^(E|L|B[GIK]|GC|U[BDGKM])/.test(m[1])?m[1]:null; };
 let APN=null, apP=null;
