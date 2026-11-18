@@ -164,7 +164,33 @@ function jet(g,o){
     g.beginPath(); g.moveTo(c[0]-r,c[1]-r); g.lineTo(c[0]+r,c[1]+r); g.moveTo(c[0]+r,c[1]-r); g.lineTo(c[0]-r,c[1]+r); g.stroke(); g.globalAlpha=o.alpha==null?1:o.alpha; }
   g.restore();
 }
-const U={FONT,C,clamp,lerp,ease,at,txt,pill,arrow,rr,jet};
+
+/* clouds: a cumulus / cumulonimbus with a flat base built from shaded lobes, and a layer-cloud deck between two curves */
+function cumulus(g,x,base,top,w,o){ o=o||{}; const h=base-top; if(h<4) return; const lobes=[];
+  let seed=Math.round(Math.abs(x)*7+w*3+(o.seed||0)); const rnd=()=>{ seed=(seed*9301+49297)%233280; return seed/233280; };
+  const n=Math.max(6,Math.round(h/(w*.18)));
+  for(let i=0;i<n;i++){ const k=i/(n-1), y=base-h*k*.9, ww=w*(0.6+0.4*Math.sin(Math.PI*Math.min(1,k*1.3)))*(k>.85?0.75:1); const m=2+Math.round(rnd()*2);
+    for(let j=0;j<m;j++) lobes.push([x+(rnd()-.5)*ww*.85, y-(rnd()*h*.04), ww*(0.26+rnd()*.18)]); }
+  if(!o.anvil){ lobes.push([x,top+w*.2,w*.3]); lobes.push([x-w*.17,top+w*.28,w*.24]); lobes.push([x+w*.19,top+w*.26,w*.25]); }
+  const dark=o.dark?1:0, a=o.alpha==null?1:o.alpha;
+  g.save(); g.beginPath(); g.rect(x-w*3,top-w*3,w*6,base-(top-w*3)); g.clip();
+  lobes.forEach(([lx,ly,r])=>{ const shade=clamp((ly-top)/h,0,1)*.55*(dark?1.5:1); const gr=g.createRadialGradient(lx-r*.35,ly-r*.45,r*.1,lx,ly,r);
+    const c0=Math.round(252-60*shade), c1=Math.round(222-80*shade), c2=Math.round(160-70*shade);
+    gr.addColorStop(0,`rgba(${c0},${c0+1},${c0+2},${.97*a})`); gr.addColorStop(.7,`rgba(${c1},${c1+6},${c1+12},${.93*a})`); gr.addColorStop(1,`rgba(${c2},${c2+10},${c2+20},${.86*a})`);
+    g.fillStyle=gr; g.beginPath(); g.arc(lx,ly,r,0,7); g.fill(); });
+  g.restore();
+  const bg=g.createLinearGradient(0,base-14,0,base); bg.addColorStop(0,'rgba(90,104,118,0)'); bg.addColorStop(1,`rgba(80,94,108,${.7*a})`); g.fillStyle=bg; g.fillRect(x-w*.62,base-14,w*1.24,14);
+  if(o.anvil){ const aw=o.anvil, ay=top+w*.3; const gr=g.createLinearGradient(0,ay-w*.25,0,ay+w*.2); gr.addColorStop(0,`rgba(245,248,250,${.95*a})`); gr.addColorStop(1,`rgba(170,182,194,${.85*a})`); g.fillStyle=gr;
+    g.beginPath(); g.moveTo(x-w*.5,ay+w*.08); g.bezierCurveTo(x-w*.62,ay-w*.22,x-w*.3,ay-w*.36,x+w*.1,ay-w*.36); g.bezierCurveTo(x+aw*.45,ay-w*.36,x+aw*.8,ay-w*.3,x+aw,ay-w*.24); g.lineTo(x+aw*1.02,ay-w*.14); g.bezierCurveTo(x+aw*.6,ay-w*.1,x+w*.4,ay-w*.04,x+w*.36,ay+w*.12); g.closePath(); g.fill(); } }
+function deck(g,x0,x1,bot,topf,o){ o=o||{}; const a=o.alpha==null?1:o.alpha, step=o.step||6;
+  // body
+  g.save(); g.beginPath(); g.moveTo(x0,bot(x0)); for(let x=x0;x<=x1;x+=step) g.lineTo(x,topf(x)); for(let x=x1;x>=x0;x-=step) g.lineTo(x,bot(x)); g.closePath();
+  const yT=Math.min(topf(x0),topf(x1),topf((x0+x1)/2)), yB=Math.max(bot(x0),bot(x1),bot((x0+x1)/2));
+  const gr=g.createLinearGradient(0,yT,0,yB); gr.addColorStop(0,`rgba(${o.light||'226,232,238'},${.9*a})`); gr.addColorStop(1,`rgba(${o.dark||'120,134,148'},${.92*a})`); g.fillStyle=gr; g.fill(); g.restore();
+  // billowy top edge
+  for(let x=x0+step;x<x1-step;x+=step*2.2){ const th=bot(x)-topf(x); if(th<3) continue; const r=Math.min(th*.55,o.billow||14); const y=topf(x)+r*.55;
+    const rg=g.createRadialGradient(x-r*.3,y-r*.4,r*.1,x,y,r); rg.addColorStop(0,`rgba(${o.light||'236,241,245'},${.9*a})`); rg.addColorStop(1,`rgba(${o.light||'226,232,238'},0)`); g.fillStyle=rg; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); } }
+const U={FONT,C,clamp,lerp,ease,at,txt,pill,arrow,rr,jet,cumulus,deck};
 
 /* ---------------- the component ---------------- */
 function mount(host,cfg){
