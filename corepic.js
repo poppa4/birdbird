@@ -23,9 +23,9 @@ const css=`
 .cpic-h p{margin:2px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.5;max-width:78ch;flex-basis:100%}
 .cpic-g{display:grid;grid-template-columns:minmax(0,1fr) 318px;border:1px solid #0a1015;border-radius:var(--radius-lg);overflow:hidden;background:#0f151b;color:#E2E8EE}
 .cpic-st{position:relative;min-width:0;background:radial-gradient(120% 95% at 50% 20%,#24303c 0%,#16202a 55%,#0e141a 100%);display:flex;flex-direction:column}
-.cpic-st canvas{display:block;width:100%;outline:0;flex:1 1 auto;min-height:0}
+.cpic-st canvas{display:block;width:100%;outline:0;flex:none}
 .cpic-st canvas:focus-visible{box-shadow:inset 0 0 0 2px var(--focus-dark)}
-.cpic-tr{display:flex;align-items:center;gap:8px;padding:9px 12px 11px;border-top:1px solid rgba(255,255,255,.06);background:rgba(8,12,16,.35)}
+.cpic-tr{margin-top:auto;display:flex;align-items:center;gap:8px;padding:9px 12px 11px;border-top:1px solid rgba(255,255,255,.06);background:rgba(8,12,16,.35)}
 .cpic-tr button{font-family:var(--f-body);font-size:12.5px;font-weight:500;background:rgba(18,22,26,.62);color:#C3CCD4;border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:5px 11px;min-height:32px;cursor:pointer;white-space:nowrap}
 .cpic-tr button:hover{color:#fff;border-color:rgba(255,255,255,.3)}
 .cpic-tr button:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
@@ -37,7 +37,7 @@ const css=`
 .cpic-tr .n{font-family:var(--f-mono);font-size:11.5px;color:#8E99A4;min-width:44px;text-align:right}
 .cpic-ls{background:#121a21;border-left:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;min-width:0}
 .cpic-ls ol{list-style:none;margin:0;padding:8px 0;flex:1;overflow:auto;counter-reset:cs}
-.cpic-ls li{margin:0}
+.cpic-ls li{margin:0;display:block;padding:0}
 .cpic-ls li>button{all:unset;box-sizing:border-box;display:grid;grid-template-columns:26px minmax(0,1fr);gap:0 10px;width:100%;padding:8px 16px 8px 14px;cursor:pointer;color:#8E99A4;border-left:3px solid transparent}
 .cpic-ls li>button:hover{color:#E2E8EE;background:rgba(255,255,255,.03)}
 .cpic-ls li>button:focus-visible{outline:2px solid var(--focus-dark);outline-offset:-2px}
@@ -47,10 +47,10 @@ const css=`
 .cpic-ls li p em{font-style:normal;color:#fff;font-weight:600}
 .cpic-ls li .go{display:none;margin:-2px 0 8px 53px;font-size:12px;font-weight:600;color:#F29AC8;background:none;border:0;padding:2px 0;cursor:pointer}
 .cpic-ls li .go:hover{text-decoration:underline}
-.cpic-ls li.on>button{color:#fff;border-left-color:#E46BAE;background:rgba(228,107,174,.07)}
-.cpic-ls li.on i{background:#E46BAE;border-color:#E46BAE;color:#13181D;font-weight:600}
-.cpic-ls li.on p,.cpic-ls li.on .go{display:block}
-.cpic-ls li.past i{border-color:rgba(228,107,174,.55);color:#E9A9CC}
+.cpic-ls li.c-on>button{color:#fff;border-left-color:#E46BAE;background:rgba(228,107,174,.07)}
+.cpic-ls li.c-on i{background:#E46BAE;border-color:#E46BAE;color:#13181D;font-weight:600}
+.cpic-ls li.c-on p,.cpic-ls li.c-on .go{display:block}
+.cpic-ls li.c-past i{border-color:rgba(228,107,174,.55);color:#E9A9CC}
 .cpic-ls .ft{margin:0;padding:10px 16px 12px;border-top:1px solid rgba(255,255,255,.06);font-size:11.5px;line-height:1.45;color:#7F8B96}
 .cpic-cap{display:none}
 body.depth-instructor .cpic-ls li b{font-size:16px}
@@ -63,7 +63,7 @@ body.depth-instructor .cpic-g{grid-template-columns:minmax(0,1fr) 360px}
  .cpic-ls ol{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px 4px}
  .cpic-ls li>button{display:block;padding:0;border:0;width:auto}
  .cpic-ls li>button b,.cpic-ls li p,.cpic-ls li .go{display:none!important}
- .cpic-ls li.on>button{background:none}
+ .cpic-ls li.c-on>button{background:none}
  .cpic-ls li i{width:30px;height:30px;font-size:12px}
  .cpic-cap{display:block;padding:4px 14px 12px}
  .cpic-cap b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:16px;color:#fff;margin:2px 0 4px}
@@ -185,13 +185,13 @@ function mount(host,cfg){
   const api={}; let p=0, from=0, to=0, t0=0, dur=1, playing=false, arrived=0, cur=0, vis=true, raf=0, W=0, H=0, dpr=1, dragging=false;
   const now=()=>performance.now();
   function size(){ const a=root.getBoundingClientRect().width<600?(cfg.aspectSm||asp):asp; if(cv.style.aspectRatio!==String(a)) cv.style.aspectRatio=String(a);
-    const r=cv.getBoundingClientRect(); dpr=Math.min(2,window.devicePixelRatio||1); W=Math.max(1,r.width); H=Math.max(1,Math.max(r.height,r.width/a));
+    const r=cv.getBoundingClientRect(); dpr=Math.min(2,window.devicePixelRatio||1); W=Math.max(1,r.width); H=Math.max(1,r.width/a);
     cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
   function list(){
     const i0=Math.round(p);
     root.querySelector('.cpic-h .k').textContent=L({en:'Start here · the essentials in one picture',no:'Start her · det viktigste i ett bilde'});
     root.querySelector('.cpic-h h3').textContent=L(cfg.title); root.querySelector('.cpic-h p').textContent=cfg.sub?L(cfg.sub):'';
-    ol.innerHTML=cfg.steps.map((s,i)=>`<li class="${i===i0?'on':i<i0?'past':''}"><button type="button" data-i="${i}" aria-current="${i===i0?'step':'false'}"><i>${i+1}</i><b>${esc(L(s.t))}</b><p>${L(s.d)}</p></button>${s.go?`<button type="button" class="go" data-g="${i}">${esc(L(s.go))} →</button>`:''}</li>`).join('');
+    ol.innerHTML=cfg.steps.map((s,i)=>`<li class="${i===i0?'c-on':i<i0?'c-past':''}"><button type="button" data-i="${i}" aria-current="${i===i0?'step':'false'}"><i>${i+1}</i><b>${esc(L(s.t))}</b><p>${L(s.d)}</p></button>${s.go?`<button type="button" class="go" data-g="${i}">${esc(L(s.go))} →</button>`:''}</li>`).join('');
     const s=cfg.steps[i0]; cap.innerHTML=`<b>${i0+1} · ${esc(L(s.t))}</b><p>${L(s.d)}</p>${s.go?`<button type="button" class="go" data-g="${i0}">${esc(L(s.go))} →</button>`:''}`;
     root.querySelector('.ft').textContent=cfg.foot?L(cfg.foot):'';
     pl.textContent=playing?L({en:'❚❚ Pause',no:'❚❚ Pause'}):(i0>=n-1&&!playing?L({en:'↺ Replay',no:'↺ Spill av'}):L({en:'▶ Play',no:'▶ Spill av'}));
