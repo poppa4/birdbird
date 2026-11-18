@@ -53,6 +53,9 @@ function pfd(g,cv,D){
     const wing=(s)=>{ g.beginPath(); g.moveTo(cx+s*165,cy-6); g.lineTo(cx+s*85,cy-6); g.lineTo(cx+s*85,cy+26); g.lineTo(cx+s*72,cy+26); g.lineTo(cx+s*72,cy+6); g.lineTo(cx+s*165,cy+6); g.closePath(); g.fill(); g.stroke(); };
     wing(-1); wing(1); FR(g,cx-7,cy-7,14,14,'#000'); R(g,cx-7,cy-7,14,14,C.y,4);
   }
+  // sidestick order indicator (on the ground with an engine running): a white cross in its box
+  if(D.stick&&att){ const s=110; g.strokeStyle=C.w; g.lineWidth=3; for(const [a,b] of [[-1,-1],[1,-1],[1,1],[-1,1]]){ L(g,cx+a*s,cy+b*s,cx+a*s*0.82,cy+b*s,C.w,3); L(g,cx+a*s,cy+b*s,cx+a*s,cy+b*s*0.82,C.w,3); }
+    const x=cx+clamp(D.stick.x,-1,1)*s, y=cy+clamp(D.stick.y,-1,1)*s; L(g,x-22,y,x+22,y,C.w,4); L(g,x,y-22,x,y+22,C.w,4); }
   // ---- speed tape ----
   speedTape(g,D);
   altTape(g,D); vsScale(g,D); hdgTape(g,D);

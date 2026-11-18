@@ -50,6 +50,7 @@ def bake(P, N):
         up = np.clip(n[:, 1], -1, 1); out[s0:s0 + 4000] = sky * (0.9 + 0.1 * up)
     return out
 def shade(v): return np.clip(0.52 + 0.95 * v ** 0.55, 0, 1.12)
+TXP = {t: Image.open(os.path.join(RES, t)).convert('RGB').resize((512, 512)) for t in TEX}
 G = collections.defaultdict(lambda: {'key': {}, 'P': [], 'UV': [], 'N': [], 'I': []})
 for o in O:
     if o['tex'] not in TEX: continue
@@ -60,7 +61,11 @@ for o in O:
     rep, off = o['rep'], o['off']; g = G[o['tex']]
     for mat, idx, uvs, flags in o['faces']:
         P = v[idx]; ctr = P.mean(0); inside = False
-        for bi, (c, n, up, x, W, H) in enumerate(B):
+        # faces whose texture is the bright green of the lamp / marking areas show as stray lime lines on the consoles: skip
+        tu = np.mean([uvs[j][0] * rep[0] + off[0] for j in range(len(idx))]) % 1; tv = 1 - (np.mean([uvs[j][1] * rep[1] + off[1] for j in range(len(idx))]) % 1)
+        px = TXP[o['tex']].getpixel((min(TXP[o['tex']].width - 1, int(tu * TXP[o['tex']].width)), min(TXP[o['tex']].height - 1, int(tv * TXP[o['tex']].height))))
+        if px[1] > 150 and px[1] > px[0] + 60 and px[1] > px[2] + 40: continue
+        for bi, (c, n, up, x, W, H) in enumerate(B[:3]):  # side consoles: the model's own geometry is kept
             d = ctr - c; dn = d @ (-n)
             if abs(d @ x) < W / 2 + 0.01 and abs(d @ up) < H / 2 + 0.01 and -0.03 < dn < (0.32 if bi == 1 else 0.12): inside = True; break  # the glareshield stands well proud of the main panel
         if inside: continue

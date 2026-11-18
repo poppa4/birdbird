@@ -160,6 +160,30 @@ function snd(k){ if(!UI.sound||!AC) return;
   if(k==='cav'){ [784,659,523,659,523,392].forEach((f,i)=>tone(f,i*0.11,0.16,0.06,'square')); }
   if(k==='click'){ tone(2400,0,0.025,0.03,'square'); } }
 let crcT=0;
+/* engine, airflow and callouts. One looping noise source through filters whose cut-off and level follow N1, N2 and the
+   airspeed (updated ten times a second, nothing per frame); the radio altimeter callouts use the browser's speech voice. */
+let EN=null;
+function engSound(){ const a=ctx(); if(!a||EN) return; const n=a.createBuffer(1,a.sampleRate*2,a.sampleRate), d=n.getChannelData(0); let b=0; for(let i=0;i<d.length;i++){ const w=Math.random()*2-1; b=0.97*b+0.03*w; d[i]=w*0.5+b*3; }
+  const src=a.createBufferSource(); src.buffer=n; src.loop=true;
+  const mk=(type,f,q)=>{ const x=a.createBiquadFilter(); x.type=type; x.frequency.value=f; x.Q.value=q||0.7; return x; };
+  const rum=mk('lowpass',120), whi=mk('bandpass',1800,9), air=mk('highpass',600), gR=a.createGain(), gW=a.createGain(), gA=a.createGain(), out=a.createGain(); out.gain.value=0.9;
+  src.connect(rum); rum.connect(gR); src.connect(whi); whi.connect(gW); src.connect(air); air.connect(gA); [gR,gW,gA].forEach(g=>{ g.gain.value=0; g.connect(out); }); out.connect(a.destination); src.start();
+  EN={rum,whi,gR,gW,gA,out}; }
+let calls={last:1e9,done:{}}, sndT=0;
+function say2(t){ try{ if(!UI.sound||!window.speechSynthesis) return; const u=new SpeechSynthesisUtterance(t); u.rate=1.15; u.pitch=0.75; u.lang='en-GB'; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} }
+function soundSlow(dt){ sndT+=dt; if(sndT<0.1) return; sndT=0;
+  if(AC&&!EN&&UI.sound) engSound();
+  if(EN){ const t=AC.currentTime, on=UI.sound&&!UI.paused&&!document.hidden, n1=(A.eng[0].n1+A.eng[1].n1)/2, n2=(A.eng[0].n2+A.eng[1].n2)/2, sp=Math.max(0,M.ias);
+    EN.gR.gain.setTargetAtTime(on?Math.min(0.35,0.04+n1/100*0.32)*(n2>5?1:0):0,t,0.25); EN.rum.frequency.setTargetAtTime(70+n1*2.6,t,0.3);
+    EN.gW.gain.setTargetAtTime(on&&n2>8?0.012+n2/100*0.05:0,t,0.3); EN.whi.frequency.setTargetAtTime(500+n2*42,t,0.4);
+    EN.gA.gain.setTargetAtTime(on?Math.min(0.12,sp/350*0.12):0,t,0.4); }
+  // radio altimeter callouts on the approach (gear down, descending): 2500, 1000, 500, 400 … 100, 50, 40, 30, 20, 10, RETARD
+  const ra=M.ra/FT, vs=M.vs/FPM;
+  if(M.gnd||vs>-100||!M.gearDown){ if(ra>2700||M.gnd) calls.done={}; calls.last=ra; return; }
+  const list=[[2500,'two thousand five hundred'],[1000,'one thousand'],[500,'five hundred'],[400,'four hundred'],[300,'three hundred'],[200,'two hundred'],[100,'hundred'],[50,'fifty'],[40,'forty'],[30,'thirty'],[20,'twenty'],[10,'ten']];
+  for(const [h,w] of list){ if(calls.last>h&&ra<=h&&!calls.done[h]){ calls.done[h]=1; const ret=h===20&&(UI.tla[0]>0.5||UI.tla[1]>0.5); say2(ret?'retard':w); if(h===10&&(UI.tla[0]>0.5||UI.tla[1]>0.5)) setTimeout(()=>say2('retard'),600); } }
+  const dh=K.d.dh; if(dh&&dh!=='NO'&&calls.last>dh&&ra<=dh&&!calls.done.min){ calls.done.min=1; say2('minimum'); }
+  calls.last=ra; }
 function soundTick(dt){ if(!UI.sound||UI.paused) return; if(A.ecam.crc){ crcT-=dt; if(crcT<=0){ snd('crc'); crcT=0.45; } } }
 
 /* ================= panel controls ================= */
@@ -497,7 +521,7 @@ function dispData(d){
       vls:sp.vls,vaprot:sp.vaprot,vamax:sp.vamax,vmax:sp.vmax,F:sp.F,S:sp.S,gd:sp.gd,v1:K.d.v1,vr:K.d.vr,vfeN:sp.vfeN,spdTgt:M.gnd&&!ap.vert?K.d.v2:ap.tgtSpd,spdMan:ap.spd.man,trend:(M.accel||0)*10,mach:M.mach,
       selAlt:ap.alt.v,std:E.std,qnh:E.std?1013:E.qnh,selHdg:(ap.lat==='HDG'||ap.lat==='TRK'||ap.hdg.preset)?ap.hdg.v:null,fd:fdOn&&!!(ap.lat||ap.vert),fdOn:true,fdPitch:fdP,fdRoll:fdR,
       fpv:ap.hdg.trk,drift:w180(trk-hdg),gam:M.gam*R2D,ls,loc:M.nav.loc,gs:M.nav.gs,dme:M.nav.dme,lsCrs:K.d.ilsCrs,lsId:K.d.ilsId,lsFreq:K.d.ilsFreq,fma:fmaA,dh:dh&&dh!=='NO'?dh:0,
-      dhTxt:dh!=null?(dh==='NO'?'NO DH':'DH '+dh):mda?'MDA '+mda:'',pfdMsg:msg,pfdMsgC:msgC};
+      dhTxt:dh!=null?(dh==='NO'?'NO DH':'DH '+dh):mda?'MDA '+mda:'',pfdMsg:msg,pfdMsgC:msgC,stick:M.gnd&&(A.eng[0].run||A.eng[1].run)?{x:M.ctl.sx,y:M.ctl.sy}:null};
   }
   if(d.k==='nd'){
     const fx=[]; for(const k in FIX){ const f=FIX[k]; if(k==='RW36') continue; fx.push({id:k,N:f.N,E:f.E,vor:k==='ASN'}); }
@@ -823,7 +847,7 @@ function frame(t){
   const dt=last?Math.min(0.1,(t-last)/1000):0.016; last=t;
   const t0=performance.now();
   if(!document.hidden){
-    simTick(dt); soundTick(dt);
+    simTick(dt); soundTick(dt); soundSlow(dt);
     if(cockpitVis){ otwTick(); displayTick(dt); ovT+=dt; if(ovT>0.1||dirty.all){ ovT=0; dirty.all=false; overlayTick(); } }
     statT+=dt; if(statT>0.5){ statT=0; setStat(); }
     GOV.tick(dt);

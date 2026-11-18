@@ -106,14 +106,14 @@ function init(o){
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
       const g=new THREE.BufferGeometry(); const pa=new THREE.BufferAttribute(P,3,true); g.setAttribute('position',pa);
-      const uv=new Float32Array(gr.nv*2); for(let i=0;i<gr.nv;i++){ uv[i*2]=gr.uv[0]+UV[i*2]/65535*gr.uv[2]; uv[i*2+1]=1-(gr.uv[1]+UV[i*2+1]/65535*gr.uv[3]); } g.setAttribute('uv',new THREE.BufferAttribute(uv,2));
+      const uv=new Float32Array(gr.nv*2); for(let i=0;i<gr.nv;i++){ uv[i*2]=gr.uv[0]+UV[i*2]/65535*gr.uv[2]; uv[i*2+1]=gr.uv[1]+UV[i*2+1]/65535*gr.uv[3]; } g.setAttribute('uv',new THREE.BufferAttribute(uv,2));
       g.setAttribute('color',new THREE.InterleavedBufferAttribute(new THREE.InterleavedBuffer(new Uint8Array(buf,N.byteOffset,gr.nv*4),4),3,0,true)); g.setIndex(new THREE.BufferAttribute(I,1));
-      const tex=TL.load('models/a320-shell-'+gr.tex+'.jpg'); tex.anisotropy=1; tex.flipY=false; if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding;
+      const tex=TL.load('models/a320-shell-'+gr.tex+'.jpg'); tex.anisotropy=1; tex.flipY=false; tex.wrapS=tex.wrapT=THREE.RepeatWrapping; if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding;
       const mat=new THREE.MeshBasicMaterial({map:tex,vertexColors:true,side:THREE.FrontSide}); mat.color.setScalar((hdr.lmax||1)*1.22); const mesh=new THREE.Mesh(g,mat); mesh.scale.setScalar(32767/hdr.S); mesh.matrixAutoUpdate=false; mesh.updateMatrix(); mesh.frustumCulled=false; grp.add(mesh); }
     if(hdr.panels) for(const k in hdr.panels){ const pb=hdr.panels[k], p=P[k]; if(!p) continue; const col=p.mesh.geometry.attributes.color, n=24;
       for(let j=0;j<=n;j++) for(let i=0;i<=n;i++){ const x=i/n*pb.nx, y=j/n*pb.ny, x0=Math.min(pb.nx-1,Math.floor(x)), y0=Math.min(pb.ny-1,Math.floor(y)), fx=x-x0, fy=y-y0, at=(a,b)=>pb.v[b*(pb.nx+1)+a];
         const L=(at(x0,y0)*(1-fx)+at(x0+1,y0)*fx)*(1-fy)+(at(x0,y0+1)*(1-fx)+at(x0+1,y0+1)*fx)*fy, c=Math.min(1,0.12+0.9*L); col.setXYZ(j*(n+1)+i,c,c,c*1.01); } col.needsUpdate=true; }
-    scene.add(grp); ROOM.visible=false; if(o.onShell) o.onShell();
+    scene.add(grp); ROOM.visible=false; for(const k of ['sideL','sideR']) if(P[k]) P[k].mesh.visible=false; if(o.onShell) o.onShell();
   }).catch(e=>console.warn('A320 shell',e));
 
   /* ---- screens: canvas textures on the panels ---- */
