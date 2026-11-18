@@ -259,7 +259,7 @@ let APN=null, apP=null;
 const loadAp=()=>apP||(apP=fetch('data/nav-eu.json').then(r=>r.json()).then(d=>{ APN={}; (d.ap||[]).forEach(a=>{ APN[a[0]]={n:a[1],lat:a[2],lon:a[3],el:a[4]}; }); }).catch(()=>{ APN={}; }));
 /* sun and twilight (sun.js, computed here) for the aerodrome; loaded the first time an ICAO code is typed */
 /* "now at the aerodrome" (icaobrief.js): SERA status from the METAR, SIGMETs, freezing level and a radar picture */
-let icbP=null; const loadIcb=()=>icbP||(icbP=new Promise(ok=>{ if(window.ICB) return ok(); const sc=document.createElement('script'); sc.src='icaobrief.js?v=1'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
+let icbP=null; const loadIcb=()=>icbP||(icbP=new Promise(ok=>{ if(window.ICB) return ok(); const sc=document.createElement('script'); sc.src='icaobrief.js?v=2'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
 let sunP=null; const loadSun=()=>sunP||(sunP=new Promise(ok=>{ if(window.SUN) return ok(); const sc=document.createElement('script'); sc.src='sun.js?v=1'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
 function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.dataset.w) return; const head=document.querySelector('header.site'); if(!head){ setTimeout(mount,50); return; }
   const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
@@ -282,7 +282,8 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
   function wxRow(w){ const quiet=!w.forced&&w.ids.length===1; const parts=w.ids.map(id=>{ const c=WXC[id]; if(quiet&&(!c||c.busy||c.err)) return ''; if(!c||c.busy) return `<b>${id}</b> <span class="ag">${L({en:'fetching…',no:'henter …'})}</span>`; if(c.err) return `<b>${id}</b> <span class="ag">${L({en:'the weather service did not answer',no:'værtjenesten svarte ikke'})}</span>`;
       if(!c.m&&!c.t) return w.forced||w.ids.length>1?`<b>${id}</b> <span class="ag">${L({en:'no METAR or TAF',no:'ingen METAR eller TAF'})}</span>`:'';
       const age=c.mt?Math.round((Date.now()-new Date(c.mt))/60e3):null, ag=age==null?'':age<120?age+' min':Math.round(age/60)+' h';
-      return `<b>${id}</b>${c.n?' <span class="ag">'+esc(c.n)+'</span>':''}${w.kind!=='TAF'&&c.m?`<code>${esc(c.m)}${ag?` <span class="ag">(${ag} ${L({en:'ago',no:'siden'})})</span>`:''}</code>`:''}${w.kind!=='METAR'&&c.t?`<code>${esc(c.t)}</code>`:''}`; }).filter(Boolean);
+      const sb=w.kind!=='TAF'&&c.m&&window.ICB?ICB.badge(c.m,L):'';
+      return `<b>${id}</b>${c.n?' <span class="ag">'+esc(c.n)+'</span>':''}${sb}${w.kind!=='TAF'&&c.m?`<code>${esc(c.m)}${ag?` <span class="ag">(${ag} ${L({en:'ago',no:'siden'})})</span>`:''}</code>`:''}${w.kind!=='METAR'&&c.t?`<code>${esc(c.t)}</code>`:''}`; }).filter(Boolean);
     return parts.length?`<div class="it calc wx" data-i="0"><span>${parts.join('<br>')}</span><small>${L({en:'Decode',no:'Dekod'})} →</small></div>`:''; }
   async function wxGet(ids){ const need=ids.filter(id=>!WXC[id]||(!WXC[id].busy&&Date.now()-WXC[id].at>120e3)); if(!need.length) return; need.forEach(id=>WXC[id]={busy:1,at:Date.now()});
     try{ const r=await fetch('/api/wx?ids='+need.join(','),{headers:{accept:'application/json'}}); const j=await r.json(); if(!j||!j.ok) throw 0;
@@ -291,7 +292,7 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
     if(!res.hidden) draw(); }
   function draw(){ const q=inp.value.trim(); if(!q){ res.hidden=true; return; }
     const w=/^https?:/.test(location.protocol)?WXQ(q):null, wr=w?wxRow(w):'';
-    if(w){ clearTimeout(wxT); wxT=setTimeout(()=>wxGet(w.ids),250); }
+    if(w){ clearTimeout(wxT); wxT=setTimeout(()=>wxGet(w.ids),250); if(!window.ICB) loadIcb().then(()=>{ if(!res.hidden) draw(); }); }
     const c=wr?null:calc(q), hits=score(q).filter(x=>!c&&!wr||x.s>=3); items=[]; let h='';
     if(wr){ items.push({u:'weather.html?ids='+w.ids.join(',')+(w.kind==='TAF'?'&k=T':'')}); h+=wr; }
     const ic=w&&w.forced?null:icaoOf(q); if(ic){ const ap=APN&&APN[ic], nm=ap&&ap.n; if(!APN) loadAp().then(()=>{ if(icaoOf(inp.value.trim())===ic) draw(); }); if(!window.SUN) loadSun().then(()=>{ if(icaoOf(inp.value.trim())===ic) draw(); });

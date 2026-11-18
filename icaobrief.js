@@ -101,6 +101,16 @@ async function getRadar(ap) {
   return { url: cv.toDataURL('image/png'), t, any: (out.max || 0) >= 0.1 };
 }
 
+/* the coloured box on the METAR line: EASA/SERA wording on purpose, not the U.S. VFR/MVFR/IFR/LIFR categories */
+function badge(metar, L) {
+  const st = status(metar); if (!st) return '';
+  const txt = st.cls === 'ok' ? 'VFR' : st.cls === 'near' ? L({ en: 'VFR · near limits', no: 'VFR · nær grensene' }) : st.svfr ? L({ en: 'Special VFR only', no: 'Kun spesiell VFR' }) : L({ en: 'Below VFR', no: 'Under VFR' });
+  const det = st.cavok ? 'CAVOK' : fmtVis(st.vis) + ' · ' + (fmtCeil(st.ceil) ? L({ en: 'ceiling ', no: 'skydekke ' }) + fmtCeil(st.ceil) : L({ en: 'no ceiling', no: 'ingen ceiling' }));
+  const tip = L({ en: 'Control zone, SERA.5005: VFR needs ground visibility ≥ 5 km and ceiling ≥ 1500 ft. Special VFR, SERA.5010: 1500 m and 600 ft with ATC clearance. Amber: under 8 km or 2000 ft (NORDAP margin). Planning aid only.',
+    no: 'Kontrollsone, SERA.5005: VFR krever bakkesikt ≥ 5 km og skydekke ≥ 1500 ft. Spesiell VFR, SERA.5010: 1500 m og 600 ft med klarering. Gult: under 8 km eller 2000 ft (NORDAPs margin). Bare planleggingshjelp.' });
+  return ` <span class="icb-badge ${st.cls}${st.svfr ? ' svfr' : ''}" title="${esc(tip + ' (' + det + ')')}">${esc(txt)}</span>`;
+}
+
 /* ---------- fetching and the row ---------- */
 const TTL = { sig: 5 * 60e3, frz: 60 * 60e3, rad: 10 * 60e3 };
 function ensure(icao, ap, redraw) {
@@ -110,14 +120,8 @@ function ensure(icao, ap, redraw) {
   run('sig', () => getSig(icao, ap)); run('frz', () => getFrz(ap)); run('rad', () => getRadar(ap));
 }
 function html(icao, metar, L, ap) {
-  const c = C[icao] || { busy: {} }; const st = status(metar); const lines = [];
+  const c = C[icao] || { busy: {} }; const lines = [];
   const wait = L({ en: 'fetching…', no: 'henter …' });
-  /* 1 */
-  if (st) { const txt = st.cls === 'ok' ? L({ en: 'VFR in a control zone', no: 'VFR i kontrollsone' }) : st.cls === 'near' ? L({ en: 'VFR, close to the limits', no: 'VFR, nær grensene' })
-      : L({ en: 'Below VFR minima for a control zone', no: 'Under VFR-minima for kontrollsone' }) + (st.svfr ? L({ en: ' · special VFR possible', no: ' · spesiell VFR mulig' }) : '');
-    const det = st.cavok ? 'CAVOK' : fmtVis(st.vis) + (fmtCeil(st.ceil) ? ' · ' + L({ en: 'ceiling ', no: 'skydekke ' }) + fmtCeil(st.ceil) : ' · ' + L({ en: 'no ceiling', no: 'ingen ceiling' }));
-    lines.push(`<span class="icb-st ${st.cls}"><i></i><b>${txt}</b> <small>${det} · SERA.5005${st.svfr ? '/5010' : ''}</small></span>`); }
-  else if (metar === undefined) lines.push(`<span class="icb-l"><small>${L({ en: 'VFR status:', no: 'VFR-status:' })} ${wait}</small></span>`);
   /* 2 */
   if (c.sig) { if (!c.sig.length) lines.push(`<span class="icb-l">${L({ en: 'No SIGMET in force over the aerodrome', no: 'Ingen SIGMET i kraft over flyplassen' })}</span>`);
     else c.sig.slice(0, 3).forEach(x => { const lv = x.base || x.top ? ` ${x.base || ''}${x.top ? '–' + x.top : ''}` : ''; const until = x.to ? ' ' + L({ en: 'until', no: 'til' }) + ' ' + x.to.slice(11, 16) + 'Z' : '';
@@ -139,12 +143,14 @@ const CSS = '.icb{display:flex;gap:12px;align-items:flex-start;width:100%}.icb-l
   + '.icb-l{font-size:13.5px}.icb-l small,.icb-st small{color:var(--ink-2,#5b6770)}.icb-sig b{color:#b35c00}.icb-n{color:var(--ink-2,#5b6770);font-size:11.5px;margin-top:2px}'
   + '.icb-st{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:13.5px}.icb-st i{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.12)}'
   + '.icb-st.ok i{background:#1e8e3e}.icb-st.near i{background:#e8a200}.icb-st.no i{background:#d93025}'
+  + '.icb-badge{display:inline-block;margin:0 0 0 8px;padding:1px 7px;border-radius:3px;font:600 11.5px/1.6 var(--f-mono,ui-monospace,monospace);letter-spacing:.02em;color:#fff;vertical-align:1px;white-space:nowrap}'
+  + '.icb-badge.ok{background:#1e8e3e}.icb-badge.near{background:#e8a200;color:#2b2100}.icb-badge.no{background:#d93025}.icb-badge.svfr{background:#c2410c}'
   + '.icb-rad{margin:0;flex:none;width:150px}.icb-rad img{display:block;width:150px;height:90px;border-radius:3px;border:1px solid var(--rule,#d5dce1)}'
   + '.icb-rad figcaption{font:10.5px/1.3 var(--f-mono,ui-monospace,monospace);color:var(--ink-2,#5b6770);margin-top:2px}'
   + '.icb-rad.wait{height:90px;border:1px dashed var(--rule,#d5dce1);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--ink-2,#5b6770)}'
   + '@media (max-width:560px){.icb{flex-direction:column}.icb-rad,.icb-rad img{width:100%;height:auto}.icb-rad.wait{width:100%}}';
 if (typeof document !== 'undefined' && !document.getElementById('icb-css')) { const s = document.createElement('style'); s.id = 'icb-css'; s.textContent = CSS; document.head.appendChild(s); }
-const API = { ensure, html, status, parseMetar, inPoly };
+const API = { ensure, html, badge, status, parseMetar, inPoly };
 G.ICB = API;
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);

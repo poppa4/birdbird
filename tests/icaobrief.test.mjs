@@ -21,3 +21,12 @@ test('a point inside or outside a SIGMET area', () => {
   const sq = [[9, 58], [11, 58], [11, 60], [9, 60]];
   assert.equal(I.inPoly(10, 59, sq), true); assert.equal(I.inPoly(12, 59, sq), false);
 });
+test('the METAR badge uses EASA/SERA wording, never the U.S. categories', () => {
+  const L = o => o.en;
+  assert.match(I.badge('ENTO 180820Z 18012KT 9999 BKN045 05/02 Q1003', L), /class="icb-badge ok"[^>]*>VFR</);
+  assert.match(I.badge('ENTO 180820Z 18012KT 6000 BKN018 05/02 Q1003', L), />VFR · near limits</);
+  assert.match(I.badge('ENTO 180820Z 18012KT 4000 BR OVC008 05/04 Q1003', L), /svfr[^>]*>Special VFR only</);
+  assert.match(I.badge('ENBR 180820Z 13015KT 0800 FG VV002 05/05 Q1003', L), />Below VFR</);
+  for (const m of ['ENTO 180820Z 18012KT 4000 BR OVC008 05/04 Q1003', 'ENBR 180820Z 13015KT 0800 FG VV002 05/05 Q1003']) assert.doesNotMatch(I.badge(m, L), />(MVFR|IFR|LIFR)</);
+  assert.equal(I.badge('KJFK 181251Z 18012KT 10SM FEW250 20/10 A3001', L), '');
+});
