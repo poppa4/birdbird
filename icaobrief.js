@@ -173,7 +173,13 @@ const CSS = '.icb{display:flex;gap:12px;align-items:flex-start;width:100%}.icb-l
   + '.icb-rad.wait{height:90px;border:1px dashed var(--rule,#d5dce1);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--ink-2,#5b6770)}'
   + '@media (max-width:560px){.icb{flex-direction:column}.icb-rad,.icb-rad img{width:100%;height:auto}.icb-rad.wait{width:100%}}';
 if (typeof document !== 'undefined' && !document.getElementById('icb-css')) { const s = document.createElement('style'); s.id = 'icb-css'; s.textContent = CSS; document.head.appendChild(s); }
-const API = { ensure, html, badge, ifr, ifrBadge, status, parseMetar, inPoly };
+/* NOTAM: no free, open NOTAM feed for Europe, so the site links to the state's official briefing (same list as the
+   briefing pack's NOTAM page); elsewhere the FAA NOTAM Search, which is free and takes ICAO codes worldwide.
+   Used by the search bar and by the aerodrome panel in Route Explorer. notam(icao) → { name, url, direct } */
+const NOTAMSRC = { EN: ['Avinor IPPC → Briefing → Aerodrome and/or FIR', 'https://www.ippc.no/ippc/index.jsp'], ES: ['LFV AROWeb', 'https://aro.lfv.se/'],
+  EK: ['Naviair briefing', 'https://briefing.naviair.dk'], EF: ['Fintraffic AIS bulletins', 'https://www.ais.fi/ais/bulletins/'] };
+function notam(icao) { const s = NOTAMSRC[String(icao || '').slice(0, 2).toUpperCase()]; return s ? { name: s[0], url: s[1], direct: true } : { name: 'FAA NOTAM Search', url: 'https://notams.aim.faa.gov/notamSearch/', direct: false }; }
+const API = { ensure, html, badge, ifr, ifrBadge, status, parseMetar, inPoly, notam };
 G.ICB = API;
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 })(typeof window !== 'undefined' ? window : globalThis);

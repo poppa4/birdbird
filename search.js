@@ -253,16 +253,14 @@ const css=`.nsearch .res{position:absolute;left:var(--gl);right:var(--gr);max-wi
 .nsearch .sm{font-size:12px;color:var(--ink-3)}`;
 const ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>';
 const EX={en:['crosswind 270/15 rwy 24','ENTO','alternates NCO','3° 120 kt','holding entry','elev 1500 qnh 1003 t 25','what is an occlusion?'],no:['sidevind 270/15 bane 24','ENTO','alternativer NCO','3° 120 kt','holding entry','elev 1500 qnh 1003 t 25','hva er en okklusjon?']};
-/* NOTAM: no free, open NOTAM feed for Europe, so the search bar links to the state's official briefing (same list as the
-   briefing pack's NOTAM page); elsewhere the FAA NOTAM Search, which is free and takes ICAO codes worldwide */
-const NOTAMSRC={EN:['Avinor IPPC → Briefing → Aerodrome and/or FIR','https://www.ippc.no/ippc/index.jsp'],ES:['LFV AROWeb','https://aro.lfv.se/'],EK:['Naviair briefing','https://briefing.naviair.dk'],EF:['Fintraffic AIS bulletins','https://www.ais.fi/ais/bulletins/']};
+/* NOTAM: the official source per state lives in icaobrief.js (ICB.notam), shared with Route Explorer */
 /* ICAO code of a European aerodrome → AIP link (the server finds the AD 2 page in force, or the state's portal) */
 const icaoOf=q=>{ const m=String(q).trim().toUpperCase().match(/^([A-Z]{2}[A-Z0-9]{2})$/); return m&&/^(E|L|B[GIK]|GC|U[BDGKM])/.test(m[1])?m[1]:null; };
 let APN=null, apP=null;
 const loadAp=()=>apP||(apP=fetch('data/nav-eu.json').then(r=>r.json()).then(d=>{ APN={}; (d.ap||[]).forEach(a=>{ APN[a[0]]={n:a[1],lat:a[2],lon:a[3],el:a[4]}; }); }).catch(()=>{ APN={}; }));
 /* sun and twilight (sun.js, computed here) for the aerodrome; loaded the first time an ICAO code is typed */
 /* "now at the aerodrome" (icaobrief.js): SERA status from the METAR, SIGMETs, freezing level and a radar picture */
-let icbP=null; const loadIcb=()=>icbP||(icbP=new Promise(ok=>{ if(window.ICB) return ok(); const sc=document.createElement('script'); sc.src='icaobrief.js?v=6'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
+let icbP=null; const loadIcb=()=>icbP||(icbP=new Promise(ok=>{ if(window.ICB) return ok(); const sc=document.createElement('script'); sc.src='icaobrief.js?v=7'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
 let sunP=null; const loadSun=()=>sunP||(sunP=new Promise(ok=>{ if(window.SUN) return ok(); const sc=document.createElement('script'); sc.src='sun.js?v=1'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
 function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.dataset.w) return; const head=document.querySelector('header.site'); if(!head){ setTimeout(mount,50); return; }
   const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
@@ -302,8 +300,8 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
       const again=()=>{ if(icaoOf(inp.value.trim())===ic&&!res.hidden) draw(); }; if(!window.ICB) loadIcb().then(again); else if(ap) ICB.ensure(ic,ap,again);
       const u='/api/aip?icao='+ic+'&go=1'; items.push({u,ext:1});
       h+=`<a class="it" data-i="${items.length-1}" href="${u}" target="_blank" rel="noopener"><span><b>${esc(ic)}${nm?' · '+esc(nm):''}</b><br><small>${L({en:'AIP and charts (AD 2), the edition in force today',no:'AIP og kart (AD 2), utgaven som gjelder i dag'})}</small></span><small>AIP ↗</small></a>`;
-      { const ns=NOTAMSRC[ic.slice(0,2)]||['FAA NOTAM Search','https://notams.aim.faa.gov/notamSearch/']; items.push({u:ns[1],ext:1});
-        h+=`<a class="it" data-i="${items.length-1}" href="${ns[1]}" target="_blank" rel="noopener"><span><b>NOTAM</b><br><small>${L({en:'Official source: ',no:'Offisiell kilde: '})}${esc(ns[0])}${NOTAMSRC[ic.slice(0,2)]?'':L({en:' (type '+ic+')',no:' (skriv '+ic+')'})}</small></span><small>NOTAM ↗</small></a>`; }  if(ap&&window.SUN){ const tz=SUN.tzOf(ic), D=SUN.day(SUN.localDate(new Date(),tz),ap.lat,ap.lon), t=d=>SUN.hm(d,tz), su='sun.html?icao='+ic; items.push({u:su});
+      if(window.ICB){ const ns=ICB.notam(ic); items.push({u:ns.url,ext:1});
+        h+=`<a class="it" data-i="${items.length-1}" href="${ns.url}" target="_blank" rel="noopener"><span><b>NOTAM</b><br><small>${L({en:'Official source: ',no:'Offisiell kilde: '})}${esc(ns.name)}${ns.direct?'':L({en:' (type '+ic+')',no:' (skriv '+ic+')'})}</small></span><small>NOTAM ↗</small></a>`; }  if(ap&&window.SUN){ const tz=SUN.tzOf(ic), D=SUN.day(SUN.localDate(new Date(),tz),ap.lat,ap.lon), t=d=>SUN.hm(d,tz), su='sun.html?icao='+ic; items.push({u:su});
         const body= D.civil[0]&&D.civil[1] ? `${L({en:'Civil twilight from',no:'Sivilt tussmørke fra'})} ${t(D.civil[0])} · ${L({en:'sunrise',no:'soloppgang'})} ${t(D.rise)} · ${L({en:'sunset',no:'solnedgang'})} ${t(D.set)} · ${L({en:'night (EASA) from',no:'natt (EASA) fra'})} <b>${t(D.civil[1])}</b>`
           : D.allDayLight.civil ? L({en:'No night today: civil twilight or sun all night',no:'Ingen natt i dag: sivilt tussmørke eller sol hele natta'}) : L({en:'Night all day (polar night)',no:'Natt hele døgnet (mørketid)'});
         h+=`<a class="it" data-i="${items.length-1}" href="${su}"><span><b>${L({en:'Sun and twilight today',no:'Sol og tussmørke i dag'})}</b> <small>${tz?L({en:'local time ',no:'lokal tid '})+SUN.offset(D.noon,tz):'UTC'}</small><br><small>${body}</small></span><small>sun</small></a>`; }
