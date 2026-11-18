@@ -2,6 +2,7 @@
    Kamera følger flyets posisjon og attityde. Verden: x = øst, y = opp, z = −nord. */
 (function(G){
 'use strict';
+const RL=(typeof G!=='undefined'&&G.OTW_RWY)||1500; // runway length in metres (the A320 page sets window.OTW_RWY)
 const D2R=Math.PI/180;
 let R=null, scene, cam, papi, papiCol, papiPos, ok=false, W=0, H=0, cv=null, rwyLights=null, clouds=[], trees=null, treeN=0;
 /* canvas size from a ResizeObserver: reading clientWidth every frame forced a synchronous layout whenever the page had
@@ -14,20 +15,20 @@ function canvasTex(w,h,draw,rep){ const c=document.createElement('canvas'); c.wi
 
 function runwayTex(){
   return canvasTex(128,4096,(g,w,h)=>{
-    // 30 m bred, 1500 m lang -> 4.27 px/m i bredde, 2.73 px/m i lengde
+    // 30 m bred, RL m lang -> 4.27 px/m i bredde, 2.73 px/m i lengde
     g.fillStyle='#3b3e42'; g.fillRect(0,0,w,h);
     for(let i=0;i<9000;i++){ const v=50+Math.random()*28; g.fillStyle=`rgb(${v},${v+2},${v+5})`; g.fillRect(Math.random()*w,Math.random()*h,2,3); }
-    const py=m=>h-m/1500*h, px=m=>m/30*w;
+    const py=m=>h-m/RL*h, px=m=>m/30*w;
     g.fillStyle='#e9ecef';
     g.fillRect(px(0.6),0,px(0.9),h); g.fillRect(w-px(1.5),0,px(0.9),h);          // kantlinjer
-    for(let m=60;m<1440;m+=60) g.fillRect(w/2-px(0.45),py(m+30),px(0.9),30/1500*h); // senterlinje
-    const bars=(m0,flip)=>{ for(let k=0;k<8;k++){ const x=px(1.8+k*1.6+(k>=4?3:0)); g.fillRect(x,flip?py(1500-m0)-30/1500*h:py(m0+30),px(1.0),30/1500*h); } };
+    for(let m=60;m<(RL-60);m+=60) g.fillRect(w/2-px(0.45),py(m+30),px(0.9),30/RL*h); // senterlinje
+    const bars=(m0,flip)=>{ for(let k=0;k<8;k++){ const x=px(1.8+k*1.6+(k>=4?3:0)); g.fillRect(x,flip?py(RL-m0)-30/RL*h:py(m0+30),px(1.0),30/RL*h); } };
     bars(6,false); bars(6,true);
     const num=(t,m,flip)=>{ g.save(); g.translate(w/2,py(m)); if(flip) g.rotate(Math.PI); g.scale(1,2.6); g.font='bold 44px Arial'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t,0,0); g.restore(); };
     num('36',58,false); num('18',1442,true);
-    const blk=(m,flip)=>{ const y=flip?py(1500-m):py(m); g.fillRect(px(6),y-45/1500*h,px(2.2),45/1500*h); g.fillRect(w-px(8.2),y-45/1500*h,px(2.2),45/1500*h); };
+    const blk=(m,flip)=>{ const y=flip?py(RL-m):py(m); g.fillRect(px(6),y-45/RL*h,px(2.2),45/RL*h); g.fillRect(w-px(8.2),y-45/RL*h,px(2.2),45/RL*h); };
     blk(300,false); blk(300,true);
-    for(const m of [150,450,600]){ for(const flip of [false,true]){ const y=flip?py(1500-m):py(m); g.fillRect(px(7),y-22/1500*h,px(1),22/1500*h); g.fillRect(px(8.6),y-22/1500*h,px(1),22/1500*h); g.fillRect(w-px(8),y-22/1500*h,px(1),22/1500*h); g.fillRect(w-px(9.6),y-22/1500*h,px(1),22/1500*h); } }
+    for(const m of [150,450,600]){ for(const flip of [false,true]){ const y=flip?py(RL-m):py(m); g.fillRect(px(7),y-22/RL*h,px(1),22/RL*h); g.fillRect(px(8.6),y-22/RL*h,px(1),22/RL*h); g.fillRect(w-px(8),y-22/RL*h,px(1),22/RL*h); g.fillRect(w-px(9.6),y-22/RL*h,px(1),22/RL*h); } }
   });
 }
 function grassTex(){
@@ -85,12 +86,12 @@ function init(canvas){
       scene.add(new THREE.Mesh(g,terrM)); } }
   // gress rundt flyplassen
   const grass=new THREE.Mesh(new THREE.PlaneGeometry(4200,5200),new THREE.MeshLambertMaterial({map:grassTex(),polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2}));
-  grass.rotation.x=-Math.PI/2; grass.position.set(0,0.02,-750); scene.add(grass);
+  grass.rotation.x=-Math.PI/2; grass.position.set(0,0.02,(-RL/2)); scene.add(grass);
   // rullebane, taksebane, apron (the asphalt pieces share one draw call)
-  const rwy=new THREE.Mesh(new THREE.PlaneGeometry(30,1500),new THREE.MeshLambertMaterial({map:runwayTex(),polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-8})); rwy.rotation.x=-Math.PI/2; rwy.position.set(0,0.2,-750); scene.add(rwy);
+  const rwy=new THREE.Mesh(new THREE.PlaneGeometry(30,RL),new THREE.MeshLambertMaterial({map:runwayTex(),polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-8})); rwy.rotation.x=-Math.PI/2; rwy.position.set(0,0.2,(-RL/2)); scene.add(rwy);
   const asph=new THREE.MeshLambertMaterial({color:0x45484c,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-6}), H2=-Math.PI/2;
-  const ap=[[new THREE.PlaneGeometry(15,1500),mat(110,0.15,-750,H2)]];
-  for(const n of [60,750,1440]) ap.push([new THREE.PlaneGeometry(95,15),mat(62,0.14,-n,H2)]);
+  const ap=[[new THREE.PlaneGeometry(15,RL),mat(110,0.15,(-RL/2),H2)]];
+  for(const n of [60,750,(RL-60)]) ap.push([new THREE.PlaneGeometry(95,15),mat(62,0.14,-n,H2)]);
   ap.push([new THREE.PlaneGeometry(160,220),mat(200,0.13,-820,H2)]);
   scene.add(new THREE.Mesh(merge(ap,false),asph));
   // bygninger (one draw call, colour per vertex)
@@ -103,17 +104,17 @@ function init(canvas){
   // whenever the runway threshold left the view)
   const treeG=new THREE.ConeGeometry(4,14,6); treeG.translate(0,7,0); const treeM=new THREE.MeshLambertMaterial({color:0x2f5a2e});
   const N_T=1600, m4=new THREE.Matrix4(), TP=3, cells=Array.from({length:TP*TP},()=>[]); let k=0;
-  for(let i=0;i<N_T*3&&k<N_T;i++){ const x=(Math.random()-0.5)*9000, z=-750+(Math.random()-0.5)*9000; if(Math.abs(x)<220&&z<200&&z>-1700) continue; if(x>60&&x<420&&z<-500&&z>-1100) continue; if(Math.abs(x)<120&&z>0&&z<1200) continue;
+  for(let i=0;i<N_T*3&&k<N_T;i++){ const x=(Math.random()-0.5)*9000, z=(-RL/2)+(Math.random()-0.5)*9000; if(Math.abs(x)<220&&z<200&&z>-(RL+200)) continue; if(x>60&&x<420&&z<-500&&z>-1100) continue; if(Math.abs(x)<120&&z>0&&z<1200) continue;
     const s=0.7+Math.random()*0.8; m4.makeScale(s,s*(0.8+Math.random()*0.6),s); m4.setPosition(x,T.height(-z,x),z);
-    const cx=Math.min(TP-1,Math.floor((x+4500)/9000*TP)), cz=Math.min(TP-1,Math.floor((z+750+4500)/9000*TP)); cells[cz*TP+cx].push(m4.clone()); k++; }
+    const cx=Math.min(TP-1,Math.floor((x+4500)/9000*TP)), cz=Math.min(TP-1,Math.floor((z+RL/2+4500)/9000*TP)); cells[cz*TP+cx].push(m4.clone()); k++; }
   trees=[]; treeN=k;
   for(const list of cells){ if(!list.length) continue; const g=treeG.clone(), bb=new THREE.Box3();
     const im=new THREE.InstancedMesh(g,treeM,list.length); list.forEach((m,i)=>{ im.setMatrixAt(i,m); _v.setFromMatrixPosition(m); bb.expandByPoint(_v); });
     bb.max.y+=32; bb.expandByScalar(8); g.boundingSphere=bb.getBoundingSphere(new THREE.Sphere()); im.userData.n=list.length; scene.add(im); trees.push(im); }
   // lys: kantlys, terskel, innflygingslys
   const lp=[], lc=[]; const addL=(x,y,z,c)=>{ lp.push(x,y,z); lc.push(c[0],c[1],c[2]); };
-  for(let m=0;m<=1500;m+=60){ addL(-16,0.5,-m,[1,0.95,0.8]); addL(16,0.5,-m,[1,0.95,0.8]); }
-  for(let x=-15;x<=15;x+=3){ addL(x,0.5,1,[0.2,1,0.3]); addL(x,0.5,-1501,[1,0.2,0.15]); }
+  for(let m=0;m<=RL;m+=60){ addL(-16,0.5,-m,[1,0.95,0.8]); addL(16,0.5,-m,[1,0.95,0.8]); }
+  for(let x=-15;x<=15;x+=3){ addL(x,0.5,1,[0.2,1,0.3]); addL(x,0.5,-(RL+1),[1,0.2,0.15]); }
   for(let m=30;m<=720;m+=30){ for(let x=-2;x<=2;x+=2) addL(x,0.6,m,[1,1,0.92]); if(m===300) for(let x=-15;x<=15;x+=2.5) addL(x,0.6,m,[1,1,0.92]); }
   const lg=new THREE.BufferGeometry(); lg.setAttribute('position',new THREE.Float32BufferAttribute(lp,3)); lg.setAttribute('color',new THREE.Float32BufferAttribute(lc,3));
   rwyLights=new THREE.Points(lg,new THREE.PointsMaterial({size:1.1,sizeAttenuation:true,vertexColors:true,fog:true,transparent:true,opacity:0.85,depthWrite:false})); scene.add(rwyLights);
@@ -170,7 +171,7 @@ const BUD=[2.2e6,1.2e6,0.7e6];             // pixels per frame (low-res pass + f
 const BAND_UP=1.6*D2R, BAND_DN=4.5*D2R, KMIN=0.72;
 let PIPE=null, Wd=0, Hd=0, kCur=1, prevS=null, prevT=0, ms=1, hudX='', post=null, mask=null, aaCtx=false;
 const RWP=[]; // runway, approach-light and PAPI outline points (world), for the full-res box
-for(let m=-720;m<=1500;m+=60) RWP.push([-17,0,-m],[17,0,-m]); RWP.push([-50,1.2,-300],[-17,0,-1501],[17,0,-1501]);
+for(let m=-720;m<=RL;m+=60) RWP.push([-17,0,-m],[17,0,-m]); RWP.push([-50,1.2,-300],[-17,0,-(RL+1)],[17,0,-(RL+1)]);
 /* stencilBuffer: three r128 gives a depth-only renderbuffer 16 bits, far too coarse for this 1.2 m…140 km camera (the grass plane
    would cover the trees kilometres out); with stencil it is 24-bit depth + 8 stencil, as the canvas has */
 function makeRT(w,h,msaa){ const o={depthBuffer:true,stencilBuffer:true,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,generateMipmaps:false,format:THREE.RGBAFormat};
