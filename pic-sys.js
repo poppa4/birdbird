@@ -42,6 +42,15 @@ function draw(g,W,H,p,tm){
   const eL=lost<.5, eR=rat<.5;
   const elA=Math.max(p<1?.5:0,at(p,1,.6)), hyA=Math.max(p<1?.5:0,at(p,2,.6));
   const cx=W*.5, ey=H*.16, ew=W*(sm?.24:.13), eh=H*.12;
+  // the aircraft seen from above, faint, behind the schematic: wings across, engines under the boxes, APU in the tail cone
+  { g.save(); g.globalAlpha=.16; g.translate(0,H*.94); g.scale(1,-1); const fy=H*.08, fl=H*.86, fw=W*(sm?.1:.07), wy=H*.44;   // drawn nose down, so the tail cone (APU) is at the top
+    const fg=g.createLinearGradient(cx-fw,0,cx+fw,0); fg.addColorStop(0,'#5B6B78'); fg.addColorStop(.5,'#C9D3DB'); fg.addColorStop(1,'#5B6B78'); g.fillStyle=fg;
+    g.beginPath(); g.moveTo(cx,fy-H*.04); g.quadraticCurveTo(cx+fw,fy,cx+fw,fy+H*.08); g.lineTo(cx+fw,fl-H*.1); g.lineTo(cx+fw*.3,fl); g.lineTo(cx-fw*.3,fl); g.lineTo(cx-fw,fl-H*.1); g.lineTo(cx-fw,fy+H*.08); g.quadraticCurveTo(cx-fw,fy,cx,fy-H*.04); g.closePath(); g.fill();
+    g.fillStyle='#9AA8B3'; g.beginPath(); g.moveTo(cx-fw,wy); g.lineTo(W*.02,wy+H*.2); g.lineTo(W*.02,wy+H*.26); g.lineTo(cx-fw,wy+H*.16); g.closePath(); g.fill();
+    g.beginPath(); g.moveTo(cx+fw,wy); g.lineTo(W*.98,wy+H*.2); g.lineTo(W*.98,wy+H*.26); g.lineTo(cx+fw,wy+H*.16); g.closePath(); g.fill();
+    g.beginPath(); g.moveTo(cx-fw*.6,fl-H*.12); g.lineTo(cx-W*.16,fl-H*.02); g.lineTo(cx-W*.16,fl+H*.02); g.lineTo(cx-fw*.3,fl-H*.04); g.closePath(); g.fill();
+    g.beginPath(); g.moveTo(cx+fw*.6,fl-H*.12); g.lineTo(cx+W*.16,fl-H*.02); g.lineTo(cx+W*.16,fl+H*.02); g.lineTo(cx+fw*.3,fl-H*.04); g.closePath(); g.fill();
+    g.restore(); }
   // engines and APU
   box(g,W*.08,ey,ew,eh,L({en:'ENG 1',no:'MOTOR 1'}),'#fff',eL); box(g,W*.92-ew,ey,ew,eh,L({en:'ENG 2',no:'MOTOR 2'}),'#fff',eR);
   box(g,cx-ew*(sm?.32:.4),ey,ew*(sm?.64:.8),eh,'APU','#AEB8C1',true,sm?null:L({en:'back-up',no:'reserve'}));
