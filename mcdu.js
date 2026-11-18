@@ -1340,7 +1340,7 @@ function holdPath(f,h,X,Y,col,dash){
   const r=Math.abs(X(along(b,90,rad))-X(b)), sw=side>0?1:0;
   return `<path d="M${P1}L${P2}A${r} ${r} 0 0 ${sw} ${P3}L${P4}A${r} ${r} 0 0 ${sw} ${P1}" fill="none" stroke="${col}" stroke-width="2" ${dash?`stroke-dasharray="${dash}"`:''}/>`;
 }
-function drawNd(){ const n=el('mnd'); if(!n) return; n.innerHTML=ndSvg(); const r=el('mndr'); if(r) r.textContent=RANGES[NDR]+' NM'; drawFcu(); }
+function drawNd(){ const n=el('mnd'); if(!n) return; const sv=ndSvg(); if(sv!==LASTND){ n.innerHTML=sv; LASTND=sv; } const r=el('mndr'); if(r) r.textContent=RANGES[NDR]+' NM'; drawFcu(); }
 function drawFcu(){
   const b=el('mfcu'); if(!b) return; const air=S&&S.phase!=='PRE'; b.hidden=!air; if(!air) return;
   const run=el('mfrun'); run.textContent=S.run?'❚❚':'▶'; run.setAttribute('aria-label',S.run?Lx(tt('Pause','Pause')):Lx(tt('Fly','Fly'))); run.setAttribute('aria-pressed',S.run?'true':'false');
@@ -1348,7 +1348,7 @@ function drawFcu(){
   const h=el('mfhdg'); if(document.activeElement!==h) h.value=S.ap==='HDG'?p3(S.hdg):'---';
 }
 let TIMER=null;
-function loop(){ if(TIMER) return; TIMER=setInterval(()=>{ if(!S||!S.run){ clearInterval(TIMER); TIMER=null; drawFcu(); return; } stepFlight(0.1*8); refresh(); },100); }
+function loop(){ if(TIMER) return; let last=performance.now(); TIMER=setInterval(()=>{ if(!S||!S.run){ clearInterval(TIMER); TIMER=null; drawFcu(); return; } const now=performance.now(), dt=Math.min(1,(now-last)/1000); last=now; if(document.hidden) return; stepFlight(dt*8); refresh(); },100); }
 function fcuUi(){
   const b=el('mfcu'); if(!b) return;
   el('mfrun').onclick=()=>{ fcu('run'); if(S.run) loop(); refresh(); };
@@ -1397,8 +1397,9 @@ function clearHl(){ document.querySelectorAll('#mcdu .k.hl').forEach(b=>b.classL
 let LATCH=[];
 function stepIdx(){ if(!SC) return -1; for(let i=0;i<SC.steps.length;i++){ if(LATCH[i]) continue; if(SC.steps[i].ok()){ LATCH[i]=true; continue; } return i; } return SC.steps.length; }
 const stepOk=i=>!!LATCH[i]||SC.steps[i].ok();
+let LASTSCR='', LASTND='';
 function refresh(){
-  el('mscr').innerHTML=draw(); drawNd();
+  const h=draw(); if(h!==LASTSCR){ el('mscr').innerHTML=h; LASTSCR=h; } drawNd();
   if(!SC) return;
   if(MODE==='drill'){ drillNow(); drillSteps(); return; }
   const n=SC.steps.length, i=stepIdx();
