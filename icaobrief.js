@@ -106,10 +106,10 @@ async function getRadar(ap) {
 /* the coloured box on the METAR line: EASA/SERA wording on purpose, not the U.S. VFR/MVFR/IFR/LIFR categories */
 function badge(metar, L) {
   const st = status(metar); if (!st) return '';
-  const txt = st.cls === 'ok' ? 'VFR' : st.svfr ? L({ en: 'Special VFR only', no: 'Kun spesiell VFR' }) : L({ en: 'Below VFR', no: 'Under VFR' }); // the rules are in the tooltip, not on the box
+  const txt = st.cls === 'ok' ? 'VFR' : st.svfr ? L({ en: 'Special VFR only', no: 'Kun spesiell VFR' }) : L({ en: 'IFR only', no: 'Kun IFR' }); // below 1500 m or 600 ft neither VFR nor special VFR is possible in a control zone // the rules are in the tooltip, not on the box
   const det = st.cavok ? 'CAVOK' : fmtVis(st.vis) + ' · ' + (fmtCeil(st.ceil) ? L({ en: 'ceiling ', no: 'skydekke ' }) + fmtCeil(st.ceil) : L({ en: 'no ceiling', no: 'ingen ceiling' }));
-  const tip = L({ en: 'Control zone, SERA.5005: VFR needs ground visibility ≥ 5 km and ceiling ≥ 1500 ft. Special VFR, SERA.5010: 1500 m and 600 ft with ATC clearance. Only the SERA minima are used, no other categories. Planning aid only.',
-    no: 'Kontrollsone, SERA.5005: VFR krever bakkesikt ≥ 5 km og skydekke ≥ 1500 ft. Spesiell VFR, SERA.5010: 1500 m og 600 ft med klarering. Bare SERA-minimaene brukes, ingen andre kategorier. Bare planleggingshjelp.' });
+  const tip = L({ en: 'Control zone, SERA.5005: VFR needs ground visibility ≥ 5 km and ceiling ≥ 1500 ft. Special VFR, SERA.5010: 1500 m and 600 ft with ATC clearance. Below 1500 m or 600 ft: IFR only. Only the SERA minima are used, no other categories. Planning aid only.',
+    no: 'Kontrollsone, SERA.5005: VFR krever bakkesikt ≥ 5 km og skydekke ≥ 1500 ft. Spesiell VFR, SERA.5010: 1500 m og 600 ft med klarering. Under 1500 m eller 600 ft: kun IFR. Bare SERA-minimaene brukes, ingen andre kategorier. Bare planleggingshjelp.' });
   return ` <span class="icb-badge ${st.cls}${st.svfr ? ' svfr' : ''}" title="${esc(tip + ' (' + det + ')')}">${esc(txt)}</span>`;
 }
 

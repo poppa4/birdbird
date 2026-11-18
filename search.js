@@ -259,7 +259,7 @@ let APN=null, apP=null;
 const loadAp=()=>apP||(apP=fetch('data/nav-eu.json').then(r=>r.json()).then(d=>{ APN={}; (d.ap||[]).forEach(a=>{ APN[a[0]]={n:a[1],lat:a[2],lon:a[3],el:a[4]}; }); }).catch(()=>{ APN={}; }));
 /* sun and twilight (sun.js, computed here) for the aerodrome; loaded the first time an ICAO code is typed */
 /* "now at the aerodrome" (icaobrief.js): SERA status from the METAR, SIGMETs, freezing level and a radar picture */
-let icbP=null; const loadIcb=()=>icbP||(icbP=new Promise(ok=>{ if(window.ICB) return ok(); const sc=document.createElement('script'); sc.src='icaobrief.js?v=5'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
+let icbP=null; const loadIcb=()=>icbP||(icbP=new Promise(ok=>{ if(window.ICB) return ok(); const sc=document.createElement('script'); sc.src='icaobrief.js?v=6'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
 let sunP=null; const loadSun=()=>sunP||(sunP=new Promise(ok=>{ if(window.SUN) return ok(); const sc=document.createElement('script'); sc.src='sun.js?v=1'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
 function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.dataset.w) return; const head=document.querySelector('header.site'); if(!head){ setTimeout(mount,50); return; }
   const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
