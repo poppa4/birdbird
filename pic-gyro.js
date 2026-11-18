@@ -59,7 +59,7 @@ function draw(g,W,H,p,tm){
   else { trueH=90; comp=90; const k=clamp((p-5)*1.5,0,1); hi=lerp(96,90,ease(k)); note=k<1?L({en:'set HI to the compass',no:'still kursgyroen etter kompasset'}):L({en:'aligned: fly the HI',no:'stemmer: fly etter kursgyroen'}); }
   // labels
   txt(g,L({en:'MAGNETIC COMPASS',no:'MAGNETKOMPASS'}),c1[0],c1[1]-r-24,{mono:1,size:10*fs,col:'#AEB8C1',al:'center'});
-  txt(g,L({en:'HEADING INDICATOR (gyro)',no:'KURSGYRO'}),c2[0],c2[1]-r-24,{mono:1,size:10*fs,col:'#AEB8C1',al:'center'});
+  txt(g,L({en:'HEADING INDICATOR (gyro)',no:'KURSGYRO'}),c2[0],c2[1]-r-24,{mono:1,size:10*fs,col:'#AEB8C1',al:'center',a:at(p,1,.6)});
   card(g,c1[0],c1[1],r,comp,{col:C.amber}); { const dA=1-at(p,1,.6); g.save(); g.globalAlpha=1-dA; card(g,c2[0],c2[1],r,hi,{col:C.blue}); g.restore(); }
   // the true heading reference
   pill(g,`${L({en:'actual heading',no:'faktisk kurs'})} ${String(Math.round(wrap(trueH))).padStart(3,'0')}°`,W/2,H*.08,{mono:1,size:11.5*fs,col:'#8EDDB0',al:'center'});
