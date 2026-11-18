@@ -86,6 +86,7 @@ function leverN1(M,tla){ if(tla<0) return N1I+(-tla/20)*(70-N1I);
 function thrustOf(M,n1,rev){ const at=isa(M.h,M.oatDev), m=M.mach;
   const f=clamp(Math.pow(Math.max(0,(n1-N1I))/(93.5-N1I),1.75),0,1.12)+0.045;
   let T=AC.T0*f*Math.pow(at.sig,0.78)*(1-0.62*m+0.26*m*m);
+  if(AC.prop){ /* turboprop: shaft power × propeller efficiency / airspeed, capped by the static thrust */ T=Math.min(AC.T0*f*Math.pow(at.sig,0.7),AC.prop*0.8*f*Math.pow(at.sig,0.75)/Math.max(M.tas,20)); }
   if(rev) T=-AC.T0*0.38*clamp((n1-N1I)/(70-N1I),0,1)*Math.pow(at.sig,0.8)-AC.T0*0.02;
   return T; }
 

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="An ATR 72 cockpit procedure trainer in the browser: the real flight deck, the overhead with its dark-cockpit pushbuttons, PW127 turboprops on power and condition levers, hotel mode with the propeller brake, the AFCS and ADU, EADI and EHSI, the round engine gauges and the crew alerting panel.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ATR 72 cockpit procedure trainer</title>
+<link rel="preload" href="img/cockpits/atr72-deck-1500.webp" as="image">
+<link rel="stylesheet" href="lab.css?v=15">
+<link rel="stylesheet" href="site.css?v=35">
+<link rel="stylesheet" href="b200.css?v=20">
+<link rel="stylesheet" href="simshell.css?v=11">
+<link rel="stylesheet" href="a320.css?v=8">
+</head>
+<body data-title="ATR 72 cockpit procedure trainer">
+<script src="site.js?v=105"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">NORDAP · Simulators</div>
+      <h1>ATR 72 cockpit procedure trainer</h1>
+      <p>The ATR 72 flight deck: the overhead with its dark-cockpit pushbuttons, the AFCS and ADU, EADI and EHSI, the round engine gauges and the pedestal with the power levers, condition levers and the propeller brake. Bring it from cold and dark through hotel mode to the runway and fly it by hand or on the autopilot, with the power set by you: the ATR has no autothrottle.</p>
+    </div>
+    <div class="hright"><div class="status ok" id="stat">On ground</div></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#cockpit">Cockpit</a><a href="#controls">Flight controls</a><a href="#read">How it works</a></nav>
+
+  <section id="cockpit" class="ckp a320 atr72" aria-label="Cockpit">
+    <div class="ctop" role="toolbar" aria-label="Cockpit tools">
+      <a class="cbhome" href="training.html" aria-label="NORDAP: training overview"><span aria-hidden="true">‹</span><b>NORDAP</b></a>
+      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html">DA42</option><option value="b200.html">King Air B200</option><option value="c172.html">Cessna 172</option><option value="a320.html">Airbus A320</option><option value="b737.html">Boeing 737-800</option><option value="atr72.html" selected>ATR 72</option></select>
+      <span class="dseg" role="group" aria-label="View"><a href="atr72.html" class=on aria-current=page>2D</a></span>
+      <select class="cb afsel" id="apSel" aria-label="Start"><option value="air">✈︎ In the air, 5,000 ft</option><option value="cold">✈︎ Cold and dark</option><option value="ready">✈︎ Ready for take-off</option><option value="appr">✈︎ ILS 36, 12 NM</option></select>
+      <span class="vseg" role="group" aria-label="Look"><button class="cb" data-v="ovhd" type="button">Overhead</button><button class="cb on" data-v="main" type="button">Panel</button><button class="cb" data-v="ped" type="button">Pedestal</button></span>
+      <button class="cb" id="bDrawer" type="button" aria-pressed="false">Procedures</button>
+      <button class="cb" id="bPause" type="button">Pause</button>
+      <button class="cb" id="bReset" type="button" aria-label="Restart"><i aria-hidden="true">↺</i><span>Restart</span></button>
+      <span class="sp"></span>
+      <button class="cb" id="bMore" type="button" aria-controls="moreMenu" aria-expanded="false" aria-label="More">⋯</button>
+    </div>
+    <div class="cbody">
+      <div class="stage" id="stage">
+        <div class="otwsky" id="otwSky" aria-hidden="true"></div><canvas id="otw" role="img" aria-label="View out of the window"></canvas><svg class="wsf" id="wsf" viewBox="0 0 1000 300" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="wsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b333c"/><stop offset="1" stop-color="#1b2026"/></linearGradient><linearGradient id="wsl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#151a1f"/><stop offset=".5" stop-color="#323b45"/><stop offset="1" stop-color="#151a1f"/></linearGradient></defs><path fill="url(#wsg)" d="M0 0H1000V300H985L940 40Q500 18 60 40L15 300H0Z"/><path fill="url(#wsl)" d="M491 26H509L515 300H485Z"/><path fill="url(#wsl)" d="M128 34L150 32L118 300H86Z"/><path fill="url(#wsl)" d="M872 34L850 32L882 300H914Z"/><path fill="none" stroke="#0e1114" stroke-width="2" d="M60 40Q500 18 940 40"/></svg>
+        <div class="vp" id="vp"><div class="world" id="world"><img id="deck" src="img/cockpits/atr72-deck-1500.webp" alt="" width="1000" height="1267" decoding="async" draggable="false"><div class="ovl" id="ovl"></div></div></div>
+        <button class="zback" id="zBack" type="button">← Back</button>
+        <div class="more" id="moreMenu" hidden role="group" aria-label="Settings"><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bAlign" type="button" aria-pressed="false">Fast IRS alignment</button><button class="cb" id="bHelp" type="button">Controls</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
+        <div class="tip" id="tip" hidden></div>
+        <div class="perfm" id="perfm" hidden></div>
+        <div class="pill" id="pill" aria-live="polite"></div>
+        <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.<a class="rotback" href="training.html">← Back to NORDAP</a></div></div>
+      </div>
+      <aside class="drawer" id="drawer" aria-label="Procedures"><div class="din">
+        <div class="tabs" role="tablist" aria-label="Procedures"><button data-t="fl" class="on" role="tab" aria-selected="true">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
+        <div id="tabFl"></div><div id="tabSp" hidden></div>
+      </div></aside>
+    </div>
+  </section>
+
+  <section class="card" id="controls">
+    <div class="eyebrow">Fly it</div>
+    <h2>Flight controls</h2>
+    <p class="lead">Fly with the keyboard, a gamepad or joystick, the touch stick or this pad. The ATR has conventional controls and no autothrottle: you set the power with the power levers, and the condition levers set the propeller speed. Trim takes the force off the column; the autopilot trims by itself.</p>
+    <div class="ctlgrid" style="margin-top:12px">
+      <div class="box">
+        <b class="t">Control column</b>
+        <div class="stick" id="stick"><span class="dot"></span><small>Drag · springs back to neutral</small></div>
+      </div>
+      <div class="box">
+        <b class="t">Power levers</b>
+        <div class="thrbox" id="thrBox"></div>
+        <div class="btns" style="margin-top:12px"><button class="btn" id="brk">Hold for brakes</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="read">
+    <div class="eyebrow">Understand</div>
+    <h2>How the trainer works</h2>
+    <div class="legend">
+      <div class="box"><b class="t">Dark cockpit</b><p>The overhead pushbuttons are dark when everything is normal: a white OFF light means a system is switched off, an amber FAULT or LO PR light a failure, a blue ON a temporary or manual selection. Before take-off the overhead should be dark.</p></div>
+      <div class="box"><b class="t">Electrics</b><p>DC is the main system: two DC generators (one on each engine), the battery and DC external power. Each engine also drives an AC wild-frequency generator for the heavy loads (de-icing, heaters). On the stand: BAT ON, DC EXT PWR ON.</p></div>
+      <div class="box"><b class="t">Engine start and hotel mode</b><p>START SEL to START A&amp;B, press START 1 or 2: the starter-generator turns the engine. CL from FUEL SO to FTR: fuel and light-off, the START light goes out at the end of the start. Hotel mode: with the gust lock on, CL 2 at FTR and PL 2 at GI, PROP BRAKE ON before starting engine 2: the engine runs and powers the aircraft, the propeller stays still.</p></div>
+      <div class="box"><b class="t">Power and condition levers</b><p>The condition levers: FUEL SO, FTR (feathered), AUTO (NP 70.8 % on the ground, 82 % in flight) and MAX RPM (100 %, for take-off and approach). The power levers: GI, FI, the NOTCH (rated power for the PWR MGT setting: TO, MCT, CLB, CRZ) and the RAMP. The torque bug shows the rated torque for the PWR MGT setting.</p></div>
+      <div class="box"><b class="t">AFCS</b><p>AP engages the autopilot with the yaw damper. HDG, NAV, APP and BANK are lateral; IAS, VS and ALT vertical, with ALT SEL armed when the selected altitude is away from the present one. The pitch wheel sets the vertical speed in VS or the speed in IAS. The ADU shows the engaged modes in green and the armed modes in white. Power is always yours.</p></div>
+      <div class="box"><b class="t">What is simplified</b><p>The engines, systems and flight model are teaching models shared with the A320 and 737 trainers and tuned to typical ATR 72 numbers. The FMS is a status page; NAV follows the practice route. Ice accretion, the ATPCS uptrim and the CCAS sounds are simplified. Our own drawings of the instruments.</p></div>
+    </div>
+    <h3 style="margin-top:6px">Keyboard</h3>
+    <table class="keys">
+      <tr><td><kbd>W</kbd> <kbd>S</kbd> · <kbd>A</kbd> <kbd>D</kbd> or the arrow keys</td><td>Column and wheel: nose down and up, roll left and right</td></tr>
+      <tr><td><kbd>Home</kbd> <kbd>End</kbd> (or <kbd>[</kbd> <kbd>]</kbd>)</td><td>Pitch trim: nose down, nose up</td></tr>
+      <tr><td><kbd>Q</kbd> <kbd>E</kbd></td><td>Rudder pedals (and nose wheel steering)</td></tr>
+      <tr><td><kbd>+</kbd> <kbd>−</kbd> · <kbd>T</kbd> · <kbd>I</kbd> · <kbd>R</kbd></td><td>Power levers · into the notch · idle (GI on the ground, FI in the air) · reverse (on the ground)</td></tr>
+      <tr><td><kbd>C</kbd> <kbd>X</kbd></td><td>Condition levers forward and back (FUEL SO, FTR, AUTO, MAX RPM)</td></tr>
+      <tr><td><kbd>F</kbd> <kbd>V</kbd> · <kbd>G</kbd> · <kbd>B</kbd></td><td>Flaps down and up (0, 15, 30) · gear lever · brakes while held</td></tr>
+      <tr><td><kbd>Space</kbd> · <kbd>P</kbd></td><td>Autopilot disconnect · pause</td></tr>
+      <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> <kbd>5</kbd> · <kbd>Esc</kbd></td><td>Overhead, panel, pedestal, AFCS, engine instruments · back to the panel</td></tr>
+    </table>
+  </section>
+
+  <p class="note simnote">Training aid, not a certified simulator or a substitute for the aircraft's approved documents. No procedures are included: use your operator's FCOM, QRH and SOP.</p>
+  <p class="note">Not affiliated with ATR, Pratt &amp; Whitney Canada or any operator. The flight deck picture is rendered from the FlightGear ATR 72-500 model (GPL-3.0, see <a href="sources.html">data sources</a>); the instruments are our own drawings. Numbers are typical values for learning.</p>
+</div>
+
+<script>window.OTW_RWY=3000;</script>
+<script src="three.min.js?v=128"></script>
+<script src="simterrain.js?v=5"></script>
+<script src="otw.js?v=17"></script>
+<script src="lab.js?v=55"></script>
+<script src="simshell.js?v=10"></script>
+<script src="atr72t.js?v=1"></script>
+<script src="a320sys.js?v=3"></script>
+<script src="a320fm.js?v=5"></script>
+<script src="a320disp.js?v=3"></script>
+<script src="a320mcdu.js?v=2"></script>
+<script src="atr72disp.js?v=1"></script>
+<script src="atr72.js?v=1"></script>
+<script src="a320-app.js?v=19"></script>
+</body>
+</html>

@@ -255,7 +255,7 @@ function fuel(A,dt,air,fm){
   F.mode=S.fMode?'auto':'man';
   // burn
   for(let i=0;i<2;i++){
-    const ff=A.eng[i].ff/3600*dt; if(ff<=0) continue; F.used[i]+=ff;
+    const ff=A.eng[i].ff*(A.ffK||1)/3600*dt; if(ff<=0) continue; F.used[i]+=ff;
     if(F.ctrRun&&F.c>0){ F.c=Math.max(0,F.c-ff); continue; }
     if(S.fX&&i===1&&!(S.fR1||S.fR2)){ take(F,'L',ff); continue; }
     if(S.fX&&i===0&&!(S.fL1||S.fL2)){ take(F,'R',ff); continue; }

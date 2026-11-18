@@ -106,3 +106,10 @@
 .a320:not(.d3) .stage:not(.otwlive)>canvas#otw{visibility:hidden}
 .a320 .stage>.otwsky{background:linear-gradient(#4f86d3 0,#a9c6e6 55%,#d6e3ee 70%,#b4c6a4 71%,#86a865 85%,#5f8a40 100%)}
 .a320 .stage.otwlive>.otwsky{display:none}
+/* ---- ATR 72 (atr72.html): dark-cockpit pushbutton lights with their caption ---- */
+.atr72 .world,.atr72 .world img{height:1266.7px}
+.atr72 .pb.big i,.atr72 .pb.bl i{font:700 1.6px/1.08 Archivo,"Archivo fb",Arial,sans-serif;font-stretch:80%;white-space:pre-line;text-align:center;margin:.25px;border-radius:.3px;letter-spacing:.01em}
+.atr72 .pb.bl.bx i{font-size:2.1px}
+.atr72 .pb i.on{background:#151208}.atr72 .pb i.b.on{background:#06121a}.atr72 .pb i.g.on{background:#06150a}.atr72 .pb i.r.on{background:#2a0503}
+.atr72 .pb i{visibility:visible;background:#0e1012}
+.atr72 .pb i:not(.on){color:transparent!important;text-shadow:none!important}

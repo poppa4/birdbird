@@ -407,6 +407,7 @@ function buildOverlay(){
     if(!el){ OV.push(c); continue; }
     const [x,y,w,h]=c.r;
     if(c.t==='thr'){ Object.assign(el.style,{left:(x+(c.i?w:-12))+'px',top:(y+h+1)+'px',width:'12px',height:'4.5px'}); }
+    else if(c.t==='lever'&&c.lp){ Object.assign(el.style,{left:(x+c.lp[0])+'px',top:(y+c.lp[1])+'px',width:c.lp[2]+'px',height:'5px'}); }
     else if(c.t==='lever'&&c.kind==='gear'){ Object.assign(el.style,{left:(x-14)+'px',top:(y+h/2-2.5)+'px',width:'13px',height:'5px'}); }
     else if(c.t==='lever'&&c.kind==='flaps'){ Object.assign(el.style,{left:(x+w+1)+'px',top:(y+2)+'px',width:'16px',height:'5px'}); }
     else if(c.t==='lever'&&c.kind==='spd'){ Object.assign(el.style,{left:(x-17)+'px',top:(y+2)+'px',width:'16px',height:'5px'}); }
@@ -433,7 +434,7 @@ function stateSig(){ const test=A.sw.annLt===2&&A.dc; let s=test?'T':'';
     case 'key': s+=A.dc&&A.bus.dcEss&&(test||c.lit())?1:0; break; case 'bar': s+=A.dc&&(test||c.lit())?1:0; break;
     case 'sel': case 'cont': s+=A.sw[c.k]; break; case 'selF': s+=c.get(); break; case 'knob': s+=c.ang?c.ang():''; break;
     case 'tog': s+=c.get?c.get():A.sw[c.k]; break; case 'seg': s+='|'+c.txt(); break; case 'gearInd': s+=M.gear>0.99?'D':M.gear<0.01?'U':'T'; break;
-    case 'thr': s+=thrTxt(c.i); break; case 'lever': s+=levTxt(c.kind); break; case 'fcu': s+=fcuVals().join('|')+M.ap.lat+M.ap.latArm+M.ap.spd.man+M.ap.alt.v; break; }
+    case 'thr': s+=thrTxt(c.i); break; case 'lever': s+=levTxt(c.kind,c); break; case 'fcu': s+=fcuVals().join('|')+M.ap.lat+M.ap.latArm+M.ap.spd.man+M.ap.alt.v; break; }
     s+=','; }
   return s; }
 function paint3d(force){ if(!CK) return; const s=stateSig(); if(!force&&s===sig3) return; sig3=s; CK.repaint(paintPanel); }
@@ -454,7 +455,7 @@ function paintPanel(g,R){
       case 'seg': { const t=c.txt(); if(!t) break; g.fillStyle='#090a0b'; g.fillRect(x,y,w,h); g.fillStyle='#ffb347'; g.font='600 '+(h*0.62).toFixed(2)+'px "IBM Plex Mono",monospace'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t,x+w/2,y+h/2); break; }
       case 'gearInd': { if(!A.dc) break; const t=M.gear>0.99?'▼ ▼ ▼':M.gear<0.01?'':'UNLK'; if(!t) break; g.fillStyle='#08090a'; g.fillRect(x,y,w,h); g.fillStyle=M.gear>0.99?COL.g:COL.r; g.font='600 3.6px Archivo,Arial'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t,x+w/2,y+h/2); break; }
       case 'thr': { const t=thrTxt(c.i); const lx=x+(c.i?w:-12); g.fillStyle='rgba(8,9,10,.85)'; g.fillRect(lx,y+h+1,12,4.5); g.fillStyle='#7fe8ff'; g.font='600 3px "IBM Plex Mono",monospace'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t,lx+6,y+h+3.3); break; }
-      case 'lever': { const t=levTxt(c.kind); let lx=x, ly=y, lw=14; if(c.kind==='gear'){ lx=x-14; ly=y+h/2-2.5; } if(c.kind==='flaps'){ lx=x+w+1; ly=y+2; } if(c.kind==='spd'){ lx=x-17; ly=y+2; lw=16; } if(c.kind==='park'){ lx=x+w*0.35; ly=y+h-6; lw=w*0.3; }
+      case 'lever': { const t=levTxt(c.kind,c); let lx=x, ly=y, lw=14; if(c.lp){ lx=x+c.lp[0]; ly=y+c.lp[1]; lw=c.lp[2]; } else if(c.kind==='gear'){ lx=x-14; ly=y+h/2-2.5; } if(c.kind==='flaps'){ lx=x+w+1; ly=y+2; } if(c.kind==='spd'){ lx=x-17; ly=y+2; lw=16; } if(c.kind==='park'){ lx=x+w*0.35; ly=y+h-6; lw=w*0.3; }
         g.fillStyle='rgba(8,9,10,.85)'; g.fillRect(lx,ly,lw,5); g.fillStyle='#7fe8ff'; g.font='600 3px "IBM Plex Mono",monospace'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t,lx+lw/2,ly+2.6); break; }
       case 'fcu': { const [pw,spd,hdg,vs]=fcuVals(); g.save(); g.translate(x,y); g.scale(w/137,h/10); fcuPaint(g,pw,spd,hdg,vs); g.restore(); break; }
     } }
@@ -479,7 +480,7 @@ function overlayTick(){
       case 'seg': { const s=c.txt(); if(lastSig.get(c)===s) break; lastSig.set(c,s); c.el.textContent=s; c.el.style.visibility=s?'visible':'hidden'; break; }
       case 'gearInd': { const g=M.gear, on=A.dc; const s=on?(g>0.99?'▼ ▼ ▼':g<0.01?'':'UNLK'):''; if(lastSig.get(c)===s) break; lastSig.set(c,s); c.el.textContent=s; c.el.style.color=g>0.99?'#2bff4a':'#ff3a2a'; c.el.style.visibility=s?'visible':'hidden'; break; }
       case 'thr': { const s=thrTxt(c.i); if(lastSig.get(c)===s) break; lastSig.set(c,s); c.el.textContent=s; break; }
-      case 'lever': { const s=levTxt(c.kind);
+      case 'lever': { const s=levTxt(c.kind,c);
         if(lastSig.get(c)===s) break; lastSig.set(c,s); c.el.textContent=s; break; }
       case 'fcu': fcuDraw(c); break;
     }
