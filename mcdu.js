@@ -156,7 +156,7 @@ const destOf=p=>p.items.find(x=>x.k==='dest');
 /* =========================================================== state */
 let S=null;
 function blank(){
-  return {phase:'PRE',ap:'NAV',pos:{x:0,y:0},alt:0,utc:14*60+32,
+  return {phase:'PRE',ap:'NAV',hdg:360,trk:360,run:false,hz:null,pos:{x:0,y:0},alt:0,utc:14*60+32,
     act:newPlan(),sec:null,tmpy:null,
     init:{flt:'',ci:null,crz:null,temp:null,altn:null,co:'',irs:false},
     fb:{zfw:null,cg:null,block:null,taxi:0.2},
@@ -288,6 +288,27 @@ PG.rtesel={
     if(S.sp) msg('NOT ALLOWED'); },
   slew(d){ const R=S.rsel; if(R&&R.list.length) R.i=(R.i+d+R.list.length)%R.list.length; }
 };
+function parseAlt(v){ const m=/^([+-]?)(?:FL(\d{2,3})|(\d{3,5}))$/.exec(v); if(!m) return null; if(m[2]){ const f=+m[2]; if(f<10||f>398) return 'RANGE'; return m[1]+'FL'+p3(f); } const a=+m[3]; if(a<0||a>39000) return 'RANGE'; return m[1]+String(Math.round(a/10)*10); }
+PG.vrev={
+  draw(){ const V=S.vr, p=planFor(V.view), it=p.items[V.i]; if(!it){ go('fpln'); return; }
+    put(0,1,'VERT REV','w'); put(0,10,'AT','w',1); put(0,13,it.id,'g');
+    const F=fuel(); lbl(1,'L',' EFOB='+(F&&F.efob!=null?(F.efob+F.trip*0.3).toFixed(1):'---.-')); putR(LR(1),'EXTRA='+(F&&F.extra!=null?F.extra.toFixed(1):'---.-'),'w',1);
+    const des=['star','via','app'].includes(it.seg);
+    lbl(2,'L',des?'DES SPD LIM':'CLB SPD LIM'); prompt(2,'L','250/FL100','m'); scr[DR(2)].forEach((x,i)=>{ if(i<9) x.s=1; });
+    prompt(2,'R','RTA>');
+    lbl(3,'L',' SPD CSTR'); prompt(3,'L',it.spd?'*'+it.spd:'[ ]',it.spd?'m':'c');
+    lbl(3,'R','ALT CSTR '); prompt(3,'R',it.alt?String(it.alt):'[    ]',it.alt?'m':'c');
+    prompt(4,'L','<WIND'); prompt(4,'R','STEP ALTS>');
+    prompt(6,'L','<RETURN');
+  },
+  lsk(s,n){ const V=S.vr, p=planFor(V.view), it=p.items[V.i], v=S.sp;
+    if(n===6&&s==='L'){ go('fpln',{view:V.view}); return; }
+    if(S.clr){ S.clr=false; if(s==='L'&&n===3){ delete it.spd; return; } if(s==='R'&&n===3){ delete it.alt; return; } msg('NOT ALLOWED'); return; }
+    if(s==='L'&&n===3){ if(!v) return; const c=ckNum(v.replace(/^\*/,''),100,350); if(c==null) return; it.spd=c; take(); return; }
+    if(s==='R'&&n===3){ if(!v) return; const a=parseAlt(v.replace(/^\//,'')); if(!a){ msg('FORMAT ERROR'); return; } if(a==='RANGE'){ msg('ENTRY OUT OF RANGE'); return; } it.alt=a; take(); return; }
+    if((s==='R'&&(n===2||n===4))||(s==='L'&&n===4)){ msg('NOT AVAILABLE'); return; }
+    if(v) msg('NOT ALLOWED'); }
+};
 PG.irs={draw(){ title('IRS INIT'); lbl(1,'L','LAT'); lbl(1,'R','LONG'); prompt(1,'L','6000.0N','c'); prompt(1,'R','01000.0E','c'); lbl(2,'L','REFERENCE'); prompt(2,'L',S.act.from||'----','g'); lbl(3,'L','GPS POSITION'); prompt(3,'L','6000.0N/01000.0E','g'); put(DR(4),0,'IRS1 ALIGN ON GPS','g'); put(DR(4)+1,0,'IRS2 ALIGN ON GPS','g'); prompt(6,'L','<RETURN'); prompt(6,'R',S.init.irs?'ALIGNED':'ALIGN ON REF*',S.init.irs?'g':'a'); },
   lsk(s,n){ if(s==='L'&&n===6){ go('init'); return; } if(s==='R'&&n===6){ S.init.irs=true; return; } if(S.sp) msg('NOT ALLOWED'); }};
 
@@ -356,7 +377,7 @@ PG.fpln={
       if(it.k==='disc'){ put(dr,0,'---F-PLN DISCONTINUITY--','w'); continue; }
       const col=tm?'y':(r.miss||r.alt?'c':(view==='sec'?'w':'g'));
       const isFrom=r.i===0, isTo=r.i===1&&view==='act';
-      if(it.k==='hold'){ put(dr,0,'HOLD '+it.turn,col); put(dr,9,'INB'+p3(it.crs)+'°',col,1); putR(dr,(it.time||1).toFixed(1)+'MIN',col,1); continue; }
+      if(it.k==='hold'){ put(dr,0,'HOLD '+it.turn,col); if(fl&&S.hz&&r.i===1&&!tm){ put(lr,9,'INB'+p3(it.crs)+'°','w',1); putR(dr,'IMM EXIT*','a'); } else { put(dr,9,'INB'+p3(it.crs)+'°',col,1); putR(dr,(it.time||1).toFixed(1)+'MIN',col,1); } continue; }
       if(it.k==='man'){ put(dr,0,'MANUAL',col); continue; }
       let id=it.k==='apt'?it.id+(it.rwy||''):it.k==='dest'?it.id+(it.rwy||''):it.id;
       if(it.ov) id+='Δ';
@@ -374,15 +395,15 @@ PG.fpln={
       const q=r.i!=null?pr[r.i]:null;
       if(q&&!(fl&&isFrom)){ const t=fl?hhmm(S.utc+q.d/7.2):hhmm(q.d?2+q.d/7:0); put(dr,8,t,tm?'y':'g'); }
       else if(fl&&isFrom){ put(dr,8,hhmm(S.utc-6),'w'); }
-      let alt;
-      if(it.k==='apt') alt='---/'+String(P[it.id].elev).padStart(6,' ');
-      else if(it.k==='dest') alt='---/'+String(P[it.id].elev).padStart(6,' ');
-      else if(it.alt) alt='---/'+String(it.alt).padStart(6,' ');
-      else if(fl&&it.seg==='enr'&&S.init.crz) alt='.78/ FL'+p3(S.init.crz);
-      else alt='---/ -----';
+      let spd='---', altT;
+      if(it.k==='apt'||it.k==='dest') altT=String(P[it.id].elev);
+      else if(it.alt) altT=String(it.alt);
+      else if(fl&&it.seg==='enr'&&S.init.crz){ altT='FL'+p3(S.init.crz); spd='.78'; }
+      else altT='-----';
+      if(it.spd) spd='*'+it.spd;
       const base=tm?'y':(r.miss||r.alt?'c':'g');
-      putR(dr,alt,base);
-      if(it.alt&&it.k==='wpt'&&!tm) putR(dr,String(it.alt).padStart(6,' '),'m');
+      putR(dr,spd+'/'+altT.padStart(6,' '),base);
+      if(it.k==='wpt'&&!tm){ if(it.alt) putR(dr,altT.padStart(6,' '),'m'); if(it.spd) put(dr,COLS-7-spd.length,spd,'m'); }
     }
     /* line 6 */
     if(tm){ prompt(6,'L','<ERASE','a'); prompt(6,'R','INSERT*','a'); put(LR(6),0,' TMPY','y',1); }
@@ -403,7 +424,15 @@ PG.fpln={
       return;
     }
     const r=rows[S.off+n-1]; if(!r) return;
-    if(s==='R'){ if(S.sp||S.clr) msg('NOT AVAILABLE'); return; }
+    if(s==='R'){
+      const p0=planFor(view), fl0=flyingPlan()&&view==='act';
+      if(r.it&&r.it.k==='hold'&&fl0&&S.hz&&r.i===1&&!S.sp&&!S.clr){ p0.items.splice(1,1); S.hz=null; return; }
+      if(r.end||r.miss||r.alt||!r.it||r.it.k!=='wpt'||r.it.id==='T-P'||(fl0&&r.i===0)){ if(S.sp||S.clr) msg('NOT ALLOWED'); return; }
+      const it0=p0.items[r.i];
+      if(S.clr){ S.clr=false; delete it0.alt; delete it0.spd; return; }
+      if(S.sp){ const m=/^(\d{3})?\/(.*)$/.exec(S.sp); if(!m){ msg('FORMAT ERROR'); return; } let a=null; if(m[2]){ a=parseAlt(m[2]); if(!a){ msg('FORMAT ERROR'); return; } if(a==='RANGE'){ msg('ENTRY OUT OF RANGE'); return; } } if(!m[1]&&!a){ msg('FORMAT ERROR'); return; } if(m[1]){ const v=+m[1]; if(v<100||v>350){ msg('ENTRY OUT OF RANGE'); return; } it0.spd=v; } if(a) it0.alt=a; take(); return; }
+      S.vr={view,i:r.i}; go('vrev'); return;
+    }
     if(r.end||r.miss||r.alt){ if(S.sp||S.clr) msg('NOT ALLOWED'); return; }
     const p=planFor(view), it=r.it, i=r.i, fl=flyingPlan()&&view==='act';
     if(S.clr){
@@ -654,7 +683,7 @@ function doDirTo(d){
   if(j>=1){ items=[tp].concat(p.items.slice(j)); }
   else items=[tp,W(d.tgt,{seg:'enr',via:''}),{k:'disc',seg:'enr'}].concat(p.items.slice(1));
   const t=items[1]; t.via='DIR'; if(d.rin!=null){ t.rin=d.rin; t.via=''; } if(d.rout!=null){ t.rout=d.rout; }
-  p.items=items; tidy(p); S.tmpy=null; S.lastDir={tgt:d.tgt,rin:d.rin,rout:d.rout};
+  p.items=items; tidy(p); S.tmpy=null; S.lastDir={tgt:d.tgt,rin:d.rin,rout:d.rout}; S.ap='NAV'; S.hz=null;
 }
 
 /* ---------- PERF ---------- */
@@ -795,7 +824,7 @@ PG.sec={
     if(s==='L'&&n===1){ if(!S.act.from){ msg('NOT ALLOWED'); return; } if(S.tmpy&&S.tmpy.tgt==='sec') S.tmpy=null; S.sec=clone(S.act); return; }
     if(s==='L'&&n===2){ if(!S.sec){ S.sec=newPlan(); } go('fpln',{view:'sec',off:0}); return; }
     if(s==='L'&&n===3&&S.sec){ S.sec=null; if(S.tmpy&&S.tmpy.tgt==='sec') S.tmpy=null; return; }
-    if(s==='L'&&n===4&&canActSec()){ if(S.tmpy){ msg('TMPY F-PLN EXISTS',true); return; } const old=S.act; S.act=S.sec; S.sec=null; afterActChange(old); go('fpln',{view:'act',off:0}); return; }
+    if(s==='L'&&n===4&&canActSec()){ if(S.tmpy){ msg('TMPY F-PLN EXISTS',true); return; } const old=S.act; S.act=S.sec; S.sec=null; S.hz=null; afterActChange(old); go('fpln',{view:'act',off:0}); return; }
     if(s==='R'){ msg('NOT AVAILABLE'); return; }
   }
 };
@@ -834,6 +863,35 @@ PG.fuel={
     lbl(5,'L','FINAL/TIME'); prompt(5,'L','1.1/0030','c'); lbl(6,'L','MIN DEST FOB'); prompt(6,'L',F?F.mdf.toFixed(1):'---.-','c'); lbl(6,'R','EXTRA/TIME'); prompt(6,'R',F&&F.extra!=null?F.extra.toFixed(1)+'/'+hhmm(F.extra/2.4*60):'---.-/----','g'); },
   lsk(){ if(S.sp) msg('NOT ALLOWED'); }
 };
+
+/* =========================================================== flight (NAV/HDG, sequencing, hold) */
+const w180=a=>{ a=((a+180)%360+360)%360; return a-180; };
+function stepFlight(dt){
+  if(S.phase==='PRE') return;
+  const p=S.act; let gs=S.hz?230:(S.phase==='CRZ'?450:290);
+  let want=S.trk;
+  const t=p.items[1];
+  if(S.ap==='HDG') want=S.hdg;
+  else if(S.hz){ const h=p.items[1], f=P[h.at]||coord(p.items[0]); const H=S.hz, side=h.turn==='L'?-1:1, leg=(h.time||1)*230/60;
+    if(H.st==='in'){ want=brg(S.pos,f); if(dist(S.pos,f)<0.6) H.st='turn1'; }
+    else if(H.st==='turn1'){ want=S.trk+side*40; if(Math.abs(w180(S.trk-(h.crs+180)))<6){ H.st='out'; H.d=0; } }
+    else if(H.st==='out'){ want=h.crs+180; H.d=(H.d||0)+gs*dt/3600; if(H.d>=leg) H.st='turn2'; }
+    else if(H.st==='turn2'){ want=S.trk+side*40; if(Math.abs(w180(S.trk-h.crs))<12) H.st='in'; } }
+  else if(t&&(isW(t)||t.k==='dest')){ const c=coord(t); if(t.rin!=null){ const C=w360(t.rin+180), d=dist(c,S.pos), off=w180(brg(c,S.pos)-t.rin), xtk=d*Math.sin(off*R2); if(t._q==null) t._q=Math.abs(off)>100?1:0; const Q=along(c,t.rin,10); if(t._q&&dist(S.pos,Q)<1.5) t._q=0; want=t._q?brg(S.pos,Q):C+Math.max(-45,Math.min(45,xtk*25)); } else want=brg(S.pos,c); }
+  else if(S.ap==='NAV'&&(!t||t.k==='disc')){ S.ap='HDG'; S.hdg=Math.round(w360(S.trk)); msg('F-PLN DISCONTINUITY',true); }
+  const dturn=w180(want-S.trk), rate=3*dt; S.trk=w360(S.trk+Math.max(-rate,Math.min(rate,dturn)));
+  const d=gs*dt/3600; S.pos={x:S.pos.x+d*Math.sin(S.trk*R2),y:S.pos.y+d*Math.cos(S.trk*R2)}; S.utc+=dt/60;
+  if(S.ap==='NAV'&&!S.hz&&t&&(isW(t)||t.k==='dest')){ const c=coord(t), lim=Math.max(0.8,d*1.5);
+    const wrongSide=t.rin!=null&&Math.abs(w180(S.trk-(t.rin+180)))>60;
+    if(dist(S.pos,c)<lim&&!wrongSide){ if(t.k==='dest'){ S.run=false; msg('DEST REACHED',false); return; }
+      p.items.shift(); if(p.items[1]&&p.items[1].k==='hold'&&p.items[1].at===t.id) S.hz={st:'turn1'}; } }
+}
+function fcu(cmd,val){
+  if(!S||S.phase==='PRE') return;
+  if(cmd==='hdg'){ S.ap='HDG'; S.hdg=w360(Math.round(val)); }
+  else if(cmd==='nav'){ const t=S.act.items[1]; if(t&&t.k!=='disc') S.ap='NAV'; else msg('NAV NOT AVAILABLE',true); }
+  else if(cmd==='run') S.run=!S.run;
+}
 
 /* =========================================================== input */
 const PAGEKEY={DIR:'dir',PROG:'prog',PERF:'perf',INIT:'init',DATA:'data',FPLN:'fpln',RAD:'rad',FUEL:'fuel',SEC:'sec',ATC:'menu',MENU:'menu'};
@@ -878,7 +936,7 @@ function fly(toId,frac,phase,alt){
   const p=S.act, j=p.items.findIndex(x=>isW(x)&&x.id===toId); const prev=p.items.slice(0,j).reverse().find(x=>coord(x));
   const pi=p.items.indexOf(prev); p.items=p.items.slice(pi);
   const a=coord(prev), b=coord(p.items[1]); S.pos={x:a.x+(b.x-a.x)*frac,y:a.y+(b.y-a.y)*frac};
-  S.phase=phase||'CRZ'; S.alt=alt||35000;
+  S.phase=phase||'CRZ'; S.alt=alt||35000; S.trk=brg(S.pos,b); S.hdg=Math.round(S.trk);
 }
 const tt=(en,no)=>({en,no});
 const has=(p,id)=>p.items.some(x=>isW(x)&&x.id===id);
@@ -1015,6 +1073,29 @@ const SCN=[
    {t:tt('NEXT PHASE to GO AROUND: THR RED/ACC 1180/1180 (L5), 1000 ft above the aerodrome.','NEXT PHASE til GO AROUND: THR RED/ACC 1180/1180 (L5), 1000 ft over flyplassen.'),keys:['R6','L5'],type:'1180/1180',ok:()=>S.perf.gthr===1180&&S.perf.gacc===1180},
    {t:tt('ENG OUT ACC 3700 (R5), the highest MSA in the go-around sector.','ENG OUT ACC 3700 (R5), høyeste MSA i go-around-sektoren.'),keys:['R5'],type:'3700',ok:()=>S.perf.geoa===3700&&S.phase!=='APP'}
   ]},
+ {id:'cstr',cat:'fly',
+  t:tt('Altitude and speed constraint','Høyde- og fartsrestriksjon'),
+  d:tt('Cruise towards SELKA. ATC: “NDP101, cross ODRUP at FL110, speed 250 knots.” Put it into the F-PLN with a vertical revision.','Marsj mot SELKA. ATC: «NDP101, cross ODRUP at FL110, speed 250 knots.» Legg det inn i F-PLN med en vertikal revisjon.'),
+  setup(){ buildPrep(); fly('SELKA',0.3); go('fpln',{view:'act'}); },
+  docs:['atc_cstr'],
+  steps:[
+   {t:tt('F-PLN: the RIGHT key next to ODRUP opens VERT REV AT ODRUP.','F-PLN: HØYRE tast ved ODRUP åpner VERT REV AT ODRUP.'),keys:['FPLN','R3'],ok:()=>(S.page==='vrev'&&S.vr&&S.act.items[S.vr.i]&&S.act.items[S.vr.i].id==='ODRUP')||S.act.items.some(x=>x.id==='ODRUP'&&x.alt==='FL110')},
+   {t:tt('ALT CSTR: type FL110 and press R3. “At” is written without a sign; +FL110 would be at or above.','ALT CSTR: skriv FL110 og trykk R3. «At» skrives uten fortegn; +FL110 ville vært «at or above».'),keys:['R3'],type:'FL110',ok:()=>S.act.items.some(x=>x.id==='ODRUP'&&x.alt==='FL110')},
+   {t:tt('SPD CSTR: type 250 and press L3.','SPD CSTR: skriv 250 og trykk L3.'),keys:['L3'],type:'250',ok:()=>S.act.items.some(x=>x.id==='ODRUP'&&x.spd===250)},
+   {t:tt('RETURN (L6): ODRUP now shows *250/FL110 in magenta. Tip: on the F-PLN page you can also type 250/FL110 straight onto the right key.','RETURN (L6): ODRUP viser nå *250/FL110 i magenta. Tips: på F-PLN-siden kan du også skrive 250/FL110 rett på høyre tast.'),keys:['L6'],ok:()=>S.page==='fpln'&&S.act.items.some(x=>x.id==='ODRUP'&&x.alt==='FL110'&&x.spd===250)}
+  ]},
+ {id:'secair',cat:'fly',
+  t:tt('Runway change in flight with the SEC F-PLN','Rullebanebytte i lufta med SEC F-PLN'),
+  d:tt('Descending on the ODRUP2W for the ILS25. ATC: “NDP101, runway change, turn left heading 270, expect ILS runway 07 via SK070.” In NAV the *ACTIVATE SEC prompt is hidden: select heading first.','Nedstigning på ODRUP2W for ILS25. ATC: «NDP101, runway change, turn left heading 270, expect ILS runway 07 via SK070.» I NAV er *ACTIVATE SEC skjult: velg heading først.'),
+  setup(){ buildPrep(); setArrival(S.act,'ILS25','ODRUP2W','SK260'); fly('TOLKA',0.25,'DES',12000); go('fpln',{view:'act'}); },
+  docs:['atc_secair'],
+  steps:[
+   {t:tt('FCU (above the ND): select heading 270 with the HDG buttons, so the aircraft is in HDG.','FCU (over ND-en): velg heading 270 med HDG-knappene, så flyet er i HDG.'),keys:[],hint2:tt('Use − and + next to HDG until it shows 270 (it switches to HDG), or type the heading in the HDG box.','Bruk − og + ved HDG til det står 270 (den går over i HDG), eller skriv headingen i HDG-feltet.'),ok:()=>S.ap==='HDG'&&S.hdg===270},
+   {t:tt('SEC F-PLN: COPY ACTIVE.','SEC F-PLN: COPY ACTIVE.'),keys:['SEC','L1'],ok:()=>!!S.sec||S.act.appr==='ILS07'},
+   {t:tt('SEC F-PLN (L2), L6 for XSKH, ARRIVAL: ILS07, NO STAR, VIA SK070, then INSERT.','SEC F-PLN (L2), L6 for XSKH, ARRIVAL: ILS07, NO STAR, VIA SK070, så INSERT.'),keys:['L2','L6','R1','L3','L5','L3','R6'],ok:()=>(S.sec&&S.sec.appr==='ILS07'&&S.sec.via==='SK070'&&!(S.tmpy&&S.tmpy.tgt==='sec'))||S.act.appr==='ILS07'},
+   {t:tt('SEC INDEX: *ACTIVATE SEC (L4). It is there because you are in HDG.','SEC INDEX: *ACTIVATE SEC (L4). Den vises fordi du er i HDG.'),keys:['SEC','L4'],ok:()=>S.act.appr==='ILS07'&&S.act.via==='SK070'},
+   {t:tt('ATC: “Cleared direct SK070.” DIR, SK070, DIR TO*. NAV engages again.','ATC: «Cleared direct SK070.» DIR, SK070, DIR TO*. NAV kobles inn igjen.'),keys:['DIR','L2','R6'],ok:()=>S.act.appr==='ILS07'&&S.act.items[1]&&S.act.items[1].id==='SK070'&&S.ap==='NAV'}
+  ]},
  {id:'free',cat:'free',
   t:tt('Free practice','Fri trening'),
   d:tt('An empty FMS on the ground at XNDV. Use the paperwork and set it up your own way, or try any page.','En tom FMS på bakken på XNDV. Bruk papirene og sett den opp på din måte, eller prøv hvilken som helst side.'),
@@ -1048,6 +1129,11 @@ climb FL060, squawk 4521`],
 runway 01, ROKUS1B departure,
 rest unchanged`],
     atc_dct:['ATC','NDP101, proceed direct ODRUP'],
+    atc_cstr:['ATC',`NDP101, cross ODRUP at FL110,
+speed 250 knots`],
+    atc_secair:['ATC',`NDP101, runway change,
+turn left heading 270,
+expect ILS runway 07 via SK070`],
     atc_hold:['ATC',`NDP101, hold at ODRUP,
 inbound course 230, left turns,
 one-minute legs,
@@ -1138,7 +1224,7 @@ function ndSvg(){
   /* aircraft */
   if(S.phase!=='PRE'){ const to=coord(act.items[1]); const hd=to?brg(S.pos,to):0; out.push(`<g transform="translate(${X(S.pos)},${Y(S.pos)}) rotate(${hd})"><path d="M0-11V12M-10-1H10M-4 9H4" stroke="#FFE14D" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>`); }
   out.push('</g>');
-  const tl=S.phase==='PRE'?'':`GS 450 TAS 470`;
+  const gsn=S.hz?230:(S.phase==='CRZ'?450:290); const tl=S.phase==='PRE'?'':`GS ${gsn} TAS ${gsn+20}`;
   out.push(`<text x="10" y="18" class="ndt w">${tl}</text><text x="390" y="18" class="ndt g" text-anchor="end">${esc(act.items[1]&&isW(act.items[1])&&S.phase!=='PRE'?act.items[1].id:'')}</text>`);
   out.push(`<text x="10" y="400" class="ndt c">PLAN</text><text x="390" y="400" class="ndt w" text-anchor="end">${rng} NM</text>`);
   return `<svg viewBox="0 0 400 410" role="img" aria-label="Navigation display, plan mode">${out.join('')}</svg>`;
@@ -1152,7 +1238,25 @@ function holdPath(f,h,X,Y,col,dash){
   const r=Math.abs(X(along(b,90,rad))-X(b)), sw=side>0?1:0;
   return `<path d="M${P1}L${P2}A${r} ${r} 0 0 ${sw} ${P3}L${P4}A${r} ${r} 0 0 ${sw} ${P1}" fill="none" stroke="${col}" stroke-width="2" ${dash?`stroke-dasharray="${dash}"`:''}/>`;
 }
-function drawNd(){ const n=el('mnd'); if(!n) return; n.innerHTML=ndSvg(); const r=el('mndr'); if(r) r.textContent=RANGES[NDR]+' NM'; }
+function drawNd(){ const n=el('mnd'); if(!n) return; n.innerHTML=ndSvg(); const r=el('mndr'); if(r) r.textContent=RANGES[NDR]+' NM'; drawFcu(); }
+function drawFcu(){
+  const b=el('mfcu'); if(!b) return; const air=S&&S.phase!=='PRE'; b.hidden=!air; if(!air) return;
+  const run=el('mfrun'); run.textContent=S.run?'❚❚':'▶'; run.setAttribute('aria-label',S.run?Lx(tt('Pause','Pause')):Lx(tt('Fly','Fly'))); run.setAttribute('aria-pressed',S.run?'true':'false');
+  el('mfnav').setAttribute('aria-pressed',S.ap==='NAV'?'true':'false'); el('mfhdgm').setAttribute('aria-pressed',S.ap==='HDG'?'true':'false');
+  const h=el('mfhdg'); if(document.activeElement!==h) h.value=S.ap==='HDG'?p3(S.hdg):'---';
+}
+let TIMER=null;
+function loop(){ if(TIMER) return; TIMER=setInterval(()=>{ if(!S||!S.run){ clearInterval(TIMER); TIMER=null; drawFcu(); return; } stepFlight(0.1*8); refresh(); },100); }
+function fcuUi(){
+  const b=el('mfcu'); if(!b) return;
+  el('mfrun').onclick=()=>{ fcu('run'); if(S.run) loop(); refresh(); };
+  el('mfnav').onclick=()=>{ fcu('nav'); refresh(); };
+  el('mfhdgm').onclick=()=>{ fcu('hdg',S.ap==='HDG'?S.hdg:S.trk); refresh(); };
+  const step=d=>{ const base=S.ap==='HDG'?S.hdg:Math.round(S.trk); fcu('hdg',Math.round((base+d)/5)*5||360); refresh(); };
+  el('mfm').onclick=()=>step(-5); el('mfp').onclick=()=>step(5);
+  const h=el('mfhdg'); h.onchange=()=>{ const v=parseInt(h.value,10); if(v>=0&&v<=360){ fcu('hdg',v||360); } refresh(); h.blur(); };
+  h.onkeydown=e=>{ if(e.key==='Enter') h.onchange(); e.stopPropagation(); };
+}
 
 
 let SC=null, MODE='guided', DONE=false, CHECKED=false, HINT=-1;
@@ -1222,7 +1326,7 @@ function drawSteps(cur){
 }
 function check(){ CHECKED=true; stepIdx(); const n=SC.steps.length, ok=SC.steps.filter((s,i)=>stepOk(i)).length; drawSteps(stepIdx()); const r=el('mres'); r.hidden=false; r.className='mres '+(ok===n?'ok':'part'); r.textContent=ok===n?Lx(tt(`All ${n} items correct.`,`Alle ${n} punktene er riktige.`)):Lx(tt(`${ok} of ${n} correct. The list shows what is missing.`,`${ok} av ${n} riktige. Listen viser hva som mangler.`)); }
 function loadScn(id){
-  SC=SCN.find(s=>s.id===id)||SCN[0]; S=blank(); SC.setup(); S.log=[]; S.seen={}; HINT=-1; LATCH=[]; NDC=null; NDR=S.phase==='PRE'?2:3;
+  if(S) S.run=false; SC=SCN.find(s=>s.id===id)||SCN[0]; S=blank(); SC.setup(); S.log=[]; S.seen={}; HINT=-1; LATCH=[]; NDC=null; NDR=S.phase==='PRE'?2:3;
   DONE=false; CHECKED=false; const r=el('mres'); if(r) r.hidden=true;
   const ph=el('mphase'); if(ph) ph.textContent=S.phase==='PRE'?Lx(tt('On stand, XNDV','På standplass, XNDV')):S.phase==='CRZ'?Lx(tt('Cruise FL350','Marsj FL350')):Lx(tt('Descent','Nedstigning'));
   el('mdocs').innerHTML=SC.docs.map(docHtml).join('');
@@ -1243,6 +1347,7 @@ function init(){
   buildMcdu(); buildList();
   el('mmode').onclick=e=>{ const b=e.target.closest('button[data-m]'); if(b) setMode(b.dataset.m); };
   el('mreset').onclick=()=>loadScn(SC.id);
+  fcuUi();
   const zi=el('mndin'), zo=el('mndout'); if(zi) zi.onclick=()=>{ NDR=Math.max(0,NDR-1); drawNd(); }; if(zo) zo.onclick=()=>{ NDR=Math.min(RANGES.length-1,NDR+1); drawNd(); };
   let first='prep'; try{ const s=localStorage.getItem('mcdu-scn'); if(s&&SCN.some(x=>x.id===s)) first=s; }catch(e){}
   const h=location.hash.replace('#',''); if(SCN.some(x=>x.id===h)) first=h;
@@ -1251,6 +1356,6 @@ function init(){
 }
 function loadScnKeep(){ /* language change: redraw texts without resetting the state */ el('mdocs').innerHTML=SC.docs.map(docHtml).join(''); el('mtitle').textContent=Lx(SC.t); document.querySelectorAll('#mlist button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===SC.id?'true':'false')); refresh(); }
 
-window.MCDU={press:k=>{ key(k); },state:()=>S,load:loadScn,scn:SCN,mode:setMode,screen:()=>{ cls(); (PG[S.page]||PG.menu).draw(); if(S.page!=='fpln') scratch(); return scr.map(r=>r.map(c=>c.c==='§'?'#':c.c).join('')).join('\n'); }};
+window.MCDU={progress:()=>stepIdx(),tick:(n,dt)=>{ for(let i=0;i<(n||1);i++) stepFlight(dt||0.8); refresh(); },fcu:(c,v)=>{ fcu(c,v); refresh(); },press:k=>{ key(k); },state:()=>S,load:loadScn,scn:SCN,mode:setMode,screen:()=>{ cls(); (PG[S.page]||PG.menu).draw(); if(S.page!=='fpln') scratch(); return scr.map(r=>r.map(c=>c.c==='§'?'#':c.c).join('')).join('\n'); }};
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
