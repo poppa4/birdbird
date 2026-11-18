@@ -106,7 +106,7 @@ async function getRadar(ap) {
 /* the coloured box on the METAR line: EASA/SERA wording on purpose, not the U.S. VFR/MVFR/IFR/LIFR categories */
 function badge(metar, L) {
   const st = status(metar); if (!st) return '';
-  const txt = st.cls === 'ok' ? 'VFR · SERA.5005' : st.svfr ? L({ en: 'Special VFR only · SERA.5010', no: 'Kun spesiell VFR · SERA.5010' }) : L({ en: 'Below VFR and SVFR minima', no: 'Under VFR- og SVFR-minima' });
+  const txt = st.cls === 'ok' ? 'VFR' : st.svfr ? L({ en: 'Special VFR only', no: 'Kun spesiell VFR' }) : L({ en: 'Below VFR', no: 'Under VFR' }); // the rules are in the tooltip, not on the box
   const det = st.cavok ? 'CAVOK' : fmtVis(st.vis) + ' · ' + (fmtCeil(st.ceil) ? L({ en: 'ceiling ', no: 'skydekke ' }) + fmtCeil(st.ceil) : L({ en: 'no ceiling', no: 'ingen ceiling' }));
   const tip = L({ en: 'Control zone, SERA.5005: VFR needs ground visibility ≥ 5 km and ceiling ≥ 1500 ft. Special VFR, SERA.5010: 1500 m and 600 ft with ATC clearance. Only the SERA minima are used, no other categories. Planning aid only.',
     no: 'Kontrollsone, SERA.5005: VFR krever bakkesikt ≥ 5 km og skydekke ≥ 1500 ft. Spesiell VFR, SERA.5010: 1500 m og 600 ft med klarering. Bare SERA-minimaene brukes, ingen andre kategorier. Bare planleggingshjelp.' });
@@ -126,7 +126,7 @@ function ifr(metar) {
 function ifrBadge(metar, L) {
   const x = ifr(metar); if (!x) return '';
   const rv = r => (r.less ? '<' : r.more ? '>' : '') + r.m + ' m';
-  const txt = x.ban ? L({ en: 'IFR · approach ban, NCO.OP.210', no: 'IFR · innflygingsforbud, NCO.OP.210' }) + ' (' + x.low.map(r => 'RWY ' + r.rwy + ' RVR ' + rv(r)).join(', ') + ')'
+  const txt = x.ban ? L({ en: 'IFR · approach ban', no: 'IFR · innflygingsforbud' }) + ' (' + x.low.map(r => 'RWY ' + r.rwy + ' RVR ' + rv(r)).join(', ') + ')'
     : x.rvr.length ? L({ en: 'IFR · RVR ', no: 'IFR · RVR ' }) + x.rvr.map(r => r.rwy + ' ' + rv(r)).join(', ') + L({ en: ' · compare with approach minima', no: ' · sammenlign med innflygingsminima' })
     : L({ en: 'IFR · compare with approach minima', no: 'IFR · sammenlign med innflygingsminima' });
   const tip = L({ en: 'EASA has no IFR weather category. NCO.OP.160: an IFR flight needs the destination, or a destination alternate, at or above the aerodrome operating minima (DA/MDA and RVR/VIS of the approach) at the estimated time of arrival. NCO.OP.210: with a controlling (touchdown) RVR below 550 m, do not continue the approach below 1 000 ft above the aerodrome. Commercial operators: their own minimum, CAT.OP.MPA.305. Planning aid only.',

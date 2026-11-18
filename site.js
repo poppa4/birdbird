@@ -224,7 +224,7 @@
     const fl=()=>document.querySelectorAll('a[data-flowlink]').forEach(a=>{ a.href='flows.html#ac='+a.dataset.flowlink; a.innerHTML=lang()==='no'?'<b>Flow-trener</b> · tegn flowene for denne cockpiten, se dem spilt av og øv fra hukommelsen, alene eller med en partner →':'<b>Flow trainer</b> · draw the flows for this cockpit, watch them play and practise from memory, alone or with a partner →'; });
     if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fl); else fl(); new MutationObserver(fl).observe(HTML,{attributes:true,attributeFilter:['lang']});
     /* search.js wires the bar. It is not needed to draw the page, so it is fetched after the page's own scripts (it used to share the line with them) */
-    later(()=>{ if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=52'; sj.onload=()=>{ const i=document.querySelector('.nsearch input'); if(i&&i.value) i.dispatchEvent(new Event('input')); }; document.head.appendChild(sj); } });
+    later(()=>{ if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=53'; sj.onload=()=>{ const i=document.querySelector('.nsearch input'); if(i&&i.value) i.dispatchEvent(new Event('input')); }; document.head.appendChild(sj); } });
     const addFoot=()=>document.body.appendChild(foot); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addFoot); else addFoot();
     const tipNow=()=>tip(); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tipNow); else tipNow();
     later(trainNote);
