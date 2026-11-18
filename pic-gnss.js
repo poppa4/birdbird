@@ -45,7 +45,7 @@ function draw(g,W,H,p,tm){
     // circles
     const show=(sats,a,band)=>{ sats.forEach((q,i)=>{ if(i>=nShow) return; const r=Math.hypot(q[0]-me[0],q[1]-me[1]); sat(g,q[0],q[1]);
       g.save(); g.globalAlpha*=a; if(band){ g.strokeStyle='rgba(127,198,238,.2)'; g.lineWidth=band; g.beginPath(); g.arc(q[0],q[1],r,0,7); g.stroke(); }
-      g.strokeStyle=i===0&&p<1?C.amber:'rgba(127,198,238,.75)'; g.lineWidth=1.6; g.beginPath(); g.arc(q[0],q[1],r*(p<1&&i===0?ease(clamp(p*1.5,0,1)):1),0,7); g.stroke(); g.restore();
+      g.strokeStyle=i===0&&p<1?C.amber:'rgba(127,198,238,.75)'; g.lineWidth=1.6; g.beginPath(); g.arc(q[0],q[1],r*(p<1&&i===0?ease(clamp((tm*.35)%1.4,0,1)):1),0,7); g.stroke(); g.restore();
       if(p<1&&i===0){ g.setLineDash([3,4]); g.strokeStyle='rgba(240,180,64,.7)'; g.beginPath(); g.moveTo(q[0],q[1]); g.lineTo(me[0],me[1]); g.stroke(); g.setLineDash([]); pill(g,L({en:'range = time × c',no:'avstand = tid × c'}),(q[0]+me[0])/2-10,(q[1]+me[1])/2,{size:10.5*fs,col:C.amber,al:'right',fit:W}); } }); };
     show(good,1-gk*.9,0);
     if(gk>0.02){ g.save(); g.globalAlpha*=gk*(1-at(p,3,.6));

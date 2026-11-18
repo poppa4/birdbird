@@ -40,11 +40,13 @@ function draw(g,W,H,p,tm){
   const engL=p<3.5||p>=4.5?(p>=4.5?0:1):0, engR=p>=4.5?0:1;
   const lost=at(p,3,.6), rat=at(p,4,.6);
   const eL=lost<.5, eR=rat<.5;
-  const elA=at(p,1,.6), hyA=at(p,2,.6);
+  const elA=Math.max(p<1?.5:0,at(p,1,.6)), hyA=Math.max(p<1?.5:0,at(p,2,.6));
   const cx=W*.5, ey=H*.16, ew=W*(sm?.24:.13), eh=H*.12;
   // engines and APU
   box(g,W*.08,ey,ew,eh,L({en:'ENG 1',no:'MOTOR 1'}),'#fff',eL); box(g,W*.92-ew,ey,ew,eh,L({en:'ENG 2',no:'MOTOR 2'}),'#fff',eR);
-  if(!sm) box(g,cx-ew*.4,ey,ew*.8,eh,'APU','#AEB8C1',true,L({en:'back-up',no:'reserve'}));
+  box(g,cx-ew*(sm?.32:.4),ey,ew*(sm?.64:.8),eh,'APU','#AEB8C1',true,sm?null:L({en:'back-up',no:'reserve'}));
+  if(p<1){ const bl=(x)=>{ for(let k=0;k<3;k++){ const ph=((tm*.6+k/3)%1); g.save(); g.globalAlpha=Math.sin(ph*Math.PI); arrow(g,x,ey+eh*.5,x+(x<cx?1:-1)*ph*W*.08,ey+eh*.5,'#C9D2DA',{lw:2,head:7}); g.restore(); } };
+    bl(W*.08+ew); bl(W*.92-ew); pill(g,L({en:'bleed air',no:'tappeluft'}),cx,ey+eh+16,{size:10.5*fs,col:'#C9D2DA',al:'center'}); }
   // generators and pumps on each engine
   const gy=ey+eh+H*.08, gw=W*(sm?.2:.1), gh=H*.08;
   const g1=[W*.08,gy], g2=[W*.92-gw,gy];

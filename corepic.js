@@ -88,15 +88,15 @@ const ease=k=>k<0?0:k>1?1:k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
 /* how far into step i the picture is: 0 before, 0..1 while arriving, 1 after */
 const at=(p,i,span)=>clamp((p-(i-(span||1)))/(span||1),0,1);
 function txt(g,s,x,y,o){ o=o||{}; g.font=(o.w||(o.mono?500:600))+' '+(o.size||12)+'px '+(o.mono?FONT.mono:FONT.body);
-  g.fillStyle=o.col||C.ink; g.textAlign=o.al||'left'; g.textBaseline=o.bl||'alphabetic'; if(o.a!=null) g.globalAlpha=o.a; g.fillText(s,x,y); g.globalAlpha=1; g.textBaseline='alphabetic'; return g.measureText(s).width; }
+  g.fillStyle=o.col||C.ink; g.textAlign=o.al||'left'; g.textBaseline=o.bl||'alphabetic'; const ga=g.globalAlpha; if(o.a!=null) g.globalAlpha=ga*o.a; g.fillText(s,x,y); g.globalAlpha=ga; g.textBaseline='alphabetic'; return g.measureText(s).width; }
 function pill(g,s,x,y,o){ o=o||{}; const fs=o.size||11.5; g.font=(o.w||600)+' '+fs+'px '+(o.mono?FONT.mono:FONT.body);
   const w=g.measureText(s).width+(o.pad||14), h=fs+(o.ph||9); let x0=o.al==='right'?x-w:o.al==='center'?x-w/2:x; if(o.fit) x0=clamp(x0,4,o.fit-w-4);
-  g.save(); if(o.a!=null) g.globalAlpha=o.a;
+  g.save(); if(o.a!=null) g.globalAlpha*=o.a;
   g.fillStyle=o.bg||'rgba(13,20,27,.9)'; g.strokeStyle=o.bd||o.col||'rgba(255,255,255,.2)'; g.lineWidth=1;
   g.beginPath(); g.roundRect?g.roundRect(x0,y-h/2,w,h,o.r!=null?o.r:h/2):g.rect(x0,y-h/2,w,h); g.fill(); g.stroke();
   g.fillStyle=o.tc||o.col||C.ink; g.textAlign='center'; g.textBaseline='middle'; g.fillText(s,x0+w/2,y+.5); g.textBaseline='alphabetic'; g.restore(); return {x0,w,h}; }
 function arrow(g,x0,y0,x1,y1,col,o){ o=o||{}; const a=Math.atan2(y1-y0,x1-x0), hs=o.head||8;
-  g.save(); if(o.a!=null) g.globalAlpha=o.a; g.strokeStyle=col; g.fillStyle=col; g.lineWidth=o.lw||2; g.lineCap='round'; if(o.dash) g.setLineDash(o.dash);
+  g.save(); if(o.a!=null) g.globalAlpha*=o.a; g.strokeStyle=col; g.fillStyle=col; g.lineWidth=o.lw||2; g.lineCap='round'; if(o.dash) g.setLineDash(o.dash);
   g.beginPath(); g.moveTo(x0,y0); g.lineTo(x1-Math.cos(a)*hs*.6,y1-Math.sin(a)*hs*.6); g.stroke(); g.setLineDash([]);
   g.beginPath(); g.moveTo(x1,y1); g.lineTo(x1-hs*Math.cos(a-.42),y1-hs*Math.sin(a-.42)); g.lineTo(x1-hs*Math.cos(a+.42),y1-hs*Math.sin(a+.42)); g.closePath(); g.fill(); g.restore(); }
 function rr(g,x,y,w,h,r){ g.beginPath(); g.roundRect?g.roundRect(x,y,w,h,r):g.rect(x,y,w,h); }
