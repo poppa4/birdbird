@@ -147,7 +147,8 @@
   if (window.LAB && LAB.onLang) LAB.onLang(() => { n = phase === 'type' ? Math.min(n, total(QA[cur])) : total(QA[cur]); build();
     if (live) { for (const el of stack.children) el.setAttribute('aria-hidden', 'true'); stack.appendChild(live); pg.hidden = true; } });
 
-  if (RM) n = total(QA[0]);
+  /* the first example is there complete when the page opens (an empty box reads as broken); the following ones are typed in */
+  n = total(QA[0]); phase = 'hold';
   build();
   if ('ResizeObserver' in window) new ResizeObserver(() => { if (stack.clientWidth !== PW) measure(); }).observe(stack);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
