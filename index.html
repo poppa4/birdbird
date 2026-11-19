@@ -10,497 +10,146 @@
 <link rel="stylesheet" href="lab.css?v=15">
 <link rel="stylesheet" href="site.css?v=35">
 <style>
-/* ===== NORDAP front page. Page-scoped: everything lives under .fp =====
-   Tokens: navy field, paper, white sheet, ink, hairline rules, one accent (magenta) for actions. */
+/* ===== NORDAP front page (institutional layout). Page-scoped: everything lives under .fp =====
+   One full-width photograph, a navy statement plate, a white sheet and a navy quick-search box that straddle the photo,
+   a slate reference band, six subject tiles, a numbers panel. Navy carries the page; the accent is for the submit actions only. */
 .fp{
-  --on-navy:#FFFFFF; --on-navy-2:#BFCAD6; --navy-rule:rgba(255,255,255,.16);
-  /* --ink, --rule, --sheet and --info come from site.css */
-  --ink2:var(--ink-2,#4C5B66); --rule2:var(--rule-2,#DCE3E4); --acc:var(--accent,#9A1E68);
+  --on-navy:#FFFFFF; --on-navy-2:#C3CEDA; --navy-rule:rgba(255,255,255,.18); --slate:#3A4654;
   --disp:var(--f-display,"Archivo","Arial Narrow",system-ui,sans-serif); --mono:var(--f-mono,"IBM Plex Mono",ui-monospace,monospace);
-  --wrap:var(--container,1240px);
-  display:block;color:var(--ink);font-size:17px;line-height:1.6;
+  --wrap:var(--container,1240px); --acc:var(--accent,#9A1E68);
+  display:block;color:var(--ink);font-size:16px;line-height:1.55;
 }
 .fp *{box-sizing:border-box}
-/* full-bleed bands (body carries the side gutters) */
 .fp-band{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));padding:0 var(--gr,24px) 0 var(--gl,24px)}
 .fp-wrap{max-width:var(--wrap);margin:0 auto;position:relative}
-.fp h1,.fp h2,.fp h3{font-family:var(--disp);font-stretch:86%;font-weight:650;letter-spacing:-.018em;margin:0;text-wrap:balance}
-.fp h2{font-size:clamp(30px,3.3vw,46px);line-height:1.04;color:var(--navy)}
-.fp h3{font-size:clamp(22px,1.9vw,27px);line-height:1.12;color:var(--navy)}
+.fp h1,.fp h2,.fp h3{font-family:var(--disp);font-stretch:88%;font-weight:600;letter-spacing:-.012em;margin:0;text-wrap:balance}
+.fp h2{font-size:30px;line-height:1.1;color:var(--navy)}
 .fp p{margin:0}
 .fp a{color:inherit}
-.fp .tl{color:var(--acc);font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:color-mix(in srgb,var(--acc) 45%,transparent)}
-.fp .tl:hover{text-decoration-color:currentColor;text-decoration-thickness:2px}
-.fp .code{font-family:var(--mono);font-size:.82em;font-weight:500;letter-spacing:0}
+.fp ul,.fp ol{list-style:none;margin:0;padding:0}
 .fp .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.fp a:focus-visible,.fp button:focus-visible{outline:2px solid var(--info);outline-offset:3px}
+.fp a:focus-visible,.fp button:focus-visible,.fp input:focus-visible{outline:2px solid var(--info);outline-offset:3px}
+.fp .on-dark a:focus-visible,.fp .on-dark button:focus-visible,.fp .on-dark input:focus-visible{outline-color:#fff}
+.fp .lk{color:var(--navy);font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.fp .lk:hover{text-decoration-thickness:2px}
+.fp .kick{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2)}
+.fp .chev::after{content:'';display:inline-block;width:.46em;height:.46em;margin-left:.55em;border-right:2px solid currentColor;border-top:2px solid currentColor;transform:rotate(45deg) translateY(-.08em)}
 
-/* ---------- 1. Hero: the Vestland relief, the headline on the sea, a live lab on the land ---------- */
-.fp-hero{background:var(--navy);color:var(--on-navy);position:relative;overflow:hidden;isolation:isolate}
-.fp-relief{position:absolute;inset:0;z-index:-1;pointer-events:none;
-  -webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.16) 0,rgba(0,0,0,.34) 34%,#000 68%);mask-image:linear-gradient(90deg,rgba(0,0,0,.16) 0,rgba(0,0,0,.34) 34%,#000 68%)}
-.fp-relief img{display:block;width:100%;height:100%;object-fit:cover;object-position:72% 58%}
-.fp-stage{display:grid;grid-template-columns:minmax(0,11fr) minmax(0,10fr);gap:40px 72px;align-items:center;min-height:clamp(580px,calc(100svh - 236px),800px);padding:88px 0 56px}
-.fp-copy{max-width:600px}
-.fp-hero h1{color:var(--on-navy);font-size:clamp(42px,5.1vw,78px);line-height:.98;letter-spacing:-.03em;font-weight:640}
-.fp-lede{margin-top:26px!important;font-size:19px;line-height:1.55;color:var(--on-navy-2);max-width:34em}
-.fp-lede b{color:var(--on-navy);font-weight:600}
-.fp-act{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
-.fp-btn{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;font-size:16px;font-weight:600;text-decoration:none;border-radius:2px;border:1px solid transparent;transition:background-color .15s,border-color .15s}
-.fp-btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
-.fp-btn.pri:hover{background:#B02A7B;border-color:#B02A7B}
-.fp-btn.sec{color:var(--on-navy);border-color:rgba(255,255,255,.45)}
-.fp-btn.sec:hover{border-color:#fff;background:rgba(255,255,255,.06)}
-.fp-hero .fp-btn:focus-visible{outline-color:#fff}
-/* Flight Intelligence: a typeset answer panel on the land side of the hero (front-fi.js types the answers in).
-   Illustrative documents only; every chip is a citation, every source has its revision. */
-.fi{position:relative;min-width:0;width:100%;max-width:580px;justify-self:end;margin:0;background:rgba(8,29,56,.78);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#D5DEE7;
-  border:1px solid rgba(255,255,255,.2);box-shadow:0 44px 90px -42px rgba(0,0,0,.8);font-size:15.5px;line-height:1.6}
-.fi::before{content:'';position:absolute;left:-1px;right:-1px;top:-1px;height:3px;background:var(--acc)}
-.fi-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 24px 14px;border-bottom:1px solid rgba(255,255,255,.14)}
-.fp .fi-name{font-family:var(--mono);font-stretch:100%;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#fff;line-height:1.3}
-.fi-pg{display:flex;gap:4px;margin:0;padding:0;list-style:none}
-.fi-pg button{display:block;width:30px;height:26px;padding:0;border:1px solid rgba(255,255,255,.24);border-radius:0;background:none;color:#AEBBC8;font:500 11.5px/1 var(--mono);cursor:pointer;position:relative;overflow:hidden}
-.fi-pg button:hover{border-color:rgba(255,255,255,.6);color:#fff}
-.fi-pg button[aria-pressed="true"]{background:#fff;border-color:#fff;color:var(--navy)}
-.fi-pg button i{position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--acc);transform-origin:0 50%;transform:scaleX(0)}
-.fi-pg button:focus-visible{outline:2px solid #fff;outline-offset:2px}
-.fi-stack{display:grid;padding:22px 24px 0}
-.fi-qa{grid-area:1/1;min-width:0;transition:opacity .45s ease}
-.fi-qa[aria-hidden="true"]{visibility:hidden;opacity:0}
-.fi-k{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:#93A4B6;margin:0 0 9px!important}
-.fp .fi-q{font-family:var(--disp);font-stretch:86%;font-weight:600;font-size:23px;line-height:1.24;letter-spacing:-.01em;color:#fff;padding-bottom:18px;margin-bottom:16px!important;border-bottom:1px solid rgba(255,255,255,.12)}
-.fi-a p+p{margin-top:10px!important}
-.fi-a .gh{visibility:hidden}
-.fi-c{display:inline-block;margin-left:6px;padding:0 6px;border:1px solid rgba(255,255,255,.32);background:rgba(255,255,255,.06);font-family:var(--mono);font-size:11.5px;font-weight:500;line-height:1.55;color:#fff;white-space:nowrap;vertical-align:1px}
-.fi-c.e::before{content:'EASA';margin-right:6px;font-weight:600;color:#E07DB6}
-.fi-cur{display:inline-block;width:0;height:1.05em;vertical-align:-.17em;position:relative}
-.fi-cur::after{content:'';position:absolute;left:2px;top:0;width:8px;height:100%;background:var(--acc)}
-.fi-src{margin-top:20px;padding-top:12px;border-top:1px solid rgba(255,255,255,.12)}
-.fi-src ol{list-style:none;margin:0;padding:0}
-.fi-src li{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:4px 12px;align-items:baseline;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13.5px;line-height:1.4;color:#C9D3DD;opacity:.38;transition:opacity .4s}
-.fi-src li.on{opacity:1}
-.fi-src li:last-child{border-bottom:0}
-.fi-src li b{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.06em;color:#fff}
-.fi-src li span:last-child{font-family:var(--mono);font-size:11.5px;color:#93A4B6;white-space:nowrap}
-.fi-keep{margin:0!important;padding:14px 24px 0;border-top:1px solid rgba(255,255,255,.12);font-size:13px;line-height:1.5;color:#AEBBC8}
-.fi-ask{display:flex;align-items:stretch;margin:14px 24px 24px;min-height:50px;border:1px solid rgba(255,255,255,.34);text-decoration:none;transition:border-color .15s}
-.fi-ask input{flex:1;min-width:0;border:0;border-radius:0;background:none;padding:0 16px;font:inherit;font-size:15.5px;color:#fff;outline:none}
-.fi-ask input::placeholder{color:#AEBBC8;opacity:1}
-.fi-ask button{display:flex;align-items:center;padding:0 20px;border:0;border-radius:0;background:var(--acc);color:#fff;font:inherit;font-weight:600;font-size:15px;white-space:nowrap;cursor:pointer}
-.fi-ask:hover,.fi-ask:focus-within{border-color:#fff}.fi-ask button:hover{background:#B02A7B}
-.fp .fi-ask button:focus-visible{outline:2px solid #fff;outline-offset:-4px}
-.fi-ask button[disabled]{opacity:.6;cursor:default}
-.fi-pv{margin:-12px 0 0!important;padding:0 24px 22px;font-size:12.5px;line-height:1.45;color:#AEBBC8}.fi-pv b{color:#fff;font-weight:600}
-/* the live conversation (front-fi.js): replaces the examples once the visitor asks */
-.fi-stack.is-live .fi-qa{display:none}
-.fi-live{grid-area:1/1;min-width:0;max-height:440px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent}
-.fi-live .fi-q{font-size:19px}
-.fi-live .fi-t+.fi-t{margin-top:22px;padding-top:18px;border-top:1px solid rgba(255,255,255,.12)}
-.fi-live .fi-a ul,.fi-live .fi-a ol{margin:8px 0 0 18px;padding:0}
-.fi-live .fi-a li+li{margin-top:4px}
-.fi-live .fi-a a{color:#fff}
-.fi-live .fi-a .ecite{display:inline-block;margin-left:6px;padding:0 6px;border:1px solid rgba(255,255,255,.32);background:rgba(255,255,255,.06);font-family:var(--mono);font-size:11.5px;font-weight:500;line-height:1.55;color:#fff;text-decoration:none;white-space:nowrap}
-.fi-live .fi-a .ecite::before{content:'EASA';margin-right:6px;font-weight:600;color:#E07DB6}
-.fi-live .fi-a .ecite span{color:#93A4B6}
-.fi-live .fi-a .gk{display:inline-block;margin-left:6px;padding:0 5px;border:1px dashed rgba(255,255,255,.3);font-family:var(--mono);font-size:10.5px;color:#93A4B6;white-space:nowrap}
-.fi-live .fi-wait{color:#93A4B6;font-size:14px}
-.fi-live .fi-err{color:#F3C4DF;font-size:14px}
-.fi-go{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:13.5px}
-.fi-go a{color:#fff;text-underline-offset:3px}
-.fi-go button{border:0;background:none;padding:0;color:#AEBBC8;font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-.fi-go .fi-easy{color:#fff;font-weight:600}
-.fp-lab-hit{position:absolute;inset:0;z-index:2}
-.fp-lab-hit:focus-visible{outline:2px solid #fff!important;outline-offset:-4px!important}
-.fp-ro{position:absolute;z-index:1;left:18px;top:14px;display:flex;gap:22px;margin:0;font-family:var(--mono);font-size:14px;color:#E8EDF1;pointer-events:none}
-.fp-ro div{display:flex;gap:7px;align-items:baseline}
-.fp-ro dt{font-size:11px;color:#9AA7B3}
-.fp-ro dd{margin:0;font-variant-numeric:tabular-nums}
-.fp-credit{position:absolute;right:0;bottom:14px;text-align:right;font-size:11.5px;line-height:1.45;color:#C3CEDA;text-shadow:0 0 4px var(--navy),0 0 10px var(--navy)}
-/* the live aerofoil (hero-foil.js) on a navy plate in the subject areas: the Aerodynamics lab's 2D section at 13°.
-   The canvas fills the plate; .ff-frame is the box the section is laid out in (clear of the readout and the colour bar). */
-.ff{position:relative;aspect-ratio:10/7;overflow:hidden;background:var(--navy);box-shadow:0 0 0 1px rgba(19,32,42,.12),0 30px 60px -36px rgba(11,37,69,.55)}
-.ff canvas{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity 1.2s ease}
-.ff-frame{position:absolute;left:40px;right:40px;top:76px;bottom:64px;pointer-events:none}
-.ff.live canvas{opacity:1}
-.ff .fp-ro{left:22px;top:18px}
-.ff-ro dt{color:#AEBBC8}
-.ff-st{position:absolute;z-index:1;left:22px;top:44px;margin:0;font-size:13px;color:#DDE5EC;pointer-events:none;display:flex;align-items:center;gap:8px;opacity:0;transition:opacity .6s}
-.ff.live .ff-st,.ff.live .ff-cbar{opacity:1}
-.ff-st::before{content:'';width:7px;height:7px;border-radius:50%;background:#58C98B}
-.ff-st.warn::before{background:#F0B440}.ff-st.stall::before{background:#FF6B57}
-.ff-cbar{position:absolute;z-index:1;right:22px;bottom:12px;width:190px;font-family:var(--mono);font-size:10.5px;color:#C3CEDA;pointer-events:none;opacity:0;transition:opacity .6s}
-.ff-cbar .t{display:block;color:#fff;font-weight:600;margin-bottom:5px}
-.ff-cbar .bar{display:block;height:6px;border-radius:1px}
-.ff-cbar .tk{position:relative;display:block;height:16px}
-.ff-cbar .tk i{position:absolute;top:4px;font-style:normal;transform:translateX(-50%)}
-.ff-cbar .tk i::before{content:'';position:absolute;left:50%;top:-4px;width:1px;height:3px;background:rgba(255,255,255,.55)}
-/* service index: four steps, in the order you prepare a flight */
-.fp-svc{background:var(--navy);border-top:1px solid var(--navy-rule);position:relative}
-.fp-svc ol{list-style:none;margin:0 auto;padding:0;max-width:var(--wrap);display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
-.fp-svc li:nth-child(3n+1) a{padding-left:0;border-left:0}
-.fp-svc li:nth-child(n+4) a{border-top:1px solid var(--navy-rule)}
-.fp-svc li{min-width:0}
-.fp-svc a{display:grid;grid-template-columns:30px minmax(0,1fr);align-content:start;gap:4px 10px;padding:24px 24px 30px 0;height:100%;text-decoration:none;color:var(--on-navy-2);font-size:15px;line-height:1.5}
-.fp-svc li+li a{padding-left:24px;border-left:1px solid var(--navy-rule)}
-.fp-svc i{font-style:normal;font-family:var(--disp);font-stretch:86%;font-weight:600;font-size:16px;color:#E07DB6;grid-row:1/3;line-height:1.55}
-.fp-svc b{display:block;font-family:var(--disp);font-stretch:86%;font-weight:650;font-size:21px;line-height:1.2;color:#fff;letter-spacing:-.01em}
-.fp-svc a:hover b{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px}
-.fp-svc a:focus-visible{outline:2px solid #fff;outline-offset:-2px}
+/* ---------- 1. Hero: one photograph, one statement ---------- */
+.fp-hero{position:relative;background:var(--navy);overflow:hidden;isolation:isolate}
+.fp-photo{position:absolute;inset:0;z-index:-1}
+.fp-photo img{display:block;width:100%;height:100%;object-fit:cover;object-position:60% 46%}
+.fp-stage{min-height:clamp(420px,39vw,560px);padding:76px 0 176px;display:flex;align-items:flex-start}
+.fp-plate{background:rgba(9,27,52,.9);color:var(--on-navy);padding:30px 36px 32px;max-width:590px}
+.fp-plate .kick{color:var(--on-navy-2);margin-bottom:12px!important}
+.fp-hero h1{font-size:clamp(30px,3.1vw,42px);line-height:1.12;font-weight:500;letter-spacing:-.01em;color:var(--on-navy)}
 
-/* ---------- shared section rhythm ---------- */
-.fp-sec{padding:104px 0 0}
-.fp-head{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:20px 64px;align-items:end;padding-bottom:40px;margin-bottom:48px;border-bottom:1px solid var(--rule)}
-.fp-head p{font-size:18px;line-height:1.6;color:var(--ink2);max-width:40em}
-.fp-fig{margin:0;min-width:0}
-.fp-fig .shot{display:block;background:var(--instrument);box-shadow:0 0 0 1px rgba(19,32,42,.12),0 30px 60px -36px rgba(11,37,69,.55)}
-.fp-fig .shot img{display:block;width:100%;height:auto}
-.fp-fig .shot-169 img{aspect-ratio:16/9;object-fit:cover}
-.fp-fig figcaption{margin-top:14px;font-size:14.5px;line-height:1.55;color:var(--ink2);max-width:60ch}
-.fp-fig figcaption b{color:var(--ink);font-weight:600}
+/* ---------- 2. The sheet and the quick-search box, straddling the photograph ---------- */
+.fp-top{position:relative;z-index:2;background:var(--paper)}
+.fp-row{display:grid;grid-template-columns:minmax(0,1fr) 372px;align-items:start;margin-top:-116px}
+.fp-sheet{background:var(--sheet);padding:30px 34px 28px;box-shadow:0 1px 0 var(--rule),0 18px 40px -30px rgba(11,37,69,.45)}
+.fp-sheet h2{font-weight:500;margin-bottom:20px}
+.fp-feat{display:grid;grid-template-columns:minmax(0,10fr) minmax(0,9fr);gap:36px}
+.fp-lead a{display:block;text-decoration:none}
+.fp-lead img{display:block;width:100%;height:auto;aspect-ratio:8/5;object-fit:cover;background:var(--instrument)}
+.fp-lead .kick{display:block;margin-top:14px}
+.fp-lead b{display:block;margin-top:4px;font-family:var(--disp);font-stretch:88%;font-size:21px;font-weight:600;line-height:1.2;color:var(--navy);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:transparent}
+.fp-lead a:hover b{text-decoration-color:currentColor}
+.fp-lead p{margin-top:8px;font-size:15px;line-height:1.55;color:var(--ink-2)}
+.fp-list li{padding:0 0 15px;margin-bottom:15px;position:relative}
+.fp-list li::after{content:'';position:absolute;left:0;bottom:0;width:28px;height:2px;background:var(--rule)}
+.fp-list li:last-child{margin-bottom:0;padding-bottom:0}.fp-list li:last-child::after{display:none}
+.fp-list a{display:block;text-decoration:none}
+.fp-list b{display:block;margin-top:3px;font-size:17px;font-weight:500;line-height:1.4;color:var(--navy)}
+.fp-list a:hover b{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
+.fp-more{margin-top:22px!important;text-align:right;font-size:15px}
+.fp-more a{color:var(--navy);font-weight:600;text-decoration:none}
+.fp-more a:hover{text-decoration:underline;text-underline-offset:4px}
 
-/* ---------- 2. Subject areas ---------- */
-.fp-areas-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:48px 64px;align-items:start}
-.fp-index ol{list-style:none;margin:0;padding:0;border-top:2px solid var(--navy)}
-.fp-index li a{display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:2px 16px;align-items:baseline;padding:15px 0 16px;border-bottom:1px solid var(--rule);text-decoration:none}
-.fp-index li a:hover b{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
-.fp-index .c{font-family:var(--mono);font-size:13px;color:var(--ink2);grid-row:1/3;white-space:nowrap}
-.fp-index b{font-weight:600;font-size:17px;color:var(--ink);line-height:1.35}
-.fp-index .d{grid-column:2/4;font-size:14.5px;line-height:1.5;color:var(--ink2)}
-.fp-index em{font-style:normal;font-size:13.5px;color:var(--ink2);white-space:nowrap;text-align:right}
-.fp-index .foot{display:flex;flex-wrap:wrap;gap:6px 24px;margin-top:20px;font-size:15px}
-.fp-labs{margin-top:104px}
-.fp-flows .ffl{margin-top:0}.fp-flows .txt{margin:40px 0 0}
-.fp-labs .txt{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:8px 64px;align-items:start;margin-bottom:40px}
-.fp-labs .txt h3{grid-column:1;grid-row:1}
-.fp-labs .fp-depth{grid-column:1;grid-row:2}
-.fp-steps{grid-column:2;grid-row:1/3;list-style:none;margin:0;padding:0;counter-reset:st;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 28px}
-.fp-steps li{counter-increment:st;display:grid;grid-template-columns:30px minmax(0,1fr);padding:14px 0 0;border-top:2px solid var(--navy);font-size:15px;line-height:1.5;color:var(--ink2)}
-.fp-steps li::before{content:counter(st);font-family:var(--disp);font-stretch:86%;font-weight:600;color:var(--acc);font-size:17px}
-.fp-steps b{display:block;color:var(--ink);font-weight:600}
-.fp-depth{margin-top:14px!important;font-size:15px;line-height:1.55;color:var(--ink2)}
-/* the cockpit trainers: a navy plate between the aerofoil and the storm. Real captures from the trainers (img/front/sim-*),
-   framed and lightly graded; one aircraft at a time, 3D or 2D. index-sims script below: tabs, view toggle, reveal. */
-.sm{margin-top:104px;background:var(--navy);color:var(--on-navy);position:relative;isolation:isolate;overflow:hidden;
-  box-shadow:0 0 0 1px rgba(19,32,42,.12),0 40px 80px -44px rgba(11,37,69,.75);padding:48px 48px 0}
-.sm::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
-  background:radial-gradient(70% 60% at 22% 30%,rgba(64,112,170,.22),transparent 70%),radial-gradient(50% 50% at 100% 100%,rgba(154,30,104,.12),transparent 70%)}
-.sm-top{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:14px 64px;align-items:end;margin-bottom:36px}
-.sm-k{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#E07DB6;margin-bottom:14px!important}
-.fp .sm h3{color:#fff;font-size:clamp(30px,3.3vw,46px);line-height:1.04;letter-spacing:-.022em}
-.sm-top p.sm-lede{font-size:17px;line-height:1.6;color:var(--on-navy-2);max-width:34em}
-.sm-grid{display:grid;grid-template-columns:minmax(0,8fr) minmax(0,4fr);gap:28px 40px;align-items:start}
-/* the picture: one panel at a time, framed like a product shot, caption under it */
-.sm-view{min-width:0}
-.sm-fig{margin:0;display:none}
-.sm-fig.on{display:block}
-.sm-shot{position:relative;aspect-ratio:16/10;overflow:hidden;background:#0D1A2B;
-  box-shadow:0 0 0 1px rgba(255,255,255,.12),0 2px 0 0 rgba(255,255,255,.04) inset,0 50px 90px -42px rgba(0,0,0,.9)}
-.sm-shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .8s ease}
-.sm-shot img.ld{opacity:1}
-.sm:not(.js) .sm-shot img{opacity:1}
-.sm-shot::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(130% 100% at 50% 45%,transparent 62%,rgba(4,12,26,.32) 100%)}
-.fp .sm-fig figcaption{margin-top:14px;font-size:14px;line-height:1.55;color:#AEBBC8;max-width:62ch}
-.sm-fig figcaption b{color:#fff;font-weight:600}
-/* the aircraft list */
-.sm-tabs{list-style:none;margin:0;padding:0;border-top:1px solid var(--navy-rule)}
-.sm-tabs button{display:grid;grid-template-columns:88px minmax(0,1fr);gap:2px 16px;align-items:center;width:100%;padding:14px 12px 14px 14px;border:0;border-bottom:1px solid var(--navy-rule);border-left:3px solid transparent;
-  background:none;color:var(--on-navy-2);font:inherit;font-size:14px;line-height:1.4;text-align:left;cursor:pointer;transition:background-color .25s,border-color .25s}
-.sm-tabs img{grid-row:1/3;width:88px;height:55px;object-fit:cover;display:block;opacity:.62;filter:saturate(.7);box-shadow:0 0 0 1px rgba(255,255,255,.16);transition:opacity .25s,filter .25s}
-.sm-tabs b{font-family:var(--disp);font-stretch:86%;font-weight:650;font-size:20px;line-height:1.15;color:#fff;letter-spacing:-.008em}
-.sm-tabs button:hover{background:rgba(255,255,255,.04)}
-.sm-tabs button:hover img{opacity:.9}
-.sm-tabs button[aria-pressed="true"]{background:rgba(255,255,255,.07);border-left-color:#E07DB6}
-.sm-tabs button[aria-pressed="true"] img{opacity:1;filter:none}
-.sm-tabs button:focus-visible{outline:2px solid #fff;outline-offset:-2px}
-.sm-info{padding:20px 0 0}
-.sm-ac{display:none}.sm-ac.on{display:block}
-.sm:not(.js) .sm-ac{display:block;padding-bottom:18px}
-.sm-ac dl{margin:0}
-.sm-ac dt{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#93A4B6;margin-bottom:6px}
-.sm-ac dd{margin:0;font-size:15.5px;line-height:1.55;color:#DCE4EC}
-.sm-req{margin:18px 0 0;font-size:14.5px;opacity:.9}.sm-req button{font:inherit;font-weight:600;color:inherit;background:none;border:0;border-bottom:1px solid currentColor;padding:6px 0 2px;min-height:32px;cursor:pointer}
-.sm-go{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
-.sm-go .fp-btn{min-height:46px;padding:0 20px;font-size:15.5px}
-.sm-go .fp-btn.sec small{font:600 9.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#F0B9D8;border:1px solid rgba(240,185,216,.45);padding:2px 4px 1px;margin-left:8px}
-.sm .fp-btn:focus-visible,.sm .sm-all:focus-visible{outline:2px solid #fff;outline-offset:3px}
-/* facts and the way on */
-.sm-facts{list-style:none;margin:40px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--navy-rule)}
-.sm-facts li{padding:18px 20px 22px 0;font-size:14.5px;line-height:1.45;color:var(--on-navy-2);min-width:0}
-.sm-facts li+li{padding-left:20px;border-left:1px solid var(--navy-rule)}
-.sm-facts b{display:block;font-family:var(--disp);font-stretch:86%;font-weight:650;font-size:18px;line-height:1.2;color:#fff;margin-bottom:3px}
-.fp .sm-foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px 24px;margin:0 -48px;padding:16px 48px;border-top:1px solid var(--navy-rule);background:rgba(0,0,0,.14);font-size:14px;color:#AEBBC8}
-.fp .sm-all{color:#fff;font-weight:600;font-size:15.5px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px;text-decoration-color:rgba(224,125,182,.7)}
-.fp .sm-all:hover{text-decoration-color:#E07DB6;text-decoration-thickness:2px}
-/* a soft reveal as the plate comes into view (only when the script runs, none under reduced motion) */
-.sm.js .sm-rv{opacity:0;transform:translateY(18px);transition:opacity .9s ease,transform 1.1s cubic-bezier(.2,.7,.2,1)}
-.sm.js .sm-rv.d1{transition-delay:.12s}.sm.js .sm-rv.d2{transition-delay:.24s}
-.sm.js.in .sm-rv{opacity:1;transform:none}
+.fp-qs{background:var(--navy);color:var(--on-navy);padding:30px 32px 32px;margin-top:64px}
+.fp-qs h2{color:var(--on-navy);font-weight:500;font-size:27px;margin-bottom:20px}
+.fp-qs form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;margin-bottom:18px}
+.fp-qs label{grid-column:1/-1;font-size:14px;font-weight:600}
+.fp-qs input{min-width:0;height:42px;border:1px solid #fff;background:#fff;color:var(--ink);border-radius:0;padding:0 12px;font-size:16px}
+.fp-qs input::placeholder{color:#6B7780}
+.fp-qs button{height:42px;padding:0 16px;border:0;border-radius:0;background:var(--acc);color:#fff;font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer}
+.fp-qs button:hover{background:#B02A7B}
+.fp .fp-cnt{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin:4px 0 24px;font-size:15px}
+.fp-cnt li{display:flex;align-items:center;gap:10px}
+.fp-cnt i{font-style:normal;font-family:var(--mono);font-size:14px;font-weight:500;min-width:30px;padding:2px 6px;text-align:center;background:rgba(255,255,255,.1)}
+.fp-qs .all{display:inline-flex;align-items:center;min-height:44px;padding:0 20px;background:#fff;color:var(--navy);font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;text-decoration:none}
+.fp-qs .all:hover{background:#E4EAF1}
+
+/* ---------- 3. Reference band ---------- */
+.fp-ref{background:var(--slate);color:#fff;margin-top:72px;padding-top:44px;padding-bottom:46px}
+.fp-ref h2{color:#fff;font-weight:500;font-size:26px;margin-bottom:22px}
+.fp-ref ul{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 40px}
+.fp-ref a{font-size:16px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.fp-ref a:hover{text-decoration-thickness:2px}
+.fp-ref li{display:flex;align-items:baseline;gap:12px}
+.fp-ref li::before{content:'';flex:0 0 auto;width:6px;height:6px;border-right:1.5px solid #fff;border-top:1.5px solid #fff;transform:rotate(45deg) translateY(-2px)}
+
+/* ---------- 4. Subject areas ---------- */
+.fp-sec{padding:60px 0 0}
+.fp-sec>.fp-wrap>h2{font-weight:500;margin-bottom:22px}
+.fp-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px}
+.fp-tiles a{position:relative;display:block;aspect-ratio:16/11;overflow:hidden;background:var(--instrument);text-decoration:none;color:#fff}
+.fp-tiles img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.fp-tiles a:hover img{transform:scale(1.03)}
+.fp-tiles a::after{content:'';position:absolute;inset:40% 0 0 0;background:linear-gradient(180deg,rgba(6,16,28,0),rgba(6,16,28,.92) 78%)}
+.fp-tiles a>span{position:absolute;z-index:1;left:22px;right:18px;bottom:18px;font-size:14px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;line-height:1.35}
+.fp-tiles em{display:block;font-style:normal;font-weight:500;font-size:12px;letter-spacing:.06em;color:#C3CEDA;margin-bottom:3px}
+
+/* ---------- 5. Numbers and "How do I" ---------- */
+.fp-facts{margin-top:64px;position:relative}
+.fp-facts::before{content:'';position:absolute;left:0;right:0;top:56px;bottom:0;background:var(--slate)}
+.fp-facts-grid{display:grid;grid-template-columns:minmax(0,13fr) minmax(0,8fr);gap:0 56px;align-items:start;padding-bottom:56px}
+.fp-num{background:var(--navy);color:#fff;padding:36px 40px 44px}
+.fp-num h2{color:#fff;font-weight:500;margin-bottom:30px}
+.fp-num dl{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:36px 32px;text-align:center}
+.fp-num dd{margin:0;font-family:var(--disp);font-stretch:92%;font-weight:300;font-size:50px;line-height:1;display:inline-block;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.55);min-width:2.2em}
+.fp-num dt{margin-top:12px;font-size:14.5px;line-height:1.4;color:#E3E9F0}
+.fp-num div{display:flex;flex-direction:column-reverse;align-items:center}
+.fp-how{color:#fff;padding-top:102px}
+.fp-how h2{color:#fff;font-weight:500;margin-bottom:20px}
+.fp-how li{display:flex;align-items:baseline;gap:12px;margin-bottom:13px}
+.fp-how li::before{content:'';flex:0 0 auto;width:6px;height:6px;border-right:1.5px solid #fff;border-top:1.5px solid #fff;transform:rotate(45deg) translateY(-2px)}
+.fp-how a{font-size:16px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.fp-how a:hover{text-decoration-thickness:2px}
+.fp-how .all{display:inline-flex;align-items:center;min-height:44px;margin-top:14px;padding:0 22px;border:1px solid #fff;font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;text-decoration:none}
+.fp-how .all:hover{background:rgba(255,255,255,.08)}
+.fp-note{padding:26px 0 8px;font-size:14px;color:var(--ink-2);max-width:78ch}
+
 @media (max-width:1180px){
-  .sm-tabs button{grid-template-columns:72px minmax(0,1fr);gap:2px 12px}
-  .sm-tabs img{width:72px;height:45px}
+  .fp-row{grid-template-columns:minmax(0,1fr) 330px}
+  .fp-feat{grid-template-columns:1fr;gap:26px}
 }
 @media (max-width:900px){
-  .sm{margin-top:72px;padding:40px 32px 0}
-  .sm-top,.sm-grid{grid-template-columns:minmax(0,1fr)}
-  .sm-top{margin-bottom:28px}
-  .sm-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 10px;border-top:0;padding-bottom:2px}
-  .sm-tabs::-webkit-scrollbar{display:none}
-  .sm-tabs button{grid-template-columns:minmax(0,1fr);gap:6px;padding:0 0 8px;border:0;border-bottom:2px solid var(--navy-rule);height:100%;align-content:start}
-  .sm-tabs li+li button{margin-left:0}
-  .sm-tabs li{padding:0}
-  .sm-tabs img{grid-row:auto;width:100%;height:auto;aspect-ratio:16/10}
-  .sm-tabs span{display:none}
-  .sm-tabs b{font-size:15px;padding:0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .sm-tabs button[aria-pressed="true"]{background:none;border-bottom-color:#E07DB6}
-  .sm-info{padding-top:18px}
-  .sm-facts{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:32px}
-  .sm-facts li:nth-child(3){padding-left:0;border-left:0}
-  .sm-facts li:nth-child(n+3){border-top:1px solid var(--navy-rule)}
-  .fp .sm-foot{margin:0 -32px;padding:16px 32px}
+  .fp-stage{min-height:0;padding:44px 0 120px}
+  .fp-plate{padding:24px 24px 26px}
+  .fp-row{grid-template-columns:1fr;margin-top:-76px;gap:24px}
+  .fp-qs{margin-top:0}
+  .fp-feat{grid-template-columns:minmax(0,10fr) minmax(0,9fr);gap:28px}
+  .fp-ref{margin-top:48px}
+  .fp-ref ul{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fp-tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  .fp-facts::before{top:0}
+  .fp-facts-grid{grid-template-columns:1fr;padding-top:36px;padding-bottom:40px}
+  .fp-how{padding-top:36px}
 }
 @media (max-width:640px){
-  .sm{margin:64px calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));padding:36px var(--gr,24px) 0 var(--gl,24px);box-shadow:none}
-  .sm-shot{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));box-shadow:none}
-  .fp .sm-fig figcaption{font-size:13.5px}
-  .sm-tabs b{font-size:13.5px}
-  .sm-go .fp-btn{flex:1 1 100%;justify-content:center}
-  .sm-facts li{padding:14px 12px 16px 0;font-size:13.5px}.sm-facts li+li{padding-left:12px}.sm-facts li:nth-child(3){padding-left:0}
-  .sm-facts b{font-size:16px}
-  .fp .sm-foot{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));padding:14px var(--gr,24px) 16px var(--gl,24px)}
+  .fp h2{font-size:26px}
+  .fp-sheet{padding:24px 20px}
+  .fp-feat{grid-template-columns:1fr}
+  .fp-qs{padding:24px 20px 26px}
+  .fp-ref ul{grid-template-columns:1fr}
+  .fp-tiles{grid-template-columns:1fr}
+  .fp-tiles a{aspect-ratio:16/9}
+  .fp-num{padding:28px 20px 34px}
+  .fp-num dd{font-size:42px}
+  .fp-sec{padding-top:44px}
 }
-@media (prefers-reduced-motion:reduce){.sm-shot img,.sm.js .sm-rv,.sm-tabs button,.sm-tabs img{transition:none}}
-
-/* the flow trainer: photo with a live flow over it */
-.ffl{margin:0;box-shadow:0 0 0 1px rgba(19,32,42,.12),0 34px 70px -40px rgba(11,37,69,.6);background:var(--sheet)}
-.ffl-view{position:relative;display:block;aspect-ratio:1400/836;background:#1b2530;overflow:hidden}
-.ffl-view img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.9) brightness(.82)}
-.ffl-ov{position:absolute;inset:0;width:100%;height:100%}
-.ffl-ov path{fill:none;stroke-linecap:round;transition:stroke-dashoffset .5s ease-out,opacity .4s}
-.ffl-ov .bd{transition:transform .35s cubic-bezier(.3,1.6,.5,1),opacity .35s;transform-box:fill-box;transform-origin:center}
-.ffl-ov .bd text{font:800 15px var(--mono,monospace);fill:#0B0F12;text-anchor:middle}
-.ffl-ov .rp{fill:none;stroke-width:3;transform-box:fill-box;transform-origin:center;animation:fflrp .9s ease-out forwards}
-@keyframes fflrp{from{transform:scale(.3);opacity:1}to{transform:scale(2.6);opacity:0}}
-.ffl-chip{position:absolute;left:14px;top:14px;background:#0B0F12;color:#fff;font:700 13px var(--mono,monospace);letter-spacing:.04em;padding:6px 10px 6px 8px;border-radius:7px;display:flex;gap:8px;align-items:center;transition:opacity .3s}
-.ffl-chip i{font-style:normal;width:20px;height:20px;line-height:20px;text-align:center;border-radius:50%;background:#fff;color:#0B0F12;font-size:12px}
-.ffl-q{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(11,15,18,.92);color:#fff;padding:9px 14px;border-radius:9px;font-size:15px;white-space:nowrap;opacity:0;transition:opacity .3s}
-.ffl-q b{color:#3CCB7F}.ffl-q.on{opacity:1}
-.ffl figcaption{padding:14px 18px 16px;border-top:1px solid var(--rule);font-size:14.5px;line-height:1.55;color:var(--ink2)}
-.ffl figcaption b{color:var(--ink);font-weight:600}.ffl-cr{display:block;margin-top:4px;font-size:12px;color:var(--ink3,#6b7782)}.ffl-cr a{color:inherit}
-@media (max-width:640px){.ffl{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));box-shadow:none}.ffl figcaption{padding:14px var(--gr,24px) 16px var(--gl,24px);font-size:14px}.ffl-q{font-size:13px;bottom:10px}.ffl-chip{font-size:11px;left:10px;top:10px}}
-@media (prefers-reduced-motion:reduce){.ffl-ov path,.ffl-ov .bd,.ffl-q,.ffl-chip{transition:none}.ffl-ov .rp{animation:none;opacity:0}}
-/* the storm film: the real storm lab scene (front-storm.js) with the lab's stage panel attached */
-.fp-storm{margin:0;display:grid;grid-template-columns:minmax(0,1fr) 312px;box-shadow:0 0 0 1px rgba(19,32,42,.12),0 34px 70px -40px rgba(11,37,69,.6)}
-.fs-view{position:relative;aspect-ratio:16/10;overflow:hidden;background:linear-gradient(180deg,#2f5788 0%,#8fa9c4 62%,#56605f 100%)}
-.fs-view img,.fs-view canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.fs-view img{object-fit:cover;transition:opacity .8s ease}
-.fs-view canvas{opacity:0;transition:opacity .8s ease}
-.fs-view.live canvas{opacity:1}.fs-view.live img{opacity:0}
-.fs-view.live.cut canvas{opacity:0;transition-duration:.35s}
-.fs-view .fp-lab-hit{z-index:3}
-.fs-view::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:1;background:linear-gradient(180deg,rgba(8,16,28,.42) 0%,rgba(8,16,28,0) 20%)}
-.fs-ro{position:absolute;z-index:2;left:18px;top:14px;display:flex;gap:22px;margin:0;font-family:var(--mono);font-size:13.5px;color:#F2F5F8;pointer-events:none}
-.fs-ro div{display:flex;gap:7px;align-items:baseline}.fs-ro dt{font-size:10.5px;letter-spacing:.06em;color:#C5D2DE}.fs-ro dd{margin:0;font-variant-numeric:tabular-nums}
-.fs-note{position:absolute;z-index:2;right:14px;bottom:10px;font-family:var(--mono);font-size:11px;color:rgba(240,244,248,.8);text-shadow:0 1px 3px rgba(0,0,0,.4);pointer-events:none}
-.fs-lbl{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
-.fs-lbl svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.fs-lbl svg line{stroke:rgba(255,255,255,.75);stroke-width:1}
-.fs-lbl svg circle{fill:#fff;stroke:rgba(0,0,0,.45);stroke-width:1}
-.fs-lbl .lbl{position:absolute;left:0;top:0;white-space:nowrap;font-size:12.5px;font-weight:600;color:#fff;background:rgba(11,37,69,.78);border-left:2px solid #E07DB6;padding:3px 9px;will-change:transform}
-.fs-lbl .lbl.dn{border-left-color:#6eb4f0}
-.fs-panel{background:var(--sheet);border-left:1px solid var(--rule);padding:22px 22px 20px;display:flex;flex-direction:column;min-width:0}
-.fs-k{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-bottom:10px!important}
-.fs-stages{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
-.fs-stages button{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:baseline;width:100%;padding:10px 10px 10px 12px;border:0;border-bottom:1px solid var(--rule);border-left:3px solid transparent;background:none;font:inherit;font-size:14.5px;line-height:1.3;text-align:left;color:var(--ink);cursor:pointer;transition:background-color .2s,color .2s}
-.fs-stages i{font-style:normal;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink2)}
-.fs-stages b{font-weight:500}
-.fs-stages span{font-family:var(--mono);font-size:11.5px;color:var(--ink2)}
-.fs-stages button:hover{background:rgba(11,37,69,.05)}
-.fs-stages button.on{background:var(--navy);color:#fff;border-left-color:#E07DB6}
-.fs-stages button.on i,.fs-stages button.on span{color:#BFCAD6}.fs-stages button.on b{font-weight:600}
-.fs-stages button:focus-visible{outline:2px solid var(--info);outline-offset:-2px}
-.fs-time{display:flex;align-items:center;gap:10px;margin-top:14px}
-.fs-track{flex:1;height:3px;background:var(--rule);position:relative;overflow:hidden}
-.fs-track span{position:absolute;inset:0;background:var(--acc);transform-origin:0 50%;transform:scaleX(.43)}
-.fs-clock{font-family:var(--mono);font-size:12px;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}
-.fs-play{font:inherit;font-size:13px;font-weight:600;color:var(--navy);background:none;border:1px solid var(--rule);padding:4px 10px;min-height:30px;cursor:pointer}
-.fs-play:hover{border-color:var(--navy)}
-.fs-card{margin-top:14px!important;font-size:14px;line-height:1.5;color:var(--ink2);min-height:6.2em}
-.fs-card b{display:block;color:var(--ink);font-weight:600;margin-bottom:2px}
-.fs-lay{margin-top:auto;padding-top:14px}.fs-lay[hidden]{display:none}
-.fs-lay .fs-k{margin-bottom:8px!important}
-.fs-togs{display:flex;flex-wrap:wrap;gap:6px}
-.fs-togs button{font:inherit;font-size:13px;color:var(--ink);background:none;border:1px solid var(--rule);padding:4px 10px;min-height:32px;cursor:pointer}
-.fs-togs button.on{background:var(--navy);border-color:var(--navy);color:#fff}
-.fp-storm figcaption{grid-column:1/-1;padding:14px 18px 16px;background:var(--sheet);border-top:1px solid var(--rule);font-size:14.5px;line-height:1.55;color:var(--ink2)}
-.fp-storm figcaption b{color:var(--ink);font-weight:600}
-
-/* ---------- 3. Theory to the flight deck ---------- */
-.fp-row{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:40px 64px;align-items:center}
-.fp-row+.fp-row{margin-top:96px}
-.fp-row.flip{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
-.fp-row.flip .fp-fig{order:2}
-.fp-row .txt p{font-size:17px;line-height:1.6;color:var(--ink2);margin-top:14px}
-.fp-row .txt .tl{display:inline-block;margin-top:22px}
-.fp-facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0;margin:24px 0 0;border-top:1px solid var(--rule);font-size:15px}
-.fp-facts dt,.fp-facts dd{padding:9px 0;border-bottom:1px solid var(--rule2);margin:0}
-.fp-facts dt{color:var(--ink2);padding-right:24px}
-.fp-facts dd{text-align:right;font-family:var(--mono);font-size:14px;color:var(--ink);white-space:nowrap}
-.fp-row .fig-bp .shot{max-width:560px;margin-left:auto;background:#fff}
-/* example answer: typography, not a screenshot */
-.fp-ex{background:var(--sheet);border:1px solid var(--rule);border-top:3px solid var(--navy);padding:26px 30px 24px;font-size:16px;line-height:1.6}
-.fp-ex .who{font-size:13.5px;color:var(--ink2);margin-bottom:6px!important}
-.fp-ex .q{font-family:var(--disp);font-stretch:86%;font-weight:600;font-size:22px;line-height:1.25;color:var(--navy);padding-bottom:16px;border-bottom:1px solid var(--rule2)}
-.fp-ex .a{padding-top:14px}
-.fp-ex .a p+p{margin-top:10px}
-.fp-ex cite{font-style:normal;font-family:var(--mono);font-size:12.5px;color:var(--info);background:var(--info-wash);border:1px solid #C8D5E6;padding:1px 6px;margin-left:4px;white-space:nowrap;vertical-align:1px}
-.fp-ex .note{margin-top:18px!important;padding-top:12px;border-top:1px solid var(--rule2);font-size:13.5px;color:var(--ink2)}
-
-/* ---------- 4. Sources ---------- */
-.fp-src{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:2px solid var(--navy)}
-.fp-src div{padding:22px 24px 26px 0;min-width:0}
-.fp-src div+div{padding-left:24px;border-left:1px solid var(--rule)}
-.fp-src h3{font-size:21px;margin-bottom:10px}
-.fp-src p{font-size:15px;line-height:1.55;color:var(--ink2)}
-#sources .fp-head{border-bottom:0;margin-bottom:0}
-.fp-model{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px 32px;margin-top:0;padding:18px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);font-size:15px;color:var(--ink2)}
-.fp-model b{color:var(--ink);font-weight:600}
-
-/* ---------- 5. Schools and the maker ---------- */
-.fp-end{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:24px;margin-top:104px;margin-bottom:48px}
-.fp-schools{background:var(--navy);color:var(--on-navy);padding:44px 48px 48px;display:flex;flex-direction:column;align-items:flex-start}
-.fp-schools h2{color:#fff}
-.fp-schools p{margin-top:16px!important;font-size:17px;line-height:1.6;color:var(--on-navy-2);max-width:44em}
-.fp-schools ul{list-style:none;margin:22px 0 30px;padding:0;width:100%;border-top:1px solid var(--navy-rule)}
-.fp-schools li{padding:10px 0;border-bottom:1px solid var(--navy-rule);font-size:15.5px;color:#E3E9EF}
-.fp-schools .fp-btn{margin-top:auto;background:#fff;color:var(--navy)}
-.fp-schools .fp-btn:hover{background:#E6ECF1}
-.fp-schools .fp-btn:focus-visible{outline-color:#fff}
-.fp-schools button.fp-btn{border:0;font:inherit;cursor:pointer}
-.fp-schools .fp-more{margin-top:14px;color:#E3E9EF;font-size:15px;text-decoration:underline;text-underline-offset:3px}
-.fp-schools .fp-more:hover{color:#fff}
-.fp-maker{border:1px solid var(--rule);background:var(--sheet);padding:44px 40px 40px}
-.fp-maker .face{width:96px;height:96px;border-radius:50%;overflow:hidden;background:var(--navy);margin-bottom:22px}
-.fp-maker .face img{display:block;width:100%;height:100%;object-fit:cover}
-.fp-maker p{margin-top:14px!important;font-size:16px;line-height:1.6;color:var(--ink2)}
-.fp-maker .sig{font-size:15px;color:var(--ink)}
-.fp-maker .tl{display:inline-block;margin-top:18px}
-
-/* ---------- responsive ---------- */
-@media (max-width:1180px){
-  .fp-svc a{padding-right:16px}.fp-svc li+li a{padding-left:16px}
-  .fp-src{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .fp-src div:nth-child(3){padding-left:0;border-left:0}
-  .fp-src div:nth-child(n+3){border-top:1px solid var(--rule)}
-}
-@media (max-width:900px){
-  .fp-stage{grid-template-columns:minmax(0,1fr);min-height:0;padding:56px 0 48px;gap:48px}
-  .fp-relief{inset:auto 0 0 0;width:100%;top:38%;bottom:0;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 22%);mask-image:linear-gradient(180deg,transparent 0,#000 22%)}
-  .fp-relief img{object-position:78% 50%}
-  .fp-copy{max-width:640px}
-  .fi{max-width:640px;justify-self:start}
-  .fp-credit{position:static;max-width:none;padding:0 0 18px;background:none}
-  .fp-svc ol{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .fp-svc li:nth-child(3n+1) a{padding-left:16px;border-left:1px solid var(--navy-rule)}
-  .fp-svc li:nth-child(odd) a{padding-left:0;border-left:0}
-  .fp-svc li:nth-child(n+3) a{border-top:1px solid var(--navy-rule)}
-  .fp-head,.fp-areas-grid,.fp-labs,.fp-row,.fp-row.flip,.fp-end{grid-template-columns:minmax(0,1fr)}
-  .fp-head{align-items:start}
-  .fp-row.flip .fp-fig{order:0}
-  .fp-labs .txt{grid-template-columns:minmax(0,1fr);margin-bottom:32px}
-  .fp-flows .txt{margin:28px 0 0}
-  .fp-labs .fp-depth{grid-row:3}
-  .fp-steps{grid-column:1;grid-row:2;margin-top:14px}
-  .fp-storm{grid-template-columns:minmax(0,1fr)}
-  .fs-panel{border-left:0;border-top:1px solid var(--rule)}
-  .fs-card{min-height:0}
-  .fp-row .fig-bp .shot{margin-left:0}
-  .fp-labs,.fp-row+.fp-row{margin-top:72px}
-}
-@media (max-width:640px){
-  .fp{font-size:16px}
-  .fp-stage{padding:40px 0 36px;gap:36px}
-  .fp-hero h1{font-size:clamp(38px,11vw,48px);line-height:1.0}
-  .fp-lede{font-size:17px;margin-top:18px!important}
-  .fp-act{margin-top:26px}
-  .fp-act .fp-btn{flex:1 1 100%;justify-content:center}
-  .fp-relief{top:30%}
-  .fp-relief img{object-position:78% 50%}
-  .fi{margin-top:104px;font-size:15px}
-  .fi-top{padding:13px 18px 12px}
-  .fi-stack{padding:18px 18px 0}
-  .fp .fi-q{font-size:20px;padding-bottom:14px;margin-bottom:14px!important}
-  .fi-src li{grid-template-columns:40px minmax(0,1fr);font-size:13px}
-  .fi-src li span:last-child{grid-column:2}
-  .fi-keep{padding:12px 18px 0;font-size:12.5px}
-  .fi-ask{margin:12px 18px 18px}
-  .fi-pv{margin:-8px 0 0!important;padding:0 18px 18px}
-  .fi-ask input{padding:0 12px;font-size:16px}
-  .fi-ask button{padding:0 16px}
-  .fi-live{max-height:380px}
-  .ff{aspect-ratio:4/4.1;margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));box-shadow:none}
-  .ff-frame{left:14px;right:14px;top:72px;bottom:58px}
-  .ff .fp-ro{left:var(--gl,24px);top:16px;font-size:12.5px;gap:16px}
-  .ff .ff-st{left:var(--gl,24px);top:42px;font-size:12.5px}
-  .ff-cbar{width:150px;right:var(--gr,24px)}
-  .ff-cbar .tk i:nth-child(2),.ff-cbar .tk i:nth-child(4){display:none}
-  .fp-ro{left:14px;top:12px;gap:16px;font-size:12.5px}
-  .fp-svc ol{grid-template-columns:minmax(0,1fr)}
-  .fp-svc a,.fp-svc li+li a,.fp-svc li:nth-child(3n+1) a,.fp-svc li:nth-child(odd) a{padding:16px 0 18px;border-left:0;border-top:1px solid var(--navy-rule)}
-  .fp-svc li:first-child a{border-top:0}
-  .fp-svc b{font-size:19px}
-  .fp-sec{padding-top:72px}
-  .fp-head{padding-bottom:28px;margin-bottom:32px}
-  .fp-head p{font-size:16.5px}
-  .fp-fig .shot{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));box-shadow:none}
-  .fp-row .fig-bp .shot{margin:0;box-shadow:0 0 0 1px rgba(19,32,42,.12),0 18px 36px -24px rgba(11,37,69,.45)} /* the cover is a sheet of paper: centred inside the margins, not full-bleed */
-  .fp-fig figcaption{font-size:14px}
-  .fp-index li a{grid-template-columns:58px minmax(0,1fr) auto;gap:2px 10px;padding:13px 0 14px}
-  .fp-index .c{font-size:12px}
-  .fp-index b{font-size:16px}
-  .fp-index .d{font-size:14px}
-  .fp-src{grid-template-columns:minmax(0,1fr)}
-  .fp-steps{grid-template-columns:minmax(0,1fr);gap:0}
-  .fp-steps li{padding:12px 0;border-top:1px solid var(--rule)}
-  .fp-steps li:first-child{border-top:2px solid var(--navy)}
-  .fp-storm{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));box-shadow:none}
-  .fs-view{aspect-ratio:4/3.6}
-  .fs-ro{left:14px;top:12px;gap:14px;font-size:12px}
-  .fs-panel{padding:18px var(--gr,24px) 18px var(--gl,24px)}
-  .fs-stages button{padding:11px 8px 11px 10px;font-size:14.5px}
-  .fp-storm figcaption{padding:14px var(--gr,24px) 16px var(--gl,24px);font-size:14px}
-  .fp-src div,.fp-src div+div{padding:18px 0 20px;border-left:0}
-  .fp-src div+div{border-top:1px solid var(--rule)}
-  .fp-ex{padding:20px 18px}
-  .fp-ex .q{font-size:19px}
-  .fp-facts{font-size:14px}.fp-facts dd{font-size:13px}
-  .fp-end{margin-top:72px;margin-bottom:32px;gap:16px}
-  .fp-schools{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));padding:36px var(--gr,24px) 40px var(--gl,24px)}
-  .fp-schools .fp-btn{width:100%;justify-content:center}
-  .fp-maker{padding:30px 22px 28px}
-}
-@media (prefers-reduced-motion:reduce){.ff canvas,.ff-st,.ff-cbar,.fi-qa,.fi-src li,.fp-btn,.fs-view img,.fs-view canvas,.fs-stages button{transition:none}}
-
-/* laptops (short screens): the whole hero, buttons included, fits above the fold */
-@media (min-width:901px) and (max-height:1000px){
-  .fp-stage{min-height:0;padding:44px 0 36px;gap:32px 56px}
-  .fp-hero h1{font-size:clamp(40px,min(4.6vw,7.4vh),70px)}
-  .fp-lede{font-size:17px;margin-top:18px!important}
-  .fp .fi-q{font-size:19px;padding-bottom:12px}
-  .fi-a{font-size:15px;line-height:1.5}
-  .fi-stack{padding:16px 22px 0}.fi-top{padding:11px 22px 10px}
-  .fi-src{margin-top:12px;padding-top:6px}.fi-src li{padding:4px 0}
-  .fi-keep{display:none}
-  .fi-ask{margin:12px 22px 18px;min-height:44px}
-  .fi-pv{margin:-8px 0 0!important;padding:0 22px 18px}
-}
-@media (min-width:901px) and (max-height:820px){ .fi-src{display:none} .fp-hero h1{font-size:clamp(38px,min(4.2vw,7vh),62px)} }
-/* touch: 44 px targets for the example pager, the storm stages and the stand-alone text links */
-@media (pointer:coarse){
-  .fi-pg button{width:44px;height:44px}
-  .fs-stages button{min-height:44px}
-  .fp .txt>.tl,.fp .foot>.tl,.fp-model>.tl,.fp-maker>.tl,.fp .sm-all{display:inline-flex;align-items:center;min-height:44px}
-}
+@media (prefers-reduced-motion:reduce){.fp-tiles img{transition:none}}
 </style>
 </head>
 <body data-home="1" data-title="NORDAP · Nordic Aviation Platform">
@@ -508,444 +157,157 @@
 <main class="fp" id="main">
 
   <!-- 1. Hero -->
-  <section class="fp-hero fp-band" id="fpHero" aria-labelledby="fp-h1">
-    <div class="fp-relief" aria-hidden="true">
+  <section class="fp-hero fp-band" aria-labelledby="fp-h1">
+    <div class="fp-photo" aria-hidden="true">
       <img src="img/front/sunset2-1400.webp" srcset="img/front/sunset2-760.webp 760w, img/front/sunset2-1400.webp 1400w, img/front/sunset2-1672.webp 1672w, img/front/sunset2-2560.webp 2560w, img/front/sunset2-3344.webp 3344w, img/front/sunset2-3840.webp 3840w" sizes="100vw" width="1400" height="788" alt="" fetchpriority="high" decoding="async">
     </div>
     <div class="fp-wrap">
       <div class="fp-stage">
-        <div class="fp-copy">
-          <h1 id="fp-h1" data-tx="h1">Welcome to NORDAP</h1>
-          <p class="fp-lede" data-tx="lede">The Nordic Aviation Platform, built in Norway for pilots and flight schools. <b><span class="nLabs">25</span> interactive labs</b> on the EASA ATPL syllabus, a flow trainer for your airline’s procedures, cockpit trainers, briefing packs and Flight Intelligence. All in one place, in your browser.</p>
-          <div class="fp-act"><a class="fp-btn pri" href="lab.html">Open Virtual Labs</a><a class="fp-btn sec" href="#fpSims" data-tx="bTrn">Cockpit trainers</a><a class="fp-btn sec" href="flows.html" data-tx="bFl">Flows</a></div>
+        <div class="fp-plate on-dark">
+          <p class="kick">Nordic Aviation Platform</p>
+          <h1 id="fp-h1" data-tx="h1">Flight theory you can see, built on the EASA ATPL syllabus.</h1>
         </div>
-        <section class="fi" id="fpFi" aria-labelledby="fiName">
-          <header class="fi-top">
-            <h2 class="fi-name" id="fiName">Flight Intelligence</h2>
-            <ol class="fi-pg" id="fiPg" aria-label="Examples" data-aria-no="Eksempler" hidden></ol>
-          </header>
-          <div class="fi-stack" id="fiStack">
-            <div class="fi-qa">
-              <p class="fi-k" data-tx="fiK">Example · illustrative documents</p>
-              <p class="fi-q">The RVR drops below our minimum as we pass 1,400 ft on the ILS. Can we continue?</p>
-              <div class="fi-a"><p>Yes, down to 1,000 ft above aerodrome elevation. If the reported RVR is still below your minimum there, you may not continue the approach.<span class="fi-c e">CAT.OP.MPA.305</span></p><p>Had it dropped after you passed 1,000 ft, you could continue to DA/H, and go around there without the required visual reference.<span class="fi-c e">GM1 CAT.OP.MPA.305</span></p><p>Your SOP adds a check at 1,000 ft: the PM reads out the latest RVR before the PF continues.<span class="fi-c">SOP 6.4 · p. 6-12</span></p></div>
-            </div>
-          </div>
-          <p class="fi-keep" data-tx="fiKeep">Answers come from your own AFM, QRH and SOP and from the EASA Easy Access Rules, each with the page it rests on. Your documents are read and stored in this browser.</p>
-          <form class="fi-ask" id="fiAskF" action="fi.html" method="get" role="search" aria-label="Ask Flight Intelligence"><label class="vh" for="fiAskIn" data-tx="fiAsk">Ask Flight Intelligence</label><input id="fiAskIn" name="q" type="text" maxlength="1500" autocomplete="off" placeholder="Ask Flight Intelligence" data-ai><button type="submit" data-tx="fiGo">Ask</button></form>
-          <p class="fi-pv" data-tx="fiPv"><b>Preview.</b> Flight Intelligence runs on a lighter AI model while NORDAP is in testing. Use answers as a study reference, and always check the official source.</p>
-        </section>
       </div>
     </div>
   </section>
-  <nav class="fp-svc fp-band" aria-labelledby="h-svc">
-    <h2 class="vh" id="h-svc">Six services, from theory to the flight</h2>
-    <ol>
-      <li><a href="lab.html"><i>1</i><b>Virtual Labs</b><span data-tx="s1"><span class="nLabs">25</span> interactive labs on the EASA ATPL theory subjects.</span></a></li>
-      <li><a href="flows.html"><i>2</i><b>Flows</b><span data-tx="s6">Learn your airline’s flows by heart on the real cockpit, alone or with your partner.</span></a></li>
-      <li><a href="training.html"><i>3</i><b data-tx="trnB">Cockpit trainers</b><span data-tx="s5">Six cockpits you can fly, from the Cessna 172 to the A320, 737 and ATR 72, in 2D and 3D.</span></a></li>
-      <li><a href="prep.html"><i>4</i><b>Briefing pack</b><span data-tx="s3">NOTAM, weather, minima, performance, fuel, mass and balance, printed as a booklet.</span></a></li>
-      <li><a href="route.html"><i>5</i><b>Route Explorer</b><span data-tx="s2">Plan the route on a VFR map and read the terrain under it.</span></a></li>
-      <li><a href="fi.html"><i>6</i><b>Flight Intelligence</b><span data-tx="s4">Answers from your AFM, QRH and SOP, with the page each one comes from.</span></a></li>
-    </ol>
-  </nav>
 
-  <!-- 2. Subject areas -->
-  <section class="fp-sec" id="areas" aria-labelledby="h-areas">
-    <div class="fp-wrap">
-      <header class="fp-head">
-        <h2 id="h-areas" data-tx="h2a">Six subject areas, built on the EASA ATPL syllabus</h2>
-        <p data-tx="p2a">Each lab is a working model you can change and watch respond: take the wing to the stall, grow a thunderstorm, fly a VOR radial over Bergen. Where a lab shows numbers, they come from an illustrative A320.</p>
-      </header>
-      <div class="fp-areas-grid">
-        <figure class="fp-fig">
-          <div class="ff" id="ffBox">
-            <canvas id="ffCv" aria-hidden="true"></canvas>
-            <div class="ff-frame" data-k="0.6" aria-hidden="true"></div>
-            <dl class="fp-ro ff-ro" id="ffRo" aria-hidden="true"><div><dt>α</dt><dd>13.0°</dd></div><div><dt>CL</dt><dd>1.63</dd></div><div><dt>SEP.</dt><dd>–</dd></div></dl>
-            <p class="ff-st ok" id="ffSt" aria-hidden="true"></p>
-            <div class="ff-cbar" aria-hidden="true"><span class="t">Cp</span><span class="bar"></span><span class="tk"><i style="left:0">−3</i><i style="left:23.33%">−1</i><i style="left:35%">0</i><i style="left:67.5%">+0.5</i><i style="left:100%">+1</i></span></div>
-            <a class="fp-lab-hit" href="tunnel.html#profil" tabindex="-1" aria-hidden="true"></a>
-          </div>
-          <figcaption data-tx="capFoil"><b>The wing in profile at 13° angle of attack.</b> The aerofoil section from the Aerodynamics lab, computed live in your browser: pressure field (Cp) and streamlines from a panel method, transition and separation from a boundary-layer model. <a class="tl" href="tunnel.html#profil">Open the aerofoil section</a></figcaption>
-        </figure>
-        <div class="fp-index">
-          <h3 class="vh" data-tx="h3idx">Subject areas and their EASA ATPL subjects</h3>
-          <ol id="fpAreas"></ol>
-          <p class="foot"><a class="tl" href="lab.html" data-tx="allLabs">All <span class="nLabs">25</span> labs</a><a class="tl" href="lab.html#more" data-tx="hf">Human factors</a></p>
+  <!-- 2. Virtual Labs sheet and quick search -->
+  <div class="fp-top fp-band">
+    <div class="fp-wrap fp-row">
+      <section class="fp-sheet" aria-labelledby="h-labs">
+        <h2 id="h-labs">Virtual Labs</h2>
+        <div class="fp-feat">
+          <div class="fp-lead" id="fpLead"></div>
+          <ul class="fp-list" id="fpList"></ul>
         </div>
-      </div>
-
-      <!-- the flow trainer: the real A320 overhead panel with a flow being built, then practised (front-flow.js) -->
-      <div class="fp-labs fp-flows" id="fpFlows">
-        <figure class="ffl" id="ffl" aria-labelledby="flCap">
-          <a class="ffl-view" href="flows.html" aria-label="Open the flow trainer" data-aria-no="Åpne flow-treneren">
-            <img src="img/front/flow-a320-1400.webp" srcset="img/front/flow-a320-800.webp 800w, img/front/flow-a320-1400.webp 1400w" sizes="(max-width:980px) 100vw, 1180px" width="1400" height="836" loading="lazy" decoding="async"
-              alt="The overhead panel of an Airbus A320, with a flow drawn over it: numbered steps for the two pilots joined by lines." data-alt-no="Overheadpanelet i en Airbus A320 med en flow tegnet over: nummererte steg for de to pilotene, bundet sammen med linjer.">
-            <svg class="ffl-ov" id="fflOv" viewBox="0 0 1000 597" aria-hidden="true"></svg>
-            <span class="ffl-chip" id="fflChip" aria-hidden="true"></span>
-            <span class="ffl-q" id="fflQ" aria-hidden="true"></span>
-          </a>
-          <figcaption id="flCap"><span data-tx="capFl"><b>Flow trainer.</b> A flow being built on the real A320 overhead panel, then practised with the lines hidden. The steps here only show how it works; your airline’s flow goes in its place.</span> <a class="tl" href="flows.html" data-tx="goFl">Open the flow trainer</a> <small class="ffl-cr">Photo: Olivier Cleynen, <a href="https://creativecommons.org/licenses/by-sa/3.0/" rel="noopener">CC BY-SA 3.0</a></small></figcaption>
-        </figure>
-        <div class="txt">
-          <h3 data-tx="flH">Learn your airline’s flows by heart</h3>
-          <ol class="fp-steps">
-            <li><span data-tx="fl1"><b>Build</b>Tap the controls in your airline’s order, or paste the SOP. On a NORDAP cockpit, a real photo or a page of your own manual.</span></li>
-            <li><span data-tx="fl2"><b>Watch</b>The flow plays step by step, PF and PM in their own colours, with the checklist calls.</span></li>
-            <li><span data-tx="fl3"><b>Practise</b>Find each step, then the whole flow from memory. Alone, or live with your partner on another phone.</span></li>
-          </ol>
-          <p class="fp-depth" data-tx="flD">Fourteen cockpits, from the Cessna 172 and DA42 to the King Air, A320, 737 and 787, plus your own photo. Free, on phone, tablet and computer.</p>
-        </div>
-      </div>
-
-      <!-- the cockpit trainers: Cessna 172, DA42, King Air B200, Airbus A320, Boeing 737-800 and ATR 72-500 -->
-      <section class="sm" id="fpSims" data-ac="b200" aria-labelledby="h-sims">
-        <div class="sm-top sm-rv">
-          <div>
-            <p class="sm-k" data-tx="smK">Cockpit trainers</p>
-            <h3 id="h-sims" data-tx="smH">Take your seat in the cockpit</h3>
-          </div>
-          <p class="sm-lede" data-tx="smP">Six working cockpits, from the six basic instruments to two-pilot turboprops and two airliners. Each one is a whole panel you can fly, from the ground or straight onto an ILS in one click, and most also have a 3D cockpit, in beta.</p>
-        </div>
-        <div class="sm-grid">
-          <div class="sm-view sm-rv d1" id="smView">
-            <figure class="sm-fig" data-ac="c172">
-              <div class="sm-shot"><img data-srcset="img/front/sim-c172-panel-760.webp 760w, img/front/sim-c172-panel-1400.webp 1400w, img/front/sim-c172-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
-                alt="The Cessna 172 trainer's instrument panel on the ILS 36 approach: the six basic flight instruments, the VOR indicators and the ADF, and the radio stack with the audio panel, two NAV/COM radios, the ADF, DME and transponder." data-alt-no="Instrumentpanelet i Cessna 172-treneren på ILS 36-innflygingen: de seks grunnleggende flyinstrumentene, VOR-indikatorene og ADF-en, og radiostakken med audiopanel, to NAV/COM-radioer, ADF, DME og transponder."></div>
-              <figcaption data-tx="smCapc172"><b>Cessna 172, on the ILS 36.</b> The six basic instruments, two VOR indicators and the ADF, and a full radio stack you tune yourself.</figcaption>
-            </figure>
-            <figure class="sm-fig" data-ac="da42">
-              <div class="sm-shot"><img data-srcset="img/front/sim-da42-panel-760.webp 760w, img/front/sim-da42-panel-1400.webp 1400w, img/front/sim-da42-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
-                alt="The DA42 trainer's glass cockpit on the ILS 36 approach with the autopilot coupled: the PFD with the localizer and glideslope captured, the MFD with the engine page and the moving map, and the standby instruments above." data-alt-no="Glasscockpiten i DA42-treneren på ILS 36-innflygingen med autopiloten koblet inn: PFD-en med localizer og glidebane fanget, MFD-en med motorsiden og kartet, og reserveinstrumentene over."></div>
-              <figcaption data-tx="smCapda42"><b>DA42, on the ILS 36 with the autopilot coupled.</b> PFD and MFD with the engine page and moving map, the standby instruments and the switch row.</figcaption>
-            </figure>
-            <figure class="sm-fig on" data-ac="b200">
-              <div class="sm-shot"><img src="img/front/sim-b200-panel-1400.webp" srcset="img/front/sim-b200-panel-760.webp 760w, img/front/sim-b200-panel-1400.webp 1400w, img/front/sim-b200-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" loading="lazy" decoding="async"
-                alt="The King Air B200 trainer's flight deck on the ILS 36 approach with the autopilot coupled: attitude and situation displays for both pilots, the round engine instruments in the centre, the navigator and the weather display, and the annunciator panel above." data-alt-no="Cockpiten i King Air B200-treneren på ILS 36-innflygingen med autopiloten koblet inn: attityde- og kursskjermer for begge piloter, de runde motorinstrumentene i midten, navigatoren og værskjermen, og varselpanelet over."></div>
-              <figcaption data-tx="smCapb200"><b>King Air B200, on the ILS 36 with the autopilot coupled.</b> Displays for both pilots, the engine instruments in the centre and the annunciator panel.</figcaption>
-            </figure>
-            <figure class="sm-fig" data-ac="a320">
-              <div class="sm-shot"><img data-srcset="img/front/sim-a320-panel-760.webp 760w, img/front/sim-a320-panel-1400.webp 1400w, img/front/sim-a320-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
-                alt="The A320 trainer's flight deck on the ILS 36 with both autopilots engaged: PFDs with the FMA, the NDs, the E/WD and the system display, the FCU and the EFIS control panels." data-alt-no="Cockpiten i A320-treneren på ILS 36 med begge autopilotene inne: PFD-ene med FMA, ND-ene, E/WD og systemskjermen, FCU og EFIS-panelene."></div>
-              <figcaption data-tx="smCapa320"><b>Airbus A320, on the ILS 36 with both autopilots engaged.</b> PFDs with the FMA, the NDs, the ECAM displays and the FCU.</figcaption>
-            </figure>
-            <figure class="sm-fig" data-ac="b737">
-              <div class="sm-shot"><img data-srcset="img/front/sim-b737-panel-760.webp 760w, img/front/sim-b737-panel-1400.webp 1400w, img/front/sim-b737-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
-                alt="The 737-800 trainer's flight deck on the ILS 36 with CMD B engaged: PFDs with the FMA, the NDs, the engine display, the MCP and the EFIS control panels." data-alt-no="Cockpiten i 737-800-treneren på ILS 36 med CMD B inne: PFD-ene med FMA, ND-ene, motorskjermen, MCP og EFIS-panelene."></div>
-              <figcaption data-tx="smCapb737"><b>Boeing 737-800, on the ILS 36 with CMD B engaged.</b> PFDs with the FMA, the NDs, the engine display and the MCP.</figcaption>
-            </figure>
-            <figure class="sm-fig" data-ac="atr72">
-              <div class="sm-shot"><img data-srcset="img/front/sim-atr72-panel-760.webp 760w, img/front/sim-atr72-panel-1400.webp 1400w, img/front/sim-atr72-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
-                alt="The ATR 72 trainer's flight deck at 5,000 ft with AP and YD on in HDG SEL: the EADIs and EHSIs, the ADU, the round engine gauges and the crew alerting panel." data-alt-no="Cockpiten i ATR 72-treneren i 5000 fot med AP og YD inne i HDG SEL: EADI-ene og EHSI-ene, ADU-en, de runde motorinstrumentene og crew alerting panel."></div>
-              <figcaption data-tx="smCapatr"><b>ATR 72-500, at 5,000 ft with AP and YD in HDG SEL.</b> EADIs and EHSIs, the ADU, the engine gauges and the crew alerting panel.</figcaption>
-            </figure>
-          </div>
-          <div class="sm-side sm-rv d2">
-            <ul class="sm-tabs" id="smTabs" aria-label="Aircraft" data-aria-no="Flytype">
-              <li><button type="button" data-ac="c172" aria-pressed="false" aria-controls="smView smAcC172"><img data-src="img/front/sim-c172-thumb.webp" width="176" height="110" alt=""><b>Cessna 172</b><span data-tx="smC1">Single-engine piston, analogue panel</span></button></li>
-              <li><button type="button" data-ac="da42" aria-pressed="false" aria-controls="smView smAcDA42"><img data-src="img/front/sim-da42-thumb.webp" width="176" height="110" alt=""><b>DA42</b><span data-tx="smD1">Twin piston, glass cockpit</span></button></li>
-              <li><button type="button" data-ac="b200" aria-pressed="true" aria-controls="smView smAcB200"><img data-src="img/front/sim-b200-thumb.webp" width="176" height="110" alt=""><b>King Air B200</b><span data-tx="smB1">Twin turboprop, two-pilot flight deck</span></button></li>
-              <li><button type="button" data-ac="a320" aria-pressed="false" aria-controls="smView smAcA320"><img data-src="img/front/sim-a320-thumb.webp" width="176" height="110" alt=""><b>Airbus A320</b><span data-tx="smA1">Twin jet, fly-by-wire</span></button></li>
-              <li><button type="button" data-ac="b737" aria-pressed="false" aria-controls="smView smAcB737"><img data-src="img/front/sim-b737-thumb.webp" width="176" height="110" alt=""><b>Boeing 737-800</b><span data-tx="smJ1">Twin jet, conventional controls</span></button></li>
-              <li><button type="button" data-ac="atr72" aria-pressed="false" aria-controls="smView smAcAtr"><img data-src="img/front/sim-atr72-thumb.webp" width="176" height="110" alt=""><b>ATR 72-500</b><span data-tx="smR1">Twin turboprop, regional airliner</span></button></li>
-            </ul>
-            <div class="sm-info">
-              <div class="sm-ac" id="smAcC172" data-ac="c172">
-                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smC2">The instrument scan and attitude flying, VOR, ADF and DME navigation, and the circuit.</dd></dl>
-                <div class="sm-go"><a class="fp-btn pri" href="c172.html" data-tx="smC3">Fly the Cessna 172</a><a class="fp-btn sec" href="c172-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – Cessna 172</span><small>beta</small></a></div>
-              </div>
-              <div class="sm-ac" id="smAcDA42" data-ac="da42">
-                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smD2">Multi-engine flying with a glass cockpit: ILS and RNP approaches, the autopilot, and engine failures and asymmetric flight.</dd></dl>
-                <div class="sm-go"><a class="fp-btn pri" href="cockpit.html" data-tx="smD3">Fly the DA42</a><a class="fp-btn sec" href="da42-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – DA42</span><small>beta</small></a></div>
-              </div>
-              <div class="sm-ac on" id="smAcB200" data-ac="b200">
-                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smB2">A two-crew turboprop from battery start to shutdown: systems such as pressurisation, autofeather and fire protection, and type-rating preparation with 320 questions.</dd></dl>
-                <div class="sm-go"><a class="fp-btn pri" href="b200.html" data-tx="smB3">Fly the King Air</a><a class="fp-btn sec" href="b200-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – King Air B200</span><small>beta</small></a></div>
-              </div>
-              <div class="sm-ac" id="smAcA320" data-ac="a320">
-                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smA2">Cold and dark to take-off: the overhead panel, APU and engine start, ECAM with warnings and procedures, the FCU, FMA and MCDU, and the ILS in normal law.</dd></dl>
-                <div class="sm-go"><a class="fp-btn pri" href="a320.html" data-tx="smA3">Fly the A320</a><a class="fp-btn sec" href="a320-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – Airbus A320</span><small>beta</small></a></div>
-              </div>
-              <div class="sm-ac" id="smAcB737" data-ac="b737">
-                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smJ2">Cold and dark to take-off: the overhead panel, APU and engine start, the MCP and FMA, the autothrottle, the CDU with LNAV and VNAV, and hand flying with stabilizer trim.</dd></dl>
-                <div class="sm-go"><a class="fp-btn pri" href="b737.html" data-tx="smJ3">Fly the 737</a><a class="fp-btn sec" href="b737-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – Boeing 737-800</span><small>beta</small></a></div>
-              </div>
-              <div class="sm-ac" id="smAcAtr" data-ac="atr72">
-                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smR2">Cold and dark to the runway: the dark-cockpit overhead, hotel mode with the propeller brake, engine start, power and condition levers, PWR MGT and torque, AFCS with the ADU, and the crew alerting panel.</dd></dl>
-                <div class="sm-go"><a class="fp-btn pri" href="atr72.html" data-tx="smR3">Fly the ATR</a><a class="fp-btn sec" href="atr72-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – ATR 72-500</span><small>beta</small></a></div>
-              </div>
-            </div>
-            <p class="sm-req"><span data-tx="smRq">Is your aircraft missing?</span> <button type="button" data-reqplane="sim">Request your aircraft</button></p>
-          </div>
-        </div>
-        <ul class="sm-facts">
-          <li data-tx="smF1"><b>In the browser</b>Nothing to install</li>
-          <li data-tx="smF2"><b>2D and 3D</b>A full-size panel, and a 3D cockpit in beta</li>
-          <li data-tx="smF3"><b>Start on the ILS</b>In the air on the approach, in one click</li>
-          <li data-tx="smF4"><b>Keyboard, mouse or touch</b>A gamepad works too</li>
-        </ul>
-        <p class="sm-foot"><span data-tx="smFoot">Also in Training: the IFR trainer with 46 exercises, the MCDU, FMC and GNS 530 trainers, briefings and radio drills.</span><a class="sm-all" href="training.html" data-tx="smAll">All training →</a></p>
+        <p class="fp-more"><a class="chev" href="lab.html" data-tx="allLabs">All <span class="nLabs">25</span> labs</a></p>
       </section>
-    </div>
-  </section>
-
-  <!-- 3. From theory to the flight deck -->
-  <section class="fp-sec" id="flightdeck" aria-labelledby="h-fd">
-    <div class="fp-wrap">
-      <header class="fp-head">
-        <h2 id="h-fd" data-tx="h2b">From theory to the flight deck</h2>
-        <p data-tx="p2b">One route, Oslo Gardermoen to Stockholm Arlanda, followed from the map to the printed pack. Flight Intelligence answers the questions along the way.</p>
-      </header>
-
-      <div class="fp-row">
-        <figure class="fp-fig">
-          <div class="shot shot-169"><img src="img/front/route-sat-1400.webp" srcset="img/front/route-sat-700.webp 700w, img/front/route-sat-1400.webp 1400w" sizes="(max-width:980px) 100vw, 700px" width="1400" height="788" loading="lazy" decoding="async"
-            alt="Route Explorer in 3D, seen from the side and close to the terrain: a route drawn in magenta over mountains on satellite imagery." data-alt-no="Route Explorer i 3D, sett fra siden og tett på terrenget: en rute tegnet i magenta over fjell på satellittbilder."></div>
-          <figcaption data-tx="capRt"><b>Route Explorer, 3D:</b> a route drawn over the terrain on satellite imagery, terrain 1.5× exaggerated, satellite imagery © Esri, Maxar, Earthstar Geographics</figcaption>
-        </figure>
-        <div class="txt">
-          <h3>Route Explorer</h3>
-          <p data-tx="rt">Draw the route on a VFR map in 2D or 3D, with airspace, airports and navaids, and read the terrain under it. The profile is computed from public elevation data.</p>
-          <dl class="fp-facts">
-            <dt data-tx="f1">Route</dt><dd>ENGM → ESSA</dd>
-            <dt data-tx="f2">Distance</dt><dd data-tx="d2">207.8 NM</dd>
-            <dt data-tx="f3">Highest terrain within 4.3 NM</dt><dd data-tx="d3">2,756 ft</dd>
-            <dt data-tx="f4">Highest point under the track</dt><dd data-tx="d4">1,376 ft</dd>
-          </dl>
-          <a class="tl" href="route.html" data-tx="goRt">Open Route Explorer</a>
-        </div>
-      </div>
-
-      <div class="fp-row flip">
-        <figure class="fp-fig fig-bp">
-          <div class="shot"><img src="img/front/briefing-1120.webp" srcset="img/front/briefing-560.webp 560w, img/front/briefing-1120.webp 1120w" sizes="(max-width:980px) 100vw, 560px" width="1120" height="1252" loading="lazy" decoding="async"
-            alt="The cover of an IFR briefing pack, ENGM to ESSA, with fields for pilot, aircraft and alternates, a contents list of the pack's twelve pages and signature lines." data-alt-no="Forsiden av en IFR-briefingpakke, ENGM til ESSA, med felt for pilot, fly og alternativer, en innholdsliste over pakkens tolv sider og signaturlinjer."></div>
-          <figcaption data-tx="capBp"><b>Briefing pack, cover page.</b> An IFR training flight, ENGM to ESSA: the contents follow the fixed order of the pack, and the cover is signed by pilot and instructor.</figcaption>
-        </figure>
-        <div class="txt">
-          <h3 data-tx="h3bp">Briefing pack</h3>
-          <p data-tx="bp">One pack per flight, in a fixed order: aircraft, NOTAM, weather, minima, profile, performance, fuel, mass and balance, radio failure and the flight plan. VFR or IFR. Add or remove pages as you need, then print it as a booklet.</p>
-          <a class="tl" href="prep.html" data-tx="goBp">Make a briefing pack</a>
-        </div>
-      </div>
-
-      <div class="fp-row">
-        <div class="fp-ex" role="group" aria-labelledby="exq">
-          <p class="who" data-tx="exWho">Example answer, from illustrative documents</p>
-          <p class="q" id="exq" data-tx="exQ">What is the maximum crosswind for landing?</p>
-          <div class="a">
-            <p data-tx="exA1">The maximum demonstrated crosswind is 25 kt.<cite>AFM 2.10, p. 2-14</cite></p>
-            <p data-tx="exA2">It is a demonstrated value, not a limitation. Your SOP may set a lower one.<cite>SOP 4.3, p. 4-7</cite></p>
-          </div>
-          <p class="note" data-tx="exNote">Rules questions cite NORDAP’s EASA rules library: Easy Access Rules for Air Operations, Revision 24, March 2026.</p>
-        </div>
-        <div class="txt">
-          <h3>Flight Intelligence</h3>
-          <p data-tx="fi">An instructor that answers from your own AFM, QRH and SOP and from the EASA rules, and shows the passage each answer is built on. Use it to learn, to practise an oral or to work through a scenario. The documents you add are read and stored in your browser.</p>
-          <a class="tl" href="fi.html" data-tx="goFi">Ask Flight Intelligence</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. Sources -->
-  <section class="fp-sec" id="sources" aria-labelledby="h-src">
-    <div class="fp-wrap">
-      <header class="fp-head">
-        <h2 id="h-src" data-tx="h2c">What it is built on</h2>
-        <p data-tx="p2c">Rules are summarised and referenced, never reproduced, and every reference says which revision it is based on.</p>
-      </header>
-      <div class="fp-src">
-        <div><h3>EASA</h3><p data-tx="src1">Easy Access Rules for Air Operations (Revision 24, March 2026) for minima and fuel, Aircrew for the ATPL subjects, and SERA for the rules of the air.</p></div>
-        <div><h3>ICAO</h3><p data-tx="src2">Standard terminology, phraseology and procedure design concepts, such as holding entries and approach segments, in NORDAP’s own words.</p></div>
-        <div><h3>AIP</h3><p data-tx="src3">Not an official chart. NORDAP does not use AIP data without the publisher’s permission, so check positions, airspace and frequencies against the current AIP.</p></div>
-        <div><h3 data-tx="src4h">Your documents</h3><p data-tx="src4">Flight Intelligence answers from your AFM, QRH and SOP first. They stay in your browser. No analytics and no tracking cookies; an account is optional.</p></div>
-      </div>
-      <p class="fp-model"><span data-tx="model"><b>Teaching models, not operational data.</b> The labs use simplified physics and typical values; A320 and B200 figures are illustrative, not manufacturer data.</span><a class="tl" href="sources.html" data-tx="goSrc">Data sources and licences</a></p>
-    </div>
-  </section>
-
-  <!-- 5. Schools and the maker -->
-  <div class="fp-wrap">
-    <div class="fp-end">
-      <section class="fp-schools" aria-labelledby="h-sch">
-        <h2 id="h-sch" data-tx="h2d">Interested?</h2>
-        <p data-tx="sch">Do you run a flight school, an operator or another training organisation? NORDAP gives you one consistent set of interactive theory, briefing material and type-rating preparation. Tell us a little about you, and we will get in touch.</p>
-        <ul>
-          <li data-tx="sc1">Labs an instructor can project, aligned to the ATPL subjects</li>
-          <li data-tx="sc2">One standard briefing pack, VFR and IFR</li>
-          <li data-tx="sc3">Type-rating setups: the King Air B200 trainer with 320 questions</li>
+      <section class="fp-qs on-dark" aria-labelledby="h-qs">
+        <h2 id="h-qs" data-tx="qsH">Quick Search</h2>
+        <form data-qs>
+          <label for="qsTopic" data-tx="qsL1">Lab or topic</label>
+          <input id="qsTopic" type="text" maxlength="80" autocomplete="off" placeholder="stall, icing, ILS" data-ph-no="stall, ising, ILS">
+          <button type="submit" data-tx="qsGo">Search</button>
+        </form>
+        <form data-qs>
+          <label for="qsIcao" data-tx="qsL2">Aerodrome weather (ICAO)</label>
+          <input id="qsIcao" type="text" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ENTO">
+          <button type="submit" data-tx="qsGo">Search</button>
+        </form>
+        <ul class="fp-cnt">
+          <li><i class="nLabs">25</i><span data-tx="cLabs">Labs</span></li>
+          <li><i>6</i><span data-tx="cAreas">Subject areas</span></li>
         </ul>
-        <button type="button" class="fp-btn" data-schoolform data-tx="goInt">I'm interested</button>
-        <a class="fp-more" href="schools.html" data-tx="goSch">How a school can use NORDAP</a>
-      </section>
-      <section class="fp-maker" aria-labelledby="h-me">
-        <div class="face"><img src="daniel.jpg" width="96" height="96" loading="lazy" decoding="async" alt="Daniel Nilsson" onerror="this.remove()"></div>
-        <h2 id="h-me" data-tx="h2e" style="font-size:clamp(26px,2.4vw,32px)">Daniel Nilsson</h2>
-        <p data-tx="me">During flight training, the hard part was rarely the flying itself. It was the order of things, and what you cannot see: the air over the wing, or why the altimeter reads wrong on a cold day. NORDAP is the set of tools I wish I had.</p>
-        <a class="tl" href="about.html" data-tx="goAb">About NORDAP</a>
+        <a class="all chev" href="lab.html" data-tx="qsAll">All Virtual Labs</a>
       </section>
     </div>
   </div>
 
+  <!-- 3. Reference -->
+  <section class="fp-ref fp-band on-dark" aria-labelledby="h-ref">
+    <div class="fp-wrap">
+      <h2 id="h-ref" data-tx="refH">Standards &amp; Sources</h2>
+      <ul>
+        <li><a href="quality.html" data-tx="r1">How content is checked</a></li>
+        <li><a href="rules.html" data-tx="r2">EASA rules we link to</a></li>
+        <li><a href="sources.html" data-tx="r3">Data sources and licences</a></li>
+        <li><a href="models.html" data-tx="r4">Model profiles</a></li>
+        <li><a href="about.html" data-tx="r5">About NORDAP</a></li>
+        <li><a href="schools.html" data-tx="r6">For flight schools</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 4. Subject areas -->
+  <section class="fp-sec" id="areas" aria-labelledby="h-areas">
+    <div class="fp-wrap">
+      <h2 id="h-areas" data-tx="h2a">Subject Areas</h2>
+      <div class="fp-tiles" id="fpTiles"></div>
+    </div>
+  </section>
+
+  <!-- 5. Numbers and "How do I" -->
+  <div class="fp-facts fp-band">
+    <div class="fp-wrap fp-facts-grid">
+      <section class="fp-num on-dark" aria-labelledby="h-num">
+        <h2 id="h-num" data-tx="numH">Virtual Labs by the Numbers</h2>
+        <dl>
+          <div><dt data-tx="n1">Interactive labs</dt><dd class="nLabs">25</dd></div>
+          <div><dt data-tx="n2">Subject areas</dt><dd>6</dd></div>
+          <div><dt data-tx="n3">EASA ATPL subjects covered</dt><dd>8</dd></div>
+          <div><dt data-tx="n4">Reading levels in every lab: Short, In depth, Instructor</dt><dd>3</dd></div>
+        </dl>
+      </section>
+      <section class="fp-how on-dark" aria-labelledby="h-how">
+        <h2 id="h-how" data-tx="howH">How Do I…?</h2>
+        <ul>
+          <li><a href="tunnel.html" data-tx="q1">See why a wing stalls?</a></li>
+          <li><a href="storms.html" data-tx="q2">Follow a thunderstorm through its life?</a></li>
+          <li><a href="airdata.html" data-tx="q3">Understand altimeter errors in cold air?</a></li>
+          <li><a href="holding.html" data-tx="q4">Choose the right holding entry?</a></li>
+          <li><a href="engines.html" data-tx="q5">See inside a turboprop and a jet engine?</a></li>
+          <li><a href="performance.html" data-tx="q6">Work out V1, VR and V2?</a></li>
+        </ul>
+        <a class="all chev" href="lab.html" data-tx="qsAll">All Virtual Labs</a>
+      </section>
+    </div>
+  </div>
+  <div class="fp-wrap"><p class="fp-note" data-tx="model"><b>Teaching models, not operational data.</b> The labs use simplified physics and typical values; aircraft figures are illustrative, not manufacturer data.</p></div>
+
 </main>
 <script src="lab.js?v=56"></script>
-<script src="reqplane.js?v=2" defer></script>
-<script src="schoolform.js?v=1" defer></script>
-<script src="front-flow.js?v=1" defer></script>
-<script src="front-fi.js?v=16" defer></script>
 <script>
 (function(){
 'use strict';
 const {L,el}=LAB;
 
 /* ---------- Norwegian (bokmål). English stays in the markup; data-tx swaps whole elements ---------- */
-LAB.add({},{
- 'NORDAP · Nordic Aviation Platform':'NORDAP · Nordic Aviation Platform',
- 'Open Virtual Labs':'Åpne Virtual Labs','Make a briefing pack':'Lag en briefingpakke','Examples':'Eksempler',
- 'Six services, from theory to the flight':'Seks tjenester, fra teori til flyging',
- 'Briefing pack':'Briefingpakke'
-});
+LAB.add({},{ 'NORDAP · Nordic Aviation Platform':'NORDAP · Nordic Aviation Platform' });
 LAB.tx({
- h1:'Velkommen til NORDAP',
- lede:'Den nordiske luftfartsplattformen, laget i Norge for piloter og flyskoler. <b><span class="nLabs">25</span> interaktive labber</b> på EASA ATPL-pensumet, en flow-trener for flyselskapets prosedyrer, cockpittrenere, briefingpakker og Flight Intelligence. Samlet på ett sted, i nettleseren.',
- fiK:'Eksempel · illustrerende dokumenter',
- fiKeep:'Svarene kommer fra din egen AFM, QRH og SOP og fra EASA Easy Access Rules, hver med siden de bygger på. Dokumentene dine leses og lagres i denne nettleseren.',
- fiAsk:'Spør Flight Intelligence', fiGo:'Spør',
- fiPv:'<b>Forhåndsversjon.</b> Flight Intelligence bruker en lettere AI-modell mens NORDAP er i testfasen. Bruk svarene som studiereferanse, og sjekk alltid den offisielle kilden.',
- s1:'<span class="nLabs">25</span> interaktive labber på EASA ATPL-teorifagene.',
- s2:'Planlegg ruten på et VFR-kart og les terrenget under den.',
- s3:'NOTAM, vær, minima, ytelse, drivstoff, masse og balanse, skrevet ut som et hefte.',
- s4:'Svar fra din AFM, QRH og SOP, med siden hvert svar kommer fra.',
- s5:'Seks cockpiter du kan fly, fra Cessna 172 til A320, 737 og ATR 72, i 2D og 3D.', s6:'Lær flowene til ditt flyselskap utenat i den ekte cockpiten, alene eller med partneren din.', trnB:'Cockpittrenere', bTrn:'Cockpittrenere', bFl:'Flows', bBp:'Briefingpakke',
- h2a:'Seks fagområder, bygd på EASA ATPL-pensumet',
- p2a:'Hver lab er en modell du kan endre og se reagere: fly vingen inn i stall, la et tordenvær vokse, fly en VOR-radial over Bergen. Der en lab viser tall, kommer de fra en illustrerende A320.',
- capFoil:'<b>Vingen sett fra siden med 13° angrepsvinkel.</b> Profilsnittet fra aerodynamikklabben, beregnet direkte i nettleseren din: trykkfelt (Cp) og strømlinjer fra en panelmetode, omslag og separasjon fra en grensesjiktmodell. <a class="tl" href="tunnel.html#profil">Åpne profilsnittet</a>',
- h3idx:'Fagområder og tilhørende EASA ATPL-fag',
- allLabs:'Alle <span class="nLabs">25</span> labber', hf:'Menneskelige faktorer',
- h3how:'Hver lab er bygd likt',
- flH:'Lær flyselskapets flows utenat',
- fl1:'<b>Bygg</b>Trykk bryterne i flyselskapets rekkefølge, eller lim inn SOP-en. På en NORDAP-cockpit, et ekte foto eller en side fra din egen manual.',
- fl2:'<b>Se</b>Flowen spilles av steg for steg, PF og PM i hver sin farge, med sjekklistekallene.',
- fl3:'<b>Øv</b>Finn hvert steg, og så hele flowen etter hukommelsen. Alene, eller live med makkeren din på en annen telefon.',
- flD:'Fjorten cockpiter, fra Cessna 172 og DA42 til King Air, A320, 737 og 787, pluss ditt eget bilde. Gratis, på telefon, nettbrett og datamaskin.',
- capFl:'<b>Flow-treneren.</b> En flow bygges på det ekte A320-overheadpanelet, og øves så med linjene skjult. Stegene her viser bare hvordan det virker; flyselskapets flow kommer i stedet.',
- goFl:'Åpne flow-treneren',
- st1:'<b>Forstå</b>Nøkkelbegrepene, ett kort for hvert, med lenke til stedet i modellen der du ser dem.',
- st2:'<b>Utforsk</b>Selve modellen. Endre verdiene, og bildet og tallene endrer seg med dem.',
- st3:'<b>Test deg selv</b>Korte spørsmål som krever at du resonnerer, ikke at du kjenner igjen et pugget svar.',
- depth:'Les hver lab på det nivået du trenger: Kort, Fordypning eller Instruktør. På engelsk og norsk.',
- capSt:'<b>Tordenvær og vindskjær.</b> Uværslabbens enkeltcelle, fra en godværscumulus til en moden cumulonimbus og oppløsningen, en time stormtid på et halvt minutt. Velg et stadium i panelet, eller åpne labben for å fly gjennom den.',
- smK:'Cockpittrenere', smH:'Ta plass i cockpiten',
- smP:'Seks fungerende cockpiter, fra de seks grunnleggende instrumentene til turboproper med to piloter og to passasjerfly. Hver av dem er et helt panel du kan fly, fra bakken eller rett inn på en ILS med ett klikk, og de fleste har også en 3D-cockpit, i beta.',
- smC1:'Enmotors stempelfly, analogt panel', smD1:'Tomotors stempelfly, glasscockpit', smB1:'Tomotors turboprop, cockpit for to piloter', smA1:'Tomotors jetfly, fly-by-wire', smJ1:'Tomotors jetfly, konvensjonelle styringer',
- smTr:'Trener',
- smCapc172:'<b>Cessna 172, på ILS 36.</b> De seks grunnleggende instrumentene, to VOR-indikatorer og ADF-en, og en full radiostakk du stiller inn selv.',
- smCapda42:'<b>DA42, på ILS 36 med autopiloten koblet inn.</b> PFD og MFD med motorsiden og kartet, reserveinstrumentene og bryterraden.',
- smCapb200:'<b>King Air B200, på ILS 36 med autopiloten koblet inn.</b> Skjermer for begge piloter, motorinstrumentene i midten og varselpanelet.',
- smC2:'Instrumentskanning og attitydeflyging, navigasjon med VOR, ADF og DME, og landingsrunden.',
- smD2:'Flermotorsflyging med glasscockpit: ILS- og RNP-innflyginger, autopiloten, motorbortfall og asymmetrisk flyging.',
- smB2:'En turboprop med to piloter fra batteristart til avslåing: systemer som trykkabin, autofeather og brannvern, og forberedelse til typerating med 320 spørsmål.',
- smRq:'Mangler flyet ditt?', smC3:'Fly Cessna 172', smD3:'Fly DA42', smB3:'Fly King Air', smA3:'Fly A320', smJ3:'Fly 737', smR3:'Fly ATR', smR1:'Tomotors turboprop, regionalfly',
- smCapatr:'<b>ATR 72-500, i 5000 fot med AP og YD i HDG SEL.</b> EADI-ene og EHSI-ene, ADU-en, motorinstrumentene og crew alerting panel.',
- smR2:'Fra kald og mørk til rullebanen: mørk-cockpit-takpanel, hotel mode med propellbremsen, motorstart, power- og condition-spakene, PWR MGT og torque, AFCS med ADU-en og crew alerting panel.', sm3d:'Også i 3D',
- smCapa320:'<b>Airbus A320, på ILS 36 med begge autopilotene inne.</b> PFD-ene med FMA, ND-ene, ECAM-skjermene og FCU.',
- smCapb737:'<b>Boeing 737-800, på ILS 36 med CMD B inne.</b> PFD-ene med FMA, ND-ene, motorskjermen og MCP.',
- smA2:'Fra cold and dark til avgang: overheadpanelet, APU- og motorstart, ECAM med varsler og prosedyrer, FCU, FMA og MCDU, og ILS i normal law.',
- smJ2:'Fra cold and dark til avgang: overheadpanelet, APU- og motorstart, MCP og FMA, autothrottle, CDU med LNAV og VNAV, og håndflyging med stabilisatortrim.',
- smF1:'<b>I nettleseren</b>Ingenting å installere', smF2:'<b>2D og 3D</b>Et panel i full størrelse, og en 3D-cockpit i beta',
- smF3:'<b>Start på ILS-en</b>I luften på innflygingen, med ett klikk', smF4:'<b>Tastatur, mus eller berøring</b>En spillkontroller virker også',
- smFoot:'Også under Trening: IFR-treneren med 46 øvelser, MCDU-, FMC- og GNS 530-treneren, briefinger og radiodriller.', smAll:'All trening →',
- goSt:'Åpne uværslabben', fsNote:'Høyder tegnet 1,5 ganger høyere', fsK:'Utvikling · enkeltcelle', fsLay:'Vis',
- h2b:'Fra teori til cockpit',
- p2b:'Én rute, Oslo lufthavn Gardermoen til Stockholm Arlanda, fulgt fra kartet til den utskrevne pakken. Flight Intelligence svarer på spørsmålene underveis.',
- capRt:'<b>Route Explorer, 3D:</b> en rute tegnet over terrenget på satellittbilder, terrenget 1,5× overdrevet, satellittbilder © Esri, Maxar, Earthstar Geographics',
- rt:'Tegn ruten på et VFR-kart i 2D eller 3D, med luftrom, flyplasser og navigasjonshjelpemidler, og les terrenget under den. Profilen beregnes fra offentlige høydedata.',
- d2:'207,8 NM', d3:'2 756 ft', d4:'1 376 ft',
- f1:'Rute', f2:'Distanse', f3:'Høyeste terreng innen 4,3 NM', f4:'Høyeste punkt under sporet', goRt:'Åpne Route Explorer',
- capBp:'<b>Briefingpakke, forside.</b> En IFR-treningsflyging, ENGM til ESSA: innholdet følger pakkens faste rekkefølge, og forsiden signeres av pilot og instruktør.',
- h3bp:'Briefingpakke',
- bp:'Én pakke per flyging, i fast rekkefølge: fly, NOTAM, vær, minima, profil, ytelse, drivstoff, masse og balanse, radiosvikt og flyplanen. VFR eller IFR. Legg til eller fjern sider etter behov, og skriv den ut som et hefte.',
- goBp:'Lag en briefingpakke',
- exWho:'Eksempelsvar, fra illustrerende dokumenter',
- exQ:'Hva er maksimal sidevind for landing?',
- exA1:'Maksimal demonstrert sidevind er 25 kt.<cite>AFM 2.10, s. 2-14</cite>',
- exA2:'Det er en demonstrert verdi, ikke en begrensning. SOP-en din kan sette en lavere grense.<cite>SOP 4.3, s. 4-7</cite>',
- exNote:'Spørsmål om regelverk viser til NORDAPs EASA-regelbibliotek: Easy Access Rules for Air Operations, revisjon 24, mars 2026.',
- fi:'En instruktør som svarer ut fra din egen AFM, QRH og SOP og fra EASA-reglene, og viser avsnittet hvert svar bygger på. Bruk den til å lære, øve til en muntlig eksamen eller jobbe gjennom et scenario. Dokumentene du legger til, leses og lagres i nettleseren din.',
- goFi:'Spør Flight Intelligence',
- h2c:'Hva det bygger på',
- p2c:'Regelverk oppsummeres og henvises til, aldri gjengis, og hver henvisning sier hvilken revisjon den bygger på.',
- src1:'Easy Access Rules for Air Operations (revisjon 24, mars 2026) for minima og drivstoff, Aircrew for ATPL-fagene og SERA for lufttrafikkreglene.',
- src2:'Standard terminologi, fraseologi og prinsipper for prosedyredesign, som inngang til holding og innflygingssegmenter, med NORDAPs egne ord.',
- src3:'Ikke et offisielt kart. NORDAP bruker ikke AIP-data uten tillatelse fra utgiveren, så kontroller posisjoner, luftrom og frekvenser mot gjeldende AIP.',
- src4h:'Dine dokumenter',
- src4:'Flight Intelligence svarer først ut fra din AFM, QRH og SOP. De blir i nettleseren din. Ingen analyseverktøy og ingen sporingskapsler; konto er valgfritt.',
- model:'<b>Pedagogiske modeller, ikke operative data.</b> Labbene bruker forenklet fysikk og typiske verdier; tall for A320 og B200 er illustrasjoner, ikke produsentdata.',
- goSrc:'Datakilder og lisenser',
- h2d:'Interessert?',
- sch:'Driver du en flyskole, en operatør eller en annen opplæringsorganisasjon? NORDAP gir dere ett samlet sett med interaktiv teori, briefingmateriell og forberedelse til typerating. Fortell litt om dere, så tar vi kontakt.',
- sc1:'Labber en instruktør kan vise på storskjerm, knyttet til ATPL-fagene',
- sc2:'Én standard briefingpakke, VFR og IFR',
- sc3:'Oppsett for typerating: King Air B200-treneren med 320 spørsmål',
- goSch:'Slik kan en skole bruke NORDAP',
- goInt:'Jeg er interessert',
- h2e:'Daniel Nilsson',
- me:'Under flyutdanningen var det sjelden selve flygingen som var vanskelig. Det var rekkefølgen på ting, og det du ikke kan se: luften over vingen, eller hvorfor høydemåleren viser feil en kald dag. NORDAP er verktøyene jeg skulle ønske jeg hadde.',
- goAb:'Om NORDAP'
+ h1:'Flyteori du kan se, bygd på EASA ATPL-pensumet.',
+ allLabs:'Alle <span class="nLabs">25</span> labber',
+ qsH:'Hurtigsøk', qsL1:'Lab eller tema', qsL2:'Flyplassvær (ICAO)', qsGo:'Søk', qsAll:'Alle Virtual Labs',
+ cLabs:'Labber', cAreas:'Fagområder',
+ refH:'Standarder og kilder',
+ r1:'Slik kontrolleres innholdet', r2:'EASA-regler vi lenker til', r3:'Datakilder og lisenser', r4:'Modellprofiler', r5:'Om NORDAP', r6:'For flyskoler',
+ h2a:'Fagområder',
+ numH:'Virtual Labs i tall',
+ n1:'Interaktive labber', n2:'Fagområder', n3:'EASA ATPL-fag dekket', n4:'Lesenivåer i hver lab: Kort, Fordypning, Instruktør',
+ howH:'Hvordan …?',
+ q1:'Se hvorfor en vinge staller?', q2:'Følge et tordenvær gjennom livsløpet?', q3:'Forstå høydemålerfeil i kald luft?',
+ q4:'Velge riktig inngang til holding?', q5:'Se inn i en turboprop og en jetmotor?', q6:'Finne V1, VR og V2?',
+ model:'<b>Pedagogiske modeller, ikke operative data.</b> Labbene bruker forenklet fysikk og typiske verdier; flytall er illustrasjoner, ikke produsentdata.'
 });
 
-/* ---------- subject areas, from the learning path (lab.js) ---------- */
-const CODE={pof:'081',met:'050',nav:'061, 062',inst:'022',sys:'021',perf:'032, 033',mb:'031'};
+/* ---------- everything below is drawn from the learning path in lab.js, so names and counts cannot drift ---------- */
+const CODE={pof:'081',met:'050',nav:'061, 062',inst:'022',sys:'021',perf:'032, 033'};
 const AREAS=LAB.AREAS||[], FLAT=LAB.FLAT||[];
-function areas(){
-  const ol=el('fpAreas'); if(!ol) return;
-  ol.innerHTML=AREAS.map(a=>{ const n=a.labs.length, nl=n===1?L({en:'1 lab',no:'1 lab'}):L({en:n+' labs',no:n+' labber'});
-    return `<li><a href="lab.html#${a.k}"><span class="c" title="${L({en:'EASA ATPL subject',no:'EASA ATPL-fag'})}">${CODE[a.k]||''}</span><b>${L({en:a.en,no:a.no})}</b><em>${nl}</em><span class="d">${L(a.d)}</span></a></li>`; }).join('');
-}
-function counts(){ const n=FLAT.length||27; document.querySelectorAll('.nLabs').forEach(s=>s.textContent=n); }
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* the chevron stays on the line of the last word */
+const last=t=>{ const w=String(t).split(' '), z=w.pop(); return esc(w.join(' '))+(w.length?' ':'')+'<span class="chev" style="white-space:nowrap">'+esc(z)+'</span>'; };
+const lab=k=>FLAT.find(x=>x.k===k);
+const kick=x=>esc((CODE[x.m.k]||'')+' · '+L({en:x.m.en,no:x.m.no}));
+const LEAD={k:'tunnel',d:{en:'Take an airliner wing from cruise to the stall and watch the pressure field, the streamlines and the separation change as you do.',no:'Ta en trafikkflyvinge fra cruise til stall, og se trykkfeltet, strømlinjene og separasjonen endre seg underveis.'}};
+const LIST=['storms','hold','engines','perf'];
+function lead(){ const b=el('fpLead'), x=lab(LEAD.k); if(!b||!x) return;
+  b.innerHTML=`<a href="${x.f}"><img src="media/hero-airfoil.jpg" srcset="media/hero-airfoil-800.jpg 800w, media/hero-airfoil.jpg 2000w" sizes="(max-width:640px) 100vw, 420px" width="2000" height="1000" alt="" decoding="async">`+
+   `<span class="kick">${kick(x)}</span><b>${esc(L({en:x.en,no:x.no}))}</b></a><p>${esc(L(LEAD.d))}</p>`; }
+function list(){ const u=el('fpList'); if(!u) return;
+  u.innerHTML=LIST.map(lab).filter(Boolean).map(x=>`<li><a href="${x.f}"><span class="kick">${kick(x)}</span><b>${esc(L({en:x.en,no:x.no}))}</b></a></li>`).join(''); }
+function tiles(){ const g=el('fpTiles'); if(!g) return;
+  g.innerHTML=AREAS.map(a=>{ const n=a.labs.length, nl=n===1?'1 lab':L({en:n+' labs',no:n+' labber'});
+    return `<a href="lab.html#${a.k}"><img src="img/front/labs/${a.k}-1120.webp" srcset="img/front/labs/${a.k}-640.webp 640w, img/front/labs/${a.k}-1120.webp 1120w" sizes="(max-width:640px) 100vw, (max-width:900px) 50vw, 400px" width="1120" height="700" alt="" loading="lazy" decoding="async"><span><em>${esc(nl)}</em><b>${last(L({en:a.en,no:a.no}))}</b></span></a>`; }).join(''); }
+function counts(){ const n=FLAT.length||25; document.querySelectorAll('.nLabs').forEach(s=>s.textContent=n); }
 function attrs(){ const no=LAB.lang==='no';
-  document.querySelectorAll('[data-alt-no]').forEach(e=>{ if(e._en===undefined) e._en=e.alt; e.alt=no?e.dataset.altNo:e._en; });
-  document.querySelectorAll('[data-aria-no]').forEach(e=>{ if(e._ena===undefined) e._ena=e.getAttribute('aria-label'); e.setAttribute('aria-label',no?e.dataset.ariaNo:e._ena); });
-}
-function all(){ areas(); counts(); attrs(); }
+  document.querySelectorAll('[data-ph-no]').forEach(e=>{ if(e._enp===undefined) e._enp=e.placeholder; e.placeholder=no?e.dataset.phNo:e._enp; }); }
+function all(){ lead(); list(); tiles(); counts(); attrs(); }
 LAB.start('home');
 all(); LAB.onLang(all);
-})();
 
-/* ---------- the cockpit trainers: aircraft tabs and a soft reveal ----------
-   The featured panel loads lazily; another aircraft's panel loads when it is chosen (or hovered), the tab thumbnails when the
-   plate comes near the screen. No other work. */
-(function(){
-const box=document.getElementById('fpSims'); if(!box) return;
-const $$=s=>[...box.querySelectorAll(s)];
-const img=a=>box.querySelector('.sm-fig[data-ac="'+a+'"] img');
-const load=i=>{ if(i&&!i.getAttribute('srcset')&&i.dataset.srcset){ i.srcset=i.dataset.srcset; } };
-const ready=i=>{ if(!i) return; if(i.complete&&i.naturalWidth) i.classList.add('ld'); else i.addEventListener('load',()=>i.classList.add('ld'),{once:true}); };
-function show(a){ box.dataset.ac=a;
-  $$('.sm-fig').forEach(f=>f.classList.toggle('on',f.dataset.ac===a)); const i=img(a); load(i); ready(i);
-  $$('.sm-ac').forEach(d=>d.classList.toggle('on',d.dataset.ac===a));
-  $$('.sm-tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ac===a))); }
-box.classList.add('js');
-/* the aircraft chosen in Flows opens first here too, and a choice here is remembered for Flows */
-try{ const m={c172:'c172',da42:'da42',b200s:'b200',b200:'b200',a320:'a320',b738:'b737',atr72:'atr72'}[localStorage.getItem('bb-flows-ac')||'']; if(m&&m!==box.dataset.ac) show(m); }catch(e){}
-$$('.sm-tabs button').forEach(b=>{ b.addEventListener('click',()=>{ show(b.dataset.ac); try{ localStorage.setItem('bb-flows-ac',{b200:'b200s',b737:'b738'}[b.dataset.ac]||b.dataset.ac); }catch(e){} }); ['pointerenter','focus'].forEach(e=>b.addEventListener(e,()=>load(img(b.dataset.ac)))); });
-ready(img(box.dataset.ac));
-const thumbs=()=>$$('.sm-tabs img[data-src]').forEach(i=>{ i.src=i.dataset.src; i.removeAttribute('data-src'); });
-if(!('IntersectionObserver' in window)){ thumbs(); box.classList.add('in'); return; }
-const near=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ near.disconnect(); thumbs(); } },{rootMargin:'500px 0px'}); near.observe(box);
-const io=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ io.disconnect(); box.classList.add('in'); } },{threshold:0.12}); io.observe(box);
-})();
-
-/* ---------- the live aerofoil in the subject areas ----------
-   hero-foil.js (with section.js, physics.js and cfd3d.js, ~25 kB gzipped) is fetched only when the plate comes near the
-   screen; it pauses off screen and draws a single still frame under reduced motion. */
-(function(){
-const box=document.getElementById('ffBox'); if(!box) return;
-const add=()=>{ const s=document.createElement('script'); s.src='hero-foil.js?v=6'; s.async=true; document.head.appendChild(s); };
-if(!('IntersectionObserver' in window)){ add(); return; }
-const io=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ io.disconnect(); add(); } },{rootMargin:'600px 0px'}); io.observe(box);
+/* ---------- quick search: hands the words to the site search under the header ---------- */
+document.querySelectorAll('form[data-qs]').forEach(f=>f.addEventListener('submit',ev=>{ ev.preventDefault();
+  const v=f.querySelector('input').value.trim(), s=document.querySelector('.nsearch input'); if(!v||!s) return;
+  s.value=v; window.scrollTo({top:0,behavior:'auto'}); s.focus(); s.dispatchEvent(new Event('input',{bubbles:true})); }));
 })();
 </script>
 </body>
