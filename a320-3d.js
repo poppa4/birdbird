@@ -175,12 +175,14 @@ function init(o){
           const ov=new THREE.Mesh(p.mesh.geometry,new THREE.MeshBasicMaterial({map:p.tex,vertexColors:true,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
           ov.matrixAutoUpdate=false; ov.matrix.copy(p.mesh.matrix); ov.renderOrder=1; ov.visible=p.mesh.visible; scene.add(ov);
           p.mesh.material.map=t; p.mesh.material.needsUpdate=true; p.hi=true; p.ov=ov; if(lastPainter) repaint(lastPainter,k); res(); }).catch(()=>res()); })); } }
+  /* where a sheet point sits in 3D: position on the panel, the panel's frame (x right, y up, z out of the panel) and metres per sheet unit */
+  function place(wx,wy){ const k=viewOf(wx,wy); if(!k) return null; const v=VIEWS[k]; return {k,p:toP(wx,wy,0),b:basis(v),s:v.W/v.r[2]}; }
   function draw(R){ R.render(scene,cam); }
   const pv3=new THREE.Vector3();
   function proj(wx,wy){ const p=toP(wx,wy,0.002); if(!p) return null; pv3.copy(p).applyMatrix4(cam.matrixWorldInverse); if(pv3.z>-0.02) return null; pv3.applyMatrix4(cam.projectionMatrix); return [pv3.x,pv3.y]; }
   /* look closer at a point (double click / double tap), and back */
   function focus(wx,wy){ const p=toP(wx,wy); if(!p) return; const fov=head.tFov>40?Math.max(22,head.tFov*0.45):null; if(fov){ lookAt(p,null); head.tFov=fov; } else head.tFov=Math.min(66,head.tFov/0.45); }
-  return {scene,cam,head,updCam,draw,pick,proj,focus,LOOK,visible,pxSize,setImage,repaint,K,disp,mobile,
+  return {scene,cam,head,updCam,draw,pick,proj,focus,place,P,LOOK,visible,pxSize,setImage,repaint,K,disp,mobile,
     drag(dx,dy){ const s=head.fov/62*0.0042; head.tYaw+=dx*s; head.tPitch=Math.max(-80*D2R,Math.min(85*D2R,head.tPitch+dy*s)); head.yaw=head.tYaw; head.pitch=head.tPitch; },
     zoom(f){ head.tFov=Math.max(8,Math.min(80,head.tFov*f)); },
     qHead(){ return q; }, fov(){ return cam.fov; }};
