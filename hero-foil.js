@@ -54,6 +54,22 @@
     const s0 = V.inviscid(g, 0), s9 = V.inviscid(g, 90);
     const U0 = new Float32Array(n), V0 = new Float32Array(n), U9 = new Float32Array(n), V9 = new Float32Array(n), M = new Uint8Array(n);
     let bx0 = 1e9, bx1 = -1e9, by0 = 1e9, by1 = -1e9; for (let i = 0; i < g.X.length; i++) { bx0 = Math.min(bx0, g.X[i]); bx1 = Math.max(bx1, g.X[i]); by0 = Math.min(by0, g.Y[i]); by1 = Math.max(by1, g.Y[i]); }
+    /* the four velocity grids are the slow part (about 25 000 panel sums each). They depend only on the aerofoil, so they
+       are worked out once and shipped (foil-grid-*.js, made by window.__heroFoil.pack()); if that file is missing or was
+       made for another aerofoil or grid, they are computed here as before. */
+    const PK = window.__ffGrid, sig = Math.round(g.X.reduce((a, v) => a + v, 0) * 1e6) + ':' + g.X.length;
+    if (PK && PK.gd === GD && PK.nx === nx && PK.ny === ny && PK.sig === sig) {
+      try {
+        const b64 = t => { const bin = atob(t), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; };
+        const un = (t, out) => { const q = new Int16Array(b64(t).buffer); let acc = 0; for (let i = 0; i < n; i++) { acc = (acc + q[i]) << 16 >> 16; out[i] = acc / 4096; } };
+        un(PK.U0, U0); un(PK.V0, V0); un(PK.U9, U9); un(PK.V9, V9); M.set(b64(PK.M));
+        GF = { nx, ny, U0, V0, U9, V9, M, bx0, bx1, by0, by1, U: new Float32Array(n), V: new Float32Array(n) };
+        done(); return;
+      } catch (e) { /* fall through and compute */ }
+    }
+    window.__heroFoil.pack = () => { const F = GF, enc = u8 => { let t = ''; for (let i = 0; i < u8.length; i += 0x8000) t += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(t); };
+      const pk = a => { const q = new Int16Array(n); let prev = 0; for (let i = 0; i < n; i++) { const v = Math.max(-32768, Math.min(32767, Math.round(a[i] * 4096))); q[i] = (v - prev) << 16 >> 16; prev = v; } return enc(new Uint8Array(q.buffer)); };
+      return 'window.__ffGrid=' + JSON.stringify({ gd: GD, nx, ny, sig, M: enc(F.M), U0: pk(F.U0), V0: pk(F.V0), U9: pk(F.U9), V9: pk(F.V9) }) + ';'; };
     let j = 0;
     const slice = () => {
       const t0 = performance.now();
@@ -350,6 +366,7 @@
       if (!window.VSection) await load('section.js?v=12');
       if (!window.VLab) await load('physics.js?v=14');
       if (!window.CFD) await load('cfd3d.js?v=7');
+      if (!window.__ffGrid) { try { await load('foil-grid-' + (LOW ? 22 : 19) + '.js?v=1'); } catch (e) { /* computed instead */ } }
     } catch (e) { return; }
     V = window.VSection; CFD = window.CFD;
     g = V.build(window.VLab.AIRFOILS.sc, 0);
