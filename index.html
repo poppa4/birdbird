@@ -7,8 +7,6 @@
 <meta name="description" content="NORDAP is an aviation platform built in Norway for pilots, students and flight schools: 25 interactive labs on the EASA ATPL syllabus, Route Explorer, a printable briefing pack, and an instructor that answers from your own AFM, QRH and SOP.">
 <meta name="theme-color" content="#0B2545">
 <link rel="preload" as="image" href="img/front/sunset2-1400.webp" imagesrcset="img/front/sunset2-760.webp 760w, img/front/sunset2-1400.webp 1400w, img/front/sunset2-1672.webp 1672w, img/front/sunset2-2560.webp 2560w, img/front/sunset2-3344.webp 3344w, img/front/sunset2-3840.webp 3840w" imagesizes="100vw" type="image/webp">
-<link rel="preload" as="image" href="img/front/foil-poster-d.webp" media="(min-width:641px)" type="image/webp">
-<link rel="preload" as="image" href="img/front/foil-poster-p.webp" media="(max-width:640px)" type="image/webp">
 <link rel="preload" as="script" href="hero-foil.js?v=8">
 <link rel="preload" as="script" href="section.js?v=12">
 <link rel="preload" as="script" href="physics.js?v=14">
@@ -128,20 +126,21 @@
 .ff{position:relative;aspect-ratio:10/7;overflow:hidden;background:var(--navy);box-shadow:0 0 0 1px rgba(19,32,42,.12),0 30px 60px -36px rgba(11,37,69,.55)}
 .ff canvas{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .35s ease}
 /* a still of the same picture is there from the first paint; the live canvas fades in over it and the still then goes */
-.ff::before{content:'';position:absolute;inset:0;background:url(img/front/foil-poster-d.webp) center/100% 100% no-repeat;transition:opacity .25s ease .4s}
+.ff::before{content:'';position:absolute;inset:0;background:url(img/front/foil-poster-d-en.webp) center/100% 100% no-repeat;transition:opacity .25s ease .4s}
+html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-d-no.webp)}
 .ff.live::before{opacity:0}
-@media (max-width:640px){.ff::before{background-image:url(img/front/foil-poster-p.webp)}}
+@media (max-width:640px){.ff::before{background-image:url(img/front/foil-poster-p-en.webp)}html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-p-no.webp)}}
 .ff-frame{position:absolute;left:40px;right:40px;top:76px;bottom:64px;pointer-events:none}
 .ff.live canvas{opacity:1}
 .ff .fp-ro{left:22px;top:18px}
 .ff-ro dt{color:#AEBBC8}
-.ff-st{position:absolute;z-index:1;left:22px;top:44px;margin:0;font-size:13px;color:#DDE5EC;pointer-events:none;display:flex;align-items:center;gap:8px;opacity:0;transition:opacity .6s}
+.ff-st{position:absolute;z-index:1;left:22px;top:44px;margin:0;font-size:13px;color:#DDE5EC;pointer-events:none;display:flex;align-items:center;gap:8px}
 .ff.live .ff-st,.ff.live .ff-cbar{opacity:1}
 .ff-st::before{content:'';width:7px;height:7px;border-radius:50%;background:#58C98B}
 .ff-st.warn::before{background:#F0B440}.ff-st.stall::before{background:#FF6B57}
-.ff-cbar{position:absolute;z-index:1;right:22px;bottom:12px;width:190px;font-family:var(--mono);font-size:10.5px;color:#C3CEDA;pointer-events:none;opacity:0;transition:opacity .6s}
+.ff-cbar{position:absolute;z-index:1;right:22px;bottom:12px;width:190px;font-family:var(--mono);font-size:10.5px;color:#C3CEDA;pointer-events:none}
 .ff-cbar .t{display:block;color:#fff;font-weight:600;margin-bottom:5px}
-.ff-cbar .bar{display:block;height:6px;border-radius:1px}
+.ff-cbar .bar{display:block;height:6px;border-radius:1px;background:linear-gradient(to right, rgb(226,238,250) 0%, rgb(226,238,250) 5%, rgb(226,238,250) 10%, rgb(208,224,240) 15%, rgb(189,209,231) 20%, rgb(169,194,221) 25%, rgb(150,179,211) 30%, rgb(129,164,200) 35%, rgb(108,148,189) 40%, rgb(87,131,178) 45%, rgb(64,113,166) 50%, rgb(49,99,153) 55%, rgb(41,87,136) 60%, rgb(33,74,119) 65%, rgb(24,59,99) 70%, rgb(11,37,69) 75%, rgb(53,57,70) 80%, rgb(89,75,71) 85%, rgb(123,92,72) 90%, rgb(156,108,73) 95%, rgb(188,124,74) 100%)}
 .ff-cbar .tk{position:relative;display:block;height:16px}
 .ff-cbar .tk i{position:absolute;top:4px;font-style:normal;transform:translateX(-50%)}
 .ff-cbar .tk i::before{content:'';position:absolute;left:50%;top:-4px;width:1px;height:3px;background:rgba(255,255,255,.55)}
@@ -620,6 +619,7 @@
 </head>
 <body data-home="1" data-title="NORDAP · Nordic Aviation Platform">
 <script src="site.js?v=109"></script>
+<script>/* the still of the aerofoil for this language and screen, fetched before the plate is laid out */(function(){var l=document.createElement("link");l.rel="preload";l.as="image";l.type="image/webp";l.href="img/front/foil-poster-"+(innerWidth<=640?"p":"d")+"-"+(document.documentElement.lang==="nb"?"no":"en")+".webp";document.head.appendChild(l);})();</script>
 <main class="fp" id="main">
 
   <!-- 1. Hero -->
@@ -647,8 +647,8 @@
           <div class="ff" id="ffBox">
             <canvas id="ffCv" aria-hidden="true"></canvas>
             <div class="ff-frame" data-k="0.6" aria-hidden="true"></div>
-            <dl class="fp-ro ff-ro" id="ffRo" aria-hidden="true"><div><dt>α</dt><dd>13.0°</dd></div><div><dt>CL</dt><dd>1.63</dd></div><div><dt>SEP.</dt><dd>–</dd></div></dl>
-            <p class="ff-st ok" id="ffSt" aria-hidden="true"></p>
+            <dl class="fp-ro ff-ro" id="ffRo" aria-hidden="true"><div><dt>α</dt><dd>13.0°</dd></div><div><dt>CL</dt><dd>1.63</dd></div><div><dt>SEP.</dt><dd>94 %</dd></div></dl>
+            <p class="ff-st warn" id="ffSt" aria-hidden="true"><span data-tx="ffSt0">Trailing-edge separation</span></p>
             <div class="ff-cbar" aria-hidden="true"><span class="t">Cp</span><span class="bar"></span><span class="tk"><i style="left:0">−3</i><i style="left:23.33%">−1</i><i style="left:35%">0</i><i style="left:67.5%">+0.5</i><i style="left:100%">+1</i></span></div>
             <a class="fp-lab-hit" href="tunnel.html#profil" tabindex="-1" aria-hidden="true"></a>
           </div>
@@ -902,6 +902,7 @@ LAB.tx({
  s5:'Seks cockpiter du kan fly, fra Cessna 172 til A320, 737 og ATR 72, i 2D og 3D.', s6:'Lær flowene til ditt flyselskap utenat i den ekte cockpiten, alene eller med partneren din.', trnB:'Cockpittrenere', bTrn:'Cockpittrenere', bFl:'Flows', bBp:'Briefingpakke',
  h2a:'Seks fagområder, bygd på EASA ATPL-pensumet',
  p2a:'Hver lab er en modell du kan endre og se reagere: fly vingen inn i stall, la et tordenvær vokse, fly en VOR-radial over Bergen. Der en lab viser tall, kommer de fra en illustrerende A320.',
+ ffSt0:'Bakkantseparasjon',
  capFoil:'<b>Vingen sett fra siden med 13° angrepsvinkel.</b> Profilsnittet fra aerodynamikklabben, beregnet direkte i nettleseren din: trykkfelt (Cp) og strømlinjer fra en panelmetode, omslag og separasjon fra en grensesjiktmodell. <a class="tl" href="tunnel.html#profil">Åpne profilsnittet</a>',
  h3idx:'Fagområder og tilhørende EASA ATPL-fag',
  allLabs:'Alle <span class="nLabs">25</span> labber', hf:'Menneskelige faktorer',
