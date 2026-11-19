@@ -49,6 +49,8 @@
 .fp-hero h1{color:var(--on-navy);font-size:clamp(42px,5.1vw,78px);line-height:.98;letter-spacing:-.03em;font-weight:640}
 .fp-lede{margin-top:26px!important;font-size:19px;line-height:1.55;color:var(--on-navy-2);max-width:34em}
 .fp-lede b{color:var(--on-navy);font-weight:600}
+.fp-tag{margin:14px 0 0!important;font-size:clamp(20px,2vw,28px);line-height:1.25;font-weight:600;letter-spacing:-.01em;color:var(--on-navy)}
+.fp-tag+.fp-lede{margin-top:14px!important}
 .fp-act{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
 .fp-btn{display:inline-flex;align-items:center;min-height:48px;padding:0 22px;font-size:16px;font-weight:600;text-decoration:none;border-radius:2px;border:1px solid transparent;transition:background-color .15s,border-color .15s}
 .fp-btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
@@ -631,7 +633,8 @@ html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-d-no.webp)}
       <div class="fp-stage">
         <div class="fp-copy">
           <h1 id="fp-h1" data-tx="h1">Welcome to NORDAP</h1>
-          <p class="fp-lede" data-tx="lede">The Nordic Aviation Platform for pilots and flight schools: theory you can see, procedures you can practise, and preparation for the flight.</p>
+          <p class="fp-tag" data-tx="tag">The Nordic Aviation Platform</p>
+          <p class="fp-lede" data-tx="lede">From aviation theory and regulations to interactive training and flight preparation.</p>
           <div class="fp-act"><a class="fp-btn pri" href="lab.html">Open Virtual Labs</a><a class="fp-btn sec" href="flows.html" data-tx="bFl">Flows</a></div>
         </div>
       </div>
@@ -890,7 +893,8 @@ LAB.add({},{
 });
 LAB.tx({
  h1:'Velkommen til NORDAP',
- lede:'Den nordiske luftfartsplattformen for piloter og flyskoler: teori du kan se, prosedyrer du kan øve på, og forberedelse til flygingen.',
+ tag:'Den nordiske luftfartsplattformen',
+ lede:'Fra luftfartsteori og regelverk til interaktiv trening og forberedelse til flyging.',
  fiK:'Eksempel · illustrerende dokumenter',
  fiKeep:'Svarene kommer fra din egen AFM, QRH og SOP og fra EASA Easy Access Rules, hver med siden de bygger på. Dokumentene dine leses og lagres i denne nettleseren.',
  fiAsk:'Spør Flight Intelligence', fiGo:'Spør',
