@@ -6,7 +6,7 @@
 <title>NORDAP · Nordic Aviation Platform</title>
 <meta name="description" content="NORDAP is an aviation platform built in Norway for pilots, students and flight schools: 25 interactive labs on the EASA ATPL syllabus, Route Explorer, a printable briefing pack, and an instructor that answers from your own AFM, QRH and SOP.">
 <meta name="theme-color" content="#0B2545">
-<link rel="preload" as="image" href="img/front/night-taxi-1400.webp" imagesrcset="img/front/night-taxi-760.webp 760w, img/front/night-taxi-1400.webp 1400w, img/front/night-taxi-1960.webp 1960w" imagesizes="100vw" type="image/webp">
+<link rel="preload" as="image" href="img/front/fan-1400.webp" imagesrcset="img/front/fan-760.webp 760w, img/front/fan-1400.webp 1400w, img/front/fan-2000.webp 2000w, img/front/fan-2576.webp 2576w" imagesizes="100vw" type="image/webp">
 <link rel="stylesheet" href="lab.css?v=15">
 <link rel="stylesheet" href="site.css?v=35">
 <style>
@@ -39,7 +39,7 @@
 .fp-hero{background:var(--navy);color:var(--on-navy);position:relative;overflow:hidden;isolation:isolate}
 .fp-relief{position:absolute;inset:0;z-index:-1;pointer-events:none;
   -webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.16) 0,rgba(0,0,0,.34) 34%,#000 68%);mask-image:linear-gradient(90deg,rgba(0,0,0,.16) 0,rgba(0,0,0,.34) 34%,#000 68%)}
-.fp-relief img{display:block;width:100%;height:100%;object-fit:cover;object-position:60% 50%;filter:saturate(.22) contrast(1.06) brightness(.9)}
+.fp-relief img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 50%;filter:saturate(.8)}
 .fp-stage{display:grid;grid-template-columns:minmax(0,11fr) minmax(0,10fr);gap:40px 72px;align-items:center;min-height:clamp(580px,calc(100svh - 236px),800px);padding:88px 0 56px}
 .fp-copy{max-width:600px}
 .fp-hero h1{color:var(--on-navy);font-size:clamp(42px,5.1vw,78px);line-height:.98;letter-spacing:-.03em;font-weight:640}
@@ -396,7 +396,7 @@
 @media (max-width:900px){
   .fp-stage{grid-template-columns:minmax(0,1fr);min-height:0;padding:56px 0 48px;gap:48px}
   .fp-relief{inset:auto 0 0 0;width:100%;top:38%;bottom:0;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 22%);mask-image:linear-gradient(180deg,transparent 0,#000 22%)}
-  .fp-relief img{object-position:64% 50%}
+  .fp-relief img{object-position:58% 50%}
   .fp-copy{max-width:640px}
   .fi{max-width:640px;justify-self:start}
   .fp-credit{position:static;max-width:none;padding:0 0 18px;background:none}
@@ -425,7 +425,7 @@
   .fp-act{margin-top:26px}
   .fp-act .fp-btn{flex:1 1 100%;justify-content:center}
   .fp-relief{top:30%}
-  .fp-relief img{object-position:64% 50%}
+  .fp-relief img{object-position:58% 50%}
   .fi{margin-top:104px;font-size:15px}
   .fi-top{padding:13px 18px 12px}
   .fi-stack{padding:18px 18px 0}
@@ -562,7 +562,7 @@
 /* ---------- new top: the photograph in full, a sheet and the Flight Intelligence box straddling its lower edge ---------- */
 .fp .fp-relief{inset:0;top:0;-webkit-mask-image:none;mask-image:none}
 .fp .fp-relief img{object-position:60% 50%}
-.fp-hero::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(7,22,42,.82) 0,rgba(7,22,42,.5) 38%,rgba(7,22,42,0) 68%),linear-gradient(180deg,rgba(7,22,42,.25) 0,rgba(7,22,42,0) 30%,rgba(7,22,42,.55) 100%)}
+.fp-hero::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(7,22,42,.92) 0,rgba(7,22,42,.84) 36%,rgba(7,22,42,.45) 52%,rgba(7,22,42,0) 72%),linear-gradient(180deg,rgba(7,22,42,.25) 0,rgba(7,22,42,0) 30%,rgba(7,22,42,.55) 100%)}
 .fp .fp-stage{display:flex;align-items:center;min-height:clamp(560px,calc(100svh - 190px),760px);padding:72px 0 208px}
 .fp .fp-copy{max-width:640px}
 .nx-top{position:relative;z-index:2}
@@ -615,7 +615,7 @@
   <!-- 1. Hero -->
   <section class="fp-hero fp-band" id="fpHero" aria-labelledby="fp-h1">
     <div class="fp-relief" aria-hidden="true">
-      <img src="img/front/night-taxi-1400.webp" srcset="img/front/night-taxi-760.webp 760w, img/front/night-taxi-1400.webp 1400w, img/front/night-taxi-1960.webp 1960w" sizes="100vw" width="1400" height="714" alt="" fetchpriority="high" decoding="async">
+      <img src="img/front/fan-1400.webp" srcset="img/front/fan-760.webp 760w, img/front/fan-1400.webp 1400w, img/front/fan-2000.webp 2000w, img/front/fan-2576.webp 2576w" sizes="100vw" width="1400" height="714" alt="" fetchpriority="high" decoding="async">
     </div>
     <div class="fp-wrap">
       <div class="fp-stage">
