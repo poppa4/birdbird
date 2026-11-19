@@ -113,10 +113,10 @@ ol.steps li{margin:4px 0}
 .past .box{position:relative;padding-top:14px}
 .past .box .lt{font-family:var(--f-mono);font-size:30px;font-weight:500;line-height:1;color:var(--accent);float:right;margin:-2px 0 0 8px;opacity:.85}
 .past .box svg{display:block;width:100%;height:auto;max-height:96px;margin:2px 0 8px;border-radius:4px;background:var(--instrument)}
-#ltCv{aspect-ratio:16/9.2}#ltCh{aspect-ratio:16/5.4}#pwCv{aspect-ratio:16/9}
+#ltCv{aspect-ratio:16/9.2}#ltCh{aspect-ratio:16/5.4}#pwCv{aspect-ratio:16/9}#seCv{aspect-ratio:16/7.6}
 /* «slik leser du» for fargeskinnet på bladet: bare i Kort */
 .cphow{display:none;margin:8px 2px 0;font-size:13px;line-height:1.45;color:var(--muted,#5E6B74)}body.depth-short .cphow{display:block}
-@media (max-width:640px){#ltCv{aspect-ratio:4/6}#ltCh{aspect-ratio:4/3}#pwCv{aspect-ratio:4/4.4}}
+@media (max-width:640px){#ltCv{aspect-ratio:4/6}#ltCh{aspect-ratio:4/3}#pwCv{aspect-ratio:4/4.4}#seCv{aspect-ratio:4/4.6}}
 .lays{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:-4px}
 .lays .k{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:4px}
 .lays .vbtn{font-size:12px;padding:6px 11px;min-height:32px}
@@ -215,6 +215,12 @@ ol.steps li{margin:4px 0}
         <div id="pwCtl" style="margin-top:8px"></div>
         <div class="ro" id="pwR"></div>
       </div>
+    </div>
+    <div class="xcard" id="seBox" style="margin-top:14px">
+      <div class="h3row"><h3 id="seH"></h3><p id="seLead"></p></div>
+      <div class="xvp"><div class="vbar"><div class="vtabs" id="seTabs" role="tablist" aria-label="Effect"></div></div>
+      <div class="view"><canvas id="seCv" aria-label="A single-engine aircraft seen from above and from behind, with the effect that yaws the nose left at high power: torque, spiralling slipstream, P-factor or gyroscopic precession"></canvas></div></div>
+      <p class="cap" id="seCap"></p>
     </div>
     <div class="cols deep" id="pwCards"></div>
   </section>
@@ -349,7 +355,7 @@ ol.steps li{margin:4px 0}
 </div>
 <script src="lab.js?v=56"></script>
 <script src="chartnote.js?v=3"></script>
-<script src="concepts.js?v=7"></script>
+<script src="concepts.js?v=8"></script>
 <script src="stab.js?v=2"></script>
 <script src="vmc.js?v=3"></script>
 <script>
@@ -872,6 +878,70 @@ LAB.onLang(()=>{ hooks.forEach(f=>f()); vmRead(); acC.draw(); trC.draw(); mvC.dr
 <script src="cfd3d.js?v=7"></script>
 <script src="twin.js?v=10"></script>
 <script>
+/* Single engine: the four effects that yaw the nose left at high power (propeller turning clockwise seen from behind) */
+(function(){ const {L,el}=LAB, txt=STAB.txt, arrow=STAB.arrow, t2=(en,no)=>({en,no});
+  const C={ac:'#C9D3DA',ac2:'#8E9BA6',prop:'#7FCBE8',yaw:'#F0B440',eff:'#E46BAE',ok:'#71CC93',dim:'#5E6D7C',ink:'#EEF3F7',bg:'#0E151B'};
+  const FX=[['torque',t2('Torque','Dreiemoment')],['slip',t2('Spiralling slipstream','Spiralformet propellstrøm')],['pf',t2('P-factor','P-faktor')],['gyro',t2('Gyroscopic precession','Gyroskopisk presesjon')]];
+  const CAP={
+   torque:t2('<b>Torque.</b> The engine turns the propeller to the right, so the reaction tries to roll the aircraft to the left. On the take-off roll that puts more weight on the left wheel: more drag there, and the nose swings left.','<b>Dreiemoment.</b> Motoren dreier propellen mot høyre, så reaksjonen prøver å rulle flyet mot venstre. Under rullingen på bakken gir det mer vekt på venstre hjul: mer motstand der, og nesen svinger mot venstre.'),
+   slip:t2('<b>Spiralling slipstream.</b> The propeller wraps its slipstream round the fuselage like a corkscrew. It meets the fin from the left and pushes the tail to the right: the nose yaws left. Strongest at high power and low speed, when the spiral is tight.','<b>Spiralformet propellstrøm.</b> Propellen vikler luftstrømmen rundt flykroppen som en korketrekker. Den treffer halefinnen fra venstre og skyver halen mot høyre: nesen girer mot venstre. Sterkest ved høy effekt og lav fart, når spiralen er tett.'),
+   pf:t2('<b>P-factor.</b> With the nose high the descending blade, on the right, meets the air at a bigger angle than the rising blade and pulls harder. The thrust moves to the right of the centreline and yaws the nose left.','<b>P-faktor.</b> Med nesen høyt møter det nedadgående bladet, på høyre side, luften med større vinkel enn det oppadgående og trekker hardere. Skyvekraften flytter seg til høyre for senterlinjen og girer nesen mot venstre.'),
+   gyro:t2('<b>Gyroscopic precession.</b> The propeller is a gyro: a force on it is felt 90° further round in the direction of rotation. When the tail of a tailwheel aircraft comes up, the push at the top of the disc acts on its right side, and the nose yaws left.','<b>Gyroskopisk presesjon.</b> Propellen er en gyro: en kraft på den merkes 90° lenger fram i rotasjonsretningen. Når halen på et halehjulsfly løftes, virker dyttet øverst på skiven på høyre side i stedet, og nesen girer mot venstre.')};
+  let fx='torque';
+  const st=LAB.fit(el('seCv'),()=>draw(),2);
+  const arc=(g,x,y,r,a0,a1,col,w,ccw)=>{ g.strokeStyle=col; g.lineWidth=w; g.lineCap='round'; g.beginPath(); g.arc(x,y,r,a0,a1,!!ccw); g.stroke(); const d=ccw?-1:1, ex=x+r*Math.cos(a1), ey=y+r*Math.sin(a1), tx=-Math.sin(a1)*d, ty=Math.cos(a1)*d; arrow(g,ex-tx*6,ey-ty*6,ex+tx*5,ey+ty*5,col,w,9); };
+  function draw(){ const g=st.ctx,W=st.w,H=st.h; if(!W) return; const nar=W<520, fs=nar?10:12;
+    g.clearRect(0,0,W,H); g.fillStyle=C.bg; g.fillRect(0,0,W,H);
+    const u=nar?Math.min(W*0.3,H*0.2):Math.min(H*0.36,W*0.17), ax=nar?W*0.5:W*0.27, ay=nar?H*0.27:H*0.54, bx=nar?W*0.5:W*0.73, by=nar?H*0.74:H*0.52;
+    const T=(s,x,y,col,al,sz)=>txt(g,s,x,y,{col:col||C.ink,al:al||'left',size:sz||fs,bg:'rgba(12,16,20,.82)'});
+    txt(g,L(t2('FROM ABOVE','OVENFRA')),nar?10:ax-u*1.1,nar?16:20,{col:C.dim,size:10,mono:true}); txt(g,L(t2('FROM BEHIND','BAKFRA')),nar?10:bx-u*1.1,nar?H*0.52:20,{col:C.dim,size:10,mono:true});
+    /* ---- from above, nose up ---- */
+    g.fillStyle=C.ac2; g.fillRect(ax-u*1.1,ay-u*0.28,u*2.2,u*0.2); g.fillRect(ax-u*0.4,ay+u*0.78,u*0.8,u*0.12);
+    g.fillStyle=C.ac; g.beginPath(); g.moveTo(ax,ay-u*0.95); g.bezierCurveTo(ax+u*0.11,ay-u*0.9,ax+u*0.1,ay-u*0.2,ax+u*0.06,ay+u*0.95); g.lineTo(ax-u*0.06,ay+u*0.95); g.bezierCurveTo(ax-u*0.1,ay-u*0.2,ax-u*0.11,ay-u*0.9,ax,ay-u*0.95); g.fill();
+    g.strokeStyle=C.prop; g.lineWidth=3; g.beginPath(); g.moveTo(ax-u*0.36,ay-u*0.98); g.lineTo(ax+u*0.36,ay-u*0.98); g.stroke();
+    /* rudder held to the right */
+    g.strokeStyle=C.ok; g.lineWidth=3; g.beginPath(); g.moveTo(ax,ay+u*0.95); g.lineTo(ax+u*0.09,ay+u*1.14); g.stroke();
+    T(L(t2('right rudder','høyre sideror')),ax+u*0.2,ay+u*1.12,C.ok);
+    /* the result is the same every time: the nose yaws left */
+    arc(g,ax,ay-u*0.2,u*1.02,-Math.PI/2-0.12,-Math.PI/2-0.62,C.yaw,3,true);
+    T(L(t2('nose yaws left','nesen girer mot venstre')),ax-u*0.62,ay-u*1.12,C.yaw,'right');
+    /* ---- from behind ---- */
+    g.strokeStyle=C.dim; g.lineWidth=1; g.beginPath(); g.moveTo(bx-u*1.2,by+u*0.5); g.lineTo(bx+u*1.2,by+u*0.5); g.stroke();
+    g.fillStyle=C.ac2; g.fillRect(bx-u*1.1,by+u*0.02,u*2.2,u*0.07); g.fillRect(bx-u*0.4,by-u*0.06,u*0.8,u*0.05); g.fillRect(bx-u*0.025,by-u*0.6,u*0.05,u*0.5);
+    g.strokeStyle=C.ac2; g.lineWidth=2.5; [-1,1].forEach(k=>{ g.beginPath(); g.moveTo(bx+k*u*0.1,by+u*0.1); g.lineTo(bx+k*u*0.3,by+u*0.4); g.stroke(); });
+    const lw=fx==='torque'; g.fillStyle=lw?C.eff:C.ac2; g.beginPath(); g.ellipse(bx-u*0.3,by+u*0.43,u*0.05,u*0.075,0,0,7); g.fill(); g.fillStyle=C.ac2; g.beginPath(); g.ellipse(bx+u*0.3,by+u*0.43,u*0.05,u*0.075,0,0,7); g.fill();
+    g.fillStyle=C.ac; g.beginPath(); g.arc(bx,by,u*0.16,0,7); g.fill();
+    g.strokeStyle='rgba(127,203,232,.55)'; g.lineWidth=1.4; g.setLineDash([4,4]); g.beginPath(); g.arc(bx,by,u*0.42,0,7); g.stroke(); g.setLineDash([]);
+    arc(g,bx,by,u*0.42,-2.4,-0.9,C.prop,2.6);   /* clockwise seen from behind */
+    T(L(t2('propeller turns right','propellen går mot høyre')),bx+u*0.36,by-u*0.52,C.prop);
+    if(fx==='torque'){
+      arc(g,bx,by,u*0.72,-0.5,-2.3,C.eff,3,true); T(L(t2('reaction rolls the aircraft left','reaksjonen ruller flyet mot venstre')),bx-u*0.5,by-u*0.86,C.eff,nar?'center':'right');
+      arrow(g,bx-u*0.3,by+u*0.12,bx-u*0.3,by+u*0.34,C.eff,3); T(L(t2('more weight on the left wheel','mer vekt på venstre hjul')),bx-u*0.42,by+u*0.72,C.eff,nar?'center':'right');
+      arrow(g,ax-u*0.3,ay+u*0.1,ax-u*0.3,ay+u*0.42,C.eff,3); T(L(t2('left wheel drags','venstre hjul bremser')),ax-u*0.4,ay+u*0.5,C.eff,'right'); }
+    else if(fx==='slip'){
+      g.strokeStyle=C.eff; g.lineWidth=2; g.beginPath(); for(let i=0;i<=90;i++){ const k=i/90, y=ay-u*0.95+k*u*1.78, x=ax+Math.sin(k*Math.PI*5)*u*(0.2-0.05*k); i?g.lineTo(x,y):g.moveTo(x,y); } g.stroke();
+      arrow(g,ax-u*0.42,ay+u*0.84,ax-u*0.08,ay+u*0.84,C.eff,3); T(L(t2('slipstream pushes the fin','propellstrømmen skyver finnen')),ax-u*0.46,ay+u*0.66,C.eff,'right');
+      g.strokeStyle=C.eff; g.lineWidth=2; g.beginPath(); for(let a=2.2;a<=6.7;a+=0.1){ const r=u*(0.5-0.045*(a-2.2)), x=bx+Math.cos(a)*r, y=by-u*0.1+Math.sin(a)*r*0.8; a>2.2?g.lineTo(x,y):g.moveTo(x,y); } g.stroke();
+      arrow(g,bx-u*0.4,by-u*0.36,bx-u*0.06,by-u*0.36,C.eff,3); T(L(t2('meets the fin from the left','treffer finnen fra venstre')),bx-u*0.44,by-u*0.72,C.eff,nar?'center':'right'); }
+    else if(fx==='pf'){
+      g.fillStyle='rgba(228,107,174,.22)'; g.beginPath(); g.moveTo(bx,by); g.arc(bx,by,u*0.42,-Math.PI/2,Math.PI/2); g.closePath(); g.fill();
+      arrow(g,bx+u*0.3,by-u*0.14,bx+u*0.3,by+u*0.16,C.eff,3); T(L(t2('descending blade: more thrust','nedadgående blad: mer skyvekraft')),bx+u*0.5,by+u*0.3,C.eff);
+      arrow(g,bx-u*0.3,by+u*0.12,bx-u*0.3,by-u*0.08,C.dim,2); T(L(t2('rising blade: less','oppadgående blad: mindre')),bx-u*0.5,by+u*0.3,C.dim,'right');
+      arrow(g,ax+u*0.2,ay-u*1.0,ax+u*0.2,ay-u*1.42,C.eff,3.4); arrow(g,ax-u*0.2,ay-u*1.0,ax-u*0.2,ay-u*1.18,C.dim,2);
+      T(L(t2('thrust moves right of the centreline','skyvekraften flytter seg til høyre')),ax+u*0.32,ay-u*1.3,C.eff); }
+    else {
+      arrow(g,bx,by-u*0.74,bx,by-u*0.46,C.dim,2.4); T(L(t2('tail comes up: push at the top','halen løftes: dytt øverst')),bx-u*0.1,by-u*0.82,C.ink,nar?'center':'right');
+      g.fillStyle=C.eff; g.beginPath(); g.arc(bx+u*0.42,by,5,0,7); g.fill(); T(L(t2('felt here, 90° later','merkes her, 90° senere')),bx+u*0.52,by+u*0.04,C.eff);
+      arrow(g,ax+u*0.3,ay-u*0.98,ax+u*0.3,ay-u*1.36,C.eff,3.4); T(L(t2('force acts on the right side','kraften virker på høyre side')),ax+u*0.42,ay-u*1.24,C.eff); }
+  }
+  function tabs(){ el('seTabs').innerHTML=FX.map(([k,n])=>`<button type="button" role="tab" data-fx="${k}" class="${k===fx?'on':''}" aria-selected="${k===fx}">${L(n)}</button>`).join(''); el('seCap').innerHTML=L(CAP[fx]);
+    el('seH').textContent=L(t2('Single engine: why the nose goes left','Enmotors: hvorfor nesen går mot venstre')); el('seLead').textContent=L(t2('Full power, low speed, nose high: four effects of a propeller that turns to the right all yaw the nose left. Hold it straight with right rudder.','Full effekt, lav fart, nesen høyt: fire virkninger av en propell som går mot høyre girer alle nesen mot venstre. Hold rett fram med høyre sideror.')); }
+  function set(k){ if(!FX.some(x=>x[0]===k)) return; fx=k; tabs(); draw(); }
+  el('seTabs').addEventListener('click',e=>{ const b=e.target.closest('button[data-fx]'); if(b) set(b.dataset.fx); });
+  window.__seFx=set; tabs(); draw(); LAB.onLang(()=>{ tabs(); draw(); });
+})();
+</script>
+<script>
 /* Understand: key concept cards (same pattern as the wind tunnel) */
 (function(){ if(!window.KCS) return; const {sv,tx,ar}=KCS, L=LAB.L;
   const twin=(x,y,k)=>`<g transform="translate(${x} ${y}) scale(${k||1})"><rect x="-44" y="-2.5" width="88" height="5" rx="2.5" fill="#c9d3da"/><path d="M-3,-22 C-3,-26 3,-26 3,-22 L3,22 L-3,22 Z" fill="#e8edf1"/><rect x="-14" y="16" width="28" height="3" rx="1.5" fill="#c9d3da"/><rect x="-22" y="-9" width="6" height="12" rx="2" fill="#9aa8b3"/><rect x="16" y="-9" width="6" height="12" rx="2" fill="#9aa8b3"/></g>`;
@@ -883,12 +953,29 @@ LAB.onLang(()=>{ hooks.forEach(f=>f()); vmRead(); acC.draw(); trC.draw(); mvC.dr
     dd:{en:'With constant speed the throttle sets the manifold pressure and the propeller lever the RPM. Power up: mixture, propeller, then throttle; power down the other way.',no:'Med konstant turtall setter gassen innsugstrykket og propellhendelen turtallet. Mer effekt: blanding, propell, så gass; mindre effekt omvendt.'},
     ill:()=>sv(`<path d="M40,46 L80,20" stroke="#eef3f7" stroke-width="3"/><path d="M120,46 L170,30" stroke="#7fcbe8" stroke-width="3"/>${tx(60,58,'fine','#eef3f7','middle',7.5)}${tx(146,58,'coarse','#7fcbe8','middle',7.5)}${tx(100,14,'RPM held','#f0b440','middle',7.5)}`),click:'#pwPre button[data-k="cruise"]',to:'#pwCv'},
    {k:'wm',t:{en:'Windmilling',no:'Vindmølle'},d:{en:'With the engine dead the airflow drives the propeller round: α goes negative and the blade makes <b>drag instead of thrust</b>, a big disc of drag on the dead side.',no:'Med død motor driver luftstrømmen propellen rundt: α blir negativ og bladet gir <b>motstand i stedet for skyvekraft</b>, en stor motstandsskive på den døde siden.'},
+    dd:{en:'A windmilling propeller can drag about as much as a flat disc of the same diameter. A stopped propeller drags less, a feathered one least.',no:'En propell i vindmølle kan gi omtrent like mye motstand som en flat skive med samme diameter. En stanset propell gir mindre, en fløyet minst.'},
     ill:()=>sv(`<circle cx="70" cy="32" r="20" fill="none" stroke="#55626e" stroke-dasharray="3 2"/><path d="M70,12 L70,52" stroke="#eef3f7" stroke-width="3"/>${ar(150,32,100,32,'#7fcbe8')}${ar(70,32,40,32,'#ec5a47',2)}${tx(130,24,'airflow','#7fcbe8','middle',7.5)}${tx(40,58,'drag','#ec5a47','start',7.5)}`),click:'#pwPre button[data-k="wm"]',to:'#pwCv'},
+   {k:'tend',t:{en:'Single engine: the nose goes left',no:'Enmotors: nesen går mot venstre'},d:{en:'At full power and low speed a propeller turning to the right yaws the nose <b>left</b>. Four effects add up: torque, spiralling slipstream, P-factor and gyroscopic precession. Hold right rudder.',no:'På full effekt og lav fart girer en propell som går mot høyre nesen mot <b>venstre</b>. Fire virkninger legger seg sammen: dreiemoment, spiralformet propellstrøm, P-faktor og gyroskopisk presesjon. Hold høyre sideror.'},
+    dd:{en:'Strongest on take-off, in the climb and on a go-around; weakest in a fast cruise, where the fin is usually set to balance them. A propeller turning the other way reverses every one of them.',no:'Sterkest ved avgang, i stigning og ved avbrutt landing; svakest i rask marsj, der finnen som regel er stilt inn for å balansere dem. En propell som går den andre veien, snur alle fire.'},
+    see:{en:'The yellow arrow at the nose: whichever effect you choose, the nose yaws <b>left</b>, and the green rudder holds it.',no:'Den gule pilen ved nesen: uansett hvilken virkning du velger, girer nesen mot <b>venstre</b>, og det grønne sideroret holder imot.'},
+    ill:()=>sv(`<path d="M97,12 C103,12 104,30 102,56 L98,56 C96,30 97,12 97,12 Z" fill="#e8edf1"/><rect x="62" y="26" width="76" height="6" rx="2" fill="#c9d3da"/><line x1="88" y1="10" x2="112" y2="10" stroke="#7fcbe8" stroke-width="2.5"/><path d="M92,6 Q74,8 70,22" fill="none" stroke="#f0b440" stroke-width="1.8"/>${ar(72,16,69,24,'#f0b440')}${tx(60,12,L({en:'left',no:'venstre'}),'#f0b440','end',8)}${tx(126,56,L({en:'right rudder',no:'høyre sideror'}),'#71cc93','start',7.5)}`),click:()=>window.__seFx&&__seFx('torque'),to:'#seCv'},
+   {k:'torque',dp:true,t:{en:'Torque reaction',no:'Dreiemoment'},d:{en:'The engine turns the propeller one way, so the aircraft tries to roll the other way. On the ground the left wheel carries more weight and drags: the nose swings left.',no:'Motoren dreier propellen én vei, så flyet prøver å rulle den andre veien. På bakken får venstre hjul mer vekt og bremser: nesen svinger mot venstre.'},
+    dd:{en:'In flight the reaction is a rolling moment, trimmed out in the rigging: a little more incidence on the left wing, or an aileron tab. Sudden full power at low speed, as on a go-around, can roll a powerful single sharply.',no:'I lufta er reaksjonen et rullemoment som trimmes bort i riggingen: litt større innfallsvinkel på venstre vinge, eller en trimflik på balanseroret. Brå full effekt ved lav fart, som ved avbrutt landing, kan rulle et kraftig enmotors fly brått.'},
+    ill:()=>sv(`<circle cx="100" cy="32" r="8" fill="#e8edf1"/><rect x="50" y="34" width="100" height="4" fill="#c9d3da"/><path d="M84,18 A20,20 0 0 1 116,18" fill="none" stroke="#7fcbe8" stroke-width="1.8"/>${ar(112,15,118,20,'#7fcbe8')}<path d="M126,12 A32,32 0 0 0 74,12" fill="none" stroke="#e46bae" stroke-width="1.8"/>${ar(78,9,72,14,'#e46bae')}`),click:()=>window.__seFx&&__seFx('torque'),to:'#seCv'},
+   {k:'slip',dp:true,t:{en:'Spiralling slipstream',no:'Spiralformet propellstrøm'},d:{en:'The slipstream corkscrews round the fuselage and meets the fin from the left. It pushes the tail right and the nose left, most of all at high power and low speed.',no:'Propellstrømmen skrur seg rundt flykroppen og treffer halefinnen fra venstre. Den skyver halen mot høyre og nesen mot venstre, mest ved høy effekt og lav fart.'},
+    dd:{en:'Designers offset the fin or the thrust line a degree or two to cancel it at cruise power and speed. That is why you need right rudder in the climb and sometimes a little left rudder in a fast, low-power descent.',no:'Konstruktørene vinkler finnen eller skyvekraftlinjen en grad eller to for å oppheve den ved marsjeffekt og marsjfart. Derfor trenger du høyre sideror i stigning og noen ganger litt venstre sideror i en rask nedstigning på lav effekt.'},
+    ill:()=>sv(`<rect x="30" y="29" width="140" height="6" rx="3" fill="#c9d3da"/><path d="M30,32 q10,-18 20,0 t20,0 t20,0 t20,0 t20,0 t20,0" fill="none" stroke="#e46bae" stroke-width="1.6"/><rect x="160" y="14" width="4" height="18" fill="#9aa8b3"/>${ar(146,20,158,20,'#e46bae')}`),click:()=>window.__seFx&&__seFx('slip'),to:'#seCv'},
+   {k:'gyro',dp:true,t:{en:'Gyroscopic precession',no:'Gyroskopisk presesjon'},d:{en:'The propeller is a gyro: a force on the disc is felt 90° further round in the direction of rotation. Raising the tail of a tailwheel aircraft on take-off yaws the nose left.',no:'Propellen er en gyro: en kraft på skiven merkes 90° lenger fram i rotasjonsretningen. Når halen løftes på et halehjulsfly i avgangen, girer nesen mot venstre.'},
+    dd:{en:'A nosewheel aircraft feels much less of it, because it does not pitch on the take-off roll. Any quick pitch or yaw with a heavy propeller at high RPM shows it.',no:'Et nesehjulsfly merker mye mindre, fordi det ikke endrer stilling i rullingen. Enhver rask bevegelse i pitch eller gir med en tung propell på høyt turtall viser det.'},
+    ill:()=>sv(`<circle cx="100" cy="32" r="22" fill="none" stroke="#7fcbe8" stroke-dasharray="3 2"/>${ar(100,2,100,12,'#8b99a7')}<circle cx="122" cy="32" r="3.5" fill="#e46bae"/>${tx(130,36,'90°','#e46bae','start',9)}<path d="M104,11 A22,22 0 0 1 121,26" fill="none" stroke="#7fcbe8" stroke-width="1.6"/>`),click:()=>window.__seFx&&__seFx('gyro'),to:'#seCv'},
    {k:'pf',t:{en:'P-factor',no:'P-faktor'},d:{en:'At high angle of attack the descending blade meets the air at a bigger angle and pulls harder, so the thrust line moves to that side of the disc.',no:'Ved høy anstigningsvinkel møter bladet som går ned lufta med større vinkel og drar hardere, så skyvlinjen flyttes til den siden av disken.'},
+    dd:{en:'In level cruise the disc is nearly square to the airflow and there is no P-factor. It is strongest at high power and a high angle of attack: take-off, climb and slow flight.',no:'I plan marsj står skiven nesten vinkelrett på luftstrømmen, og det er ingen P-faktor. Den er sterkest ved høy effekt og høy angrepsvinkel: avgang, stigning og sakteflyging.'},
     ill:()=>sv(`<circle cx="100" cy="32" r="26" fill="none" stroke="#55626e" stroke-dasharray="3 2"/>${ar(100,32,100,8,'#8b99a7')}${ar(100,32,100,56,'#f0b440',2.2)}${tx(108,58,L({en:'descending blade: more thrust',no:'blad ned: mer skyv'}),'#f0b440')}`),click:'#ltPre button[data-k="crit"]',to:'#ltCv'},
    {k:'crit',t:{en:'The critical engine',no:'Kritisk motor'},d:{en:'On a twin with both propellers turning clockwise (from behind), losing the left engine is worse: the right engine’s thrust acts further out, so it yaws harder.',no:'På et tomotors fly der begge propellene går med klokka (sett bakfra), er det verst å miste venstre motor: høyre motors skyv virker lenger ute, så den girer hardere.'},
+    dd:{en:'Counter-rotating propellers (for example the Piper Seminole) have no critical engine: both failures are equally bad. On a jet the worse engine to lose is the one on the upwind side in a crosswind.',no:'Motroterende propeller (for eksempel Piper Seminole) har ingen kritisk motor: begge motorstans er like ille. På et jetfly er den verste motoren å miste den på lo side i sidevind.'},
     ill:()=>sv(`${twin(100,34,1.1)}${tx(70,10,'✕','#EC5A47','middle',10)}${ar(124,24,124,6,'#E46BAE')}${tx(132,10,L({en:'long arm',no:'lang arm'}),'#E46BAE')}`),click:'#ltPre button[data-k="crit"]',to:'#ltCv'},
    {k:'past',t:{en:'PAST: why it is critical',no:'PAST: hvorfor den er kritisk'},d:{en:'<b>P</b>-factor, <b>A</b>ccelerated slipstream, <b>S</b>piralling slipstream and <b>T</b>orque all make the left engine the critical one on a conventional twin.',no:'<b>P</b>-faktor, <b>A</b>kselerert slipstrøm, <b>S</b>piralslipstrøm og <b>T</b>orque gjør alle venstre motor til den kritiske på et vanlig tomotors fly.'},
+    dd:{en:'P-factor: the right engine’s descending blade is further out. Accelerated slipstream: its extra lift is further out too, so more roll. Spiralling slipstream: only the left engine’s reaches the fin and helps. Torque: rolls the aircraft towards the dead left engine.',no:'P-faktor: det nedadgående bladet på høyre motor sitter lenger ut. Akselerert propellstrøm: det ekstra løftet sitter også lenger ut, så mer rull. Spiralformet propellstrøm: bare den fra venstre motor når finnen og hjelper. Dreiemoment: ruller flyet mot den døde venstre motoren.'},
     ill:()=>sv(`${tx(100,40,'P · A · S · T','#f0b440','middle',16)}`),click:'#ltPre button[data-k="right"]',to:'#ltCv'},
    {k:'vmca',t:{en:'VMCA',no:'VMCA'},d:{en:'The minimum control speed in the air: below it, full rudder can no longer hold the yaw from the live engine. It is marked as a red line on the airspeed indicator.',no:'Minste kontrollfart i luften: under den klarer ikke fullt sideror lenger å holde giringen fra den gode motoren. Den er merket med rød strek på fartsmåleren.'},
     ill:()=>sv(`<line x1="16" y1="56" x2="184" y2="56" stroke="#55626e"/><path d="M16,52 C80,44 130,24 184,6" fill="none" stroke="#7fcbe8" stroke-width="1.6"/><path d="M16,24 C80,30 130,32 184,32" fill="none" stroke="#E46BAE" stroke-width="1.6"/><line x1="104" y1="6" x2="104" y2="58" stroke="#EC5A47" stroke-dasharray="3 2"/>${tx(108,14,'VMCA','#EC5A47')}`),click:'#ltPre button[data-k="slow"]',to:'#ltCh'},
@@ -897,17 +984,19 @@ LAB.onLang(()=>{ hooks.forEach(f=>f()); vmRead(); acC.draw(); trC.draw(); mvC.dr
    {k:'wing',t:{en:'The propeller is a rotating wing',no:'Propellen er en roterende vinge'},d:{en:'Each blade section meets a relative wind made of its rotation and the aircraft’s speed. Its lift, tilted forward, is the thrust.',no:'Hvert bladsnitt møter en relativ vind laget av rotasjonen og flyets fart. Løftet, vippet framover, er skyvet.'},
     ill:()=>sv(`${ar(40,50,160,50,'#8b99a7')}${ar(160,50,160,14,'#7fcbe8')}${ar(40,50,160,14,'#f0b440')}${tx(100,60,L({en:'rotation',no:'rotasjon'}),'#8b99a7','middle')}${tx(166,24,'TAS','#7fcbe8')}`),click:'#pwPre button[data-k="climb"]',to:'#pwCv'},
    {k:'feather',t:{en:'Feathering',no:'Fløying'},d:{en:'Turning the dead propeller’s blades edge-on to the airflow stops it windmilling and removes most of its drag, which lowers VMCA and improves the climb.',no:'Å vri bladene på den døde propellen kant mot luftstrømmen stopper vindmøllingen og fjerner det meste av motstanden, som senker VMCA og bedrer stigningen.'},
+    dd:{en:'On a light twin, springs, counterweights or nitrogen drive the blades to feather when oil pressure is lost. Latches stop that happening at shutdown on the ground, so in flight feather before the RPM falls too low.',no:'På et lett tomotors fly driver fjærer, motvekter eller nitrogen bladene til fløyet stilling når oljetrykket forsvinner. Sperrer hindrer at det skjer ved stans på bakken, så i lufta må du fløye før turtallet faller for lavt.'},
     ill:()=>sv(`<line x1="100" y1="8" x2="100" y2="58" stroke="#c9d3da" stroke-width="3"/>${ar(30,32,90,32,'#7fcbe8')}${tx(110,36,L({en:'blades edge-on',no:'bladene på kant'}),'#71cc93')}`),click:'#pwPre button[data-k="fe"]',to:'#pwCv'}];
   const TK=[
    {en:'<b>A propeller blade is a wing.</b> Its angle of attack is the blade angle minus the helix angle, so flying faster at the same pitch means less α.',no:'<b>Et propellblad er en vinge.</b> Anstigningsvinkelen er bladvinkelen minus spiralvinkelen, så høyere fart med samme stigning gir mindre α.'},
    {en:'<b>Constant speed:</b> a governor changes the blade angle to hold the RPM you set. Fine pitch for take-off, coarser in cruise.',no:'<b>Konstant turtall:</b> en regulator endrer bladvinkelen for å holde turtallet du setter. Fin stigning for start, grovere i marsj.'},
    {en:'<b>A windmilling propeller is a disc of drag.</b> Feathering turns the blades edge-on and removes most of it.',no:'<b>En propell i vindmølle er en skive av motstand.</b> Fløying setter bladene med kanten mot vinden og fjerner det meste.'},
    {en:'<b>P-factor:</b> at a high angle of attack the descending blade pulls harder, so the thrust line moves to that side.',no:'<b>P-faktor:</b> ved høy anstigningsvinkel trekker det nedadgående bladet hardere, så skyvekraftlinjen flytter seg til den siden.'},
+   {en:'<b>A single-engine aircraft yaws left at full power and low speed</b> (propeller turning right): torque, spiralling slipstream, P-factor and gyroscopic precession. Right rudder.',no:'<b>Et enmotors fly girer mot venstre på full effekt og lav fart</b> (propell som går mot høyre): dreiemoment, spiralformet propellstrøm, P-faktor og gyroskopisk presesjon. Høyre sideror.'},
    {en:'<b>The critical engine</b> is the one whose failure hurts most. With both propellers turning clockwise, it is the left.',no:'<b>Kritisk motor</b> er den som gir verst virkning når den stanser. Med begge propellene med klokka er det den venstre.'},
    {en:'<b>Below VMCA full rudder cannot hold the heading.</b> It is highest with full power, aft CG and a windmilling propeller; 5° of bank towards the live engine lowers it.',no:'<b>Under VMCA holder ikke fullt sideror kursen.</b> Den er høyest med full effekt, bakre CG og propell i vindmølle; 5° krengning mot motoren som går, senker den.'},
    {en:'<b>Dead foot, dead engine.</b> Identify, verify, then feather. Fly the aircraft first.',no:'<b>Død fot, død motor.</b> Identifiser, bekreft, og fløy så. Fly flyet først.'}];
   const tk=()=>{ const u=document.getElementById('pkTake'); if(u) u.innerHTML=TK.map(x=>`<li>${L(x)}</li>`).join(''); }; tk(); LAB.onLang(tk);
-  const g=document.getElementById('pfKc'); if(g) KCS.render(g,KCS.order(KCP,['wing','blade','fpcs','wm','feather','pf','crit','past','vmca','dead']));
+  const g=document.getElementById('pfKc'); if(g) KCS.render(g,KCS.order(KCP,['wing','blade','fpcs','wm','feather','tend','torque','slip','pf','gyro','crit','past','vmca','dead']));
 })();
 </script>
 <script src="corepic.js?v=13"></script>

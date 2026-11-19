@@ -124,6 +124,8 @@ function drawFuselage(g,M,b){ const [bx,by,bw,bh]=b, c=P.CLS[S.cls], press=c.pre
     g.strokeStyle='rgba(214,226,236,.6)'; g.lineWidth=2; g.beginPath(); g.ellipse(ab,cy,fh*0.18,fh*0.48,0,-Math.PI/2,Math.PI/2); g.stroke();
     line(g,fb,top+2,fb,bot-2,'rgba(214,226,236,.45)',1.6); }
   const lab=(s,x,y,col,o)=>tag(g,s,x,y,col,Object.assign({sz:ph?9.5:10.5,minX:b[0],maxX:b[0]+b[2]},o||{}));
+  /* which class of aircraft this is, and what its fuselage is built to hold */
+  lab(L(CLN[S.cls])+(press?' · max ΔP '+nf(c.dpMax,1)+' psi':' · ΔP 0'),x0+fh*0.15,top-fh*1.02,C.txt||'#EEF3F7',{sz:ph?10:11.5});
   if(!press){
     /* unpressurised: ram-air vents and the heater, cabin = outside */
     const vx=x0+fh*1.1; for(let i=0;i<2;i++){ const yy=cy-fh*0.05+i*fh*0.14; arrow(g,vx-fh*0.35,yy,vx+fh*0.2,yy,'rgba(127,203,232,.8)',1.6); }

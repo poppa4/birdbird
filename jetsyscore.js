@@ -32,7 +32,9 @@ const E=(a,b,o)=>Object.assign({a,b},o||{});
 
 /* ---------- default state ---------- */
 function defaults(cls){
-  return {F:{}, A:{apu:false,inv:1,ptu:true,xf:false,selL:'on',selR:'on',aux1:false,aux2:false,bL:true,bR:true,pL:true,pR:true,ctr:true,jett:false,trimOff:false,lever:'down',emer:false,hand:false,ab:true,fwL:true},
+  return {F:{}, A:{apu:false,inv:1,ptu:true,xf:false,selL:'on',selR:'on',aux1:false,aux2:false,bL:true,bR:true,pL:true,pR:true,ctr:true,jett:false,trimOff:false,lever:'down',emer:false,hand:false,ab:true,fwL:true,
+       /* ice protection */ ph:true,tks:false,carb:false,boots:false,prh:false,wsh:true,vanes:false,wai:false,eai1:false,eai2:false,xb:false,
+       /* fire protection */ fpb:false,ag1:false,ag2:false,fsel:false,mixc:false,heat:false},
     Q:cls==='pist'?{L:190,R:190}:cls==='tp'?{L:1100,R:1100}:{L:5500,C:4000,R:5500}};
 }
 const CAP={pist:{L:200,R:200},tp:{L:1200,R:1200},jet:{L:6000,C:6500,R:6000}};
@@ -388,11 +390,111 @@ function gear(cls,F,A,G,EL,HY){
   return R;
 }
 
+/* ---------- ice and rain protection ---------- */
+/* anti-ice keeps a surface clear (on before the ice); de-ice lets some build and then sheds it. Sources: hot air, electric heat, fluid, or boots. */
+function ice(cls,F,A,EL){
+  const ON=T('ON','PÅ'), OFF=T('OFF','AV');
+  if(cls==='pist'){
+    const bus=!!EL.lv.bus;
+    const nodes=[
+      {id:'bus',r:0,x:.16,k:'src',l:T('MAIN BUS','HOVEDSKINNE'),s:T('electric','elektrisk'),src:bus,c:'el'},
+      {id:'tank',r:0,x:.5,k:'src',l:T('FLUID TANK','VÆSKETANK'),s:T('glycol (TKS)','glykol (TKS)'),src:true,c:'h1'},
+      {id:'exh',r:0,x:.88,k:'src',l:T('EXHAUST HEAT','EKSOSVARME'),s:T('hot air','varm luft'),src:true,c:'air'},
+      {id:'ph',r:1,x:.1,k:'ctl',l:T('PITOT HEAT','PITOTVARME'),s:F.pht?T('FAILED','SVIKTET'):A.ph?ON:OFF,off:!A.ph,fail:!!F.pht,c:'el'},
+      {id:'pump',r:1,x:.44,k:'pump',l:T('FLUID PUMP','VÆSKEPUMPE'),s:F.tkp?T('FAILED','SVIKTET'):A.tks?T('running','går'):OFF,off:!A.tks||!bus,fail:!!F.tkp,c:'h1'},
+      {id:'carb',r:1,x:.88,k:'ctl',l:T('CARB HEAT','FORGASSERVARME'),s:A.carb?ON:OFF,off:!A.carb,c:'air'},
+      {id:'pitot',r:2,x:.1,k:'use',l:T('PITOT PROBE','PITOTRØR'),w:T('Pitot probe','Pitotrør'),c:'el'},
+      {id:'wing',r:2,x:.36,k:'use',l:T('WING, TAIL\nPROPELLER','VINGE, HALE\nPROPELL'),s:T('fluid film','væskefilm'),w:T('Wing and tail leading edges, propeller','Forkanter på vinge og hale, propell'),c:'h1'},
+      {id:'ws',r:2,x:.62,k:'use',l:T('WINDSHIELD','FRONTRUTE'),s:T('spray bar','spraydyse'),w:T('Windshield','Frontrute'),c:'h1'},
+      {id:'ind',r:2,x:.88,k:'use',l:T('CARBURETTOR','FORGASSER'),s:T('induction air','innsugningsluft'),w:T('Carburettor (induction air)','Forgasser (innsugningsluft)'),c:'air'}];
+    const edges=[E('bus','ph',{c:'el'}),E('ph','pitot',{c:'el'}),E('tank','pump',{c:'h1'}),E('pump','wing',{c:'h1'}),E('pump','ws',{c:'h1'}),E('exh','carb',{c:'air'}),E('carb','ind',{c:'air'})];
+    const R=mk(nodes,edges,['bus','tank','exh']); R.info={pitot:!!R.lv.pitot,air:!!R.lv.wing,carb:!!R.lv.ind}; return R; }
+  if(cls==='tp'){
+    const el=!!(EL.lv.lbus||EL.lv.rbus||EL.lv.cbus);
+    const nodes=[
+      {id:'b1',r:0,x:.1,k:'src',l:T('BLEED 1','BLEED 1'),s:T('engine 1','motor 1'),src:true,fail:!!F.bl1||!!F.e1,c:'air'},
+      {id:'b2',r:0,x:.34,k:'src',l:T('BLEED 2','BLEED 2'),s:T('engine 2','motor 2'),src:true,c:'air'},
+      {id:'gb',r:0,x:.72,k:'src',l:T('DC BUSES','DC-SKINNER'),s:T('28 V DC','28 V DC'),src:el,c:'el'},
+      {id:'reg',r:1,x:.22,k:'valve',l:T('DE-ICE VALVE','AVISINGSVENTIL'),s:F.btm?T('FAILED','SVIKTET'):A.boots?T('timer cycling','timer går'):T('OFF: vacuum','AV: vakuum'),off:!A.boots,fail:!!F.btm,c:'air'},
+      {id:'ptm',r:1,x:.58,k:'ctl',l:T('PROP HEAT','PROPELLVARME'),s:A.prh?T('timer cycling','timer går'):OFF,off:!A.prh,c:'el'},
+      {id:'prb',r:1,x:.86,k:'ctl',l:T('PROBE AND\nW/S HEAT','SONDE- OG\nRUTEVARME'),s:A.ph?ON:OFF,off:!A.ph,c:'el'},
+      {id:'wing',r:2,x:.1,k:'use',l:T('WING\nBOOTS','VINGE-\nSTØVLER'),w:T('Wing de-ice boots','Avisingsstøvler på vingen'),c:'air'},
+      {id:'tail',r:2,x:.34,k:'use',l:T('TAIL\nBOOTS','HALE-\nSTØVLER'),w:T('Tail de-ice boots','Avisingsstøvler på halen'),c:'air'},
+      {id:'prop',r:2,x:.58,k:'use',l:T('PROP\nBLADES','PROPELL-\nBLADER'),w:T('Propeller blade heat','Varme i propellbladene'),c:'el'},
+      {id:'pit',r:2,x:.86,k:'use',l:T('PITOT, STALL\nVANE, W/S','PITOT, STALL-\nVARSLER, RUTE'),w:T('Pitot, stall-warning and windshield heat','Varme i pitot, stallvarsler og frontrute'),c:'el'}];
+    const edges=[E('b1','reg',{c:'air'}),E('b2','reg',{c:'air',par:true}),E('reg','wing',{c:'air'}),E('reg','tail',{c:'air'}),E('gb','ptm',{c:'el'}),E('gb','prb',{c:'el'}),E('ptm','prop',{c:'el'}),E('prb','pit',{c:'el'})];
+    const R=mk(nodes,edges,['b1','b2','gb']); R.info={boots:!!R.lv.wing,prop:!!R.lv.prop,probes:!!R.lv.pit,bleeds:(R.lv.b1?1:0)+(R.lv.b2?1:0),el}; return R; }
+  const ac=!!(EL.lv.ac1||EL.lv.ac2||EL.lv.acess), V=(on)=>on?T('valve open','ventil åpen'):T('valve closed','ventil stengt');
+  const nodes=[
+
+    {id:'e1',r:0,x:.2,k:'src',l:T('ENGINE 1','MOTOR 1'),s:T('hot air','varm luft'),src:true,fail:!!F.e1,c:'air'},
+    {id:'prb',r:0,x:.5,k:'use',l:T('PROBES AND\nWINDOWS','SONDER OG\nRUTER'),s:T('automatic','automatisk'),src:ac,w:T('Pitot, static, AOA and TAT probes; windshield and windows','Pitot-, statisk-, AOA- og TAT-sonder; frontrute og vinduer'),c:'el'},
+    {id:'e2',r:0,x:.8,k:'src',l:T('ENGINE 2','MOTOR 2'),s:T('hot air','varm luft'),src:true,c:'air'},
+    {id:'n1',r:1,x:.07,k:'use',l:T('NACELLE 1','NACELLE 1'),s:V(A.eai1&&!F.e1),w:T('Engine 1 inlet lip','Innløpsleppe motor 1'),c:'air'},
+    {id:'bv1',r:1,x:.32,k:'valve',l:T('BLEED 1','BLEED 1'),s:F.b1?T('FAULT: closed','FEIL: stengt'):V(true),fail:!!F.b1,c:'air'},
+    {id:'bv2',r:1,x:.68,k:'valve',l:T('BLEED 2','BLEED 2'),s:V(true),c:'air'},
+    {id:'n2',r:1,x:.93,k:'use',l:T('NACELLE 2','NACELLE 2'),s:V(A.eai2),w:T('Engine 2 inlet lip','Innløpsleppe motor 2'),c:'air'},
+    {id:'dL',r:2,x:.32,k:'bus',l:T('L DUCT','V KANAL'),c:'air'},
+    {id:'xb',r:2,x:.5,k:'valve',l:T('X-BLEED','X-BLEED'),s:A.xb?T('open','åpen'):T('closed','stengt'),off:!A.xb,c:'air'},
+    {id:'dR',r:2,x:.68,k:'bus',l:T('R DUCT','H KANAL'),c:'air'},
+    {id:'sl',r:3,x:.32,k:'use',l:T('L SLATS\n3 · 4 · 5','V SLATS\n3 · 4 · 5'),s:F.wv?T('VALVE STUCK','VENTIL FAST'):V(A.wai),warn:!!F.wv&&!!A.wai,w:T('Left wing leading edge (outboard slats)','Venstre vingeforkant (ytre slats)'),c:'air'},
+    {id:'sr',r:3,x:.68,k:'use',l:T('R SLATS\n3 · 4 · 5','H SLATS\n3 · 4 · 5'),s:V(A.wai),w:T('Right wing leading edge (outboard slats)','Høyre vingeforkant (ytre slats)'),c:'air'}];
+  const edges=[E('e1','n1',{g:!!A.eai1,c:'air'}),E('e2','n2',{g:!!A.eai2,c:'air'}),E('e1','bv1',{c:'air'}),E('e2','bv2',{c:'air'}),E('bv1','dL',{c:'air'}),E('bv2','dR',{c:'air',par:true}),E('dL','xb',{bi:true,c:'air'}),E('xb','dR',{bi:true,c:'air'}),
+    E('dL','sl',{g:!!A.wai&&!F.wv,c:'air'}),E('dR','sr',{g:!!A.wai,c:'air'})];
+  const R=mk(nodes,edges,['e1','e2','prb']);
+  R.info={wl:!!R.lv.sl,wr:!!R.lv.sr,n1:!!R.lv.n1,n2:!!R.lv.n2,probes:!!R.lv.prb,asym:!!A.wai&&(!!R.lv.sl!==!!R.lv.sr),ducts:(R.lv.dL?1:0)+(R.lv.dR?1:0)}; return R;
+}
+
+/* ---------- fire protection: detect, isolate, extinguish ---------- */
+function fire(cls,F,A,EL){
+  const on=!!F.fire;
+  if(cls==='pist'){
+    const nodes=[
+      {id:'sig',r:0,x:.2,k:'src',l:T('SMOKE, SMELL\nFLAMES','RØYK, LUKT\nFLAMMER'),s:T('no detector','ingen detektor'),src:on,c:'red'},
+      {id:'tank',r:0,x:.66,k:'src',l:T('FUEL TANK','DRIVSTOFFTANK'),src:true,c:'fuel'},
+      {id:'you',r:1,x:.2,k:'use',l:T('THE PILOT','PILOTEN'),s:T('is the detector','er detektoren'),c:'red'},
+      {id:'sel',r:1,x:.52,k:'valve',l:T('FUEL SELECTOR','DRIVSTOFFVELGER'),s:A.fsel?T('OFF','AV'):T('ON','PÅ'),off:!!A.fsel,c:'fuel'},
+      {id:'mix',r:1,x:.8,k:'valve',l:T('MIXTURE','BLANDING'),s:A.mixc?T('CUT-OFF','AVSTENGT'):T('RICH','RIK'),off:!!A.mixc,c:'fuel'},
+      {id:'cab',r:2,x:.2,k:'use',l:T('CABIN','KABIN'),s:A.heat?T('vents closed','ventiler stengt'):T('vents open','ventiler åpne'),warn:on&&!A.heat,src:true,c:'mech'},
+      {id:'eng',r:2,x:.66,k:'use',l:T('ENGINE\nCOMPARTMENT','MOTORROM'),c:'fuel'}];
+    const edges=[E('sig','you',{c:'red'}),E('tank','sel',{c:'fuel'}),E('sel','mix',{c:'fuel'}),E('mix','eng',{c:'fuel'})];
+    const R=mk(nodes,edges,['sig','tank','cab']); const fed=!!R.lv.eng, burning=on&&fed, eng=R.nodes.find(n=>n.id==='eng');
+    eng.s=burning?T('ON FIRE','BRANN'):on?T('starved: fire dies','sultet: brannen dør'):T('behind the firewall','bak brannskottet'); eng.fail=burning;
+    R.info={fire:on,burning,cabin:!!A.heat,det:'none'}; return R; }
+  const out=!!A.fpb&&!!A.ag1&&(!(cls==='jet'&&F.persist)||!!A.ag2), burning=on&&!out;
+  const ENG=burning?T('ON FIRE','BRANN'):on?T('fire out','brannen slokket'):T('normal','normal');
+  if(cls==='tp'){
+    const nodes=[
+      {id:'loop',r:0,x:.2,k:'src',l:T('FIRE LOOP','BRANNSLØYFE'),s:F.la?T('FAULT','FEIL'):T('round the engine','rundt motoren'),src:burning,fail:!!F.la,c:'red'},
+      {id:'bat',r:0,x:.68,k:'src',l:T('HOT BATTERY\nBUS','VARM BATTERI-\nSKINNE'),src:true,c:'el'},
+      {id:'det',r:1,x:.2,k:'bus',l:T('DETECTOR UNIT','DETEKTORENHET'),c:'red'},
+      {id:'fpb',r:1,x:.68,k:'ctl',l:T('FIRE HANDLE','BRANNHÅNDTAK'),s:A.fpb?T('PULLED','TRUKKET'):T('in','inne'),off:!A.fpb,c:'el'},
+      {id:'warn',r:2,x:.2,k:'use',l:T('FIRE WARNING','BRANNVARSEL'),s:T('bell and red light','klokke og rødt lys'),c:'red'},
+      {id:'sov',r:2,x:.5,k:'use',l:T('SHUT-OFF\nVALVES','STENGE-\nVENTILER'),s:T('fuel · hyd · bleed','fuel · hyd · bleed'),c:'el'},
+      {id:'ag1',r:2,x:.82,k:'ctl',l:T('BOTTLE','FLASKE'),s:A.ag1&&A.fpb?T('DISCHARGED','UTLØST'):A.fpb?T('armed','armert'):T('not armed','ikke armert'),off:!A.ag1,c:'el'},
+      {id:'eng',r:3,x:.82,k:'use',l:T('ENGINE 1\nNACELLE','MOTOR 1\nNACELLE'),s:ENG,fail:burning,c:'el'}];
+    const edges=[E('loop','det',{c:'red'}),E('det','warn',{c:'red'}),E('bat','fpb',{c:'el'}),E('fpb','sov',{c:'el'}),E('fpb','ag1',{c:'el'}),E('ag1','eng',{c:'el'})];
+    const R=mk(nodes,edges,['loop','bat']); R.info={fire:on,burning,warn:!!R.lv.warn,iso:!!R.lv.sov,agents:(A.fpb&&A.ag1)?1:0,det:F.la?'fault':'ok'}; return R; }
+  const nodes=[
+    {id:'la',r:0,x:.1,k:'src',l:T('LOOP A','SLØYFE A'),s:F.la?T('FAULT','FEIL'):T('sensor','føler'),src:burning,fail:!!F.la,c:'red'},
+    {id:'lb',r:0,x:.34,k:'src',l:T('LOOP B','SLØYFE B'),s:T('sensor','føler'),src:burning,c:'red'},
+    {id:'bat',r:0,x:.72,k:'src',l:T('HOT BUS','VARM SKINNE'),s:T('battery','batteri'),src:true,c:'el'},
+    {id:'fdu',r:1,x:.22,k:'bus',l:T('FIRE DETECTION\nUNIT','BRANNDETEKSJONS-\nENHET'),s:F.la?T('one loop: still valid','én sløyfe: fortsatt gyldig'):T('needs A and B','krever A og B'),c:'red'},
+    {id:'fpb',r:1,x:.72,k:'ctl',l:T('ENG 1 FIRE\nPUSHBUTTON','ENG 1 FIRE-\nKNAPP'),s:A.fpb?T('PUSHED','TRYKKET'):T('guarded','sikret'),off:!A.fpb,c:'el'},
+    {id:'warn',r:2,x:.14,k:'use',l:T('FIRE WARNING','BRANNVARSEL'),s:T('chime + red light','lyd + rødt lys'),c:'red'},
+    {id:'sov',r:2,x:.42,k:'use',l:T('SHUT-OFFS','AVSTENGING'),s:T('fuel · hyd · bleed','fuel · hyd · bleed'),c:'el'},
+    {id:'ag1',r:2,x:.67,k:'ctl',l:T('AGENT 1','AGENT 1'),s:A.ag1&&A.fpb?T('DISCHARGED','UTLØST'):A.fpb?T('armed','armert'):T('not armed','ikke armert'),off:!A.ag1,c:'el'},
+    {id:'ag2',r:2,x:.9,k:'ctl',l:T('AGENT 2','AGENT 2'),s:A.ag2&&A.fpb?T('DISCHARGED','UTLØST'):A.fpb?T('armed','armert'):T('not armed','ikke armert'),off:!A.ag2,c:'el'},
+    {id:'eng',r:3,x:.78,k:'use',l:T('ENGINE 1\nNACELLE','MOTOR 1\nNACELLE'),s:ENG,fail:burning,c:'el'}];
+  const edges=[E('la','fdu',{c:'red'}),E('lb','fdu',{c:'red',par:true}),E('fdu','warn',{c:'red'}),E('bat','fpb',{c:'el'}),E('fpb','sov',{c:'el'}),E('fpb','ag1',{c:'el'}),E('fpb','ag2',{c:'el'}),E('ag1','eng',{c:'el'}),E('ag2','eng',{c:'el',par:true})];
+  const R=mk(nodes,edges,['la','lb','bat']); R.info={fire:on,burning,warn:!!R.lv.warn,iso:!!R.lv.sov,agents:A.fpb?((A.ag1?1:0)+(A.ag2?1:0)):0,det:F.la?'one':'ok',persist:!!F.persist}; return R;
+}
+
 /* everything at once (electrics first: the others depend on it) */
 function solve(cls,st){
   const {F,A,Q,G}=st; const EL=elec(cls,F,A), HY=hyd(cls,F,A,EL);
-  return {elec:EL,hyd:HY,fuel:fuel(cls,F,A,Q,EL),fc:fc(cls,F,A,EL,HY),gear:gear(cls,F,A,G||{},EL,HY)};
+  return {elec:EL,hyd:HY,fuel:fuel(cls,F,A,Q,EL),fc:fc(cls,F,A,EL,HY),gear:gear(cls,F,A,G||{},EL,HY),ice:ice(cls,F,A,EL),fire:fire(cls,F,A,EL)};
 }
 
-root.SYC={T,net,defaults,CAP,BURN,UNIT,elec,hyd,feed,fuelStep,fuel,law,fc,gear,solve};
+root.SYC={T,net,defaults,CAP,BURN,UNIT,elec,hyd,feed,fuelStep,fuel,law,fc,gear,ice,fire,solve};
 })(typeof window!=='undefined'?window:globalThis);
