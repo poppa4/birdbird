@@ -31,9 +31,19 @@ def texim(path):
         try: TXC[path] = np.asarray(Image.open(path).convert('RGB').resize((128, 128), Image.BILINEAR), np.float64) / 255
         except Exception: TXC[path] = None
     return TXC[path]
-import trimesh
+import trimesh, mapbox_earcut
+def tris(P):
+    n = len(P)
+    if n == 3: return [(0, 1, 2)]
+    N = np.zeros(3)
+    for i in range(n): a, b = P[i], P[(i + 1) % n]; N += [(a[1] - b[1]) * (a[2] + b[2]), (a[2] - b[2]) * (a[0] + b[0]), (a[0] - b[0]) * (a[1] + b[1])]
+    ax = int(np.argmax(np.abs(N))); Q = np.delete(P, ax, axis=1).astype(np.float64)
+    try: t = mapbox_earcut.triangulate_float64(Q, np.array([n], np.uint32)).reshape(-1, 3)
+    except Exception: t = np.zeros((0, 3), int)
+    return [tuple(x) for x in t] if len(t) else [(0, j, j + 1) for j in range(1, n - 1)]
 P_, C_, I_ = [], [], []
 OV, OF = [], []
+UVS, GRP = [], []   # the model's own textures are kept: one group per texture
 nskip = 0
 for o in O:
     key = o['file'] + ':' + o['name']
@@ -55,13 +65,12 @@ for o in O:
         base = np.array(md.get('rgb', (0.8, 0.8, 0.8)))
         if tint is not None: base = np.array(tint)
         b0 = len(OV)
+        textured = tx is not None and tint is None
         for j in range(len(idx)):
             col = base.copy()
-            if tx is not None and tint is None:
-                u = (uvs[j][0] * rep[0] + off[0]) % 1; t = (1 - (uvs[j][1] * rep[1] + off[1])) % 1
-                col = col * tx[min(127, int(t * 128)), min(127, int(u * 128))]
             T = np.array([-P[j][2], P[j][1], P[j][0]]); OV.append(T); C_.append(col)
-        for j in range(1, len(idx) - 1): OF.append([b0, b0 + j, b0 + j + 1])
+            UVS.append((uvs[j][0] * rep[0] + off[0], 1 - (uvs[j][1] * rep[1] + off[1])) if textured else (0.0, 0.0)); GRP.append(o['tex'] if textured else 'flat')
+        for t in tris(P): OF.append([b0 + t[0], b0 + t[1], b0 + t[2]])
 print('faces kept', len(OF), 'on panels', nskip)
 OVa = np.array(OV); OFa = np.array(OF)
 # occluder for the bake: everything kept plus the panel planes (they block light too)
@@ -71,7 +80,7 @@ for k, c, n, up, x, W, H, dep in B:
     cs = [np.array([-p[2], p[1], p[0]]) for p in cs]; occV.append(np.array(cs)); occF.append(np.array([[nb, nb + 1, nb + 2], [nb, nb + 2, nb + 3]])); nb += 4
 OCC = trimesh.Trimesh(vertices=np.concatenate(occV), faces=np.concatenate(occF), process=False)
 RAY = trimesh.ray.ray_pyembree.RayMeshIntersector(OCC)
-rng = np.random.default_rng(7); NS = 32
+rng = np.random.default_rng(7); NS = 64
 def bake(P, N):
     out = np.zeros(len(P))
     for s0 in range(0, len(P), 4000):
@@ -93,20 +102,39 @@ for f in OFa:
 # faces are seen from both sides in the model: light the side that faces the eye
 EYE = np.array([-0.51, 1.28, 1.34])
 flip = np.einsum('ij,ij->i', FN, EYE - OVa) < 0; FN[flip] *= -1
-L = shade(bake(OVa, FN)); col = np.array(C_) * L[:, None] * np.array([0.98, 1.0, 1.04])
+# smooth shading: each vertex takes the mean normal of the faces that meet at its position within 50°, so curved parts
+# (glareshield, consoles, posts) read as surfaces instead of facets; hard edges stay hard
+key = np.round(OVa / 2e-4).astype(np.int64); _, grp = np.unique(key, axis=0, return_inverse=True); grp = grp.reshape(-1)
+order = np.argsort(grp); SN = FN.copy(); gs = np.split(order, np.flatnonzero(np.diff(grp[order])) + 1)
+for g in gs:
+    if len(g) < 2: continue
+    n = FN[g]; m = (n @ n.T) > np.cos(np.radians(50)); s_ = m.astype(float) @ n; SN[g] = s_ / np.maximum(1e-9, np.linalg.norm(s_, axis=1, keepdims=True))
+# light: baked sky (ambient occlusion) plus a soft key from above, behind and to the left of the captain, for form
+KEYD = np.array([-0.45, 0.8, 0.4]); KEYD /= np.linalg.norm(KEYD)
+L = shade(bake(OVa, SN)) * (0.8 + 0.32 * np.clip(SN @ KEYD, 0, 1)); col = np.array(C_) * L[:, None] * np.array([0.98, 1.0, 1.04])
 # wind every triangle towards the eye (the page then draws front faces only), and order them near to far: less overdraw
 for f in OFa:
     nn = np.cross(OVa[f[1]] - OVa[f[0]], OVa[f[2]] - OVa[f[0]])
     if nn @ (EYE - OVa[f[0]]) < 0: f[1], f[2] = f[2], f[1]
 OFa = OFa[np.argsort(np.linalg.norm(OVa[OFa].mean(1) - EYE, axis=1))]
-S = 16000; Pq = np.clip(np.round(OVa * S), -32767, 32767).astype(np.int16)
-N4 = np.zeros((len(Pq), 4), np.uint8); N4[:, :3] = np.clip(col / 1.12 * 255, 0, 255).round()
-Q = np.zeros((len(Pq), 2), np.uint16)
-I = OFa.reshape(-1); big = len(Pq) > 65535; I = I.astype(np.uint32 if big else np.uint16)
+S = 16000
 def pad(b): return b + b'\0' * ((-len(b)) % 4)
-parts = [Pq.tobytes(), Q.tobytes(), N4.tobytes(), I.tobytes()]
-hdr = {'S': S, 'lmax': 1.12, 'groups': [{'tex': 'flat', 'nv': int(len(Pq)), 'ni': int(len(I)), 'i32': bool(big), 'uv': [0, 0, 1, 1], 'off': 0, 'sizes': [len(pad(p)) for p in parts]}]}
-blob = b''.join(pad(p) for p in parts)
+GRPa = np.array(GRP, dtype=object); UVa = np.array(UVS, np.float64); hdr = {'S': S, 'lmax': 1.12, 'groups': []}; blob = b''
+fg = GRPa[OFa[:, 0]]
+for t in sorted(set(fg.tolist()), key=lambda x: (x != 'flat', x)):
+    F = OFa[fg == t]; vs, inv = np.unique(F.reshape(-1), return_inverse=True); I = inv.astype(np.int64)
+    Pq = np.clip(np.round(OVa[vs] * S), -32767, 32767).astype(np.int16); UV = UVa[vs]
+    lo, hi = UV.min(0), UV.max(0); span = np.maximum(hi - lo, 1e-9); Q = np.round((UV - lo) / span * 65535).astype(np.uint16)
+    N4 = np.zeros((len(Pq), 4), np.uint8); N4[:, :3] = np.clip(col[vs] / 1.12 * 255, 0, 255).round()
+    big = len(Pq) > 65535; I = I.astype(np.uint32 if big else np.uint16)
+    name = 'flat' if t == 'flat' else re.sub(r'[^a-z0-9]+', '-', os.path.splitext(os.path.basename(t))[0].lower())
+    parts = [Pq.tobytes(), Q.tobytes(), N4.tobytes(), I.tobytes()]; offb = len(blob); blob += b''.join(pad(p) for p in parts)
+    hdr['groups'].append({'tex': name, 'nv': int(len(Pq)), 'ni': int(len(I)), 'i32': bool(big), 'uv': [float(lo[0]), float(lo[1]), float(span[0]), float(span[1])], 'off': offb, 'sizes': [len(pad(p)) for p in parts]})
+    if t != 'flat':
+        im = Image.open(t).convert('RGB')
+        if im.width > 1024: im = im.resize((1024, round(1024 * im.height / im.width)), Image.LANCZOS)
+        im.save(os.path.join(OUT, f'b737-shell-{name}.jpg'), quality=84, optimize=True)
+    print(name, 'verts', len(Pq), 'tris', len(I) // 3)
 hdr['panels'] = {}
 for k, c, n, up, x, W, H, dep in B:
     nx, ny = (24, 10) if k == 'front' else (16, 16) if k == 'ovh' else (12, 18) if k == 'ped' else (12, 6)
@@ -120,4 +148,4 @@ for k, c, n, up, x, W, H, dep in B:
 h = json.dumps(hdr).encode(); h += b' ' * ((-len(h)) % 4)
 open(os.path.join(OUT, 'b737-shell.bin'), 'wb').write(struct.pack('<I', len(h)) + h + blob)
 Image.new('RGB', (4, 4), (255, 255, 255)).save(os.path.join(OUT, 'b737-shell-flat.jpg'), quality=90)
-print('verts', len(Pq), 'tris', len(I) // 3, 'bytes', 4 + len(h) + len(blob))
+print('bytes', 4 + len(h) + len(blob))

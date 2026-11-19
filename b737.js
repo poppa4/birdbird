@@ -377,10 +377,10 @@ window.SIMAC={T:window.B737T,H:1520,key:'bb-b737-start',img:['img/cockpits/b738-
   REGN:{ovhd:'Overhead',main:'Panel',mcp:'MCP and EFIS',eng:'Engine displays',cdu:'CDU',ped:'Pedestal'},
   DISP,draw:{pfd:DSP7.pfd,nd:DSP7.nd,eng:DSP7.eng,eng2:DSP7.eng2,mcdu:DSP7.mcdu,flapind:DSP7.flapind,gearl:DSP7.gearl},cdu:CDU,cduCls:'b737cdu',trainer:'fmc.html',cduHTML,detents:[0,45],
   d3:{VIEWS:{ovh:{c:[0.895,1.53,0.025],n:[-0.396,0.918,0],up:[0.918,0.396,0],W:0.74,H:0.76,r:[262.8,0,474.3,487.2]},
-      front:{c:[0.434,0.9608,0],n:[-0.96,-0.278,0],up:[0,1,0],W:1.56,H:0.4767,r:[0,495.6,1000,305.7]},
+      front:{c:[0.434,0.9608,0],n:[-0.96,-0.278,0],up:[0,1,0],W:1.56,H:0.4767,r:[0,495.6,1000,305.7],cut:[[[0,495.6],[0.0,610.3],[40.0,603.6],[45.0,576.3],[460.0,523.3],[465.0,495.6],[510.0,495.6],[515.0,522.9],[760.0,548.6],[765.0,552.6],[770.0,549.9],[940.0,575.6],[945.0,580.3],[950.0,605.9],[1000,613.3],[1000,495.6]]]},
       cdu:{c:[0.5705,0.6582,0.02],n:[-0.49,-0.872,0],up:[-0.872,0.49,0],W:0.58,H:0.2667,r:[314.2,809.9,371.7,170.9]},
       ped:{c:[1.0958,0.6,0.02],n:[0,-1,0],up:[-1,0,0],W:0.5,H:0.8283,r:[339.8,989.4,320.5,530.9]}},
-    eye:[1.34,1.28,0.51],pitch:-15,yaw:-0.16,phoneMain:[270,655,44],shell:'models/b737-shell.bin',shellTex:'models/b737-shell-',
+    eye:[1.34,1.28,0.51],pitch:-15,yaw:-0.16,phoneMain:[270,655,44],hi:{base:'img/cockpits/b738-3d-',keys:['ovh','front','ped','cdu']},shell:'models/b737-shell.bin',shellTex:'models/b737-shell-',
     look:{main:1,ovhd:[500,240,64,-0.02],ped:[500,1180,58,-0.2],mcp:[500,568,28],eng:[500,760,36,-0.25],cdu:[500,880,36,-0.2]}},
   speedsPane(el){ const K=X.K, A=X.A, r=(t,v)=>`<div class="row"><span>${t}</span><b>${v==null?'—':Math.round(v)+' kt'}</b></div>`, vr=CDU.vrefs(A);
     el.innerHTML='<div class="sgrp">Speeds at '+(A.gw/1000).toFixed(1)+' t</div>'+r('V1',K.d.v1)+r('VR',K.d.vr)+r('V2',K.d.v2)+vr.map(([f,v])=>r('VREF '+f,v)).join('')+r('VMO','340')+'<p class="pdisc">MMO 0.82. Flap placards: 1, 2, 5 250 kt · 10 210 · 15 200 · 25 190 · 30 175 · 40 162. Gear: extend 270 kt / .82, retract 235 kt.</p>'; },

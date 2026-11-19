@@ -662,18 +662,31 @@ function hit(wx,wy){
   return best; }
 const ptrs=new Map(); let drag=null, pinch=null;
 function pickW(e){ if(!D3) return toWorld(e.clientX,e.clientY); if(!CK) return [-1,-1]; const b=ST.getBoundingClientRect(); return CK.pick(((e.clientX-b.left)/b.width)*2-1,-(((e.clientY-b.top)/b.height)*2-1))||[-1,-1]; }
+/* 3D: the control under the pointer is outlined, and a press flashes it, so every click visibly lands on something */
+const HL=D3?(()=>{ const sv=document.createElementNS('http://www.w3.org/2000/svg','svg'); sv.setAttribute('class','hl3d'); sv.setAttribute('aria-hidden','true');
+  Object.assign(sv.style,{position:'absolute',inset:'0',width:'100%',height:'100%',pointerEvents:'none',zIndex:8,overflow:'visible'});
+  sv.innerHTML='<polygon class="hv" fill="rgba(120,200,255,.10)" stroke="rgba(150,215,255,.95)" stroke-width="1.6" stroke-linejoin="round" style="display:none"/><polygon class="fl" fill="rgba(255,255,255,.55)" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" style="display:none"/>'; ST.appendChild(sv);
+  const hv=sv.querySelector('.hv'), fl=sv.querySelector('.fl'); let hc=null, ft=0, fc=null;
+  const poly=(c,pad)=>{ if(!CK||!c||!c.r) return null; const r=c.r, b=ST.getBoundingClientRect(), pts=[];
+    for(const [x,y] of [[r[0]-pad,r[1]-pad],[r[0]+r[2]+pad,r[1]-pad],[r[0]+r[2]+pad,r[1]+r[3]+pad],[r[0]-pad,r[1]+r[3]+pad]]){ const q=CK.proj(x,y); if(!q) return null; pts.push(((q[0]+1)/2*b.width).toFixed(1)+','+((1-q[1])/2*b.height).toFixed(1)); } return pts.join(' '); };
+  return { hover(c){ hc=c; }, flash(c){ fc=c; ft=performance.now(); },
+    tick(){ const p=hc&&poly(hc,0.8); if(p){ hv.setAttribute('points',p); hv.style.display=''; } else hv.style.display='none';
+      const a=fc?1-(performance.now()-ft)/260:0; if(a>0){ const q=poly(fc,0.4); if(q){ fl.setAttribute('points',q); fl.style.display=''; fl.style.opacity=a.toFixed(2); } } else { fl.style.display='none'; fc=null; } } }; })():null;
 if(D3){ const PT=ST;
   PT.addEventListener('pointerdown',e=>{ if(e.target.closest('button,select,a,input,.more,.pill,.tpad,.tring')) return; ctx(); if(AC&&AC.state==='suspended') AC.resume();
     ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(ptrs.size===2){ const p=[...ptrs.values()]; pinch={d:Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)}; drag=null; return; }
     const [wx,wy]=pickW(e); const c=hit(wx,wy); try{ PT.setPointerCapture(e.pointerId); }catch(_){}
-    if(c){ e.preventDefault(); drag={c,x0:e.clientX,y0:e.clientY,wx,wy,moved:false,acc:0}; press(c,wx,wy,e); } else drag={look:true,x:e.clientX,y:e.clientY}; });
+    if(c){ e.preventDefault(); drag={c,x0:e.clientX,y0:e.clientY,wx,wy,moved:false,acc:0}; press(c,wx,wy,e); HL.flash(c); if(e.pointerType==='touch'&&navigator.vibrate) try{ navigator.vibrate(12); }catch(_){} } else drag={look:true,x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY}; });
   PT.addEventListener('pointermove',e=>{ if(ptrs.has(e.pointerId)) ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(pinch&&ptrs.size===2){ const p=[...ptrs.values()], d=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y); if(d>10&&CK){ CK.zoom(pinch.d/d); pinch.d=d; } return; }
-    if(!drag){ if(e.pointerType==='mouse'){ const [wx,wy]=pickW(e); const c=hit(wx,wy); PT.style.cursor=c?'pointer':'grab'; } return; }
+    if(!drag){ if(e.pointerType==='mouse'){ const [wx,wy]=pickW(e); const c=hit(wx,wy); PT.style.cursor=c?(c.t==='thr'?'ns-resize':c.t==='knob'||c.t==='sel'||c.t==='selF'?'ew-resize':'pointer'):'grab'; HL.hover(c); if(c!==hovC){ hovC=c; if(c&&c.t!=='mkey') tip(c); } } return; }
     if(drag.look){ if(CK) CK.drag(e.clientX-drag.x,e.clientY-drag.y); drag.x=e.clientX; drag.y=e.clientY; return; }
     dragCtl(drag,e,e.clientX-drag.x0,e.clientY-drag.y0); });
   const end=e=>{ ptrs.delete(e.pointerId); if(ptrs.size<2) pinch=null; if(drag){ if(drag.c) release(drag.c,drag); drag=null; } };
-  PT.addEventListener('pointerup',end); PT.addEventListener('pointercancel',end);
+  PT.addEventListener('pointerup',end); PT.addEventListener('pointercancel',end); PT.addEventListener('pointerleave',()=>HL.hover(null));
+  /* double click / double tap on the panel (not on a control): lean in to look closer there, and again to lean back */
+  { let lt=0, lx=0, ly=0; PT.addEventListener('pointerup',e=>{ if(e.target.closest('button,select,a,input,.more,.pill,.tpad,.tring,.mcduov')) return; const t=performance.now(), [wx,wy]=pickW(e);
+      if(t-lt<330&&Math.hypot(e.clientX-lx,e.clientY-ly)<24&&!hit(wx,wy)&&CK&&wx>=0){ CK.focus(wx,wy); lt=0; return; } lt=t; lx=e.clientX; ly=e.clientY; }); }
   PT.addEventListener('wheel',e=>{ if(e.target.closest('.more,.drawer')) return; e.preventDefault(); const [wx,wy]=pickW(e); const c=hit(wx,wy);
     if(c&&(c.t==='knob'||c.t==='sel'||c.t==='selF'||c.t==='cont'||c.t==='thr')){ turn(c,e.deltaY<0?1:-1,e.shiftKey); dirty.all=true; return; } if(CK) CK.zoom(e.deltaY<0?0.9:1.11); },{passive:false}); }
 VP.addEventListener('pointerdown',e=>{
@@ -874,7 +887,7 @@ let d3Last=0;
 function otwTick(){
   if(D3){ if(!CK||document.hidden) return; const now=performance.now(), dt=d3Last?Math.min(0.1,(now-d3Last)/1000):0.016; d3Last=now; CK.updCam(dt);
     const c=Math.cos(M.psi), s=Math.sin(M.psi), hx=CK.cam.position, fw=5-hx.z; otwS.N=M.N+fw*c-hx.x*s; otwS.E=M.E+fw*s+hx.x*c; otwS.h=M.h+3.7-1.55+(hx.y-0.63); otwS.th=M.th; otwS.phi=M.phi; otwS.psi=M.psi;
-    const d0=Math.min(devicePixelRatio||1,2), zoomed=CK.fov()<45, dpr=zoomed?d0:Math.min(d0,[CK.mobile||PHONE?1.25:1.5,0.95,0.7][GOV.lvl]); /* the wide view at about King Air resolution or less; full Retina when zoomed in to read (that is where the text is) */ OTW.render3d(otwS,CK.qHead(),CK.fov(),dpr,null,R=>CK.draw(R)); if(GOV.lvl!==(OTW.lvl||0)) OTW.quality(GOV.lvl===2?2:GOV.lvl>0); return; }
+    const d0=Math.min(devicePixelRatio||1,2), dpr=Math.max(Math.min(1,d0),d0*[1,0.85,0.72][GOV.lvl]); /* the wide view at about King Air resolution or less; full Retina when zoomed in to read (that is where the text is) */ OTW.render3d(otwS,CK.qHead(),CK.fov(),dpr,null,R=>CK.draw(R)); HL&&HL.tick(); if(GOV.lvl!==(OTW.lvl||0)) OTW.quality(GOV.lvl===2?2:GOV.lvl>0); return; }
   if(!otwReady||OTWH<8||UI.otw===false||!UI.otwLive||document.hidden) return; const n=GOV.lvl+2; if(++otwSkip%n) return; /* the outside view at 30 Hz (20, 15 when the frame budget is tight), the panel at the full rate: as the King Air */
   const c=Math.cos(M.psi), s=Math.sin(M.psi); otwS.N=M.N+5*c+0.5*s; otwS.E=M.E+5*s-0.5*c; otwS.h=M.h+2.3; otwS.th=M.th; otwS.phi=M.phi; otwS.psi=M.psi; OTW.render(otwS,''); if(GOV.lvl!==(OTW.lvl||0)) OTW.quality(GOV.lvl===2?2:GOV.lvl>0); }
 
