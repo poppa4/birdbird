@@ -386,6 +386,10 @@ body.depth-instructor .memo h3{font-size:20px}
 .t3g .seg.grid.confseg{display:grid;grid-template-columns:repeat(3,1fr)}
 #t3Sp{grid-template-columns:1fr 1fr}
 #pConfH,#t3ConfH{font-variant-numeric:tabular-nums}
+.take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px}
+.take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
+.take li::before{content:"";position:absolute;left:4px;top:19px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
+.take li b{font-weight:600}
 .kcgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:8px}
 .kcgrid{counter-reset:kc}.kcgrid>.kc{counter-increment:kc}.kc .kh{display:flex;align-items:baseline;gap:7px;margin-top:2px}.kc .kn{flex:none;font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--smoke,var(--accent));min-width:1.6em;letter-spacing:.02em}.kc .kn::before{content:counter(kc,decimal-leading-zero)}.kc .kh h3{margin:0}.kladder{margin:6px 0 0;color:var(--ink-2);font-size:13px;max-width:80ch}.kladder b{color:var(--ink);font-weight:600}
 .kc{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;display:flex;flex-direction:column;gap:5px;min-width:0}
@@ -452,6 +456,7 @@ body.depth-instructor .memo h3{font-size:20px}
     <section class="profile" id="concepts" data-step="understand">
       <div class="phead"><div><h2 id="kcT">Key concepts</h2><p class="kintro" id="kcL"></p><p class="kladder" id="kcLad"></p></div></div>
       <div class="kcgrid" id="kcGrid"></div>
+      <div id="corePic"></div>
     </section>
 
     <section class="profile" id="profil" data-step="explore">
@@ -671,6 +676,11 @@ body.depth-instructor .memo h3{font-size:20px}
       <div class="gtxt" id="geTxt"></div>
     </section>
 
+    <section class="profile" id="keypts" data-step="debrief">
+      <div class="phead"><div><h2 id="kpT">Key points</h2></div></div>
+      <ul class="take" id="kpList"></ul>
+    </section>
+
     <section class="profile" id="debrief" data-step="debrief">
       <div class="phead"><div><h2 id="dbT">In the aircraft</h2><p id="dbL"></p></div></div>
       <div class="dbgrid" id="dbGrid"></div>
@@ -763,7 +773,10 @@ window.addEventListener('error',function(e){ var b=document.getElementById('errb
 <script src="three.min.js?v=128"></script>
 <script src="tunnel3d.js?v=4"></script>
 <script src="cfd3d.js?v=7"></script>
-<script src="lab.js?v=55"></script>
+<script src="lab.js?v=56"></script>
+<script src="concepts.js?v=5"></script>
+<script src="corepic.js?v=13"></script>
+<script src="pic-tunnel.js?v=1"></script>
 <script src="chartnote.js?v=3"></script>
 <script src="physics.js?v=14"></script>
 <script src="section.js?v=12"></script>
@@ -4130,7 +4143,7 @@ const concepts=window.__tunConcepts;
 /* arrow and label helpers for the small SVG drawings in the stall cards (they were only defined in the key-concepts script above, so the deep-stall drawing threw and the cards stayed empty) */
 const ar=(x1,y1,x2,y2,c,w)=>{ const a=Math.atan2(y2-y1,x2-x1), h=6; return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w||1.6}"/><path d="M${x2},${y2} L${(x2-h*Math.cos(a-0.45)).toFixed(1)},${(y2-h*Math.sin(a-0.45)).toFixed(1)} L${(x2-h*Math.cos(a+0.45)).toFixed(1)},${(y2-h*Math.sin(a+0.45)).toFixed(1)} Z" fill="${c}"/>`; };
 const tx=(x,y,t,c,a)=>`<text x="${x}" y="${y}" fill="${c||'#c9d2da'}" font-size="9" font-family="Public Sans,system-ui,sans-serif"${a?` text-anchor="${a}"`:''}>${t}</text>`;
-el('kcGrid').addEventListener('click',e=>{ const b=e.target.closest('.kgo'); if(!b) return; if(window.__tunGo) window.__tunGo(b.dataset.k); else { const t=el(b.dataset.k==='vs'?'stall':'profil'); if(t) t.scrollIntoView({behavior:'smooth'}); } });
+el('kcGrid').addEventListener('click',e=>{ const b=e.target.closest('.kgo'); if(!b) return; if(window.KCS&&KCS.spot){ const tg={aoa:'profil',crit:'profil',stag:'profil',bl:'profil',tr:'profil',sep:'profil',cp:'profil',ice:'profil',clcd:'t3',ld:'t3',hl:'t3',ind:'t3',dump:'t3',span:'stall',vs:'stall',ge:'ground'}[b.dataset.k]; KCS.spot(b.closest('.kc'),tg?document.getElementById(tg):null,''); } if(window.__tunGo) window.__tunGo(b.dataset.k); else { const t=el(b.dataset.k==='vs'?'stall':'profil'); if(t) t.scrollIntoView({behavior:'smooth'}); } });
 
 /* ---- stall: kritisk α, stallfart med masse, lastfaktor og konfigurasjon ---- */
 /* følger flyet som er valgt i 3D-tunnelen (A320, King Air B200, DA42) */
@@ -4251,6 +4264,16 @@ setInterval(()=>{ if(ready&&window.__tun&&document.visibilityState==='visible') 
 
 /* ---- i flyet ---- */
 function debrief(){
+  el('kpT').textContent=L({en:'Key points',no:'Det viktigste'});
+  el('kpList').innerHTML=[
+   {en:'<b>The wing only knows the angle of attack.</b> Lift depends on α and speed, not on where the nose points.',no:'<b>Vingen kjenner bare anstigningsvinkelen.</b> Løftet avhenger av α og fart, ikke av hvor nesen peker.'},
+   {en:'<b>Lift is mostly suction on the top surface.</b> CL rises about 0.1 per degree until the critical α.',no:'<b>Løft er mest sug på oversiden.</b> CL øker omtrent 0,1 per grad fram til kritisk α.'},
+   {en:'<b>The stall comes at the critical α</b>, at any speed, weight or attitude. Recover by reducing α first.',no:'<b>Stallen kommer ved kritisk α</b>, uansett fart, vekt eller stilling. Gjenvinn ved å redusere α først.'},
+   {en:'<b>Stall speed rises with √mass and √load factor</b> (60° bank: + 41 %) and falls when flaps raise CL max.',no:'<b>Stallfarten øker med √masse og √lastfaktor</b> (60° krengning: + 41 %) og faller når klaff øker CL maks.'},
+   {en:'<b>Flaps:</b> more lift at the same α, lower critical α. <b>Slats:</b> higher critical α. Both add drag.',no:'<b>Klaff:</b> mer løft ved samme α, lavere kritisk α. <b>Slats:</b> høyere kritisk α. Begge gir motstand.'},
+   {en:'<b>Induced drag is the price of lift:</b> largest when slow, heavy and clean, smaller in ground effect.',no:'<b>Indusert motstand er prisen for løft:</b> størst når du er treg, tung og ren, mindre i bakkeeffekt.'},
+   {en:'<b>Ice, frost or dirt on the leading edge</b> lowers CL max and the critical α: the wing stalls earlier, sometimes before the warning.',no:'<b>Is, rim eller smuss på forkanten</b> senker CL maks og kritisk α: vingen staller tidligere, noen ganger før varselet.'}
+  ].map(x=>`<li>${L(x)}</li>`).join('');
   el('dbT').textContent=L({en:'In the aircraft',no:'I flyet'});
   el('dbL').textContent=L({en:'What the models mean on the flight deck.',no:'Hva modellene betyr i cockpit.'});
   el('dbGrid').innerHTML=[

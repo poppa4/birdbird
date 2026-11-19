@@ -10,6 +10,7 @@
      aspect          width/height of the picture (default 16/8.4); aspectSm the same below 600 px
      dwell           seconds on each step while playing (default 5.5)
      foot            {en,no}  small note under the list (scale, model)
+     narrow          true = the stacked (phone) layout at any width, for a narrow column
    CORE.U holds shared drawing helpers (text, pills, arrows, easing, a side-view airliner).
    Own design; illustrative teaching values only. */
 (function(){
@@ -72,6 +73,21 @@ body.depth-instructor .cpic-g{grid-template-columns:minmax(0,1fr) 360px}
  .cpic-cap .go{margin-top:6px;font-size:13px;font-weight:600;color:#F29AC8;background:none;border:0;padding:4px 0;cursor:pointer}
  .cpic-tr{flex-wrap:wrap}.cpic-tr .sc{order:5;flex-basis:100%}
 }
+/* cfg.narrow: the stacked layout at any width (for a narrow column, as in tunnel.html) */
+.cpic.cpic-narrow .cpic-g{grid-template-columns:minmax(0,1fr)}
+.cpic.cpic-narrow .cpic-ls{border-left:0;border-top:1px solid rgba(255,255,255,.07)}
+.cpic.cpic-narrow .cpic-ls ol{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px 4px}
+.cpic.cpic-narrow .cpic-ls li>button{display:block;padding:0;border:0;width:auto}
+.cpic.cpic-narrow .cpic-ls li>button b,.cpic.cpic-narrow .cpic-ls li p,.cpic.cpic-narrow .cpic-ls li .go{display:none!important}
+.cpic.cpic-narrow .cpic-ls li.c-on>button{background:none}
+.cpic.cpic-narrow .cpic-ls li i{width:30px;height:30px;font-size:12px}
+.cpic.cpic-narrow .cpic-cap{display:block;padding:4px 14px 12px}
+.cpic.cpic-narrow .cpic-cap b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:16px;color:#fff;margin:2px 0 4px}
+.cpic.cpic-narrow .cpic-cap p{margin:0;font-size:14px;line-height:1.5;color:#C9D2DA}
+.cpic.cpic-narrow .cpic-cap p em{font-style:normal;color:#fff;font-weight:600}
+.cpic.cpic-narrow .cpic-cap .go{margin-top:6px;font-size:13px;font-weight:600;color:#F29AC8;background:none;border:0;padding:4px 0;cursor:pointer}
+.cpic.cpic-narrow .cpic-tr{flex-wrap:wrap}.cpic.cpic-narrow .cpic-tr .sc{order:5;flex-basis:100%}
+
 @media (pointer:coarse){.cpic-tr button{min-height:44px}}
 `;
 const sty=document.createElement('style'); sty.textContent=css; document.head.appendChild(sty);
@@ -233,7 +249,7 @@ const U={FONT,C,clamp,lerp,ease,at,txt,pill,arrow,rr,jet,cumulus,deck};
 function mount(host,cfg){
   if(!host) return null;
   const n=cfg.steps.length, asp=cfg.aspect||16/8.4, dwell=(cfg.dwell||5.5)*1000;
-  const root=document.createElement('div'); root.className='cpic'; root.id=cfg.id||'core';
+  const root=document.createElement('div'); root.className='cpic'+(cfg.narrow?' cpic-narrow':''); root.id=cfg.id||'core';
   root.innerHTML=`<div class="cpic-h"><span class="k"></span><h3></h3><p></p></div>
   <div class="cpic-g"><div class="cpic-st"><canvas tabindex="0"></canvas>
     <div class="cpic-tr"><button type="button" class="pv" aria-label="Previous step">‹</button><button type="button" class="pl"></button><button type="button" class="nx" aria-label="Next step">›</button>

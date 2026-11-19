@@ -5,6 +5,7 @@
    (a preset button) or a function; to is the selector of the model to scroll to and highlight.
    dp: true puts the card in .deep (hidden in Short). Same look as tunnel.html's .kc cards.
    Cards are numbered 01, 02 … in order (CSS counter, so hidden deep cards leave no gap): order them basics first.
+   see ({en,no}): what to look at in the model; shown in the caption that follows the card into the model (KCS.spot).
    href + hl ({en,no}) instead of click/to: the button links to the place in another lab that shows it (use other.html#kc-<key>).
    An item {grp:{en,no}, sub?:{en,no}} is a full-width group heading inside the ladder; it is not numbered. */
 (function(){
@@ -43,10 +44,28 @@ const css=`
 .kfull>div{margin-top:12px}
 @keyframes kcflash{0%{box-shadow:0 0 0 0 rgba(255,214,102,.0)}20%{box-shadow:0 0 0 3px rgba(255,214,102,.95)}100%{box-shadow:0 0 0 3px rgba(255,214,102,0)}}
 .kc-flash{animation:kcflash 1.8s ease-out 1}
+/* the caption that follows a card into the model: which card, and what to look at */
+.kc-spot{position:fixed;z-index:60;display:flex;align-items:flex-start;gap:12px;box-sizing:border-box;padding:10px 12px 10px 14px;background:#fff;border:1px solid var(--rule,#C6D0D3);border-left:4px solid var(--accent,#9A1E68);border-radius:0 8px 8px 0;box-shadow:0 8px 28px rgba(16,28,38,.22)}
+.kc-spot[hidden]{display:none}
+.kc-spot .n{flex:none;font-family:var(--f-mono);font-size:12px;font-weight:600;color:#fff;background:var(--accent,#9A1E68);border-radius:4px;padding:3px 6px;margin-top:1px}
+.kc-spot .tx{min-width:0;flex:1}
+.kc-spot .k{display:block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3,#6A7884)}
+.kc-spot b.t{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:700;font-size:16px;line-height:1.25;color:var(--ink,#13202A);margin:1px 0 2px}
+.kc-spot p{margin:0;font-size:14px;line-height:1.45;color:var(--ink,#13202A)}
+.kc-spot p b{font-weight:600}
+.kc-spot .x{flex:none;background:none;border:0;font-size:20px;line-height:1;color:var(--ink-2,#4C5B66);cursor:pointer;padding:2px 6px;min-width:32px;min-height:32px}
+.kc-spot .x:hover{color:var(--ink,#13202A)}
+@keyframes kcspot{0%{transform:translateY(-6px);opacity:0}100%{transform:none;opacity:1}}
+.kc-spot.in{animation:kcspot .22s ease-out 1}
+@media (max-width:640px){.kc-spot{padding:8px 8px 8px 10px;gap:8px}.kc-spot b.t{font-size:15px}.kc-spot p{font-size:13.5px}}
+@media (prefers-reduced-motion:reduce){.kc-spot.in{animation:none}}
 `;
 const sty=document.createElement('style'); sty.textContent=css; document.head.appendChild(sty);
 const L=o=>window.LAB?LAB.L(o):o.en;
-const split=s=>{ const i=s.search(/\.\s/); return i>0&&i<s.length-2?[s.slice(0,i+1),s.slice(i+2)]:[s,'']; };
+/* the card shows one short sentence; the rest goes under "More". A first sentence over about 26 words is cut at its first semicolon. */
+const split=s=>{ const i=s.search(/\.\s/); let a=i>0&&i<s.length-2?s.slice(0,i+1):s, b=i>0&&i<s.length-2?s.slice(i+2):'';
+  if(a.replace(/<[^>]+>/g,'').split(/\s+/).length>26){ const j=a.indexOf('; '); if(j>20){ const r=a.slice(j+2); b=r.charAt(0).toUpperCase()+r.slice(1)+(b?' '+b:''); a=a.slice(0,j)+'.'; } }
+  return [a,b]; };
 /* SVG helpers (same vocabulary as the tunnel's illustrations) */
 const sv=b=>`<svg viewBox="0 0 200 64" aria-hidden="true">${b}</svg>`;
 const tx=(x,y,s,c,a,sz)=>`<text x="${x}" y="${y}" fill="${c||'#c9d2da'}" font-size="${sz||8}" font-family="IBM Plex Mono, monospace" text-anchor="${a||'start'}">${s}</text>`;
@@ -61,10 +80,97 @@ function render(grid,items){
   const m=/^#kc-([\w-]+)$/.exec(location.hash); if(m){ const go=()=>{ const b=grid.querySelector(`.kgo[data-k="${m[1]}"]`); if(b) b.click(); }; setTimeout(go,400); }
   grid.addEventListener('click',e=>{ const b=e.target.closest('.kgo'); if(!b) return; const it=items.find(x=>x.k===b.dataset.k); if(!it) return;
     if(typeof it.click==='function') it.click(); else if(it.click){ const c=document.querySelector(it.click); if(c) c.click(); }
-    const t=it.to?document.querySelector(it.to):null; if(!t) return;
+    const t=it.to?document.querySelector(it.to):null; { const sx=it.see||seeOf(it.k); spot(b.closest('.kc'),t?(t.closest('.view')||t):null,sx?L(sx):''); } if(!t) return;
     const tg=t.closest('.view')||t; tg.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:tg.getBoundingClientRect().height>innerHeight-120?'start':'center'}); /* a model taller than the screen: show its top (tabs) below the sticky step bar */
     tg.classList.remove('kc-flash'); void tg.offsetWidth; tg.classList.add('kc-flash'); });
 }
+/* What to look at in the model, for cards that open the same picture as another card (key: page file, card key).
+   A card may also carry its own see:{en,no}. Without either, the caption repeats the card's first sentence. */
+const SEE={
+ forces:{lift:{en:'Find the arrow marked <b>L</b>. It stands at right angles to the dashed flight path, not straight up.',no:'Finn pilen merket <b>L</b>. Den står vinkelrett på den stiplede flygebanen, ikke rett opp.'},
+  weight:{en:'Find the arrow marked <b>W</b>. It points straight down to the ground, whatever the aircraft does.',no:'Finn pilen merket <b>W</b>. Den peker rett ned mot bakken, uansett hva flyet gjør.'},
+  td:{en:'Find <b>T</b> (forwards) and <b>D</b> (backwards) along the flight path. In steady level flight they are the same length.',no:'Finn <b>T</b> (framover) og <b>D</b> (bakover) langs flygebanen. I stabil, vannrett flyging er de like lange.'},
+  steady:{en:'Look at the small <b>force polygon</b> at the top right. When it closes, the four forces balance and the flight is steady.',no:'Se på den lille <b>kraftpolygonen</b> øverst til høyre. Når den lukker seg, er de fire kreftene i balanse og flygingen stabil.'},
+  glide:{en:'Power is at zero. Read <b>Glide ratio</b> under the picture: it is the same number as lift ÷ drag.',no:'Effekten står på null. Les <b>Glidetall</b> under bildet: det er samme tall som løft ÷ motstand.'},
+  gwind:{en:'A 20 kt headwind is set. The glide through the air is unchanged, but the <b>distance over the ground</b> under the picture is shorter.',no:'20 kt motvind er satt. Glidet gjennom luften er uendret, men <b>distansen over bakken</b> under bildet er kortere.'}},
+ stability:{cg:{en:'Find the <b>diamond</b> on the chord line under the aircraft: that is the CG. Drag it and watch the tail force change.',no:'Finn <b>diamanten</b> på kordelinjen under flyet: det er CG. Dra den og se halekraften endre seg.'},
+  mac:{en:'Look at the <b>scale under the aircraft</b>: 0 % is the leading edge of the mean chord, 100 % the trailing edge. The CG is read on it.',no:'Se på <b>skalaen under flyet</b>: 0 % er forkanten av middelkorden, 100 % bakkanten. CG leses av på den.'},
+  tail:{en:'Three arrows: wing lift up, weight down at the CG, and a small <b>tail down-force</b> at the back that balances the two.',no:'Tre piler: vingeløft opp, vekt ned i CG, og en liten <b>nedadrettet halekraft</b> bak som balanserer de to.'}},
+ pressure:{height:{en:'The aircraft follows <b>one pressure level</b> (the pink line). Pressure falls about 1 hPa for every 27 ft, so that level lies lower where the pressure is low.',no:'Flyet følger <b>ett trykknivå</b> (den rosa linjen). Trykket faller omtrent 1 hPa for hver 27 ft, så nivået ligger lavere der trykket er lavt.'},
+  q:{en:'Compare <b>indicated</b> with <b>true</b> at the destination: with the departure QNH still set, the altimeter reads too high.',no:'Sammenlign <b>indikert</b> med <b>virkelig</b> ved destinasjonen: med avgangens QNH fortsatt satt, viser høydemåleren for høyt.'},
+  grad:{en:'Only the <b>pressure gradient force</b> is switched on: the air is pushed straight from high to low, across the isobars.',no:'Bare <b>trykkgradientkraften</b> er slått på: luften skyves rett fra høyt til lavt trykk, på tvers av isobarene.'},
+  cor:{en:'<b>Coriolis</b> is added: the moving air is turned to the right (northern hemisphere) until it flows along the isobars.',no:'<b>Coriolis</b> er lagt til: luften i bevegelse dreies mot høyre (nordlige halvkule) til den strømmer langs isobarene.'},
+  geo:{en:'The pink arrow at the probe is the <b>geostrophic wind</b>: along the isobars, low pressure on its left, faster where the isobars are closer.',no:'Den rosa pilen ved sonden er den <b>geostrofiske vinden</b>: langs isobarene, lavtrykk til venstre, raskere der isobarene ligger tettere.'}},
+ clouds:{dalr:{en:'Follow the <b>rising parcel</b> line from the ground up to the cloud base: on that stretch it cools 3 °C per 1000 ft.',no:'Følg linjen for den <b>stigende luftpakken</b> fra bakken opp til skybasen: på den strekningen kjøles den 3 °C per 1000 ft.'},
+  salr:{en:'<b>Above the cloud base</b> the parcel line bends: in cloud it cools more slowly, about 1.8 °C per 1000 ft.',no:'<b>Over skybasen</b> knekker pakkelinjen: i sky kjøles den saktere, omtrent 1,8 °C per 1000 ft.'},
+  forms:{en:'Compare the shapes: the <b>heaped</b> clouds (CU, CB) grow upwards, the <b>layer</b> clouds (ST, AS, CS) spread sideways.',no:'Sammenlign formene: <b>haugskyene</b> (CU, CB) vokser oppover, <b>lagskyene</b> (ST, AS, CS) brer seg sidelengs.'},
+  lev:{en:'Read the <b>three bands</b>: high above about 20 000 ft, middle 6 500–20 000 ft, low below 6 500 ft.',no:'Les de <b>tre båndene</b>: høye over omtrent 20 000 ft, middels 6 500–20 000 ft, lave under 6 500 ft.'},
+  radfog:{en:'Press <b>Run the night</b>: the temperature line sinks to the dew point line, and fog forms around sunrise.',no:'Trykk <b>Kjør natten</b>: temperaturlinjen synker ned til duggpunktlinjen, og tåken dannes rundt soloppgang.'},
+  vis:{en:'Read <b>Visibility</b> and <b>Weather</b> in the strip at the top: mist (BR) first, fog (FG) once it is below 1000 m.',no:'Les <b>Sikt</b> og <b>Vær</b> i stripen øverst: tåkedis (BR) først, tåke (FG) når den er under 1000 m.'}},
+ hazards:{scw:{en:'The pale blue part of the cloud holds <b>supercooled drops</b>: liquid water that is colder than 0 °C.',no:'Den lyseblå delen av skyen inneholder <b>underkjølte dråper</b>: flytende vann som er kaldere enn 0 °C.'},
+  band:{en:'Find the two dashed lines, <b>0 °C and −20 °C</b>. Most icing happens in cloud between them.',no:'Finn de to stiplede linjene, <b>0 °C og −20 °C</b>. Mest ising skjer i sky mellom dem.'},
+  clear:{en:'Large drops run back before they freeze: glossy <b>clear ice</b> builds on and behind the leading edge.',no:'Store dråper renner bakover før de fryser: blank <b>klaris</b> bygger seg på og bak forkanten.'},
+  where:{en:'The ice starts on the <b>leading edge</b>, the thinnest part, and reaches back past the protected area.',no:'Isen starter på <b>forkanten</b>, den tynneste delen, og når bakover forbi det beskyttede området.'},
+  aero:{en:'Compare the <b>two lift curves</b> on the right: with ice the curve peaks lower and earlier, so the wing can stall before the warning.',no:'Sammenlign de <b>to løftkurvene</b> til høyre: med is topper kurven lavere og tidligere, så vingen kan stalle før varselet.'},
+  deice:{en:'Read the table <b>Ground de-icing and anti-icing</b>: Type I removes the ice, Type II and IV protect for the holdover time.',no:'Les tabellen <b>Avising og anti-ising på bakken</b>: Type I fjerner isen, Type II og IV beskytter i holdover-tiden.'},
+  scale:{en:'Read the table <b>Turbulence intensity</b>: light, moderate, severe and extreme, by what happens in the aircraft.',no:'Les tabellen <b>Turbulensintensitet</b>: lett, moderat, kraftig og ekstrem, etter hva som skjer i flyet.'},
+  ttypes:{en:'One section, three kinds: bumps under the <b>cumulus</b>, waves and a rotor behind the <b>ridge</b>, and CAT beside the <b>jet core</b> at the top.',no:'Ett snitt, tre typer: humper under <b>cumulusen</b>, bølger og rotor bak <b>fjellryggen</b>, og CAT ved <b>jetkjernen</b> øverst.'},
+  wave:{en:'Behind the ridge the air goes up and down in <b>waves</b>, with lens-shaped clouds on the crests and a <b>rotor</b> underneath.',no:'Bak fjellryggen går luften opp og ned i <b>bølger</b>, med linseformede skyer på toppene og en <b>rotor</b> under.'}},
+ gennav:{tmc:{en:'Read down the left column: heading <b>true</b>, <b>magnetic</b> and <b>compass</b>. Each differs from the one above by variation, then deviation.',no:'Les nedover venstre kolonne: kurs <b>sann</b>, <b>magnetisk</b> og <b>kompass</b>. Hver avviker fra den over med variasjon, så deviasjon.'},
+  var:{en:'Move the <b>Variation</b> slider: the magnetic heading changes, the true heading does not. East is least, west is best.',no:'Flytt glideren <b>Variasjon</b>: magnetisk kurs endres, sann kurs gjør det ikke. Øst trekkes fra, vest legges til.'},
+  gc:{en:'Pink is the <b>great circle</b> (shortest), dashed is the <b>rhumb line</b> (constant track). Read the two distances at the top left.',no:'Rosa er <b>storsirkelen</b> (kortest), stiplet er <b>loksodromen</b> (konstant kurs). Les de to distansene øverst til venstre.'},
+  proj:{en:'Switch <b>Globe, Mercator, Lambert, Polar</b> above the chart: on Mercator the rhumb line is straight, on Lambert the great circle nearly is.',no:'Bytt mellom <b>Globe, Mercator, Lambert, Polar</b> over kartet: på Mercator er loksodromen rett, på Lambert er storsirkelen det nesten.'},
+  conv:{en:'On the Lambert chart the meridians lean towards each other. Read <b>Convergency</b> at the top left: the great-circle track changes by that much.',no:'På Lambert-kartet heller meridianene mot hverandre. Les <b>Konvergens</b> øverst til venstre: storsirkelkursen endres med så mye.'},
+  time:{en:'Count the <b>meridians</b> between the two places: every 15° of longitude is one hour of local time, every degree four minutes.',no:'Tell <b>meridianene</b> mellom de to stedene: hver 15° lengde er én time lokal tid, hver grad fire minutter.'}},
+ gnss:{cdi:{en:'Approach phase: read <b>CDI full scale</b> above the map: 0.30 NM here, against 1 NM in terminal and 2 NM en route.',no:'Innflygingsfase: les <b>CDI fullt utslag</b> over kartet: 0,30 NM her, mot 1 NM i terminalområdet og 2 NM underveis.'},
+  min:{en:'Under <b>Approach</b> choose LNAV, LNAV/VNAV or LPV and watch the profile gain or lose its glide path.',no:'Under <b>Innflyging</b> velger du LNAV, LNAV/VNAV eller LPV og ser profilen få eller miste glidebanen.'}},
+ holding:{ils:{en:'Upper instrument: the <b>localiser</b> needle. Lower instrument: the <b>glide slope</b>. In the profile the aircraft follows the 3° line.',no:'Øvre instrument: <b>localiser</b>-nålen. Nedre instrument: <b>glidebanen</b>. I profilen følger flyet 3°-linjen.'},
+  min:{en:'Find the dashed line marked <b>DA</b> in the profile at the bottom: at that altitude you either see the runway or go around.',no:'Finn den stiplede linjen merket <b>DA</b> i profilen nederst: i den høyden ser du enten banen eller går rundt.'},
+  cdfa:{en:'In the profile the straight 3° line is the <b>CDFA</b>. Press <b>Compare: step-down descent</b> to see what it replaces.',no:'I profilen er den rette 3°-linjen <b>CDFA</b>. Trykk <b>Sammenlign: trinnvis nedstigning</b> for å se hva den erstatter.'},
+  type:{en:'Read <b>Type</b> in the box on the left: 2D or 3D, Type A or B, for the approach that is selected.',no:'Les <b>Type</b> i boksen til venstre: 2D eller 3D, Type A eller B, for innflygingen som er valgt.'}},
+ airdata:{press:{en:'Follow the two pipes from the left: the <b>pitot</b> line feeds only the airspeed indicator, the <b>static</b> line feeds all three instruments.',no:'Følg de to rørene fra venstre: <b>pitot</b>-linjen går bare til fartsmåleren, den <b>statiske</b> linjen går til alle tre instrumentene.'},
+  vsi:{en:'The right-hand instrument is the <b>VSI</b>. Press <b>Climb +1,000</b> and watch it take a few seconds to settle.',no:'Instrumentet til høyre er <b>variometeret</b>. Trykk <b>Stig +1 000</b> og se at det bruker noen sekunder på å stabilisere seg.'},
+  set:{en:'Switch between <b>QNH, QFE and STD 1013</b> on the left and watch what the altimeter reads for the same aircraft.',no:'Bytt mellom <b>QNH, QFE og STD 1013</b> til venstre og se hva høydemåleren viser for det samme flyet.'},
+  ta:{en:'<b>STD 1013</b> is set above the transition altitude: the altimeter reads FL 080 while the real altitude is 7,500 ft.',no:'<b>STD 1013</b> er satt over overgangshøyden: høydemåleren viser FL 080 mens den virkelige høyden er 7 500 ft.'},
+  spd:{en:'Compare the two bars: <b>IAS</b> is what the instrument shows, <b>TAS</b> is how fast you really move through the air.',no:'Sammenlign de to stolpene: <b>IAS</b> er det instrumentet viser, <b>TAS</b> er hvor fort du faktisk beveger deg gjennom luften.'},
+  da:{en:'<b>+25 °C</b> is set. The IAS is the same, but the TAS bar is longer: thin, warm air means a higher density altitude.',no:'<b>+25 °C</b> er satt. IAS er den samme, men TAS-stolpen er lengre: tynn, varm luft gir høyere tetthetshøyde.'}},
+ orientation:{eyes:{en:'Switch <b>The pilot flies by</b> between Instruments and Feel: with no outside view, only the instruments tell the truth.',no:'Bytt <b>Piloten flyr etter</b> mellom Instrumenter og Følelse: uten utsyn er det bare instrumentene som forteller sannheten.'},
+  canal:{en:'The roll is slower than the canals can feel, so the <b>felt bank</b> stays near level while the real bank grows.',no:'Rullingen er langsommere enn buegangene kan merke, så den <b>følte krengningen</b> holder seg nær null mens den virkelige øker.'},
+  leans:{en:'Press <b>Play</b>: after the slow roll the pilot corrects quickly, and the body now feels a bank the other way. That false bank is the leans.',no:'Trykk <b>Spill av</b>: etter den langsomme rullingen retter piloten raskt opp, og kroppen føler nå krengning motsatt vei. Den falske krengningen er «the leans».'}},
+ humanperf:{att:{en:'Watch what the pilot is attending to through the flight: <b>one thing at a time</b>. When the tasks pile up, something is dropped.',no:'Se hva piloten har oppmerksomheten på gjennom flygingen: <b>én ting om gangen</b>. Når oppgavene hoper seg opp, faller noe ut.'},
+  wl:{en:'Follow the <b>workload line</b> against the <b>capacity line</b>: where workload crosses capacity, things get missed.',no:'Følg <b>arbeidsbelastningen</b> mot <b>kapasitetslinjen</b>: der belastningen krysser kapasiteten, blir ting oversett.'},
+  fat:{en:'The <b>alertness curve</b> dips in the early morning and falls with every hour awake. Move Sleep and The duty to see it.',no:'<b>Årvåkenhetskurven</b> dykker tidlig om morgenen og faller for hver time du er våken. Flytt Søvn og Tjenesten for å se det.'},
+  alc:{en:'Read the <b>alcohol comparison</b> in the fatigue view: many hours awake impair you as much as a blood alcohol level.',no:'Les <b>alkoholsammenligningen</b> i tretthetsvisningen: mange timer våken svekker deg like mye som en promille.'}},
+ gyros:{rlg:{en:'Choose <b>Ring-laser IRS</b> or <b>MEMS AHRS</b> on the left and compare what each one needs and how it drifts.',no:'Velg <b>Ringlaser-IRS</b> eller <b>MEMS AHRS</b> til venstre og sammenlign hva hver trenger og hvordan den driver.'},
+  align:{en:'Press <b>Start alignment</b> with the aircraft still, then try it with the aircraft moved: the alignment fails.',no:'Trykk <b>Start oppretting</b> med flyet i ro, og prøv så med flyet flyttet: opprettingen feiler.'}},
+ engines:{fan:{en:'The turbofan is selected: most of the air goes <b>round the core</b> through the fan duct and gives most of the thrust.',no:'Turbofanen er valgt: det meste av luften går <b>rundt kjernen</b> gjennom vifteløpet og gir det meste av skyvekraften.'},
+  gauges:{en:'Look at the <b>gauges under the engine</b>: green is normal, red is the limit, and each engine type has its own set.',no:'Se på <b>instrumentene under motoren</b>: grønt er normalt, rødt er grensen, og hver motortype har sitt eget sett.'}},
+ pressurisation:{cab:{en:'Chart on the right: the <b>aircraft</b> line climbs to cruise while the <b>cabin</b> line stays low, near 6–8,000 ft.',no:'Diagrammet til høyre: linjen for <b>flyet</b> stiger til marsjhøyde mens linjen for <b>kabinen</b> holder seg lavt, rundt 6–8 000 ft.'},
+  ovf:{en:'In the fuselage picture, air comes in from the <b>packs</b> and leaves through the <b>outflow valve</b>. How far it is open sets the cabin pressure.',no:'I skrogbildet kommer luften inn fra <b>pakkene</b> og går ut gjennom <b>utstrømningsventilen</b>. Hvor åpen den er, bestemmer kabintrykket.'}},
+ flightplanning:{wind:{en:'A headwind is set: the <b>best-range point</b> on the curve moves to a higher speed. With a tailwind it moves lower.',no:'Motvind er satt: punktet for <b>best rekkevidde</b> på kurven flytter seg til høyere fart. Med medvind flytter det seg lavere.'},
+  high:{en:'The jet at altitude: read <b>fuel per NM</b>. Thin air gives a higher TAS for the same drag, so every kilo of fuel takes you further.',no:'Jetflyet i høyden: les <b>drivstoff per NM</b>. Tynn luft gir høyere TAS for samme motstand, så hver kilo drivstoff tar deg lenger.'}},
+ propeller:{pf:{en:'Right-hand picture, from behind: the <b>descending blade</b> takes the bigger bite, so each engine’s thrust line sits to the right of its centre.',no:'Høyre bilde, sett bakfra: det <b>nedadgående bladet</b> tar det største taket, så hver motors skyvekraftlinje ligger til høyre for midten.'},
+  crit:{en:'The left engine has failed. The right engine’s thrust line is the one <b>furthest from the centreline</b>, so the yaw is strongest: the left engine is critical.',no:'Venstre motor har stanset. Høyre motors skyvekraftlinje er den som ligger <b>lengst fra senterlinjen</b>, så giringen er sterkest: venstre motor er kritisk.'}}
+};
+const PAGE=(location.pathname.split('/').pop()||'').replace(/\.html$/,'');
+const seeOf=(k)=>{ const m=SEE[PAGE]; return m&&m[k]?m[k]:null; };
+let spotEl=null, spotIO=null, spotT=0;
+function spotHide(){ if(spotEl) spotEl.hidden=true; if(spotIO){ spotIO.disconnect(); spotIO=null; } clearTimeout(spotT); }
+function spotPlace(){ if(!spotEl||spotEl.hidden) return; const bar=document.querySelector('.atl-bar'), main=document.querySelector('.atl-main')||document.body;
+  const br=bar?bar.getBoundingClientRect():{bottom:0}, mr=main.getBoundingClientRect(), w=Math.min(mr.width,860);
+  spotEl.style.top=Math.max(8,Math.min(br.bottom,120))+8+'px'; spotEl.style.left=Math.max(8,mr.left)+'px'; spotEl.style.width=Math.min(w,innerWidth-16)+'px'; }
+/* KCS.spot(cardEl, targetEl, html): show the caption for this card while its place in the model is on screen */
+function spot(card,target,html){ if(!card) return;
+  if(!spotEl){ spotEl=document.createElement('div'); spotEl.className='kc-spot'; spotEl.setAttribute('role','status'); document.body.appendChild(spotEl);
+    spotEl.addEventListener('click',e=>{ if(e.target.closest('.x')) spotHide(); }); addEventListener('resize',spotPlace); document.addEventListener('keydown',e=>{ if(e.key==='Escape') spotHide(); }); }
+  const grid=card.closest('.kcgrid'), vis=grid?[...grid.querySelectorAll('.kc')].filter(c=>c.offsetParent!==null):[card], n=Math.max(1,vis.indexOf(card)+1);
+  const h=card.querySelector('h3'), p=card.querySelector(':scope > p');
+  spotEl.innerHTML=`<span class="n" aria-hidden="true">${String(n).padStart(2,'0')}</span><div class="tx"><span class="k">${L({en:'Shown in the model',no:'Vist i modellen'})}</span><b class="t">${h?h.innerHTML:''}</b><p>${html||(p?p.innerHTML:'')}</p></div><button type="button" class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button>`;
+  spotEl.hidden=false; spotEl.classList.remove('in'); void spotEl.offsetWidth; spotEl.classList.add('in'); spotPlace();
+  if(spotIO){ spotIO.disconnect(); spotIO=null; } clearTimeout(spotT);
+  /* it stays while the model is on screen; scrolling the model away (or Esc, or ×) closes it */
+  if(target&&'IntersectionObserver' in window){ spotT=setTimeout(()=>{ spotIO=new IntersectionObserver(es=>{ if(!es[es.length-1].isIntersecting) spotHide(); }); spotIO.observe(target); },1600); }
+  else spotT=setTimeout(spotHide,16000); }
 /* The same ladder line above the cards in every lab. */
 const LADDER={en:'<b>Read them in order.</b> Card 1 is the foundation and each card builds on the one before. “Show in the model” sets the lab up so you see it.',
   no:'<b>Les dem i rekkefølge.</b> Kort 1 er grunnmuren, og hvert kort bygger på det før. «Vis i modellen» setter opp labben så du ser det.'};
@@ -72,5 +178,5 @@ function ladder(grid){ if(!grid||grid.previousElementSibling&&grid.previousEleme
   const p=document.createElement('p'); p.className='kladder'; grid.before(p); const w=()=>{ p.innerHTML=L(LADDER); }; w(); if(window.LAB) LAB.onLang(w); }
 /* KCS.order(items, keys): the same cards in ladder order (keys first, in that order; any others keep their place after). */
 const order=(items,keys)=>{ const by=k=>{ const i=keys.indexOf(k); return i<0?keys.length:i; }; return items.map((it,i)=>[it,i]).sort((a,b)=>by(a[0].k)-by(b[0].k)||a[1]-b[1]).map(x=>x[0]); };
-window.KCS={render,sv,tx,ar,ladder,LADDER,order};
+window.KCS={render,sv,tx,ar,ladder,LADDER,order,spot,spotHide,SEE};
 })();

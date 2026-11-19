@@ -150,7 +150,7 @@ ol.steps li{margin:4px 0}
     <p class="lead" id="pfLead"></p>
     <div id="pfKc"></div>
     <details class="kfull"><summary>PAST in full: the four reasons, step by step</summary><div>
-    <div class="past" id="past"></div></div></details>
+    <div class="past" id="past"></div>
     <div class="vid" id="vid">
       <div class="vframe"><button class="vplay" id="vplay" type="button" aria-label="Play the video"><i></i><span id="vnote"></span></button></div>
       <div class="vtx">
@@ -160,7 +160,7 @@ ol.steps li{margin:4px 0}
         <a id="vlink" href="https://www.youtube.com/watch?v=VJOYERf6380" target="_blank" rel="noopener"></a>
       </div>
     </div>
-    <div class="maid" id="maPast"><div class="eyebrow"></div><h3></h3><p></p></div>
+    </div></details>
     <p class="note deep" id="pfNote"></p>
   </section>
 
@@ -299,6 +299,14 @@ ol.steps li{margin:4px 0}
     <ol class="tasks" id="tasks"></ol>
   </section>
 
+  <!-- 3 · Key points -->
+  <section class="card" id="debrief" data-step="debrief">
+    <div class="eyebrow">3 · Test yourself</div>
+    <h2>Key points</h2>
+    <ul class="take" id="pkTake"></ul>
+    <div class="maid" id="maPast"><div class="eyebrow"></div><h3></h3><p></p></div>
+  </section>
+
   <!-- 2 · certification -->
   <section class="card" id="cert" data-step="debrief">
     <div class="eyebrow">3 · Key points · certification</div>
@@ -339,9 +347,9 @@ ol.steps li{margin:4px 0}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=55"></script>
+<script src="lab.js?v=56"></script>
 <script src="chartnote.js?v=3"></script>
-<script src="concepts.js?v=4"></script>
+<script src="concepts.js?v=5"></script>
 <script src="stab.js?v=2"></script>
 <script src="vmc.js?v=3"></script>
 <script>
@@ -890,10 +898,19 @@ LAB.onLang(()=>{ hooks.forEach(f=>f()); vmRead(); acC.draw(); trC.draw(); mvC.dr
     ill:()=>sv(`${ar(40,50,160,50,'#8b99a7')}${ar(160,50,160,14,'#7fcbe8')}${ar(40,50,160,14,'#f0b440')}${tx(100,60,L({en:'rotation',no:'rotasjon'}),'#8b99a7','middle')}${tx(166,24,'TAS','#7fcbe8')}`),click:'#pwPre button[data-k="climb"]',to:'#pwCv'},
    {k:'feather',t:{en:'Feathering',no:'Fløying'},d:{en:'Turning the dead propeller’s blades edge-on to the airflow stops it windmilling and removes most of its drag, which lowers VMCA and improves the climb.',no:'Å vri bladene på den døde propellen kant mot luftstrømmen stopper vindmøllingen og fjerner det meste av motstanden, som senker VMCA og bedrer stigningen.'},
     ill:()=>sv(`<line x1="100" y1="8" x2="100" y2="58" stroke="#c9d3da" stroke-width="3"/>${ar(30,32,90,32,'#7fcbe8')}${tx(110,36,L({en:'blades edge-on',no:'bladene på kant'}),'#71cc93')}`),click:'#pwPre button[data-k="fe"]',to:'#pwCv'}];
+  const TK=[
+   {en:'<b>A propeller blade is a wing.</b> Its angle of attack is the blade angle minus the helix angle, so flying faster at the same pitch means less α.',no:'<b>Et propellblad er en vinge.</b> Anstigningsvinkelen er bladvinkelen minus spiralvinkelen, så høyere fart med samme stigning gir mindre α.'},
+   {en:'<b>Constant speed:</b> a governor changes the blade angle to hold the RPM you set. Fine pitch for take-off, coarser in cruise.',no:'<b>Konstant turtall:</b> en regulator endrer bladvinkelen for å holde turtallet du setter. Fin stigning for start, grovere i marsj.'},
+   {en:'<b>A windmilling propeller is a disc of drag.</b> Feathering turns the blades edge-on and removes most of it.',no:'<b>En propell i vindmølle er en skive av motstand.</b> Fløying setter bladene med kanten mot vinden og fjerner det meste.'},
+   {en:'<b>P-factor:</b> at a high angle of attack the descending blade pulls harder, so the thrust line moves to that side.',no:'<b>P-faktor:</b> ved høy anstigningsvinkel trekker det nedadgående bladet hardere, så skyvekraftlinjen flytter seg til den siden.'},
+   {en:'<b>The critical engine</b> is the one whose failure hurts most. With both propellers turning clockwise, it is the left.',no:'<b>Kritisk motor</b> er den som gir verst virkning når den stanser. Med begge propellene med klokka er det den venstre.'},
+   {en:'<b>Below VMCA full rudder cannot hold the heading.</b> It is highest with full power, aft CG and a windmilling propeller; 5° of bank towards the live engine lowers it.',no:'<b>Under VMCA holder ikke fullt sideror kursen.</b> Den er høyest med full effekt, bakre CG og propell i vindmølle; 5° krengning mot motoren som går, senker den.'},
+   {en:'<b>Dead foot, dead engine.</b> Identify, verify, then feather. Fly the aircraft first.',no:'<b>Død fot, død motor.</b> Identifiser, bekreft, og fløy så. Fly flyet først.'}];
+  const tk=()=>{ const u=document.getElementById('pkTake'); if(u) u.innerHTML=TK.map(x=>`<li>${L(x)}</li>`).join(''); }; tk(); LAB.onLang(tk);
   const g=document.getElementById('pfKc'); if(g) KCS.render(g,KCS.order(KCP,['wing','blade','fpcs','wm','feather','pf','crit','past','vmca','dead']));
 })();
 </script>
-<script src="corepic.js?v=12"></script>
+<script src="corepic.js?v=13"></script>
 <script src="pic-vmc.js?v=1"></script>
 </body>
 </html>

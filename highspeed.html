@@ -56,19 +56,6 @@ body.depth-short .presec{display:none}
 .ptake{margin:0;font-size:14px;line-height:1.5;color:var(--ink);padding:6px 0 6px 12px;border-left:3px solid var(--ok)}
 .ptake b{font-weight:600}
 /* key concept cards (same pattern as tunnel.html) */
-.kcgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:6px}
-.kc{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;min-width:0}
-.kc svg{display:block;width:100%;height:auto;aspect-ratio:200/64;background:var(--instrument);border-radius:4px}
-.kc h3{font-size:15px;hyphens:auto;overflow-wrap:anywhere;margin:2px 0 0;line-height:1.25}
-.kc p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.45}
-.kc p b{color:var(--ink);font-weight:600}
-.kc .kgo{align-self:flex-start;margin-top:auto;font-size:12.5px;font-weight:600;background:none;border:0;color:var(--accent);padding:4px 0;cursor:pointer}
-.kc .kgo:hover{text-decoration:underline}
-.kc .kmore summary{cursor:pointer;font-size:12.5px;color:var(--ink-2);list-style:none}
-.kc .kmore summary::-webkit-details-marker{display:none}
-.kc .kmore summary::before{content:"▸ ";color:var(--accent)}.kc .kmore[open] summary::before{content:"▾ "}
-.kc .kmore p{margin:5px 0 0;color:var(--ink)}
-.kcgrid{counter-reset:kc}.kcgrid>.kc{counter-increment:kc}.kc .kh{display:flex;align-items:baseline;gap:7px;margin-top:2px}.kc .kn{flex:none;font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--smoke,var(--accent));min-width:1.6em;letter-spacing:.02em}.kc .kn::before{content:counter(kc,decimal-leading-zero)}.kc .kh h3{margin:0}.kladder{margin:6px 0 0;color:var(--ink-2);font-size:13px;max-width:80ch}.kladder b{color:var(--ink);font-weight:600}
 .kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
 /* ECTM memory aid */
 .ectm{margin-top:18px;border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg,6px) var(--radius-lg,6px) 0;background:var(--sheet);padding:16px 18px}
@@ -116,14 +103,6 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
     <p class="kintro" id="uLead" data-tx="u1">At the <b>slow end</b> the limit is drag and the stall. Drag is <b>parasite drag</b>, which grows with speed, plus <b>induced drag</b>, the price of lift, which falls with speed. Below the bottom of the curve, the minimum drag speed, the speed is <b>unstable</b>. At the <b>fast end</b> the limit is the <b>Mach number</b>: past the <b>critical Mach number</b> part of the flow over the wing goes supersonic, a shock wave forms, and wave drag and buffet follow.</p>
     <p class="kladder" id="kcLad"></p>
     <div class="kcgrid" id="kcGrid"></div>
-    <div class="ectm" id="ectm">
-      <div class="eyebrow" id="ecE"></div>
-      <h3 id="ecH"></h3>
-      <p id="ecP"></p>
-      <div class="ctls"><div id="ecHold"></div><div id="ecDir"></div><div id="ecLay"></div></div>
-      <div class="etiles" id="ecT"></div>
-      <p class="rule" id="ecR"></p>
-    </div>
     <div class="deepbox deep" id="uDeep" data-tx="u2" style="margin-top:16px"><span class="k">Deep dive · the numbers behind it</span>
       <p><b>Speed of sound.</b> a = 38.94 √T kt, with T in kelvin: 661 kt at 15 °C (ISA sea level), 573 kt at −56.5 °C (ISA above the tropopause). It depends only on temperature. Mach number M = TAS / a.</p>
       <p><b>Minimum drag and minimum power.</b> With a parabolic drag polar, induced and parasite drag are equal at Vmd. The minimum power speed Vmp is about 0.76 Vmd (Vmd / 1.32). For a jet, Vmd gives the longest endurance.</p>
@@ -261,6 +240,14 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
     <div class="cols why" id="dbC"></div>
     <h3 id="takeH" style="margin-top:22px">Pilot takeaways</h3>
     <ul class="take" id="take"></ul>
+    <div class="ectm" id="ectm">
+      <div class="eyebrow" id="ecE"></div>
+      <h3 id="ecH"></h3>
+      <p id="ecP"></p>
+      <div class="ctls"><div id="ecHold"></div><div id="ecDir"></div><div id="ecLay"></div></div>
+      <div class="etiles" id="ecT"></div>
+      <p class="rule" id="ecR"></p>
+    </div>
     <div class="deepbox deep" style="max-width:none;margin-top:18px"><span class="k" id="opsK">Deep dive · in the A320</span><div class="cols" id="cards"></div></div>
   </section>
 
@@ -272,7 +259,8 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
   </section>
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of an A320-sized aircraft in the ISA (wing area 122.6 m², drag polar CD = 0.020 + 0.040 CL² clean, wave drag from a simple Lock-type law, a simplified buffet boundary). All numbers are illustrative typical values, not FCOM or AFM data. Real limits come from the FCOM, the AFM and the FMS (MAX and REC MAX altitudes, VLS, green dot).</p>
 </div>
-<script src="lab.js?v=55"></script>
+<script src="lab.js?v=56"></script>
+<script src="concepts.js?v=5"></script>
 <script src="cfd3d.js?v=7"></script>
 <script>
 (function(){
@@ -900,8 +888,8 @@ const KC=[
  ['coffin',t2('Coffin corner','Coffin corner'),t2('Climb high enough and the low- and high-speed buffet limits meet: no speed is left with margin. That is the <b>coffin corner</b>.','Stig høyt nok, så møtes buffetgrensene for lav og høy fart: ingen fart har margin igjen. Det er <b>coffin corner</b>.'),t2('Operators keep a 0.3 g margin to buffet onset (1.3 g, about 40° of bank). That sets the recommended maximum altitude.','Operatørene holder 0,3 g margin til buffet (1,3 g, rundt 40° krengning). Det setter anbefalt maksimal høyde.'),()=>{ preset('preC','coffin'); goV('buffet'); }],
  ['sweep',t2('Wing sweep','Pilform'),t2('A swept wing feels mainly the flow at right angles to its leading edge, <b>V cos Λ</b>, so the shock comes at a higher Mach.','En pilvinge merker mest strømmen vinkelrett på forkanten, <b>V cos Λ</b>, så sjokket kommer ved høyere Mach.'),t2('The price: a lower CLmax, tip stall with pitch-up and a Dutch roll tendency. Slats, flaps and the yaw damper deal with it.','Prisen: lavere CLmax, tippstall med pitch-up og en tendens til Dutch roll. Slats, flaps og girdemperen tar seg av det.'),()=>{ preset('preW','a320'); goV('sweep'); }],
  ['tuck',t2('Mach tuck','Mach tuck'),t2('Well past Mcrit the shock moves aft and the centre of pressure with it: the nose drops. That is <b>Mach tuck</b>.','Godt forbi Mcrit flytter sjokket seg bakover, og trykksentrum med det: nesen synker. Det er <b>Mach tuck</b>.'),t2('On a swept wing, less downwash on the tail adds to it. Mach trim or the flight controls counter it, and MMO keeps you clear of it.','På en pilvinge forsterkes det av mindre nedvask over halen. Mach-trim eller flykontrollene motvirker det, og MMO holder deg unna.'),()=>{ preset('preF','tuck'); goV('shock'); }]];
-function concepts(){ el('kcLad').innerHTML=L(t2('<b>Read them in order.</b> Card 1 is the foundation and each card builds on the one before. “Show in the model” sets the lab up so you see it.','<b>Les dem i rekkefølge.</b> Kort 1 er grunnmuren, og hvert kort bygger på det før. «Vis i modellen» setter opp labben så du ser det.')); el('kcGrid').innerHTML=KC.slice().sort((x,y)=>['drag','stab','mach','xover','mcrit','shock','sweep','tuck','buffet','coffin','upset'].indexOf(x[0])-['drag','stab','mach','xover','mcrit','shock','sweep','tuck','buffet','coffin','upset'].indexOf(y[0])).map(([k,t,d,dd])=>`<div class="kc">${ILL[k]()}<div class="kh"><span class="kn" aria-hidden="true"></span><h3>${L(t)}</h3></div><p>${L(d)}</p><details class="deep kmore"><summary>${L(t2('More','Mer'))}</summary><p>${L(dd)}</p></details><button class="kgo" type="button" data-k="${k}">${L(t2('Show it in the model →','Vis i modellen →'))}</button></div>`).join(''); }
-el('kcGrid').addEventListener('click',e=>{ const b=e.target.closest('.kgo'); if(!b) return; const c=KC.find(x=>x[0]===b.dataset.k); if(c) c[4](); });
+function concepts(){ el('kcLad').innerHTML=L(t2('<b>Read them in order.</b> Card 1 is the foundation and each card builds on the one before. “Show in the model” sets the lab up so you see it.','<b>Les dem i rekkefølge.</b> Kort 1 er grunnmuren, og hvert kort bygger på det før. «Vis i modellen» setter opp labben så du ser det.')); el('kcGrid').innerHTML=KC.slice().sort((x,y)=>['drag','stab','mach','xover','mcrit','shock','sweep','tuck','buffet','coffin','upset'].indexOf(x[0])-['drag','stab','mach','xover','mcrit','shock','sweep','tuck','buffet','coffin','upset'].indexOf(y[0])).map(([k,t,d,dd])=>`<div class="kc">${ILL[k]()}<div class="kh"><span class="kn" aria-hidden="true"></span><h3>${L(t)}</h3></div><p>${L(d)}</p><details class="deep kmore"><summary>${L(t2('More','Mer'))}</summary><p>${L(dd)}</p></details><button class="kgo" type="button" data-k="${k}">${L(t2('Show in the model →','Vis i modellen →'))}</button></div>`).join(''); }
+el('kcGrid').addEventListener('click',e=>{ const b=e.target.closest('.kgo'); if(!b) return; const c=KC.find(x=>x[0]===b.dataset.k); if(c){ c[4](); if(window.KCS&&KCS.spot) KCS.spot(b.closest('.kc'),document.querySelector('#explore [data-lab-model], #explore .xvp, #explore'),''); } });
 
 /* ---------- try: tasks with feedback ---------- */
 let active=null; const ans={}, touched={};
@@ -981,7 +969,7 @@ LAB.onLang(()=>{ uD(); uS(); uF(); uC(); uW(); conf(); cards(); machm(); dU(); r
 
 })();
 </script>
-<script src="corepic.js?v=12"></script>
+<script src="corepic.js?v=13"></script>
 <script src="pic-hs.js?v=1"></script>
 </body>
 </html>
