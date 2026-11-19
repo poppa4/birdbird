@@ -501,7 +501,8 @@
   .fs-stages button{min-height:44px}
   .fp .txt>.tl,.fp .foot>.tl,.fp-model>.tl,.fp-maker>.tl,.fp .sm-all{display:inline-flex;align-items:center;min-height:44px}
 }
-.fp-stage{grid-template-columns:minmax(0,1fr);min-height:clamp(380px,48svh,540px)}
+.fp-stage{grid-template-columns:minmax(0,1fr)}
+@media (min-width:981px){.fp-stage{min-height:clamp(560px,calc(100svh - 150px),800px)}}
 @media (max-width:980px){.fp-stage{min-height:0;padding-bottom:clamp(170px,46vw,300px)}.fp-relief{top:44%}}
 /* subject-area cards and the featured aerofoil */
 .fp-cards{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
