@@ -503,6 +503,32 @@
 }
 .fp-stage{grid-template-columns:minmax(0,1fr);min-height:clamp(380px,48svh,540px)}
 @media (max-width:980px){.fp-stage{min-height:0;padding-bottom:clamp(170px,46vw,300px)}.fp-relief{top:44%}}
+/* subject-area cards and the featured aerofoil */
+.fp-cards{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+.fp-cards li{min-width:0}
+.fp-cards a{display:flex;flex-direction:column;height:100%;text-decoration:none;color:inherit;background:#fff;border:1px solid var(--rule);border-radius:6px;overflow:hidden;transition:transform .25s ease,box-shadow .25s ease,border-color .25s}
+.fp-cards a:hover{transform:translateY(-4px);box-shadow:0 18px 40px -18px rgba(11,37,69,.35);border-color:transparent}
+.fp-cards a:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+.fp-cards .im{display:block;aspect-ratio:16/10;background:var(--navy);overflow:hidden}
+.fp-cards img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
+.fp-cards a:hover img{transform:scale(1.04)}
+.fp-cards .bd{display:flex;flex-direction:column;gap:8px;padding:20px 22px 22px;flex:1}
+.fp-cards .mt{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--ink2)}
+.fp-cards .c{font-family:var(--mono);font-size:12.5px;letter-spacing:.02em}
+.fp-cards em{font-style:normal}
+.fp-cards b{font-family:var(--disp);font-stretch:86%;font-weight:650;font-size:23px;line-height:1.15;letter-spacing:-.012em;color:var(--navy)}
+.fp-cards .d{font-size:15px;line-height:1.55;color:var(--ink2);flex:1}
+.fp-cards .go{margin-top:6px;font-size:14.5px;font-weight:600;color:var(--acc)}
+.fp-cards .go i{font-style:normal;display:inline-block;transition:transform .25s}
+.fp-cards a:hover .go i{transform:translateX(4px)}
+.fp-cards-foot{display:flex;flex-wrap:wrap;gap:6px 24px;margin:26px 0 0;font-size:15px}
+.fp-feat{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:40px 64px;align-items:center;margin:96px 0 0;padding:96px 0 104px;border-top:1px solid var(--rule)}
+.fp-feat .kick{font-family:var(--mono);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--acc);margin:0 0 12px}
+.fp-feat h3{font-size:clamp(28px,2.6vw,38px);line-height:1.08;color:var(--navy);margin:0 0 16px}
+.fp-feat .txt p:not(.kick){font-size:17px;line-height:1.6;color:var(--ink2);margin:0 0 28px}
+@media (prefers-reduced-motion:reduce){.fp-cards a,.fp-cards img,.fp-cards .go i{transition:none}.fp-cards a:hover{transform:none}.fp-cards a:hover img{transform:none}}
+@media (max-width:980px){.fp-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.fp-feat{grid-template-columns:minmax(0,1fr);margin-top:64px;padding:64px 0 72px}}
+@media (max-width:640px){.fp-cards{grid-template-columns:minmax(0,1fr)}.fp-cards b{font-size:21px}}
 </style>
 </head>
 <body data-home="1" data-title="NORDAP · Nordic Aviation Platform">
@@ -519,7 +545,7 @@
         <div class="fp-copy">
           <h1 id="fp-h1" data-tx="h1">Welcome to NORDAP</h1>
           <p class="fp-lede" data-tx="lede">The Nordic Aviation Platform, built in Norway for pilots and flight schools. <b><span class="nLabs">25</span> interactive labs</b> on the EASA ATPL syllabus, in your browser.</p>
-          <div class="fp-act"><a class="fp-btn pri" href="lab.html">Open Virtual Labs</a></div>
+          <div class="fp-act"><a class="fp-btn pri" href="lab.html">Open Virtual Labs</a><a class="fp-btn sec" href="#areas" data-tx="bAr">See the subject areas</a></div>
         </div>
       </div>
     </div>
@@ -532,7 +558,11 @@
         <h2 id="h-areas" data-tx="h2a">Six subject areas, built on the EASA ATPL syllabus</h2>
         <p data-tx="p2a">Each lab is a working model you can change and watch respond: take the wing to the stall, grow a thunderstorm, fly a VOR radial over Bergen. Where a lab shows numbers, they come from an illustrative A320.</p>
       </header>
-      <div class="fp-areas-grid">
+      <ol class="fp-cards" id="fpAreas"></ol>
+      <p class="fp-cards-foot"><a class="tl" href="lab.html" data-tx="allLabs">All <span class="nLabs">25</span> labs</a><a class="tl" href="lab.html#more" data-tx="hf">Human factors</a></p>
+
+      <!-- featured: the live aerofoil -->
+      <div class="fp-feat">
         <figure class="fp-fig">
           <div class="ff" id="ffBox">
             <canvas id="ffCv" aria-hidden="true"></canvas>
@@ -542,15 +572,14 @@
             <div class="ff-cbar" aria-hidden="true"><span class="t">Cp</span><span class="bar"></span><span class="tk"><i style="left:0">−3</i><i style="left:23.33%">−1</i><i style="left:35%">0</i><i style="left:67.5%">+0.5</i><i style="left:100%">+1</i></span></div>
             <a class="fp-lab-hit" href="tunnel.html#profil" tabindex="-1" aria-hidden="true"></a>
           </div>
-          <figcaption data-tx="capFoil"><b>The wing in profile at 13° angle of attack.</b> The aerofoil section from the Aerodynamics lab, computed live in your browser: pressure field (Cp) and streamlines from a panel method, transition and separation from a boundary-layer model. <a class="tl" href="tunnel.html#profil">Open the aerofoil section</a></figcaption>
         </figure>
-        <div class="fp-index">
-          <h3 class="vh" data-tx="h3idx">Subject areas and their EASA ATPL subjects</h3>
-          <ol id="fpAreas"></ol>
-          <p class="foot"><a class="tl" href="lab.html" data-tx="allLabs">All <span class="nLabs">25</span> labs</a><a class="tl" href="lab.html#more" data-tx="hf">Human factors</a></p>
+        <div class="txt">
+          <p class="kick" data-tx="ftK">Live in your browser</p>
+          <h3 data-tx="ftH">The wing at 13° angle of attack</h3>
+          <p data-tx="capFoil">The aerofoil section from the Aerodynamics lab, computed as you watch: the pressure field (Cp) and streamlines from a panel method, transition and separation from a boundary-layer model.</p>
+          <a class="fp-btn pri" href="tunnel.html#profil" data-tx="goFoil">Open the wind tunnel</a>
         </div>
       </div>
-
     </div>
   </section>
 
@@ -580,9 +609,11 @@ LAB.tx({
  s3:'NOTAM, vær, minima, ytelse, drivstoff, masse og balanse, skrevet ut som et hefte.',
  s4:'Svar fra din AFM, QRH og SOP, med siden hvert svar kommer fra.',
  s5:'Seks cockpiter du kan fly, fra Cessna 172 til A320, 737 og ATR 72, i 2D og 3D.', s6:'Lær flowene til ditt flyselskap utenat i den ekte cockpiten, alene eller med partneren din.', trnB:'Cockpittrenere', bTrn:'Cockpittrenere', bFl:'Flows', bBp:'Briefingpakke',
+ bAr:'Se fagområdene',
  h2a:'Seks fagområder, bygd på EASA ATPL-pensumet',
  p2a:'Hver lab er en modell du kan endre og se reagere: fly vingen inn i stall, la et tordenvær vokse, fly en VOR-radial over Bergen. Der en lab viser tall, kommer de fra en illustrerende A320.',
- capFoil:'<b>Vingen sett fra siden med 13° angrepsvinkel.</b> Profilsnittet fra aerodynamikklabben, beregnet direkte i nettleseren din: trykkfelt (Cp) og strømlinjer fra en panelmetode, omslag og separasjon fra en grensesjiktmodell. <a class="tl" href="tunnel.html#profil">Åpne profilsnittet</a>',
+ capFoil:'Profilsnittet fra aerodynamikklabben, beregnet mens du ser på: trykkfeltet (Cp) og strømlinjene fra en panelmetode, omslag og separasjon fra en grensesjiktmodell.',
+ ftK:'Direkte i nettleseren', ftH:'Vingen ved 13° angrepsvinkel', goFoil:'Åpne vindtunnelen', open:'Åpne',
  h3idx:'Fagområder og tilhørende EASA ATPL-fag',
  allLabs:'Alle <span class="nLabs">25</span> labber', hf:'Menneskelige faktorer',
  h3how:'Hver lab er bygd likt',
@@ -662,8 +693,9 @@ const CODE={pof:'081',met:'050',nav:'061, 062',inst:'022',sys:'021',perf:'032, 0
 const AREAS=LAB.AREAS||[], FLAT=LAB.FLAT||[];
 function areas(){
   const ol=el('fpAreas'); if(!ol) return;
-  ol.innerHTML=AREAS.map(a=>{ const n=a.labs.length, nl=n===1?L({en:'1 lab',no:'1 lab'}):L({en:n+' labs',no:n+' labber'});
-    return `<li><a href="lab.html#${a.k}"><span class="c" title="${L({en:'EASA ATPL subject',no:'EASA ATPL-fag'})}">${CODE[a.k]||''}</span><b>${L({en:a.en,no:a.no})}</b><em>${nl}</em><span class="d">${L(a.d)}</span></a></li>`; }).join('');
+  const IMG={pof:'pof',met:'met',nav:'nav',inst:'inst',sys:'sys',perf:'perf'};
+  ol.innerHTML=AREAS.map((a,i)=>{ const n=a.labs.length, nl=n===1?L({en:'1 lab',no:'1 lab'}):L({en:n+' labs',no:n+' labber'}), f=IMG[a.k];
+    return `<li><a href="lab.html#${a.k}"><span class="im">${f?`<img src="img/front/labs/${f}-640.webp" srcset="img/front/labs/${f}-640.webp 640w, img/front/labs/${f}-1120.webp 1120w" sizes="(max-width:640px) 100vw, (max-width:980px) 50vw, 400px" width="640" height="400" loading="lazy" decoding="async" alt="">`:''}</span><span class="bd"><span class="mt"><span class="c" title="${L({en:'EASA ATPL subject',no:'EASA ATPL-fag'})}">${CODE[a.k]||''}</span><em>${nl}</em></span><b>${L({en:a.en,no:a.no})}</b><span class="d">${L(a.d)}</span><span class="go">${L({en:'Open',no:'Åpne'})} <i aria-hidden="true">→</i></span></span></a></li>`; }).join('');
 }
 function counts(){ const n=FLAT.length||27; document.querySelectorAll('.nLabs').forEach(s=>s.textContent=n); }
 function attrs(){ const no=LAB.lang==='no';
