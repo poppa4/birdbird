@@ -931,6 +931,12 @@ function buildCtl3D(){
   const FK=inst(fkGeo,mat,fknobs.length);
   function setFk(i){ const o=fknobs[i]; if(!o.dirty) return false; o.push*=0.8; if(o.push<0.02){ o.push=0; o.dirty=false; }
     FK.setMatrixAt(i,frame(o.pl,o.rot,ZA,o.r,o.r,o.r*0.75*(1-0.35*o.push),0.0002)); return true; }
+  // real levers from the model, turning about their own axes (A320 here; other aircraft give CF.levers3d)
+  const LD=CF?CF.levers3d:{url:'models/a320-levers.bin?v=1',g:{thr0:{p:[-0.1607,-0.12886,0],a:[0,0,-1]},thr1:{p:[-0.1607,-0.12886,0],a:[0,0,-1]},
+      flaps:{p:[0.08696,-0.18768,-0.08],a:[0,0,1]},spd:{p:[0.08696,-0.20617,0.0811],a:[0,0,1],s:[1,0,-1]}},
+    ang:{thr0:()=>UI.tla[0],thr1:()=>UI.tla[1],flaps:()=>14*A.sw.flapLv,spd:()=>45*A.sw.spdBrk},mv:{spd:()=>A.sw.spArm?-0.006:0}};
+  const LV3=LD&&CK.addLevers?CK.addLevers(LD):null;
+  function setLev3(){ if(!LV3) return; for(const k in LD.ang) LV3.set(k,Math.round(LD.ang[k]()*10)/10,LD.mv&&LD.mv[k]?LD.mv[k]():0); }
   function knobAng(c){ return c.t==='sel'?c.ang[A.sw[c.k]]:c.t==='selF'?c.ang[c.get()]:c.t==='cont'?c.ang(A.sw[c.k]):c.ang(); }
   function setKnob(i){ const o=knobs[i], a=knobAng(o.c); if(a==null||a===o.last) return false; o.last=a; KM.setMatrixAt(i,frame(o.pl,-a*Math.PI/180,ZA,o.r,o.r,o.r*0.9,0.0004)); return true; }
   function setTog(i){ const o=togs[i], c=o.c, v=c.get?c.get():A.sw[c.k]; if(v===o.last) return false; o.last=v; const n=c.vals.length, j=c.vals.indexOf(v);
@@ -996,7 +1002,7 @@ function buildCtl3D(){
   function tick(force){ frameN++; let k=false, t=false;
     for(let i=0;i<knobs.length;i++) k=setKnob(i)||k; for(let i=0;i<togs.length;i++) t=setTog(i)||t;
     if(k) KM.instanceMatrix.needsUpdate=true; if(t) TM.instanceMatrix.needsUpdate=true;
-    let f=false; for(let i=0;i<fknobs.length;i++) f=setFk(i)||f; if(f) FK.instanceMatrix.needsUpdate=true;
+    let f=false; for(let i=0;i<fknobs.length;i++) f=setFk(i)||f; if(f) FK.instanceMatrix.needsUpdate=true; setLev3();
     for(const cs of capSets){ cs.mat.uniforms.map.value=CK.P[cs.k].mesh.material.map; let ch=false;
       for(const cp of cs.L){ const j=cp.i*4, u=(lit(cp,'up')?10:0)+colIdx(cp.up&&cp.up.col), d=(lit(cp,'dn')?10:0)+colIdx(cp.dn&&cp.dn.col), p=cp.press>0.02?cp.press:0;
         if(cs.ST[j]!==u||cs.ST[j+1]!==d||cs.ST[j+3]!==p||cs.ST[j+2]!==(cp.big?1:0)){ cs.ST[j]=u; cs.ST[j+1]=d; cs.ST[j+2]=cp.big?1:0; cs.ST[j+3]=p; ch=true; } if(cp.press>0) cp.press=cp.press>0.02?cp.press*0.78:0; }
