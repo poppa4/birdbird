@@ -558,6 +558,48 @@
   .fx-num dd{font-size:42px}
 }
 @media (prefers-reduced-motion:reduce){.fx-tiles img{transition:none}}
+
+/* ---------- new top: the photograph in full, a sheet and the Flight Intelligence box straddling its lower edge ---------- */
+.fp .fp-relief{inset:0;top:0;-webkit-mask-image:none;mask-image:none}
+.fp .fp-relief img{object-position:60% 50%}
+.fp-hero::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(7,22,42,.82) 0,rgba(7,22,42,.5) 38%,rgba(7,22,42,0) 68%),linear-gradient(180deg,rgba(7,22,42,.25) 0,rgba(7,22,42,0) 30%,rgba(7,22,42,.55) 100%)}
+.fp .fp-stage{display:flex;align-items:center;min-height:clamp(560px,calc(100svh - 190px),760px);padding:72px 0 208px}
+.fp .fp-copy{max-width:640px}
+.nx-top{position:relative;z-index:2}
+.nx-row{display:grid;grid-template-columns:minmax(0,1fr) 404px;align-items:start;margin-top:-150px}
+.nx-sheet{background:var(--sheet);padding:38px 42px 36px;box-shadow:0 1px 0 var(--rule),0 30px 60px -40px rgba(11,37,69,.5);min-width:0}
+.nx-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px 40px;flex-wrap:wrap;margin-bottom:26px}
+.fp .nx-h h2{font-size:clamp(28px,2.6vw,38px)}
+.nx-h p{font-size:16px;line-height:1.5;color:var(--ink2);max-width:30em}
+.nx-sheet .fp-areas-grid{grid-template-columns:minmax(0,11fr) minmax(0,9fr);gap:28px 40px}
+.nx-sheet .fp-index .d{display:none}
+.nx-sheet .fp-index li a{grid-template-columns:64px minmax(0,1fr) auto;padding:12px 0 13px}
+.nx-sheet .fp-index b{font-size:16px}
+.fp .fi.nx-fi{max-width:none;margin:76px 0 0;background:var(--navy);-webkit-backdrop-filter:none;backdrop-filter:none;border:0;box-shadow:none}
+.fp-svc{border-top:0;margin-top:88px}
+#areas.fp-sec{padding-top:88px}
+#areas .fp-flows{margin-top:0}
+.fp .nx-sheet .ff{margin-left:0;margin-right:0}
+@media (max-width:1280px){
+  .nx-row{grid-template-columns:minmax(0,1fr) 372px}
+  .nx-sheet .fp-areas-grid{grid-template-columns:minmax(0,1fr)}
+  .nx-sheet{padding:32px 32px 30px}
+}
+@media (max-width:980px){
+  .fp .fp-stage{min-height:0;padding:64px 0 176px}
+  .nx-row{grid-template-columns:minmax(0,1fr);margin-top:-104px;gap:28px}
+  .nx-sheet .fp-areas-grid{grid-template-columns:minmax(0,11fr) minmax(0,9fr)}
+  .fp .fi.nx-fi{margin:0;max-width:none;justify-self:stretch}
+  .fp-svc{margin-top:64px}
+  #areas.fp-sec{padding-top:64px}
+}
+@media (max-width:700px){
+  .fp .fp-stage{padding:44px 0 124px}
+  .fp-hero::after{background:linear-gradient(180deg,rgba(7,22,42,.62),rgba(7,22,42,.5))}
+  .nx-row{margin-top:-84px}
+  .nx-sheet{padding:26px 20px 24px}
+  .nx-sheet .fp-areas-grid{grid-template-columns:minmax(0,1fr)}
+}
 </style>
 </head>
 <body data-home="1" data-title="NORDAP · Nordic Aviation Platform">
@@ -576,45 +618,15 @@
           <p class="fp-lede" data-tx="lede">The Nordic Aviation Platform, built in Norway for pilots and flight schools. <b><span class="nLabs">25</span> interactive labs</b> on the EASA ATPL syllabus, a flow trainer for your airline’s procedures, cockpit trainers, briefing packs and Flight Intelligence. All in one place, in your browser.</p>
           <div class="fp-act"><a class="fp-btn pri" href="lab.html">Open Virtual Labs</a><a class="fp-btn sec" href="#fpSims" data-tx="bTrn">Cockpit trainers</a><a class="fp-btn sec" href="flows.html" data-tx="bFl">Flows</a></div>
         </div>
-        <section class="fi" id="fpFi" aria-labelledby="fiName">
-          <header class="fi-top">
-            <h2 class="fi-name" id="fiName">Flight Intelligence</h2>
-            <ol class="fi-pg" id="fiPg" aria-label="Examples" data-aria-no="Eksempler" hidden></ol>
-          </header>
-          <div class="fi-stack" id="fiStack">
-            <div class="fi-qa">
-              <p class="fi-k" data-tx="fiK">Example · illustrative documents</p>
-              <p class="fi-q">The RVR drops below our minimum as we pass 1,400 ft on the ILS. Can we continue?</p>
-              <div class="fi-a"><p>Yes, down to 1,000 ft above aerodrome elevation. If the reported RVR is still below your minimum there, you may not continue the approach.<span class="fi-c e">CAT.OP.MPA.305</span></p><p>Had it dropped after you passed 1,000 ft, you could continue to DA/H, and go around there without the required visual reference.<span class="fi-c e">GM1 CAT.OP.MPA.305</span></p><p>Your SOP adds a check at 1,000 ft: the PM reads out the latest RVR before the PF continues.<span class="fi-c">SOP 6.4 · p. 6-12</span></p></div>
-            </div>
-          </div>
-          <p class="fi-keep" data-tx="fiKeep">Answers come from your own AFM, QRH and SOP and from the EASA Easy Access Rules, each with the page it rests on. Your documents are read and stored in this browser.</p>
-          <form class="fi-ask" id="fiAskF" action="fi.html" method="get" role="search" aria-label="Ask Flight Intelligence"><label class="vh" for="fiAskIn" data-tx="fiAsk">Ask Flight Intelligence</label><input id="fiAskIn" name="q" type="text" maxlength="1500" autocomplete="off" placeholder="Ask Flight Intelligence" data-ai><button type="submit" data-tx="fiGo">Ask</button></form>
-          <p class="fi-pv" data-tx="fiPv"><b>Preview.</b> Flight Intelligence runs on a lighter AI model while NORDAP is in testing. Use answers as a study reference, and always check the official source.</p>
-        </section>
       </div>
     </div>
   </section>
-  <nav class="fp-svc fp-band" aria-labelledby="h-svc">
-    <h2 class="vh" id="h-svc">Six services, from theory to the flight</h2>
-    <ol>
-      <li><a href="lab.html"><i>1</i><b>Virtual Labs</b><span data-tx="s1"><span class="nLabs">25</span> interactive labs on the EASA ATPL theory subjects.</span></a></li>
-      <li><a href="flows.html"><i>2</i><b>Flows</b><span data-tx="s6">Learn your airline’s flows by heart on the real cockpit, alone or with your partner.</span></a></li>
-      <li><a href="training.html"><i>3</i><b data-tx="trnB">Cockpit trainers</b><span data-tx="s5">Six cockpits you can fly, from the Cessna 172 to the A320, 737 and ATR 72, in 2D and 3D.</span></a></li>
-      <li><a href="prep.html"><i>4</i><b>Briefing pack</b><span data-tx="s3">NOTAM, weather, minima, performance, fuel, mass and balance, printed as a booklet.</span></a></li>
-      <li><a href="route.html"><i>5</i><b>Route Explorer</b><span data-tx="s2">Plan the route on a VFR map and read the terrain under it.</span></a></li>
-      <li><a href="fi.html"><i>6</i><b>Flight Intelligence</b><span data-tx="s4">Answers from your AFM, QRH and SOP, with the page each one comes from.</span></a></li>
-    </ol>
-  </nav>
-
-  <!-- 2. Subject areas -->
-  <section class="fp-sec" id="areas" aria-labelledby="h-areas">
-    <div class="fp-wrap">
-      <header class="fp-head">
-        <h2 id="h-areas" data-tx="h2a">Six subject areas, built on the EASA ATPL syllabus</h2>
-        <p data-tx="p2a">Each lab is a working model you can change and watch respond: take the wing to the stall, grow a thunderstorm, fly a VOR radial over Bergen. Where a lab shows numbers, they come from an illustrative A320.</p>
-      </header>
-      <div class="fp-areas-grid">
+    <!-- 2. The sheet and the Flight Intelligence box, straddling the photograph -->
+  <div class="nx-top fp-band">
+    <div class="fp-wrap nx-row">
+      <section class="nx-sheet" aria-labelledby="h-areas">
+        <header class="nx-h"><h2 id="h-areas">Virtual Labs</h2><p data-tx="nxLabs">Working models on the EASA ATPL subjects. Change a value and watch the aircraft respond.</p></header>
+        <div class="fp-areas-grid">
         <figure class="fp-fig">
           <div class="ff" id="ffBox">
             <canvas id="ffCv" aria-hidden="true"></canvas>
@@ -632,7 +644,40 @@
           <p class="foot"><a class="tl" href="lab.html" data-tx="allLabs">All <span class="nLabs">25</span> labs</a><a class="tl" href="lab.html#more" data-tx="hf">Human factors</a></p>
         </div>
       </div>
+      </section>
+      <section class="fi nx-fi" id="fpFi" aria-labelledby="fiName">
+          <header class="fi-top">
+            <h2 class="fi-name" id="fiName">Flight Intelligence</h2>
+            <ol class="fi-pg" id="fiPg" aria-label="Examples" data-aria-no="Eksempler" hidden></ol>
+          </header>
+          <div class="fi-stack" id="fiStack">
+            <div class="fi-qa">
+              <p class="fi-k" data-tx="fiK">Example · illustrative documents</p>
+              <p class="fi-q">The RVR drops below our minimum as we pass 1,400 ft on the ILS. Can we continue?</p>
+              <div class="fi-a"><p>Yes, down to 1,000 ft above aerodrome elevation. If the reported RVR is still below your minimum there, you may not continue the approach.<span class="fi-c e">CAT.OP.MPA.305</span></p><p>Had it dropped after you passed 1,000 ft, you could continue to DA/H, and go around there without the required visual reference.<span class="fi-c e">GM1 CAT.OP.MPA.305</span></p><p>Your SOP adds a check at 1,000 ft: the PM reads out the latest RVR before the PF continues.<span class="fi-c">SOP 6.4 · p. 6-12</span></p></div>
+            </div>
+          </div>
+          <p class="fi-keep" data-tx="fiKeep">Answers come from your own AFM, QRH and SOP and from the EASA Easy Access Rules, each with the page it rests on. Your documents are read and stored in this browser.</p>
+          <form class="fi-ask" id="fiAskF" action="fi.html" method="get" role="search" aria-label="Ask Flight Intelligence"><label class="vh" for="fiAskIn" data-tx="fiAsk">Ask Flight Intelligence</label><input id="fiAskIn" name="q" type="text" maxlength="1500" autocomplete="off" placeholder="Ask Flight Intelligence" data-ai><button type="submit" data-tx="fiGo">Ask</button></form>
+          <p class="fi-pv" data-tx="fiPv"><b>Preview.</b> Flight Intelligence runs on a lighter AI model while NORDAP is in testing. Use answers as a study reference, and always check the official source.</p>
+        </section>
+    </div>
+  </div>
+  <nav class="fp-svc fp-band" aria-labelledby="h-svc">
+    <h2 class="vh" id="h-svc">Six services, from theory to the flight</h2>
+    <ol>
+      <li><a href="lab.html"><i>1</i><b>Virtual Labs</b><span data-tx="s1"><span class="nLabs">25</span> interactive labs on the EASA ATPL theory subjects.</span></a></li>
+      <li><a href="flows.html"><i>2</i><b>Flows</b><span data-tx="s6">Learn your airline’s flows by heart on the real cockpit, alone or with your partner.</span></a></li>
+      <li><a href="training.html"><i>3</i><b data-tx="trnB">Cockpit trainers</b><span data-tx="s5">Six cockpits you can fly, from the Cessna 172 to the A320, 737 and ATR 72, in 2D and 3D.</span></a></li>
+      <li><a href="prep.html"><i>4</i><b>Briefing pack</b><span data-tx="s3">NOTAM, weather, minima, performance, fuel, mass and balance, printed as a booklet.</span></a></li>
+      <li><a href="route.html"><i>5</i><b>Route Explorer</b><span data-tx="s2">Plan the route on a VFR map and read the terrain under it.</span></a></li>
+      <li><a href="fi.html"><i>6</i><b>Flight Intelligence</b><span data-tx="s4">Answers from your AFM, QRH and SOP, with the page each one comes from.</span></a></li>
+    </ol>
+  </nav>
 
+  <!-- 2. Subject areas -->
+  <section class="fp-sec" id="areas" aria-labelledby="h-areas">
+    <div class="fp-wrap">
       <!-- the flow trainer: the real A320 overhead panel with a flow being built, then practised (front-flow.js) -->
       <div class="fp-labs fp-flows" id="fpFlows">
         <figure class="ffl" id="ffl" aria-labelledby="flCap">
@@ -880,6 +925,7 @@ LAB.tx({
  goSt:'Åpne uværslabben', fsNote:'Høyder tegnet 1,5 ganger høyere', fsK:'Utvikling · enkeltcelle', fsLay:'Vis',
  h2b:'Fra teori til cockpit',
  p2b:'Tegn ruten, bygg briefingpakken og sjekk reglene før du flyr.',
+ nxLabs:'Fungerende modeller i EASA ATPL-fagene. Endre en verdi og se flyet reagere.',
  tRt:'Tegn ruten i 2D eller 3D og les terrenget under den.', tBp:'NOTAM, vær, minima, ytelse og drivstoff, skrevet ut som et hefte.', tFi:'Svar fra EASA-reglene og din egen AFM, QRH og SOP.',
  r1:'Slik kontrolleres innholdet', r2:'EASA-regler vi lenker til', r4:'Modellprofiler', r6:'Personvern',
  numH:'NORDAP i tall', n1:'Interaktive labber', n2:'Cockpiter i flow-treneren', n3:'Cockpittrenere du kan fly', n4:'IFR-øvelser', n5:'Typerating-spørsmål, King Air B200', n6:'Språk: engelsk og norsk', sc4:'Hvem står bak NORDAP',
