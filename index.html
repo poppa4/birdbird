@@ -6,7 +6,7 @@
 <title>NORDAP · Nordic Aviation Platform</title>
 <meta name="description" content="NORDAP is an aviation platform built in Norway for pilots, students and flight schools: 25 interactive labs on the EASA ATPL syllabus, Route Explorer, a printable briefing pack, and an instructor that answers from your own AFM, QRH and SOP.">
 <meta name="theme-color" content="#0B2545">
-<link rel="preload" as="image" href="img/front/deck-a320-2560.webp" imagesrcset="img/front/deck-a320-1280.webp 1280w, img/front/deck-a320-2560.webp 2560w, img/front/deck-a320-3840.webp 3840w" imagesizes="100vw" type="image/webp">
+<link rel="preload" as="image" href="img/front/sunset2-1400.webp" imagesrcset="img/front/sunset2-760.webp 760w, img/front/sunset2-1400.webp 1400w, img/front/sunset2-1672.webp 1672w, img/front/sunset2-2560.webp 2560w, img/front/sunset2-3344.webp 3344w, img/front/sunset2-3840.webp 3840w" imagesizes="100vw" type="image/webp">
 <link rel="stylesheet" href="lab.css?v=15">
 <link rel="stylesheet" href="site.css?v=35">
 <style>
@@ -606,29 +606,6 @@
   .nx-sheet{padding:26px 20px 24px}
   .fp .fp-lede{font-size:18px}
 }
-
-/* ---------- hero: the headline centred on navy, the A320 flight deck across the full width under it ---------- */
-.fp .nx-hero{background:radial-gradient(120% 90% at 50% 0,#14325C 0,var(--navy) 46%,#071B36 100%);text-align:center;overflow:hidden}
-.fp .nx-hero::after{display:none}
-.nx-copy{max-width:820px;margin:0 auto;padding:84px 0 0;position:relative;z-index:1}
-.nx-kick{font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#9FB2C8;margin-bottom:18px!important}
-.fp .nx-hero h1{font-size:clamp(44px,5.4vw,84px);line-height:1;letter-spacing:-.03em}
-.fp .nx-hero .fp-lede{margin:24px auto 0!important;max-width:32em;font-size:20px}
-.fp .nx-hero .fp-act{justify-content:center}
-.nx-deck{margin:8px calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));padding-bottom:150px;
-  -webkit-mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.55) 14%,#000 30%);mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.55) 14%,#000 30%)}
-.nx-deck img{display:block;width:100%;height:auto;max-width:2200px;margin:0 auto}
-@media (max-width:980px){
-  .nx-copy{padding-top:56px}
-  .nx-deck{padding-bottom:104px;margin-top:16px}
-  .nx-deck img{height:300px;object-fit:cover;object-position:50% 30%}
-}
-@media (max-width:700px){
-  .nx-copy{padding-top:40px}
-  .fp .nx-hero .fp-lede{font-size:18px}
-  .nx-deck{padding-bottom:84px}
-  .nx-deck img{height:230px}
-}
 </style>
 </head>
 <body data-home="1" data-title="NORDAP · Nordic Aviation Platform">
@@ -636,17 +613,18 @@
 <main class="fp" id="main">
 
   <!-- 1. Hero -->
-  <section class="fp-hero fp-band nx-hero" id="fpHero" aria-labelledby="fp-h1">
-    <div class="fp-wrap">
-      <div class="nx-copy">
-        <p class="nx-kick">Nordic Aviation Platform</p>
-        <h1 id="fp-h1" data-tx="h1">Welcome to NORDAP</h1>
-        <p class="fp-lede" data-tx="lede">The Nordic Aviation Platform for pilots and flight schools: theory you can see, procedures you can practise, and preparation for the flight.</p>
-        <div class="fp-act"><a class="fp-btn pri" href="lab.html">Open Virtual Labs</a><a class="fp-btn sec" href="flows.html" data-tx="bFl">Flows</a></div>
-      </div>
+  <section class="fp-hero fp-band" id="fpHero" aria-labelledby="fp-h1">
+    <div class="fp-relief" aria-hidden="true">
+      <img src="img/front/sunset2-1400.webp" srcset="img/front/sunset2-760.webp 760w, img/front/sunset2-1400.webp 1400w, img/front/sunset2-1672.webp 1672w, img/front/sunset2-2560.webp 2560w, img/front/sunset2-3344.webp 3344w, img/front/sunset2-3840.webp 3840w" sizes="100vw" width="1400" height="788" alt="" fetchpriority="high" decoding="async">
     </div>
-    <div class="nx-deck" aria-hidden="true">
-      <img src="img/front/deck-a320-2560.webp" srcset="img/front/deck-a320-1280.webp 1280w, img/front/deck-a320-2560.webp 2560w, img/front/deck-a320-3840.webp 3840w" sizes="100vw" width="3840" height="1264" alt="" fetchpriority="high" decoding="async">
+    <div class="fp-wrap">
+      <div class="fp-stage">
+        <div class="fp-copy">
+          <h1 id="fp-h1" data-tx="h1">Welcome to NORDAP</h1>
+          <p class="fp-lede" data-tx="lede">The Nordic Aviation Platform for pilots and flight schools: theory you can see, procedures you can practise, and preparation for the flight.</p>
+          <div class="fp-act"><a class="fp-btn pri" href="lab.html">Open Virtual Labs</a><a class="fp-btn sec" href="flows.html" data-tx="bFl">Flows</a></div>
+        </div>
+      </div>
     </div>
   </section>
     <!-- 2. The sheet and the Flight Intelligence box, straddling the photograph -->
