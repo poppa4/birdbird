@@ -469,7 +469,7 @@ body.depth-instructor .memo h3{font-size:20px}
         <div class="pst"><span>Grensesjikt</span><div class="status ok" id="pStatus">Festet</div></div>
       </div>
       <div class="pctl">
-        <div class="ctl"><label for="p_alpha"><span>Anstigningsvinkel α</span><output id="po_alpha"></output></label>
+        <div class="ctl"><label for="p_alpha"><span>Angrepsvinkel α</span><output id="po_alpha"></output></label>
           <input type="range" id="p_alpha" min="-6" max="24" step="0.1" value="6"></div>
         <div class="ctl" id="reWrap"><label for="p_re"><span>Reynolds-tall</span><output id="po_re"></output></label>
           <input type="range" id="p_re" min="5" max="7.5" step="0.01" value="6.7">
@@ -497,7 +497,7 @@ body.depth-instructor .memo h3{font-size:20px}
       <div class="pgrid">
         <div class="rgroup pread" id="pRead"></div>
         <div class="chart"><h3>Trykkfordeling −Cp</h3><p>Sug opp. Usynlig strømning rundt profilet.</p><canvas id="chCp"></canvas></div>
-        <div class="chart"><h3>CL mot α, med grensesjikt</h3><p>Topp = CL maks ved kritisk anstigningsvinkel</p><canvas id="chPolar"></canvas></div>
+        <div class="chart"><h3>CL mot α, med grensesjikt</h3><p>Topp = CL maks ved kritisk angrepsvinkel</p><canvas id="chPolar"></canvas></div>
       </div>
       <div class="memo" id="memoHL"><span class="eyebrow" id="mhE"></span><h3 id="mhH"></h3><p id="mhP"></p></div>
     </section>
@@ -526,7 +526,7 @@ body.depth-instructor .memo h3{font-size:20px}
               <div class="hint" id="t3SlipH"></div>
             </div>
             <div class="t3g"><h3>Forhold</h3>
-              <div class="ctl"><label for="t3_alpha"><span>Anstigningsvinkel α</span><output id="t3o_alpha"></output></label>
+              <div class="ctl"><label for="t3_alpha"><span>Angrepsvinkel α</span><output id="t3o_alpha"></output></label>
                 <input type="range" id="t3_alpha" min="-6" max="24" step="0.5"></div>
               <div class="ctl"><label for="t3_tas"><span>Sann fart (TAS)</span><output id="t3o_tas"></output></label>
                 <input type="range" id="t3_tas" min="100" max="560" step="1"></div>
@@ -773,10 +773,10 @@ window.addEventListener('error',function(e){ var b=document.getElementById('errb
 <script src="three.min.js?v=128"></script>
 <script src="tunnel3d.js?v=4"></script>
 <script src="cfd3d.js?v=7"></script>
-<script src="lab.js?v=56"></script>
+<script src="lab.js?v=57"></script>
 <script src="concepts.js?v=9"></script>
 <script src="corepic.js?v=13"></script>
-<script src="pic-tunnel.js?v=1"></script>
+<script src="pic-tunnel.js?v=2"></script>
 <script src="chartnote.js?v=3"></script>
 <script src="physics.js?v=14"></script>
 <script src="section.js?v=12"></script>
@@ -845,10 +845,10 @@ const ILL={
   ${tx(30,40,'VS = VS1g · √n','#e2e8ee')}`); }
 };
 const KC=[
- ['aoa',{en:'Angle of attack, pitch and flight path',no:'Anstigningsvinkel, pitch og flybane'},
-  {en:'<b>Angle of attack α</b> is the angle between the chord line and the relative wind. <b>Pitch θ</b> is measured from the horizon to the chord (fuselage); the <b>flight path γ</b> from the horizon to the velocity. Wings level: θ = γ + α.',no:'<b>Anstigningsvinkel α</b> er vinkelen mellom kordelinjen og den relative vinden. <b>Pitch θ</b> måles fra horisonten til korden (flykroppen); <b>flybanen γ</b> fra horisonten til fartsvektoren. Med vingene vannrett: θ = γ + α.'},
+ ['aoa',{en:'Angle of attack, pitch and flight path',no:'Angrepsvinkel, pitch og flybane'},
+  {en:'<b>Angle of attack α</b> is the angle between the chord line and the relative wind. <b>Pitch θ</b> is measured from the horizon to the chord (fuselage); the <b>flight path γ</b> from the horizon to the velocity. Wings level: θ = γ + α.',no:'<b>Angrepsvinkel α</b> er vinkelen mellom kordelinjen og den relative vinden. <b>Pitch θ</b> måles fra horisonten til korden (flykroppen); <b>flybanen γ</b> fra horisonten til fartsvektoren. Med vingene vannrett: θ = γ + α.'},
   {en:'The wing only “knows” α. In a descent on the approach the pitch can be low while α is high; in a climb the pitch is high at the same α. The stall comes at the critical α whatever the attitude.',no:'Vingen «kjenner» bare α. I nedstigning på innflyging kan pitch være lav mens α er høy; i stigning er pitch høy ved samme α. Stallen kommer ved kritisk α uansett attitude.'}],
- ['crit',{en:'Critical angle of attack',no:'Kritisk anstigningsvinkel'},
+ ['crit',{en:'Critical angle of attack',no:'Kritisk angrepsvinkel'},
   {en:'The α where CL peaks (<b>CL max</b>). Past it the flow separates over much of the upper surface and lift falls: that is the <b>stall</b>.',no:'Den α der CL er størst (<b>CL maks</b>). Forbi den løsner strømningen over store deler av oversiden og løftet faller: det er <b>stall</b>.'},
   {en:'For one configuration the critical α is almost fixed. It changes with slats and flaps, contamination (ice, frost), Mach and Reynolds number, but not with weight or bank.',no:'For én konfigurasjon er kritisk α nesten fast. Den endres med lameller og klaffer, forurensning (is, rim), Mach og Reynolds-tall, men ikke med vekt eller krengning.'}],
  ['stag',{en:'Stagnation point',no:'Stagnasjonspunkt'},
@@ -922,12 +922,12 @@ const NO2EN={
 'CL mot α':'CL vs α','Løftskurve med stall og nåværende punkt':'Lift curve with stall and current point',
 'Profilsnitt · 2D':'Airfoil section · 2D','Grensesjikt og separasjon':'Boundary layer and separation',
 'Profil og klaff følger valget i panelet. Relativ vind fra venstre.':'Airfoil and flap follow the panel selection. Relative wind from the left.',
-'Festet':'Attached','Grensesjikt':'Boundary layer','Anstigningsvinkel α':'Angle of attack α','Reynolds-tall':'Reynolds number',
+'Festet':'Attached','Grensesjikt':'Boundary layer','Angrepsvinkel α':'Angle of attack α','Reynolds-tall':'Reynolds number',
 'Hent fra fart, korde og høyde i tunnelen':'Take from tunnel speed, chord and altitude','Forkant':'Leading edge','Vis':'Show',
 'Trykkpiler':'Pressure arrows','Laminært':'Laminar','Turbulent':'Turbulent','Separert':'Separated',
 'Grensesjikt tegnet 5× tykkere':'Boundary layer drawn 5× thicker','Trykkfordeling −Cp':'Pressure distribution −Cp',
 'Sug opp. Usynlig strømning rundt profilet.':'Suction up. Inviscid flow around the airfoil.',
-'CL mot α, med grensesjikt':'CL vs α, with boundary layer','Topp = CL maks ved kritisk anstigningsvinkel':'Peak = CL max at the critical angle of attack',
+'CL mot α, med grensesjikt':'CL vs α, with boundary layer','Topp = CL maks ved kritisk angrepsvinkel':'Peak = CL max at the critical angle of attack',
 'Prøv dette':'Try this','Bakkeeffekt':'Ground effect','Test deg selv':'Test yourself',
 'FOOT':'Teaching model with three aircraft: an Airbus A320 with typical values (not FCOM data), and a Beechcraft King Air B200 and a Diamond DA42 NG built from published dimensions (sources under “Model and data” in the 3D tunnel). Lift and induced drag come from a vortex lattice with 150 panels (30 spanwise, 5 chordwise); the trailing vortices leave the trailing edge along the free stream. Wing thickness, fuselage and nacelles are modelled as source distributions. Slats and Fowler flaps change the section CL max and camber; the stall and the separated wake use approximate section data. The aerofoil section uses a panel method with an integral boundary-layer method. The streamlines are integrated with fourth-order Runge–Kutta through the velocity field induced by the lattice, whose trailing vortices roll up into the tip vortices, and by the source distributions. Smoke is made of particles carried by the same pre-computed velocity grid (trilinear interpolation, midpoint integration) from a rake upstream; its growth, turbulent break-up behind the separation line and the recirculation over a stalled wing are visual approximations driven by the section stall model, not a turbulence simulation. In the chordwise laser sheet the smoke is kept in the sheet (in-plane motion only) and the model is cut away at the sheet. Colour scales for the streamlines, the slice and the cross-flow plane are set automatically from the values on screen; the vorticity scale is logarithmic. Tufts follow the local surface flow and the same separation model; their flutter is illustrative. The Streamlines tab seeds several hundred lines along the span, around the fuselage and around the start of the tip vortex (fewer on phones); close to the vortex core the cross-flow follows the model’s own rolled-up vortex (a Lamb–Oseen core carrying the circulation from the lattice). The velocity slice shows |V|/V∞ from the same field; in the separated region its velocity deficit comes from the section stall model, smoothed across the span. Compressibility, the effect of engine thrust on the wing loads and the fly-by-wire protections are not included. In the 3D tunnel the leading-edge condition scales each strip’s cl max by the ratio of CL max (contaminated ÷ clean) from the airfoil-section boundary-layer model and moves the onset of trailing-edge separation forward by the same model’s difference; the unsteady motion in the separated wake, the recirculation loops and the oil-flow streaks are illustrative. The balance Cm is for the wing alone about the quarter-chord point of the mean aerodynamic chord. Sideslip and ground effect are not modelled in the 3D tunnel (the vortex lattice has a symmetric planform and is in free air). In the aerofoil section, CONF 1–FULL draw a slat, a main element and a Fowler flap with slots between them. The panel method solves the envelope of the three elements as one body; each slot restarts the boundary layer on the next element (the fresh-boundary-layer effect); the stall limit is the clean section’s CL max from the same boundary-layer model plus empirical flap and slat increments (the same increments as the 3D strips). The slot flow is drawn schematically. Spoilers use an empirical decambering and drag model; the rolling moment comes from the vortex-lattice load. The stall panel uses VS = VS1g·√n and VS ∝ √W with CL max from the 3D model; the stall-warning margin shown is the certification minimum (5 kt or 5 %), not a type-specific value. Deep stall and spin are shown as schematic illustrations only. The 3D tunnel also draws a transition line from a strip-by-strip boundary-layer analysis, a profile-drag wake, a Langevin turbulence model for the smoke, a vortex iso-surface from the Lamb–Oseen core and, for the twins, an actuator-disc propeller slipstream (described under “Model and data”). Use the numbers to understand relationships, not for operational decisions.',
 'Flyging':'Flight','Styr med fart':'Fly by speed','Styr med α':'Set α directly','Vinge':'Wing','Profil':'Airfoil','Atmosfære':'Atmosphere','Visning':'Display',
@@ -1132,7 +1132,7 @@ function applyStatic(){
 
 // språk og lab-meny tidlig, så siden er på riktig språk selv om 3D-delen feiler
 applyStatic(); document.title=T('Vindtunnelen')+' · NORDAP';
-if(window.LAB){ LAB.tx({tPurp:'Sett et vingeprofil og et helt fly i en vindtunnel. Endre anstigningsvinkel, fart, klaffer og krengning, og se hvor luftstrømmen løsner, hvordan løft og motstand endrer seg, og hvorfor vingen staller.'}); LAB.head('tunnel'); LAB.onLang(()=>{ if(LAB.lang!==LANG){ try{ setLang(LAB.lang); }catch(e){ LANG=LAB.lang; try{ localStorage.setItem('vlab-lang',LANG); }catch(_){} applyStatic(); document.title=T('Vindtunnelen')+' · NORDAP'; } } }); }
+if(window.LAB){ LAB.tx({tPurp:'Sett et vingeprofil og et helt fly i en vindtunnel. Endre angrepsvinkel, fart, klaffer og krengning, og se hvor luftstrømmen løsner, hvordan løft og motstand endrer seg, og hvorfor vingen staller.'}); LAB.head('tunnel'); LAB.onLang(()=>{ if(LAB.lang!==LANG){ try{ setLang(LAB.lang); }catch(e){ LANG=LAB.lang; try{ localStorage.setItem('vlab-lang',LANG); }catch(_){} applyStatic(); document.title=T('Vindtunnelen')+' · NORDAP'; } } }); }
 
 /* ---------------- Tilstand ---------------- */
 const AC0=P.AIRCRAFT.a320;
@@ -1186,7 +1186,7 @@ const sliders = {};
 const defs = {
   flightCtl:[
     {k:'ias',  label:'Indikert fart (IAS)', min:100,max:350,step:1, f:v=>nf(v,0)+' kt'},
-    {k:'alpha',label:'Anstigningsvinkel α', min:-6,max:24,step:0.1, f:v=>nf(v,1)+'°'},
+    {k:'alpha',label:'Angrepsvinkel α', min:-6,max:24,step:0.1, f:v=>nf(v,1)+'°'},
     {k:'bank', label:'Krengning', min:0,max:67,step:1, f:v=>nf(v,0)+'°  ('+nf(1/Math.cos(v*DEG),2)+' g)'},
     {k:'mass', label:'Masse', min:42000,max:78000,step:500, f:v=>nf(v/1000,1)+' t'}],
   wingCtl:[
@@ -2969,9 +2969,9 @@ new ResizeObserver(()=>{resize(); drawCharts();}).observe(vp);
 if(window.CN){
   CN.add('chSpan',{read:{en:'Lift along the span, tip to tip. Blue is this wing; the dashed line is the ideal elliptical shape.',no:'Løft langs spennet, tipp til tipp. Blått er denne vingen; den stiplede linjen er den ideelle elliptiske formen.'},take:{en:'The closer to the ellipse, the less induced drag for the same lift.',no:'Jo nærmere ellipsen, desto mindre indusert motstand for samme løft.'}});
   CN.add('chStall',{read:{en:'How close each part of the span is to stalling (1.0 = stalled).',no:'Hvor nær hver del av spennet er å stalle (1,0 = stallet).'},take:{en:'You want the root to reach 1.0 first, so the ailerons near the tips keep working.',no:'Du vil at roten skal nå 1,0 først, så krengerorene ute ved tippene fortsatt virker.'}});
-  CN.add('chCL',{read:{en:'Across: angle of attack α. Up: lift coefficient CL. The dot is the wing now.',no:'Bortover: anstigningsvinkel α. Oppover: løftekoeffisient CL. Punktet er vingen nå.'},take:{en:'Lift grows with α until the critical angle; past the peak the wing stalls and lift falls.',no:'Løftet vokser med α fram til kritisk vinkel; forbi toppen staller vingen og løftet faller.'}});
+  CN.add('chCL',{read:{en:'Across: angle of attack α. Up: lift coefficient CL. The dot is the wing now.',no:'Bortover: angrepsvinkel α. Oppover: løftekoeffisient CL. Punktet er vingen nå.'},take:{en:'Lift grows with α until the critical angle; past the peak the wing stalls and lift falls.',no:'Løftet vokser med α fram til kritisk vinkel; forbi toppen staller vingen og løftet faller.'}});
   CN.add('chCp',{read:{en:'Pressure along the chord, leading edge on the left. Up means suction (−Cp): blue is the top surface, amber the bottom.',no:'Trykk langs korden, forkanten til venstre. Opp betyr sug (−Cp): blått er oversiden, gult undersiden.'},take:{en:'Most lift comes from suction on the top, close to the leading edge.',no:'Mesteparten av løftet kommer fra sug på oversiden, nær forkanten.'},full:()=>{ try{ SEC.update(true); }catch(e){} }});
-  CN.add('chPolar',{read:{en:'Across: angle of attack α. Up: lift coefficient CL. The dot is the section now.',no:'Bortover: anstigningsvinkel α. Oppover: løftekoeffisient CL. Punktet er profilet nå.'},take:{en:'The peak is CL max at the critical angle of attack: beyond it the flow separates and the wing stalls, at any speed.',no:'Toppen er CL maks ved kritisk anstigningsvinkel: forbi den separerer strømningen og vingen staller, ved hvilken som helst fart.'},full:()=>{ try{ SEC.update(true); }catch(e){} }});
+  CN.add('chPolar',{read:{en:'Across: angle of attack α. Up: lift coefficient CL. The dot is the section now.',no:'Bortover: angrepsvinkel α. Oppover: løftekoeffisient CL. Punktet er profilet nå.'},take:{en:'The peak is CL max at the critical angle of attack: beyond it the flow separates and the wing stalls, at any speed.',no:'Toppen er CL maks ved kritisk angrepsvinkel: forbi den separerer strømningen og vingen staller, ved hvilken som helst fart.'},full:()=>{ try{ SEC.update(true); }catch(e){} }});
   CN.add('t3Pol',{read:{en:'Drawn as you change α. Left: lift against angle. Right: lift against drag (the drag polar).',no:'Tegnes mens du endrer α. Venstre: løft mot vinkel. Høyre: løft mot motstand (motstandspolaren).'},take:{en:'Compare a saved run (A) with now to see what flaps, slats or speed do to lift and drag.',no:'Sammenlign en lagret kjøring (A) med nå for å se hva klaff, lameller eller fart gjør med løft og motstand.'}});
 }
 
@@ -3093,7 +3093,7 @@ function renderReadouts(alpha){
   document.getElementById('readouts').innerHTML=html;
   const marg=w.alphaStall/DEG-alpha, K=(lab,val,cls,sub)=>`<div class="kpi"><span>${T(lab)}</span><b class="${cls||''}">${val}</b>${sub?`<small>${sub}</small>`:''}</div>`;
   document.getElementById('kpis').innerHTML=
-    K('Anstigningsvinkel α',nf(alpha,1)+'°','hl')+
+    K('Angrepsvinkel α',nf(alpha,1)+'°','hl')+
     K('Løftkoeffisient CL',nf(r.CL,2),'',T('CL maks')+' '+nf(w.CLmax,2))+
     K('Glidetall L/D',nf(ld,1))+
     K('Stallfart Vs (1 g)',nf(o.vs1,0)+' kt',st.ias<o.vsn?'bad':'',o.n>1.01? T('Vs i krengning')+' '+nf(o.vsn,0)+' kt':'')+
@@ -3481,7 +3481,7 @@ const SEC=window.SEC=(function(){
     ctx.closePath(); ctx.fillStyle=gr; ctx.fill(); ctx.strokeStyle='rgba(235,241,246,.75)'; ctx.lineWidth=1; ctx.stroke(); }
     if(g.flapEff&&!HLE){ const h=TP(0.75,upperY(0.75)), l=TP(0.75,lowerY(0.75)); ctx.strokeStyle='rgba(30,38,46,.6)'; ctx.beginPath(); ctx.moveTo(h[0],h[1]); ctx.lineTo(l[0],l[1]); ctx.stroke(); }
     ctx.setLineDash([4,4]); ctx.strokeStyle='rgba(226,232,238,.28)'; ctx.beginPath(); let p=TP(-0.15,0); ctx.moveTo(p[0],p[1]); p=TP(1.15,0); ctx.lineTo(p[0],p[1]); ctx.stroke(); ctx.setLineDash([]);
-    // anstigningsvinkelen: mellom relativ vind (vannrett) og kordelinjen, tegnet foran forkanten
+    // angrepsvinkelen: mellom relativ vind (vannrett) og kordelinjen, tegnet foran forkanten
     { const L0=TP(0,0), R=Math.min(W*0.2,(0.42/(XR[1]-XR[0]))*W), a=ps.alpha*DEG, ca=Math.cos(a), sa=Math.sin(a);
       ctx.strokeStyle='rgba(127,203,232,.55)'; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(L0[0],L0[1]); ctx.lineTo(L0[0]-R*1.15,L0[1]); ctx.stroke(); ctx.setLineDash([]);
       ctx.strokeStyle='rgba(226,232,238,.5)'; ctx.beginPath(); ctx.moveTo(L0[0],L0[1]); ctx.lineTo(L0[0]-R*1.15*ca,L0[1]-R*1.15*sa); ctx.stroke();
@@ -4098,19 +4098,19 @@ function ro(){ const v=vals(); const r=(k,val,c)=>`<div class="rrow"><span>${L(k
 function u(){ draw(); ro(); }
 let hs=null;
 function mk(){ el('gT').textContent=L({en:'Ground effect',no:'Bakkeeffekt'});
-  el('gL').textContent=L({en:'Within about one wingspan of the runway the ground blocks part of the downwash. The wing then flies as if it had a higher aspect ratio: less induced drag and more lift at the same angle of attack. Move the aircraft down towards the runway.',no:'Innenfor omtrent én spennvidde fra banen sperrer bakken for en del av nedvinden. Vingen flyr da som om den hadde høyere sideforhold: mindre indusert motstand og mer løft ved samme anstigningsvinkel. Flytt flyet ned mot banen.'});
+  el('gL').textContent=L({en:'Within about one wingspan of the runway the ground blocks part of the downwash. The wing then flies as if it had a higher aspect ratio: less induced drag and more lift at the same angle of attack. Move the aircraft down towards the runway.',no:'Innenfor omtrent én spennvidde fra banen sperrer bakken for en del av nedvinden. Vingen flyr da som om den hadde høyere sideforhold: mindre indusert motstand og mer løft ved samme angrepsvinkel. Flytt flyet ned mot banen.'});
   el('geCtl').innerHTML=''; const a=ac();
   hs=LAB.slider(el('geCtl'),{label:L({en:'Height of the wing above the runway',no:'Vingens høyde over banen'}),min:Math.round(a.h0/a.b*1000)/1000,max:1,step:0.005,v:G.hb,f:v=>nf(v*a.b*FT,0)+' ft ('+nf(v*a.b,1)+' m)',on:v=>{ G.hb=v; u(); }});
   el('geTxt').innerHTML=[
    [{en:'In the flare',no:'I utflatingen'},{en:'Induced drag falls as the aircraft enters ground effect, so excess speed bleeds off slowly and the aircraft floats. Each extra 10 kt over the threshold costs a long float; on a jet that means landing distance. Arrive at the target speed.',no:'Indusert motstand faller når flyet kommer inn i bakkeeffekt, så overskuddsfart forsvinner sakte og flyet flyter. Hver 10 kt for mye over terskelen koster en lang flyteetappe; på et jetfly betyr det landingsdistanse. Kom inn på riktig fart.'}],
-   [{en:'Pitch and the tail',no:'Pitch og haleflaten'},{en:'Less downwash also reaches the tailplane, so its angle of attack rises and the nose tends to drop: more back pressure (or trim) is needed in the flare. Static ports may sense a slightly different pressure, so the ASI and altimeter can read a little differently close to the ground.',no:'Mindre nedvind når også haleflaten, så anstigningsvinkelen der øker og nesen vil ned: det trengs mer trykk bakover (eller trim) i utflatingen. Statiske åpninger kan få litt annet trykk, så fartsmåler og høydemåler kan vise litt annerledes nær bakken.'}],
+   [{en:'Pitch and the tail',no:'Pitch og haleflaten'},{en:'Less downwash also reaches the tailplane, so its angle of attack rises and the nose tends to drop: more back pressure (or trim) is needed in the flare. Static ports may sense a slightly different pressure, so the ASI and altimeter can read a little differently close to the ground.',no:'Mindre nedvind når også haleflaten, så angrepsvinkelen der øker og nesen vil ned: det trengs mer trykk bakover (eller trim) i utflatingen. Statiske åpninger kan få litt annet trykk, så fartsmåler og høydemåler kan vise litt annerledes nær bakken.'}],
    [{en:'On take-off',no:'Ved avgang'},{en:'The aircraft can lift off below the speed it needs to climb out of ground effect. As it climbs above about half a span, induced drag and the required α rise: an aircraft lifted off too early or too heavy can sink back or fail to accelerate. Rotate at the scheduled speed.',no:'Flyet kan løfte seg under farten det trenger for å stige ut av bakkeeffekten. Når det stiger over omtrent en halv spennvidde, øker indusert motstand og nødvendig α: et fly som løftes for tidlig eller er for tungt, kan synke tilbake eller ikke akselerere. Roter på beregnet fart.'}]
   ].map(([t,d])=>`<div><b>${L(t)}</b>${L(d)}</div>`).join('');
   el('qT').textContent=L({en:'Test yourself',no:'Test deg selv'}); }
 let vis=false; LAB.visible(el('geCv'),on=>vis=on); (function lp(){ requestAnimationFrame(lp); if(vis) draw(); })();
 mk(); u(); LAB.onLang(()=>{ mk(); u(); });
 LAB.quiz(el('qbox'),'tunnel',()=>LAB.shuffle([
- {q:{en:'A wing stalls when…',no:'En vinge staller når …'},a:[{en:'it exceeds the critical angle of attack, at any speed or attitude',no:'den overskrider kritisk anstigningsvinkel, ved enhver fart eller attitude'},{en:'the airspeed falls below the published stall speed',no:'farten faller under publisert stallfart'},{en:'the nose is raised too high above the horizon',no:'nesen løftes for høyt over horisonten'}],c:0,e:{en:'The stall speed is only the speed at which 1 g needs the critical α. In a turn or a pull-up the wing reaches it at a higher speed.',no:'Stallfarten er bare farten der 1 g krever kritisk α. I en sving eller et opptrekk når vingen den ved høyere fart.'}},
+ {q:{en:'A wing stalls when…',no:'En vinge staller når …'},a:[{en:'it exceeds the critical angle of attack, at any speed or attitude',no:'den overskrider kritisk angrepsvinkel, ved enhver fart eller attitude'},{en:'the airspeed falls below the published stall speed',no:'farten faller under publisert stallfart'},{en:'the nose is raised too high above the horizon',no:'nesen løftes for høyt over horisonten'}],c:0,e:{en:'The stall speed is only the speed at which 1 g needs the critical α. In a turn or a pull-up the wing reaches it at a higher speed.',no:'Stallfarten er bare farten der 1 g krever kritisk α. I en sving eller et opptrekk når vingen den ved høyere fart.'}},
  {q:{en:'As α increases on a normal aerofoil, where does the flow first separate?',no:'Når α øker på et vanlig profil, hvor løsner strømningen først?'},a:[{en:'At the trailing edge, moving forward as α grows',no:'Ved bakkanten, og flytter seg forover når α øker'},{en:'At the leading edge, all at once',no:'Ved forkanten, alt på en gang'},{en:'At the stagnation point',no:'Ved stagnasjonspunktet'}],c:0,e:{en:'The boundary layer meets the steepest pressure rise near the trailing edge. A thin or sharp-nosed section, or ice, can stall from the leading edge instead.',no:'Grensesjiktet møter den bratteste trykkøkningen nær bakkanten. Et tynt profil med skarp forkant, eller is, kan stalle fra forkanten i stedet.'}},
  {q:{en:'Why does even thin frost on the leading edge matter?',no:'Hvorfor betyr selv tynt rim på forkanten noe?'},a:[{en:'It trips the boundary layer early, so CL max and the critical α fall',no:'Den gjør grensesjiktet turbulent tidlig, så CL maks og kritisk α faller'},{en:'It adds a lot of weight',no:'Den gir mye ekstra vekt'},{en:'It only increases drag, not the stall speed',no:'Den øker bare motstanden, ikke stallfarten'}],c:0,e:{en:'Roughness thickens the boundary layer, which then cannot follow the pressure rise as far. The stall warning may come late because it is set for a clean wing.',no:'Ruhet gjør grensesjiktet tykkere, og da tåler det mindre trykkøkning. Stallvarselet kan komme sent fordi det er innstilt for en ren vinge.'}},
  {q:{en:'What does washout (tip twisted nose-down) do?',no:'Hva gjør washout (tippen vridd med nesen ned)?'},a:[{en:'Makes the root stall first, so the ailerons keep working',no:'Får roten til å stalle først, så krengerorene fortsatt virker'},{en:'Increases the lift at the tip',no:'Øker løftet ved tippen'},{en:'Reduces the stall speed by half',no:'Halverer stallfarten'}],c:0,e:{en:'The tip meets the air at a lower α than the root, so it reaches the critical angle later.',no:'Tippen møter luften med lavere α enn roten, så den når kritisk vinkel senere.'}},
@@ -4217,7 +4217,7 @@ function cards(){
   if(CV2) drawSpan();
 }
 function buildCards(){
-  el('stCards').innerHTML=`<div class="stc"><h3>${L({en:'Critical angle of attack',no:'Kritisk anstigningsvinkel'})}</h3><p>${L({en:'The wing stalls when it exceeds the critical α. Mass and bank only change the speed at which it gets there; the configuration changes the critical α itself.',no:'Vingen staller når den overskrider kritisk α. Masse og krengning endrer bare farten den kommer dit ved; konfigurasjonen endrer selve den kritiske α.'})}</p><table id="stTab"></table></div>
+  el('stCards').innerHTML=`<div class="stc"><h3>${L({en:'Critical angle of attack',no:'Kritisk angrepsvinkel'})}</h3><p>${L({en:'The wing stalls when it exceeds the critical α. Mass and bank only change the speed at which it gets there; the configuration changes the critical α itself.',no:'Vingen staller når den overskrider kritisk α. Masse og krengning endrer bare farten den kommer dit ved; konfigurasjonen endrer selve den kritiske α.'})}</p><table id="stTab"></table></div>
   <div class="stc"><h3>${L({en:'Where the wing stalls first',no:'Hvor vingen staller først'})}</h3><canvas id="stSpan"></canvas><div class="seg" id="stWash"><button type="button" data-v="1">Washout ${nf(A.twist,1).replace('-','−')}°</button><button type="button" data-v="0">${L({en:'No twist',no:'Ingen vridning'})}</button></div><p>${L({en:'cl ÷ cl max along the half span at the wing’s critical α (3D model). Designers want the root to stall first, so the ailerons keep working and the buffet warns. Washout (tip twisted nose-down) moves the first stall inboard and raises the critical α; '+(acId==='a320'?'a swept, tapered wing like this still tends to stall well out, which is why the slats run to the tip.':'on this straight, tapered wing the root goes first'+(acId==='b200'?', helped by the stall strips on the inboard leading edge.':'.'))+'',no:'cl ÷ cl maks langs halvspennet ved vingens kritiske α (3D-modellen). Konstruktørene vil at roten skal stalle først, så krengerorene virker og buffeten varsler. Washout (tippen vridd med nesen ned) flytter den første stallen innover og øker kritisk α; '+(acId==='a320'?'en pilvinge med avsmalning som denne staller likevel gjerne langt ute, derfor går lamellene helt ut til tippen.':'på denne rette, avsmalnende vingen går roten først'+(acId==='b200'?', hjulpet av stallstripene på den indre forkanten.':'.'))})}</p></div>`;
   el('stDeep').innerHTML=`<div class="stc"><h3>${L({en:'Stall warning and buffet',no:'Stallvarsel og buffet'})}</h3><p>${L({en:'Certification requires a clear warning with enough margin before the stall, at least 5 kt or 5 %, whichever is greater (CS 25.207). Natural warning is buffet: separated flow shakes the wing and tail. In a turn or a pull-up the buffet and the stall both come at a higher speed (√n).',no:'Sertifiseringen krever et tydelig varsel med nok margin før stall, minst 5 kt eller 5 %, det som er størst (CS 25.207). Naturlig varsel er buffet: separert strømning rister vinge og hale. I sving eller opptrekk kommer både buffet og stall ved høyere fart (√n).'})}</p><p>${L({en:'The A320 in normal law limits α with its protections (not modelled here). In alternate or direct law, and on most aircraft, the warning and your own α awareness are what stand between you and the stall.',no:'A320 i normal law begrenser α med beskyttelsene sine (ikke modellert her). I alternate eller direct law, og på de fleste fly, er det varselet og din egen α-bevissthet som står mellom deg og stallen.'})}</p></div>
   <div class="stc"><h3>${L({en:'T-tail deep stall',no:'Dypstall med T-hale'})}</h3>${deepSvg()}<p>${L({en:'With a T-tail (often with rear engines), at very high α the separated wake from the wing and nacelles can blanket the tailplane. The elevator then loses the authority to lower the nose and the aircraft can stay locked in the stall. Stick pushers and α limits prevent it; a low tail like the A320’s is not prone to it.',no:'Med T-hale (ofte med motorer bak) kan det separerte kjølvannet fra vinge og motorgondoler legge seg over haleflaten ved svært høy α. Høyderoret mister da evnen til å senke nesen, og flyet kan bli låst i stallen. «Stick pusher» og α-grenser hindrer det; en lav hale som på A320 er lite utsatt.'})}</p></div>
@@ -4250,7 +4250,7 @@ function drawSpan(){ const g=CV2.ctx, W=CV2.w, H=CV2.h; if(!W) return; g.clearRe
 function stallText(){
   el('stE').textContent=L({en:'Stall · speed, mass, load factor, configuration',no:'Stall · fart, masse, lastfaktor, konfigurasjon'});
   el('stT').textContent=L({en:'Stall and stall speed',no:'Stall og stallfart'});
-  el('stL').textContent=L({en:'The wing stalls at the critical angle of attack. Mass, bank and configuration change the speed at which you get there. Numbers from the 3D model ('+A.full+'; teaching values).',no:'Vingen staller ved kritisk anstigningsvinkel. Masse, krengning og konfigurasjon endrer farten du kommer dit ved. Tall fra 3D-modellen ('+A.full+'; undervisningsverdier).'});
+  el('stL').textContent=L({en:'The wing stalls at the critical angle of attack. Mass, bank and configuration change the speed at which you get there. Numbers from the 3D model ('+A.full+'; teaching values).',no:'Vingen staller ved kritisk angrepsvinkel. Masse, krengning og konfigurasjon endrer farten du kommer dit ved. Tall fra 3D-modellen ('+A.full+'; undervisningsverdier).'});
   el('stCap').textContent=L({en:'Speed scale (IAS): red = below the stall speed in this turn, amber = the stall-warning margin, green = flyable; red dots under the bar = above VFE.',no:'Fartsskala (IAS): rødt = under stallfarten i denne svingen, gult = marginen for stallvarsel, grønt = flybart; røde prikker under baren = over VFE.'});
   el('stFly').textContent=L({en:'Fly into a stall in the 3D tunnel →',no:'Fly inn i stall i 3D-tunnelen →'});
 }
@@ -4266,7 +4266,7 @@ setInterval(()=>{ if(ready&&window.__tun&&document.visibilityState==='visible') 
 function debrief(){
   el('kpT').textContent=L({en:'Key points',no:'Det viktigste'});
   el('kpList').innerHTML=[
-   {en:'<b>The wing only knows the angle of attack.</b> Lift depends on α and speed, not on where the nose points.',no:'<b>Vingen kjenner bare anstigningsvinkelen.</b> Løftet avhenger av α og fart, ikke av hvor nesen peker.'},
+   {en:'<b>The wing only knows the angle of attack.</b> Lift depends on α and speed, not on where the nose points.',no:'<b>Vingen kjenner bare angrepsvinkelen.</b> Løftet avhenger av α og fart, ikke av hvor nesen peker.'},
    {en:'<b>Lift is mostly suction on the top surface.</b> CL rises about 0.1 per degree until the critical α.',no:'<b>Løft er mest sug på oversiden.</b> CL øker omtrent 0,1 per grad fram til kritisk α.'},
    {en:'<b>The stall comes at the critical α</b>, at any speed, weight or attitude. Recover by reducing α first.',no:'<b>Stallen kommer ved kritisk α</b>, uansett fart, vekt eller stilling. Gjenvinn ved å redusere α først.'},
    {en:'<b>Stall speed rises with √mass and √load factor</b> (60° bank: + 41 %) and falls when flaps raise CL max.',no:'<b>Stallfarten øker med √masse og √lastfaktor</b> (60° krengning: + 41 %) og faller når klaff øker CL maks.'},
@@ -4296,7 +4296,7 @@ const TASKS=[
   e:()=>[t2('Yes. n = 1/cos 60° = 2, and VS = 115 × √2 ≈ 163 kt. The critical α is the same; the wing just needs more speed to make 2 g.','Ja. n = 1/cos 60° = 2, og VS = 115 × √2 ≈ 163 kt. Kritisk α er den samme; vingen trenger bare mer fart for å lage 2 g.'),
     t2('Not quite. The stall speed grows with √n, not with n: √2 ≈ 1.41. Show it in the model.','Ikke helt. Stallfarten øker med √n, ikke med n: √2 ≈ 1,41. Se det i modellen.')],
   show:()=>STALLP.set({bank:60},true)},
- {k:'slat',q:t2('Which device mainly raises the critical angle of attack?','Hvilken innretning øker først og fremst den kritiske anstigningsvinkelen?'),opts:[t2('Slats','Lameller'),t2('Trailing-edge flaps','Bakkantklaffer'),t2('Spoilers','Spoilere'),t2('Ailerons','Krengeror')],c:0,
+ {k:'slat',q:t2('Which device mainly raises the critical angle of attack?','Hvilken innretning øker først og fremst den kritiske angrepsvinkelen?'),opts:[t2('Slats','Lameller'),t2('Trailing-edge flaps','Bakkantklaffer'),t2('Spoilers','Spoilere'),t2('Ailerons','Krengeror')],c:0,
   e:()=>[t2('Yes. Slats delay separation at the leading edge, so the wing reaches a higher α before it stalls. Flaps shift the whole lift curve up, and the critical α is lower than with slats alone.','Ja. Lameller utsetter separasjonen ved forkanten, så vingen når høyere α før den staller. Klaffer løfter hele løftkurven, og kritisk α blir lavere enn med bare lameller.'),
     t2('Not quite. Flaps add camber: more lift at the same α, but a lower critical α. Compare CONF 1 (slats only) with CONF 0 in the airfoil section.','Ikke helt. Klaff gir krumning: mer løft ved samme α, men lavere kritisk α. Sammenlign CONF 1 (bare lameller) med CONF 0 i profilsnittet.')],
   show:()=>window.__tunGo&&__tunGo('slat')},
@@ -4320,11 +4320,11 @@ setInterval(()=>{ if(Object.keys(touched).length&&document.visibilityState==='vi
 function memos(){ const mem=L({en:'Memory aid',no:'Huskeregel'}); el('mhE').textContent=mem; el('msE').textContent=mem;
   el('mhH').textContent=L({en:'Flaps: more lift, nose lower, stall at a lower α. Slats: stall at a higher α.',no:'Klaff: mer løft, nesen lavere, stall ved lavere α. Lameller: stall ved høyere α.'});
   el('mhP').textContent=L({en:'Both raise CL max, so the stall speed falls. Flaps also add drag and a nose-down pitching moment.',no:'Begge øker CL maks, så stallfarten synker. Klaff gir også motstand og et nese ned-moment.'});
-  el('msH').textContent=L({en:'A wing stalls at the critical angle of attack — at any speed, in any attitude.',no:'En vinge staller ved kritisk anstigningsvinkel — ved enhver fart, i enhver attitude.'});
+  el('msH').textContent=L({en:'A wing stalls at the critical angle of attack — at any speed, in any attitude.',no:'En vinge staller ved kritisk angrepsvinkel — ved enhver fart, i enhver attitude.'});
   el('msP').textContent=L({en:'The stall speed rises with √(load factor) and √(mass): 60° bank → VS × 1.41; 21 % more mass → VS × 1.10.',no:'Stallfarten øker med √(lastfaktor) og √(masse): 60° krengning → VS × 1,41; 21 % mer masse → VS × 1,10.'}); }
 function all(){ concepts(); stallText(); debrief(); drawTasks(); memos();
   el('goalK').textContent=L({en:'Learning goal',no:'Læringsmål'});
-  el('goalT').textContent=L({en:'Explain how a wing makes lift and why it stalls at the critical angle of attack, and use flaps, slats, spoilers and the stall speed (VS = VS1g·√n) on the flight deck.',no:'Forklar hvordan en vinge lager løft og hvorfor den staller ved kritisk anstigningsvinkel, og bruk klaffer, lameller, spoilere og stallfarten (VS = VS1g·√n) i cockpit.'}); if(ready){ el('stConfL').textContent=L({en:'Configuration',no:'Konfigurasjon'}); buildCards(); upd(); } }
+  el('goalT').textContent=L({en:'Explain how a wing makes lift and why it stalls at the critical angle of attack, and use flaps, slats, spoilers and the stall speed (VS = VS1g·√n) on the flight deck.',no:'Forklar hvordan en vinge lager løft og hvorfor den staller ved kritisk angrepsvinkel, og bruk klaffer, lameller, spoilere og stallfarten (VS = VS1g·√n) i cockpit.'}); if(ready){ el('stConfL').textContent=L({en:'Configuration',no:'Konfigurasjon'}); buildCards(); upd(); } }
 all(); LAB.onLang(all);
 })();
 </script>

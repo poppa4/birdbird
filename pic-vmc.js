@@ -33,7 +33,7 @@ const steps=[
      no:'Saktere enn VMCA klarer ikke sideroret å holde: flyet girer og ruller mot den døde motoren. Eneste kur er å <em>redusere effekten på den levende motoren</em> og senke nesen for å få tilbake farten.'}},
  {t:{en:'What moves VMCA',no:'Hva som flytter VMCA'},
   d:{en:'Higher with more thrust (low and cold), an <em>aft CG</em> (shorter rudder arm), a windmilling propeller and wings level. Lower with a feathered propeller and 5° of bank. Fly <em>Vyse (blue line)</em> to climb.',
-     no:'Høyere med mer skyvekraft (lavt og kaldt), <em>bakre tyngdepunkt</em> (kortere rorarm), vindmøllende propell og vingene rett. Lavere med fjæret propell og 5° krengning. Fly <em>Vyse (blå strek)</em> for å stige.'},
+     no:'Høyere med mer skyvekraft (lavt og kaldt), <em>bakre tyngdepunkt</em> (kortere rorarm), vindmøllende propell og vingene rett. Lavere med fløyet propell og 5° krengning. Fly <em>Vyse (blå strek)</em> for å stige.'},
   go:{en:'Open the engine failure lab',no:'Åpne motorstanslabben',fn:()=>{ const v=document.querySelector('[data-lab-model],.atl-model'); if(v) v.scrollIntoView({behavior:'smooth',block:'start'}); }}}];
 
 /* light twin from above, nose up; s = px per m; yaw in deg (positive nose right); dead: which engine is out ('L') */

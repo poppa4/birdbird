@@ -9,9 +9,9 @@ const {C,clamp,lerp,ease,at,txt,pill,arrow,rr}=CORE.U;
 const L=o=>LAB.L(o), nf=(v,d)=>LAB.nf(v,d||0);
 
 const steps=[
- {t:{en:'Angle of attack',no:'Anstigningsvinkel'},
+ {t:{en:'Angle of attack',no:'Angrepsvinkel'},
   d:{en:'The air meets the wing from ahead: the <em>relative wind</em>. The <em>angle of attack α</em> is the angle between it and the chord line. It is not the pitch attitude: the wing only knows α.',
-     no:'Luften møter vingen forfra: den <em>relative vinden</em>. <em>Anstigningsvinkelen α</em> er vinkelen mellom den og kordelinjen. Den er ikke pitch: vingen kjenner bare α.'}},
+     no:'Luften møter vingen forfra: den <em>relative vinden</em>. <em>Angrepsvinkelen α</em> er vinkelen mellom den og kordelinjen. Den er ikke pitch: vingen kjenner bare α.'}},
  {t:{en:'Lift comes from pressure',no:'Løft kommer fra trykk'},
   d:{en:'The air speeds up over the top and the pressure there falls: <em>suction on top</em>, a little extra pressure underneath. Most of the lift is the top surface being pulled up.',
      no:'Luften akselererer over oversiden, og trykket der faller: <em>sug på oversiden</em>, litt ekstra trykk under. Det meste av løftet er at oversiden suges opp.'}},
@@ -23,7 +23,7 @@ const steps=[
      no:'Tett ved overflaten bremses luften av friksjon: <em>grensesjiktet</em>. Ved høy α klarer det ikke lenger å følge oversiden helt bak, og <em>separerer ved bakkanten</em> først.'}},
  {t:{en:'Critical angle: the stall',no:'Kritisk vinkel: stall'},
   d:{en:'At the <em>critical angle of attack</em> the separation runs far forward: lift falls and drag jumps. It happens at the same α at any speed, any weight and any attitude. Recover by <em>reducing α</em>.',
-     no:'Ved <em>kritisk anstigningsvinkel</em> går separasjonen langt fram: løftet faller og motstanden hopper. Det skjer ved samme α uansett fart, vekt og stilling. Gjenvinn ved å <em>redusere α</em>.'}},
+     no:'Ved <em>kritisk angrepsvinkel</em> går separasjonen langt fram: løftet faller og motstanden hopper. Det skjer ved samme α uansett fart, vekt og stilling. Gjenvinn ved å <em>redusere α</em>.'}},
  {t:{en:'Flaps and slats',no:'Klaff og slats'},
   d:{en:'<em>Flaps</em> add camber: more lift at the same α, so you can fly slower. <em>Slats</em> feed fast air over the nose and delay the separation: a <em>higher critical α</em>.',
      no:'<em>Klaff</em> gir mer krumning: mer løft ved samme α, så du kan fly saktere. <em>Slats</em> sender rask luft over nesen og utsetter separasjonen: <em>høyere kritisk α</em>.'},
@@ -125,9 +125,9 @@ function draw(g,W,H,p,tm){
 function mount(){
   const host=document.getElementById('corePic'); if(!host) return;
   CORE.mount(host,{id:'essentials',steps,draw,aspect:16/8.6,aspectSm:1/1.12,dwell:6.5,narrow:true,
-    title:{en:'From angle of attack to the stall',no:'Fra anstigningsvinkel til stall'},
-    sub:{en:'One wing in the airflow. Watch what the angle of attack does to the pressure, the lift and the flow over the top.',no:'Én vinge i luftstrømmen. Se hva anstigningsvinkelen gjør med trykket, løftet og strømmen over oversiden.'},
-    label:{en:'Animated aerofoil in an airflow: the angle of attack grows, lift rises, the flow separates from the trailing edge and the wing stalls; then flaps and slats.',no:'Animert vingeprofil i en luftstrøm: anstigningsvinkelen øker, løftet stiger, strømmen separerer fra bakkanten og vingen staller; så klaff og slats.'},
+    title:{en:'From angle of attack to the stall',no:'Fra angrepsvinkel til stall'},
+    sub:{en:'One wing in the airflow. Watch what the angle of attack does to the pressure, the lift and the flow over the top.',no:'Én vinge i luftstrømmen. Se hva angrepsvinkelen gjør med trykket, løftet og strømmen over oversiden.'},
+    label:{en:'Animated aerofoil in an airflow: the angle of attack grows, lift rises, the flow separates from the trailing edge and the wing stalls; then flaps and slats.',no:'Animert vingeprofil i en luftstrøm: angrepsvinkelen øker, løftet stiger, strømmen separerer fra bakkanten og vingen staller; så klaff og slats.'},
     foot:{en:'Illustrative aerofoil: critical angle 15° clean, about 21° with slats. Real values depend on the wing and the configuration.',no:'Illustrativ profil: kritisk vinkel 15° ren, rundt 21° med slats. Virkelige verdier avhenger av vingen og konfigurasjonen.'}});
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();

@@ -235,7 +235,7 @@
       [0, t('Single-engine go-around', 'Avbrutt landing på én motor'), 2, 14], [0, t('De-icing limits', 'Avisingsgrenser'), 0, 61], [0, t('Take-off briefing', 'Avgangsbrief'), 1, 2],
       [1, t('Pressurisation', 'Trykkabin'), 0, 44], [1, t('Engine fire', 'Motorbrann'), 1, 3], [1, t('Autofeather', 'Autofeather'), 0, 52],
       [1, t('Torque and ITT limits', 'Grenser for moment og ITT'), 3, 5], [1, t('Descent planning', 'Nedstigningsplanlegging'), 2, 21], [1, t('Icing', 'Ising'), 0, 70],
-      [2, t('Stall recovery', 'Steiling'), 0, 18], [2, t('Crosswind landing', 'Sidevindslanding'), 1, 2], [2, t('Carburettor ice', 'Forgasseris'), 0, 33],
+      [2, t('Stall recovery', 'Stall'), 0, 18], [2, t('Crosswind landing', 'Sidevindslanding'), 1, 2], [2, t('Carburettor ice', 'Forgasseris'), 0, 33],
       [2, t('Short-field take-off', 'Kortbaneavgang'), 3, 4], [2, t('Circuit calls', 'Radio i landingsrunden'), 2, 6]].forEach(([a, title, d, p], i) =>
       put({ id: 'xn' + i, kind: 'note', title, body: cite(docs[a][d], p), links: [] }));
     /* general study: a topic of your own ('Theory') holding one document, with the notes that refer to it */

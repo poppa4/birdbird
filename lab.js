@@ -308,7 +308,7 @@
      P_('ifr.html?ex=trackIn','ifr','Track to the station','Følg en kurs inn til stasjonen','The wind triangle, flown on a VOR needle.','Vindtrekanten, fløyet på en VOR-nål.')],
    fpl:[P_('ifr.html?ex=mathApp','ifr','Mental maths: descents','Hoderegning: nedstigning','Top of descent and rate of descent.','Toppen av nedstigningen og sinkrate.')],
    prop:[P_('cockpit.html?s=efato','da42','Engine failure after take-off','Motorstans etter avgang','Identify, verify, feather, and keep it straight.','Identifiser, verifiser, fjær, og hold retningen.'),
-     P_('b200.html?s=efato','b200','Engine failure at rotation','Motorstans ved rotasjon','Autofeather, rudder and V2 in a turboprop twin.','Autofjæring, sideror og V2 i et turboprop-tomotors fly.')],
+     P_('b200.html?s=efato','b200','Engine failure at rotation','Motorstans ved rotasjon','Autofeather, rudder and V2 in a turboprop twin.','Autofløying, sideror og V2 i et turboprop-tomotors fly.')],
    perf:[P_('cockpit.html?s=takeoff','da42','Take-off','Avgang','Rotate, climb and clean up at the right speeds.','Roter, stig og rydd opp ved riktige farter.'),
      P_('b200.html?s=efato','b200','Engine failure at rotation','Motorstans ved rotasjon','Continue the take-off and hold V2.','Fortsett starten og hold V2.')],
    engines:[P_('c172.html?s=carbice','c172','Carburettor icing in cruise','Forgasserising i marsj','Spot the RPM drop and use carb heat.','Se turtallsfallet og bruk forgasservarme.'),
