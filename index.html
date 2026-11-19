@@ -96,7 +96,7 @@
 .fp-tiles a{position:relative;display:block;aspect-ratio:16/11;overflow:hidden;background:var(--instrument);text-decoration:none;color:#fff}
 .fp-tiles img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
 .fp-tiles a:hover img{transform:scale(1.03)}
-.fp-tiles a::after{content:'';position:absolute;inset:40% 0 0 0;background:linear-gradient(180deg,rgba(6,16,28,0),rgba(6,16,28,.92) 78%)}
+.fp-tiles a::after{content:'';position:absolute;inset:22% 0 0 0;background:linear-gradient(180deg,rgba(6,16,28,0),rgba(6,16,28,.92) 78%)}
 .fp-tiles a>span{position:absolute;z-index:1;left:22px;right:18px;bottom:18px;font-size:14px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;line-height:1.35}
 .fp-tiles em{display:block;font-style:normal;font-weight:500;font-size:12px;letter-spacing:.06em;color:#C3CEDA;margin-bottom:3px}
 
@@ -106,7 +106,7 @@
 .fp-facts-grid{display:grid;grid-template-columns:minmax(0,13fr) minmax(0,8fr);gap:0 56px;align-items:start;padding-bottom:56px}
 .fp-num{background:var(--navy);color:#fff;padding:36px 40px 44px}
 .fp-num h2{color:#fff;font-weight:500;margin-bottom:30px}
-.fp-num dl{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:36px 32px;text-align:center}
+.fp-num dl{margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px 24px;text-align:center}
 .fp-num dd{margin:0;font-family:var(--disp);font-stretch:92%;font-weight:300;font-size:50px;line-height:1;display:inline-block;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.55);min-width:2.2em}
 .fp-num dt{margin-top:12px;font-size:14.5px;line-height:1.4;color:#E3E9F0}
 .fp-num div{display:flex;flex-direction:column-reverse;align-items:center}
@@ -118,6 +118,9 @@
 .fp-how a:hover{text-decoration-thickness:2px}
 .fp-how .all{display:inline-flex;align-items:center;min-height:44px;margin-top:14px;padding:0 22px;border:1px solid #fff;font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;text-decoration:none}
 .fp-how .all:hover{background:rgba(255,255,255,.08)}
+.fp-credit{margin-top:12px!important;font-size:12.5px;color:var(--ink-3)}
+.fp-credit a{color:inherit}
+.fp-tiles i{display:block;font-style:normal;font-weight:400;font-size:14px;letter-spacing:0;text-transform:none;line-height:1.4;color:#DCE4EC;margin-top:5px}
 .fp-note{padding:26px 0 8px;font-size:14px;color:var(--ink-2);max-width:78ch}
 
 @media (max-width:1180px){
@@ -146,7 +149,8 @@
   .fp-tiles{grid-template-columns:1fr}
   .fp-tiles a{aspect-ratio:16/9}
   .fp-num{padding:28px 20px 34px}
-  .fp-num dd{font-size:42px}
+  .fp-num dd{font-size:38px}
+  .fp-num dl{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 16px}
   .fp-sec{padding-top:44px}
 }
 @media (prefers-reduced-motion:reduce){.fp-tiles img{transition:none}}
@@ -165,7 +169,7 @@
       <div class="fp-stage">
         <div class="fp-plate on-dark">
           <p class="kick">Nordic Aviation Platform</p>
-          <h1 id="fp-h1" data-tx="h1">Flight theory you can see, built on the EASA ATPL syllabus.</h1>
+          <h1 id="fp-h1" data-tx="h1">Theory, procedures and flight preparation for pilots, in one place.</h1>
         </div>
       </div>
     </div>
@@ -175,19 +179,19 @@
   <div class="fp-top fp-band">
     <div class="fp-wrap fp-row">
       <section class="fp-sheet" aria-labelledby="h-labs">
-        <h2 id="h-labs">Virtual Labs</h2>
+        <h2 id="h-labs" data-tx="featH">Featured</h2>
         <div class="fp-feat">
           <div class="fp-lead" id="fpLead"></div>
           <ul class="fp-list" id="fpList"></ul>
         </div>
-        <p class="fp-more"><a class="chev" href="lab.html" data-tx="allLabs">All <span class="nLabs">25</span> labs</a></p>
+        <p class="fp-more"><a class="chev" href="#services" data-tx="allSvc">All services</a></p>
       </section>
       <section class="fp-qs on-dark" aria-labelledby="h-qs">
         <h2 id="h-qs" data-tx="qsH">Quick Search</h2>
-        <form data-qs>
-          <label for="qsTopic" data-tx="qsL1">Lab or topic</label>
-          <input id="qsTopic" type="text" maxlength="80" autocomplete="off" placeholder="stall, icing, ILS" data-ph-no="stall, ising, ILS">
-          <button type="submit" data-tx="qsGo">Search</button>
+        <form action="fi.html" method="get">
+          <label for="qsAsk" data-tx="qsL1">Ask Flight Intelligence</label>
+          <input id="qsAsk" name="q" type="text" maxlength="1500" autocomplete="off" placeholder="What is the alternate minimum?" data-ph-no="Hva er minima for alternativ?">
+          <button type="submit" data-tx="qsAskGo">Ask</button>
         </form>
         <form data-qs>
           <label for="qsIcao" data-tx="qsL2">Aerodrome weather (ICAO)</label>
@@ -196,9 +200,9 @@
         </form>
         <ul class="fp-cnt">
           <li><i class="nLabs">25</i><span data-tx="cLabs">Labs</span></li>
-          <li><i>6</i><span data-tx="cAreas">Subject areas</span></li>
+          <li><i>14</i><span data-tx="cAreas">Cockpits</span></li>
         </ul>
-        <a class="all chev" href="lab.html" data-tx="qsAll">All Virtual Labs</a>
+        <a class="all chev" href="fi.html" data-tx="qsAll">Flight Intelligence</a>
       </section>
     </div>
   </div>
@@ -218,11 +222,12 @@
     </div>
   </section>
 
-  <!-- 4. Subject areas -->
-  <section class="fp-sec" id="areas" aria-labelledby="h-areas">
+  <!-- 4. Services -->
+  <section class="fp-sec" id="services" aria-labelledby="h-svc">
     <div class="fp-wrap">
-      <h2 id="h-areas" data-tx="h2a">Subject Areas</h2>
+      <h2 id="h-svc" data-tx="h2a">Services</h2>
       <div class="fp-tiles" id="fpTiles"></div>
+      <p class="fp-credit">Photos: Olivier Cleynen, <a href="https://creativecommons.org/licenses/by-sa/3.0/" rel="noopener">CC BY-SA 3.0</a> · Louis from Paris, <a href="https://creativecommons.org/licenses/by-sa/2.0/" rel="noopener">CC BY-SA 2.0</a> · Satellite imagery © Esri, Maxar, Earthstar Geographics</p>
     </div>
   </section>
 
@@ -230,29 +235,31 @@
   <div class="fp-facts fp-band">
     <div class="fp-wrap fp-facts-grid">
       <section class="fp-num on-dark" aria-labelledby="h-num">
-        <h2 id="h-num" data-tx="numH">Virtual Labs by the Numbers</h2>
+        <h2 id="h-num" data-tx="numH">NORDAP by the Numbers</h2>
         <dl>
           <div><dt data-tx="n1">Interactive labs</dt><dd class="nLabs">25</dd></div>
-          <div><dt data-tx="n2">Subject areas</dt><dd>6</dd></div>
-          <div><dt data-tx="n3">EASA ATPL subjects covered</dt><dd>8</dd></div>
-          <div><dt data-tx="n4">Reading levels in every lab: Short, In depth, Instructor</dt><dd>3</dd></div>
+          <div><dt data-tx="n2">Cockpits in the flow trainer</dt><dd>14</dd></div>
+          <div><dt data-tx="n3">Cockpit trainers you can fly</dt><dd>6</dd></div>
+          <div><dt data-tx="n4">IFR exercises</dt><dd>46</dd></div>
+          <div><dt data-tx="n5">Type-rating questions, King Air B200</dt><dd>320</dd></div>
+          <div><dt data-tx="n6">Languages: English and Norwegian</dt><dd>2</dd></div>
         </dl>
       </section>
       <section class="fp-how on-dark" aria-labelledby="h-how">
         <h2 id="h-how" data-tx="howH">How Do I…?</h2>
         <ul>
-          <li><a href="tunnel.html" data-tx="q1">See why a wing stalls?</a></li>
-          <li><a href="storms.html" data-tx="q2">Follow a thunderstorm through its life?</a></li>
-          <li><a href="airdata.html" data-tx="q3">Understand altimeter errors in cold air?</a></li>
-          <li><a href="holding.html" data-tx="q4">Choose the right holding entry?</a></li>
-          <li><a href="engines.html" data-tx="q5">See inside a turboprop and a jet engine?</a></li>
-          <li><a href="performance.html" data-tx="q6">Work out V1, VR and V2?</a></li>
+          <li><a href="flows.html" data-tx="q1">Learn my airline’s flows by heart?</a></li>
+          <li><a href="a320.html" data-tx="q2">Fly an ILS in the A320?</a></li>
+          <li><a href="prep.html" data-tx="q3">Make a briefing pack for my flight?</a></li>
+          <li><a href="route.html" data-tx="q4">See the terrain under my route?</a></li>
+          <li><a href="fi.html" data-tx="q5">Check what the EASA rules say?</a></li>
+          <li><a href="tunnel.html" data-tx="q6">See why a wing stalls?</a></li>
         </ul>
-        <a class="all chev" href="lab.html" data-tx="qsAll">All Virtual Labs</a>
+        <a class="all chev" href="workspace.html" data-tx="howAll">My workspace</a>
       </section>
     </div>
   </div>
-  <div class="fp-wrap"><p class="fp-note" data-tx="model"><b>Teaching models, not operational data.</b> The labs use simplified physics and typical values; aircraft figures are illustrative, not manufacturer data.</p></div>
+  <div class="fp-wrap"><p class="fp-note" data-tx="model"><b>Teaching models, not operational data.</b> The labs and trainers use simplified physics and typical values; aircraft figures are illustrative, not manufacturer data. Always follow the AIP, the flight manual and your operator’s procedures.</p></div>
 
 </main>
 <script src="lab.js?v=56"></script>
@@ -264,39 +271,45 @@ const {L,el}=LAB;
 /* ---------- Norwegian (bokmål). English stays in the markup; data-tx swaps whole elements ---------- */
 LAB.add({},{ 'NORDAP · Nordic Aviation Platform':'NORDAP · Nordic Aviation Platform' });
 LAB.tx({
- h1:'Flyteori du kan se, bygd på EASA ATPL-pensumet.',
- allLabs:'Alle <span class="nLabs">25</span> labber',
- qsH:'Hurtigsøk', qsL1:'Lab eller tema', qsL2:'Flyplassvær (ICAO)', qsGo:'Søk', qsAll:'Alle Virtual Labs',
- cLabs:'Labber', cAreas:'Fagområder',
+ h1:'Teori, prosedyrer og flygeforberedelse for piloter, samlet på ett sted.',
+ featH:'Aktuelt', allSvc:'Alle tjenester',
+ qsH:'Hurtigsøk', qsL1:'Spør Flight Intelligence', qsAskGo:'Spør', qsL2:'Flyplassvær (ICAO)', qsGo:'Søk', qsAll:'Flight Intelligence',
+ cLabs:'Labber', cAreas:'Cockpiter',
  refH:'Standarder og kilder',
  r1:'Slik kontrolleres innholdet', r2:'EASA-regler vi lenker til', r3:'Datakilder og lisenser', r4:'Modellprofiler', r5:'Om NORDAP', r6:'For flyskoler',
- h2a:'Fagområder',
- numH:'Virtual Labs i tall',
- n1:'Interaktive labber', n2:'Fagområder', n3:'EASA ATPL-fag dekket', n4:'Lesenivåer i hver lab: Kort, Fordypning, Instruktør',
+ h2a:'Tjenester',
+ numH:'NORDAP i tall',
+ n1:'Interaktive labber', n2:'Cockpiter i flow-treneren', n3:'Cockpittrenere du kan fly', n4:'IFR-øvelser', n5:'Typerating-spørsmål, King Air B200', n6:'Språk: engelsk og norsk',
  howH:'Hvordan …?',
- q1:'Se hvorfor en vinge staller?', q2:'Følge et tordenvær gjennom livsløpet?', q3:'Forstå høydemålerfeil i kald luft?',
- q4:'Velge riktig inngang til holding?', q5:'Se inn i en turboprop og en jetmotor?', q6:'Finne V1, VR og V2?',
- model:'<b>Pedagogiske modeller, ikke operative data.</b> Labbene bruker forenklet fysikk og typiske verdier; flytall er illustrasjoner, ikke produsentdata.'
+ q1:'Lære flyselskapets flows utenat?', q2:'Fly en ILS i A320?', q3:'Lage en briefingpakke til flygingen?',
+ q4:'Se terrenget under ruten min?', q5:'Sjekke hva EASA-reglene sier?', q6:'Se hvorfor en vinge staller?', howAll:'Mitt arbeidsområde',
+ model:'<b>Pedagogiske modeller, ikke operative data.</b> Labbene og trenerne bruker forenklet fysikk og typiske verdier; flytall er illustrasjoner, ikke produsentdata. Følg alltid AIP, flyhåndboken og operatørens prosedyrer.'
 });
 
 /* ---------- everything below is drawn from the learning path in lab.js, so names and counts cannot drift ---------- */
-const CODE={pof:'081',met:'050',nav:'061, 062',inst:'022',sys:'021',perf:'032, 033'};
-const AREAS=LAB.AREAS||[], FLAT=LAB.FLAT||[];
+const FLAT=LAB.FLAT||[];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 /* the chevron stays on the line of the last word */
 const last=t=>{ const w=String(t).split(' '), z=w.pop(); return esc(w.join(' '))+(w.length?' ':'')+'<span class="chev" style="white-space:nowrap">'+esc(z)+'</span>'; };
-const lab=k=>FLAT.find(x=>x.k===k);
-const kick=x=>esc((CODE[x.m.k]||'')+' · '+L({en:x.m.en,no:x.m.no}));
-const LEAD={k:'tunnel',d:{en:'Take an airliner wing from cruise to the stall and watch the pressure field, the streamlines and the separation change as you do.',no:'Ta en trafikkflyvinge fra cruise til stall, og se trykkfeltet, strømlinjene og separasjonen endre seg underveis.'}};
-const LIST=['storms','hold','engines','perf'];
-function lead(){ const b=el('fpLead'), x=lab(LEAD.k); if(!b||!x) return;
-  b.innerHTML=`<a href="${x.f}"><img src="media/hero-airfoil.jpg" srcset="media/hero-airfoil-800.jpg 800w, media/hero-airfoil.jpg 2000w" sizes="(max-width:640px) 100vw, 420px" width="2000" height="1000" alt="" decoding="async">`+
-   `<span class="kick">${kick(x)}</span><b>${esc(L({en:x.en,no:x.no}))}</b></a><p>${esc(L(LEAD.d))}</p>`; }
+const t2=(en,no)=>({en,no});
+/* the six services: one list drives the tiles; the featured sheet picks from it */
+const SVC=[
+ {k:'flows',f:'flows.html',n:t2('Flows','Flows'),d:t2('Learn your airline’s flows by heart on the real cockpit.','Lær flyselskapets flows utenat i den ekte cockpiten.'),img:'img/front/flow-a320-800.webp',big:'img/front/flow-a320-1400.webp',pos:'50% 40%'},
+ {k:'labs',f:'lab.html',n:t2('Virtual Labs','Virtual Labs'),d:t2('Interactive models on the EASA ATPL theory subjects.','Interaktive modeller i EASA ATPL-teorifagene.'),img:'img/front/labs/pof-640.webp',big:'img/front/labs/pof-1120.webp',pos:'40% 50%'},
+ {k:'trn',f:'training.html',n:t2('Cockpit trainers','Cockpittrenere'),d:t2('Six cockpits you can fly, from the Cessna 172 to the A320.','Seks cockpiter du kan fly, fra Cessna 172 til A320.'),img:'img/front/sim-a320-panel-760.webp',big:'img/front/sim-a320-panel-1400.webp',pos:'50% 60%'},
+ {k:'prep',f:'prep.html',n:t2('Briefing pack','Briefingpakke'),d:t2('Weather, minima, performance and fuel, printed as a booklet.','Vær, minima, ytelse og drivstoff, skrevet ut som et hefte.'),img:'img/front/briefing-560.webp',big:'img/front/briefing-1120.webp',pos:'50% 0%'},
+ {k:'route',f:'route.html',n:t2('Route Explorer','Route Explorer'),d:t2('Draw the route and read the terrain under it.','Tegn ruten og les terrenget under den.'),img:'img/front/route-sat-700.webp',big:'img/front/route-sat-1400.webp',pos:'50% 50%'},
+ {k:'fi',f:'fi.html',n:t2('Flight Intelligence','Flight Intelligence'),d:t2('Answers from the EASA rules and your own AFM, QRH and SOP.','Svar fra EASA-reglene og din egen AFM, QRH og SOP.'),img:'img/cockpits/a320-deck.jpg',big:'img/cockpits/a320-deck.jpg',pos:'50% 55%'}];
+const svc=k=>SVC.find(x=>x.k===k);
+const LEAD={k:'flows',d:t2('Build a flow on the overhead panel in your airline’s order, watch it play step by step, then practise it from memory. Fourteen cockpits, or your own photo.','Bygg en flow på overheadpanelet i flyselskapets rekkefølge, se den spilt av steg for steg, og øv den etter hukommelsen. Fjorten cockpiter, eller ditt eget bilde.')};
+const LIST=[['trn','a320.html',t2('Airbus A320: from cold and dark to the ILS','Airbus A320: fra cold and dark til ILS')],['labs','tunnel.html',t2('Wind tunnel: take a wing to the stall','Vindtunnel: fly en vinge inn i stall')],['prep','prep.html',t2('One briefing pack per flight, VFR or IFR','Én briefingpakke per flyging, VFR eller IFR')],['route','route.html',t2('Route Explorer: the terrain under your route in 3D','Route Explorer: terrenget under ruten i 3D')]];
+function lead(){ const b=el('fpLead'), x=svc(LEAD.k); if(!b||!x) return;
+  b.innerHTML=`<a href="${x.f}"><img src="${x.big}" srcset="${x.img} 800w, ${x.big} 1400w" sizes="(max-width:640px) 100vw, 420px" width="1400" height="836" alt="" decoding="async" style="object-position:${x.pos}">`+
+   `<span class="kick">${esc(L(x.n))}</span><b>${esc(L({en:'Learn your airline’s flows by heart',no:'Lær flyselskapets flows utenat'}))}</b></a><p>${esc(L(LEAD.d))}</p>`; }
 function list(){ const u=el('fpList'); if(!u) return;
-  u.innerHTML=LIST.map(lab).filter(Boolean).map(x=>`<li><a href="${x.f}"><span class="kick">${kick(x)}</span><b>${esc(L({en:x.en,no:x.no}))}</b></a></li>`).join(''); }
+  u.innerHTML=LIST.map(([k,f,t])=>`<li><a href="${f}"><span class="kick">${esc(L(svc(k).n))}</span><b>${esc(L(t))}</b></a></li>`).join(''); }
 function tiles(){ const g=el('fpTiles'); if(!g) return;
-  g.innerHTML=AREAS.map(a=>{ const n=a.labs.length, nl=n===1?'1 lab':L({en:n+' labs',no:n+' labber'});
-    return `<a href="lab.html#${a.k}"><img src="img/front/labs/${a.k}-1120.webp" srcset="img/front/labs/${a.k}-640.webp 640w, img/front/labs/${a.k}-1120.webp 1120w" sizes="(max-width:640px) 100vw, (max-width:900px) 50vw, 400px" width="1120" height="700" alt="" loading="lazy" decoding="async"><span><em>${esc(nl)}</em><b>${last(L({en:a.en,no:a.no}))}</b></span></a>`; }).join(''); }
+  g.innerHTML=SVC.map(x=>`<a href="${x.f}"><img src="${x.big}" srcset="${x.img} 700w, ${x.big} 1400w" sizes="(max-width:640px) 100vw, (max-width:900px) 50vw, 400px" alt="" loading="lazy" decoding="async" style="object-position:${x.pos}"><span><b>${last(L(x.n))}</b><i>${esc(L(x.d))}</i></span></a>`).join(''); }
 function counts(){ const n=FLAT.length||25; document.querySelectorAll('.nLabs').forEach(s=>s.textContent=n); }
 function attrs(){ const no=LAB.lang==='no';
   document.querySelectorAll('[data-ph-no]').forEach(e=>{ if(e._enp===undefined) e._enp=e.placeholder; e.placeholder=no?e.dataset.phNo:e._enp; }); }
