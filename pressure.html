@@ -84,7 +84,7 @@ body.depth-instructor .ro .rrow b{font-size:15px}
     <div class="eyebrow">1 · Understand</div>
     <h2>Key concepts</h2>
     <div id="corePic"></div>
-    <p class="kintro" data-tx="u0">Air has weight, so it presses on everything below it. Differences in that pressure push the air around, and the turning Earth and the ground decide where it really goes. Each card links to the place in the model where it is shown.</p>
+    <p class="kintro" data-tx="u0">Air has weight, so it presses on everything below it. Differences in that pressure push the air around, and the turning Earth and the ground decide where it really goes.</p>
     <div id="kcGrid"></div>
     <details class="kfull"><summary>Pressure, highs and lows in one diagram, and every term in full</summary><div>
       <div class="ugrid">
@@ -204,7 +204,7 @@ body.depth-instructor .ro .rrow b{font-size:15px}
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of two idealised pressure systems on a flat chart, north up, 2000–2600 km across. The geostrophic wind uses V<sub>g</sub> = Δp / (ρ f Δn) with f = 2Ω sin φ and ignores isobar curvature, so it overestimates the wind close to a tight low. The surface wind uses typical, illustrative values: backed about 30° and about half the speed over land, about 10° and 70 % over the sea; real values depend on terrain, stability and the time of day. The force arrows show directions, not exact sizes, and the parcel’s turn is damped so it settles quickly (real air oscillates as it adjusts). The altimeter error uses about 27 ft per hPa and ISA temperatures. The local winds are schematic, with typical strengths; the föhn uses 3 °C per 1000 ft dry and about 1.8 °C per 1000 ft saturated. For real flights use the METAR, TAF, wind charts and AIP.</p>
 </div>
 <script src="lab.js?v=55"></script>
-<script src="concepts.js?v=3"></script>
+<script src="concepts.js?v=4"></script>
 <script>
 (function(){
 'use strict';
@@ -233,7 +233,7 @@ LAB.add({},{
 LAB.tx({
  lead:'Hvorfor luft strømmer fra høyt mot lavt trykk, hvorfor den likevel ender opp med å blåse langs isobarene, og hva friksjonen gjør nær bakken. Bygg vinden én kraft om gangen på et værkart, og bruk den: finn lavtrykket, anslå bakkevinden, vit når høydemåleren viser for høyt, og les de lokale vindene.',
  goal:'<span class="k">Læringsmål</span>Forklar hvordan trykkgradienten, Coriolis-kraften og friksjonen bestemmer vinden, og bruk det i cockpit.',
- u0:'Luft har vekt, så den presser på alt under seg. Forskjeller i dette trykket skyver luften rundt, og jordrotasjonen og bakken bestemmer hvor den faktisk går. Hvert kort lenker til stedet i modellen der det vises.',
+ u0:'Luft har vekt, så den presser på alt under seg. Forskjeller i dette trykket skyver luften rundt, og jordrotasjonen og bakken bestemmer hvor den faktisk går.',
  terms:'<div><dt>Trykket faller med høyden</dt><dd>Jo høyere du er, jo mindre luft er det over deg. Nær bakken faller trykket rundt 1 hPa per 27 ft (piloter runder av til 30 ft). Rundt 18 000 ft er det halvert.</dd></div><div><dt>Stasjonstrykk og QFE</dt><dd>Trykket målt på flyplassen. Med QFE satt viser høydemåleren høyde over flyplassen: null på rullebanen.</dd></div><div><dt>QNH</dt><dd>Stasjonstrykket redusert til middelvannstand (MSL) med standardatmosfæren. Med QNH satt viser høydemåleren høyde over MSL: flyplassens elevasjon på bakken.</dd></div><div><dt>QFF</dt><dd>Stasjonstrykket redusert til MSL med den faktiske temperaturen. Meteorologene bruker det til å tegne isobarene på bakkekart. Det kan avvike fra QNH med noen hPa, mest på høyt beliggende flyplasser i kaldt vær.</dd></div><div><dt>1013,25 hPa (standard)</dt><dd>Settes over overgangshøyden, slik at alle fly flyr flygenivåer med samme referanse.</dd></div>',
  u2:'<b>Høytrykk og lavtrykk.</b> Et værkart binder sammen steder med samme MSL-trykk med linjer som kalles <b>isobarer</b>, normalt for hver 4 hPa. Et <b>lavtrykk</b> har lavest trykk i midten: luften strømmer sammen nær bakken og stiger, så lavtrykk gir skyer, regn og sterkere vind, og frontene hører til dem. Et <b>høytrykk</b> har høyest trykk i midten: luften synker og varmes, så høytrykk gir stabilt vær og svak vind, men om vinteren kan de holde tåke, lav stratus og dis under en inversjon i dagevis. Endringen i trykk med avstand er <b>trykkgradienten</b>: der isobarene ligger tett, er den bratt.',
  u3:'<span class="k">Dypdykk</span><p><b>Hvorfor rundt 27 ft per hPa?</b> Vekten av et tynt luftlag er lik trykkforskjellen over det: Δp = ρ·g·Δh. Ved havnivå er ρ = 1,225 kg/m³, så 1 hPa (100 Pa) er 100 / (1,225 × 9,81) = 8,3 m ≈ 27 ft. Høyere opp er luften tynnere, så 1 hPa er et tykkere lag: rundt 36 ft i 10 000 ft, 50 ft i FL180 og over 70 ft i FL300.</p><p><b>Standard trykkflater (ISA).</b> 850 hPa ≈ FL050, 700 hPa ≈ FL100, 500 hPa ≈ FL180, 300 hPa ≈ FL300, 250 hPa ≈ FL340, 200 hPa ≈ FL390. Vind- og temperaturkart for høyden tegnes på disse flatene.</p><p><b>Andre former på kartet.</b> En <b>rygg</b> er en tunge av høytrykk, vanligvis pent vær. Et <b>tråg</b> er en tunge av lavtrykk, ofte med en bygelinje eller en front. Et <b>sadelpunkt</b> (col) er det flate området mellom to høytrykk og to lavtrykk: svak og variabel vind, med tåke om vinteren eller tordenvær om sommeren.</p>',
@@ -813,7 +813,7 @@ document.addEventListener('labdepth',()=>{ bgDirty=true; changed(); ufig(); });
 LAB.onLang(()=>{ drawStage(); drawPre(); drawPreA(); drawTasks(); drawMaid(); drawTabs(); legend(); ufig(); bgDirty=true; changed(); altU(); lu(); });
 })();
 </script>
-<script src="corepic.js?v=11"></script>
+<script src="corepic.js?v=12"></script>
 <script src="pic-press-wind.js?v=2"></script>
 </body>
 </html>

@@ -21,7 +21,7 @@ const TN={sep:t2('Light single · piston · Class B','Lett enmotors · stempel �
 const DEF={jet:{m:70000,mR:[50000,80000,500],lm:62000,lmR:[45000,68000,500],tora:2500,tR:[1200,4000,50],lda:2200,lR:[1000,3500,50],obs:{h:150,d:3000},dMax:3500},
  tp:{m:21000,mR:[14000,23500,250],lm:20000,lmR:[14000,22500,250],tora:1400,tR:[700,2500,25],lda:1300,lR:[600,2200,25],obs:{h:120,d:2000},dMax:2500},
  sep:{m:1050,mR:[750,1150,10],lm:1000,lmR:[700,1110,10],tora:600,tR:[250,1200,10],lda:500,lR:[200,1000,10],obs:{h:60,d:600},dMax:1200}};
-const S={mode:'to',type:'jet',m:70000,lm:62000,flap:1,pa:0,oat:15,wind:0,slope:0,surf:'dry',tora:2500,cwy:0,swy:0,v1:null,obsH:150,obsD:3000,lda:2200,lred:false,rev:true,tAss:null};
+const S={mode:'to',type:'jet',m:70000,lm:62000,flap:1,pa:0,oat:15,wind:0,slope:0,surf:'dry',tora:2500,cwy:0,swy:0,v1:null,obsH:150,obsD:3000,lda:2200,lred:false,rev:true,tAss:null,vsel:'v1'};
 const isA=()=>P.TYPES[S.type].cls==='A';
 const massF=v=>S.type==='sep'?nf(v,0)+' kg':nf(v/1000,1)+' t';
 const tp=()=>({type:S.type,m:S.m,flap:S.flap,pa:S.pa,oat:S.oat,wind:S.wind,slope:S.slope,surf:S.surf,tAss:S.tAss});
@@ -58,7 +58,7 @@ function bar(g,X,y,h,segs){ for(const [a,b,col,dash] of segs){ if(!(b>a)) contin
 function draw(){ if(!ST.w||!TO) return; const g=ST.ctx, W=ST.w, H=ST.h; g.setTransform(ST.dpr,0,0,ST.dpr,0,0); g.clearRect(0,0,W,H);
   FS=depth()==='instructor'?1.12:W<520?0.88:1;
   const chip=el('chip'); let top=12; if(chip&&getComputedStyle(chip).position==='absolute'&&chip.offsetHeight) top=chip.offsetTop+chip.offsetHeight+14;
-  const end=S.mode==='to'?(TO.cls==='A'?drawTOA:drawTOB)(g,W,H,top):S.mode==='climb'?drawClimb(g,W,H,top):drawLand(g,W,H,top);
+  const end=S.mode==='spd'?drawSpd(g,W,H,top):S.mode==='to'?(TO.cls==='A'?drawTOA:drawTOB)(g,W,H,top):S.mode==='climb'?drawClimb(g,W,H,top):drawLand(g,W,H,top);
   /* the canvas takes the height its content needs (width-driven, so it settles in one step) */
   const want=Math.round(S.mode==='climb'?clamp(W*0.52,360,560)+(top>20?top-12:0):end+14);
   if(Math.abs(want-H)>3){ cv.style.height=want+'px'; } }
@@ -218,10 +218,164 @@ function drawLand(g,W,H,top){ const ph=W<640, Lr=P.landReq(lp()), c=Lr.cert, ta=
     y=wrapTxt(g,s,X(0),y,W-X(0)-12,ph?9:10,cl.approach>=0.021&&cl.landing>=0.032?C.mut:C.stop); }
   return y; }
 
+/* ---------------- Speeds: every V-speed of this aircraft on one shared scale ----------------
+   Rows from slow to fast in the order you meet them: stall, control, take-off, climb, limits, landing.
+   Stall, control and take-off speeds come from perfcore at the take-off mass; VS0, VREF and VAPP at the landing mass.
+   The limit speeds (VFE, VLO/VLE, VNO/VNE, VMO/MMO) are generic placard-style values, not AFM data. */
+const LIMS={sep:{fe:[['10°',105],['25°',85]],vno:125,vne:160},
+ tp:{fe:[['15',185],['25',165],['35',150]],vlo:170,vle:185,vmo:250},
+ jet:{fe:[['1',230],['1+F',215],['2',200],['3',185],['FULL',175]],vlo:220,vloE:250,vle:280,vmo:350,mmo:0.82}};
+const ROWS=[['stall',t2('Stall','Stall'),'#C9B6F2'],['ctl',t2('Control','Kontroll'),'#EC5A47'],['to',t2('Take-off','Start'),'#F0B440'],['clb',t2('Climb','Stigning'),'#71CC93'],['lim',t2('Limits','Grenser'),'#7FCBE8'],['land',t2('Landing','Landing'),'#EEF2F5']];
+const kt=v=>Math.round(v)+' kt';
+/* climb speeds, clean, all engines: steepest gradient (VX) and best rate (VY) */
+function climbV(){ const ty=P.TYPES[S.type], a=P.atm(S.pa,S.oat), W=S.m*P.G;
+  if(ty.k==='sep'){ const c=FPCx(); return {vx:c.vx,vy:c.vy}; }
+  const AR=ty.k==='jet'?9.4:12, k=1/(Math.PI*AR*0.8), ld=ty.flaps[0].ld*1.32, cd0=1/(4*k*ld*ld), vsc=P.vs(ty,S.m,ty.flaps[0].cl)*1.18;
+  let bx=null, by=null; for(let v=Math.ceil(vsc*1.2);v<=Math.min(LIMS[ty.k].vmo,320);v+=1){ const V=v*P.KT/Math.sqrt(a.sig), q=0.5*a.rho*V*V, cl=W/(q*ty.S), D=q*ty.S*(cd0+k*cl*cl), T=P.thrust(ty,a,V,ty.n), gg=(T-D)/W, roc=gg*V;
+    if(!bx||gg>bx.g) bx={v,g:gg}; if(!by||roc>by.r) by={v,r:roc}; }
+  return {vx:bx.v,vy:by.v}; }
+/* all the numbers the Speeds view and its texts need */
+function spdCtx(){ const ty=P.TYPES[S.type], A=ty.cls==='A', LM=LIMS[ty.k], sp=TO.sp, x=A?curV():null, cv=climbV();
+  const vs1=P.vs(ty,S.m,ty.flaps[0].cl)*(A?1.18:1), vs0=P.vs(ty,S.lm,ty.flapL.cl), vref=(A?1.23:1.3)*vs0, add=clamp(0.5*Math.max(0,S.wind),5,15);
+  return {ty,A,LM,sp,x,vs1,vs0,vsr:sp.vsr,vref,add,vapp:vref+add,vx:cv.vx,vy:cv.vy,n:A?2.5:3.8,va:vs1*Math.sqrt(A?2.5:3.8),vmu:sp.vlof/1.1,vfto:1.18*vs1,fe:LM.fe[LM.fe.length-1][1],tf:ty.flaps[S.flap].n}; }
+/* each speed: name, row, value (null = does not apply here), what it is, the rule with today's numbers, why not here */
+const NA_B=t2('A light single has one engine: there is no engine failure to keep straight against and no go decision. It stops, or lands ahead.','Et lett enmotors fly har én motor: det er ingen motorstans å holde rett mot og ingen fortsett-beslutning. Det stopper, eller lander rett fram.');
+const SPD=[
+ {k:'vs0',n:'VS0',row:'stall',v:c=>c.vs0,t:t2('Stall speed, landing configuration','Stallfart, landingskonfigurasjon'),
+  d:t2('The stall speed (or minimum steady flight speed) with gear down and landing flap. The lowest speed of the whole picture.','Stallfarten (eller minste stabile flyfart) med understell ute og landingsklaff. Den laveste farten i hele bildet.'),
+  r:c=>t2(`Here ${kt(c.vs0)} at the landing mass ${massF(S.lm)}. It is the bottom of the white arc on a light aircraft's ASI, and VREF is built on it.`,`Her ${kt(c.vs0)} ved landingsmassen ${massF(S.lm)}. Den er bunnen av den hvite buen på et småflys fartsmåler, og VREF bygges på den.`)},
+ {k:'vs1',n:'VS1',row:'stall',v:c=>c.vs1,t:t2('Stall speed, specified configuration (clean)','Stallfart, spesifisert konfigurasjon (rent)'),
+  d:t2('The stall speed in a stated configuration, here clean: flaps and gear up. It goes up with the square root of the mass and of the load factor.','Stallfarten i en oppgitt konfigurasjon, her ren: klaff og understell inne. Den øker med kvadratroten av massen og av lastfaktoren.'),
+  r:c=>t2(`Here ${kt(c.vs1)} at ${massF(S.m)}. In a 60° bank (2 g) it is ${kt(c.vs1*Math.SQRT2)}. Bottom of the green arc on a light aircraft.`,`Her ${kt(c.vs1)} ved ${massF(S.m)}. I 60° krengning (2 g) er den ${kt(c.vs1*Math.SQRT2)}. Bunnen av den grønne buen på et småfly.`)},
+ {k:'vsr',n:'VSR',row:'stall',v:c=>c.A?c.vsr:null,t:t2('Reference stall speed (VS1g)','Referansestallfart (VS1g)'),
+  d:t2('The 1-g stall speed in the take-off configuration that airliners (CS-25) are certified on. V2, VFTO and VREF are fixed multiples of it.','Stallfarten ved 1 g i startkonfigurasjon som trafikkfly (CS-25) sertifiseres på. V2, VFTO og VREF er faste multipler av den.'),
+  r:c=>t2(`Here ${kt(c.vsr)} with flap ${c.tf}. The older “VS” was the lowest speed in a stall manoeuvre, about 0.94 VS1g: that is why the old factors 1.2 and 1.3 became 1.13 and 1.23.`,`Her ${kt(c.vsr)} med klaff ${c.tf}. Den eldre «VS» var laveste fart i en stallmanøver, omtrent 0,94 VS1g: derfor ble de gamle faktorene 1,2 og 1,3 til 1,13 og 1,23.`),
+  na:t2('VSR is the CS-25 (airliner) reference. A light aircraft uses VS0 and VS1.','VSR er referansen i CS-25 (trafikkfly). Et småfly bruker VS0 og VS1.')},
+ {k:'vmcg',n:'VMCG',row:'ctl',v:c=>c.A?c.sp.vmcg:null,t:t2('Minimum control speed on the ground','Minste kontrollfart på bakken'),
+  d:t2('The lowest speed at which, after a sudden failure of the critical engine, you can keep the aircraft within 30 ft (9 m) of the centreline using the rudder alone, with no nosewheel steering.','Laveste fart der du, etter plutselig stans i kritisk motor, kan holde flyet innenfor 30 ft (9 m) fra senterlinjen med bare sideroret, uten nesehjulsstyring.'),
+  r:c=>t2(`Here ${kt(c.sp.vmcg)}. V1 may never be below VMCG. It falls when the live engine gives less thrust: hot or high, VMCG comes down.`,`Her ${kt(c.sp.vmcg)}. V1 kan aldri være under VMCG. Den faller når motoren som går gir mindre skyvekraft: varmt eller høyt gir lavere VMCG.`),na:NA_B},
+ {k:'vmca',n:'VMCA',row:'ctl',v:c=>c.A?c.sp.vmca:null,t:t2('Minimum control speed in the air','Minste kontrollfart i luften'),
+  d:t2('The lowest speed at which, with the critical engine suddenly failed and the other at take-off thrust, you can keep straight flight with no more than 5° of bank towards the live engine.','Laveste fart der du, med kritisk motor plutselig stanset og den andre på startskyvekraft, kan holde rett flukt med høyst 5° krengning mot motoren som går.'),
+  r:c=>t2(`Here ${kt(c.sp.vmca)}. VR ≥ 1.05 VMCA (${kt(1.05*c.sp.vmca)}) and V2 ≥ 1.10 VMCA (${kt(1.1*c.sp.vmca)}). On a light twin it is the red radial line.`,`Her ${kt(c.sp.vmca)}. VR ≥ 1,05 VMCA (${kt(1.05*c.sp.vmca)}) og V2 ≥ 1,10 VMCA (${kt(1.1*c.sp.vmca)}). På et lett tomotors fly er det den røde streken.`),na:NA_B},
+ {k:'vmu',n:'VMU',row:'to',v:c=>c.A?c.vmu:null,t:t2('Minimum unstick speed','Minste avløftsfart'),
+  d:t2('The lowest speed at which the aircraft can lift off and climb away safely. It is flown in test with the tail almost on the runway.','Laveste fart der flyet kan løfte av og stige trygt. Den flys i test med halen nesten i banen.'),
+  r:c=>t2(`VLOF must be at least 1.10 VMU with all engines and 1.05 VMU with one out. Here VMU ≈ VLOF ÷ 1.10 ≈ ${kt(c.vmu)} (illustrative).`,`VLOF må være minst 1,10 VMU med alle motorer og 1,05 VMU med én ute. Her VMU ≈ VLOF ÷ 1,10 ≈ ${kt(c.vmu)} (illustrativt).`),na:NA_B},
+ {k:'vef',n:'VEF',row:'to',v:c=>c.A?c.x.vef:null,t:t2('Engine failure speed','Motorstansfart'),
+  d:t2('The speed at which the critical engine is assumed to fail when the take-off distances are worked out. The pilot recognises it about one second later, at V1.','Farten der kritisk motor antas å stanse når startdistansene regnes ut. Piloten oppdager det omtrent ett sekund senere, ved V1.'),
+  r:c=>t2(`Here ${kt(c.x.vef)}: V1 ${kt(S.v1)} minus one second of acceleration. VEF may not be below VMCG (${kt(c.sp.vmcg)}).`,`Her ${kt(c.x.vef)}: V1 ${kt(S.v1)} minus ett sekunds akselerasjon. VEF kan ikke være under VMCG (${kt(c.sp.vmcg)}).`),na:NA_B},
+ {k:'v1',n:'V1',row:'to',v:c=>c.A?S.v1:null,t:t2('Decision speed','Beslutningsfart'),
+  d:t2('The highest speed at which you take the first action to stop within the ASDA, and the lowest from which you can continue after an engine failure and reach the screen height within the TODA. Below V1 stop, from V1 go.','Den høyeste farten der du tar første handling for å stoppe innenfor ASDA, og den laveste der du kan fortsette etter motorstans og nå skjermhøyden innenfor TODA. Under V1 stopp, fra V1 fortsett.'),
+  r:c=>t2(`Here ${kt(S.v1)}, inside VMCG ${kt(c.sp.vmcg)} ≤ V1 ≤ VR ${kt(c.sp.vr)}; balanced V1 ≈ ${kt(TO.bal.v1)}. It must also stay below VMBE, the brake energy limit.`,`Her ${kt(S.v1)}, innenfor VMCG ${kt(c.sp.vmcg)} ≤ V1 ≤ VR ${kt(c.sp.vr)}; balansert V1 ≈ ${kt(TO.bal.v1)}. Den må også ligge under VMBE, grensen for bremseenergi.`),na:NA_B},
+ {k:'vr',n:'VR',row:'to',v:c=>c.sp.vr,t:t2('Rotation speed','Rotasjonsfart'),
+  d:t2('The speed at which you start to raise the nose. It is chosen so that the aircraft reaches V2 by the screen height, even with an engine out.','Farten der du begynner å løfte nesen. Den velges slik at flyet når V2 innen skjermhøyden, også med én motor ute.'),
+  r:c=>c.A?t2(`Here ${kt(c.sp.vr)}. VR ≥ V1 and ≥ 1.05 VMCA (${kt(1.05*c.sp.vmca)}). Rotating early or fast can strike the tail and lengthen the take-off.`,`Her ${kt(c.sp.vr)}. VR ≥ V1 og ≥ 1,05 VMCA (${kt(1.05*c.sp.vmca)}). Tidlig eller rask rotasjon kan gi halenedslag og lengre start.`)
+   :t2(`Here ${kt(c.sp.vr)}, about 1.1 × VS1 (${kt(c.vs1)}) with take-off flap.`,`Her ${kt(c.sp.vr)}, omtrent 1,1 × VS1 (${kt(c.vs1)}) med startklaff.`)},
+ {k:'vlof',n:'VLOF',row:'to',v:c=>c.sp.vlof,t:t2('Lift-off speed','Avløftsfart'),
+  d:t2('The speed at which the main wheels leave the runway, a few knots after VR.','Farten når hovedhjulene forlater banen, noen knop etter VR.'),
+  r:c=>c.A?t2(`Here ${kt(c.sp.vlof)}. At least 1.10 VMU, and the groundspeed at lift-off must stay below the tyre limit (${c.ty.tyre} kt groundspeed here).`,`Her ${kt(c.sp.vlof)}. Minst 1,10 VMU, og groundspeed ved avløft må holde seg under dekkgrensen (${c.ty.tyre} kt groundspeed her).`)
+   :t2(`Here about ${kt(c.sp.vlof)}: a light single lifts off close to VR.`,`Her omtrent ${kt(c.sp.vlof)}: et lett enmotors fly løfter av nær VR.`)},
+ {k:'v2',n:'V2',nB:'V50',row:'to',v:c=>c.sp.v2,t:t2('Take-off safety speed','Startsikkerhetsfart'),
+  d:t2('The speed to reach by the screen height (35 ft dry) with an engine out, and to hold in the second segment while you climb away.','Farten som skal nås innen skjermhøyden (35 ft tørr) med én motor ute, og holdes i andre segment mens du stiger ut.'),
+  r:c=>c.A?t2(`Here ${kt(c.sp.v2)}. V2 ≥ 1.13 VSR (${kt(1.13*c.vsr)}) and ≥ 1.10 VMCA (${kt(1.1*c.sp.vmca)}); the higher one wins.`,`Her ${kt(c.sp.v2)}. V2 ≥ 1,13 VSR (${kt(1.13*c.vsr)}) og ≥ 1,10 VMCA (${kt(1.1*c.sp.vmca)}); den høyeste gjelder.`)
+   :t2(`A light single has no V2. Its take-off safety speed at 50 ft (V50) is about 1.2 VS1: here ${kt(c.sp.v2)}.`,`Et lett enmotors fly har ingen V2. Startsikkerhetsfarten ved 50 ft (V50) er omtrent 1,2 VS1: her ${kt(c.sp.v2)}.`)},
+ {k:'vfto',n:'VFTO',row:'to',v:c=>c.A?c.vfto:null,t:t2('Final take-off speed','Sluttfart etter start'),
+  d:t2('The speed in the final segment of the take-off path: clean, one engine out, maximum continuous thrust.','Farten i siste segment av startbanen: rent, én motor ute, maks kontinuerlig skyvekraft.'),
+  r:c=>t2(`At least 1.18 × the clean VSR: here 1.18 × ${kt(c.vs1)} ≈ ${kt(c.vfto)}. You accelerate to it in the third segment while the flaps come up.`,`Minst 1,18 × ren VSR: her 1,18 × ${kt(c.vs1)} ≈ ${kt(c.vfto)}. Du akselererer til den i tredje segment mens klaffen tas inn.`),na:NA_B},
+ {k:'vx',n:'VX',row:'clb',v:c=>c.vx,t:t2('Best angle of climb','Beste stigevinkel'),
+  d:t2('The speed that gives the most height for the distance flown: the steepest climb. Use it to clear an obstacle.','Farten som gir mest høyde for distansen du flyr: den bratteste stigningen. Bruk den for å klare et hinder.'),
+  r:c=>t2(`Here about ${kt(c.vx)}, clean, all engines, at this mass and altitude.${c.A?' On a twin with one engine out the speeds are VXSE and VYSE (the blue line).':''}`,`Her omtrent ${kt(c.vx)}, rent, alle motorer, ved denne massen og høyden.${c.A?' På et tomotors fly med én motor ute heter fartene VXSE og VYSE (den blå streken).':''}`)},
+ {k:'vy',n:'VY',row:'clb',v:c=>c.vy,t:t2('Best rate of climb','Beste stigehastighet'),
+  d:t2('The speed that gives the most height per minute: the fastest climb. Always a little faster than VX.','Farten som gir mest høyde per minutt: den raskeste stigningen. Alltid litt raskere enn VX.'),
+  r:c=>t2(`Here about ${kt(c.vy)}.${c.A?' Airliners climb at scheduled speeds (for example 250 kt below FL 100); after an engine failure V2 and VFTO are the speeds that matter.':' VX and VY move closer together as you climb, and meet at the absolute ceiling.'}`,`Her omtrent ${kt(c.vy)}.${c.A?' Trafikkfly stiger med faste farter (for eksempel 250 kt under FL 100); etter motorstans er det V2 og VFTO som gjelder.':' VX og VY nærmer seg hverandre når du stiger, og møtes ved absolutt topphøyde.'}`)},
+ {k:'va',n:'VA',row:'lim',v:c=>c.va,t:t2('Design manoeuvring speed','Manøvreringsfart'),
+  d:t2('Below VA, one full deflection of one control will not overstress the structure: the wing stalls before the limit load is reached. It does not cover full reversals.','Under VA vil ett fullt utslag med én kontroll ikke overbelaste strukturen: vingen staller før grenselasten nås. Den dekker ikke fulle utslag fram og tilbake.'),
+  r:c=>t2(`VA ≈ VS1 × √n = ${kt(c.vs1)} × √${nf(c.n,1)} ≈ ${kt(c.va)} at ${massF(S.m)}. A lighter aircraft has a lower VA.`,`VA ≈ VS1 × √n = ${kt(c.vs1)} × √${nf(c.n,1)} ≈ ${kt(c.va)} ved ${massF(S.m)}. Et lettere fly har lavere VA.`)},
+ {k:'vfe',n:'VFE',row:'lim',v:c=>c.fe,t:t2('Maximum flap extended speed','Maks fart med klaff ute'),
+  d:t2('The highest speed with a given flap setting extended. Every setting has its own VFE, and the most flap has the lowest.','Den høyeste farten med en gitt klaffstilling ute. Hver stilling har sin egen VFE, og mest klaff har den laveste.'),
+  r:c=>t2(`Here: ${c.LM.fe.map(([n,v])=>n+' '+v+' kt').join(' · ')}. Full flap ${c.fe} kt is the top of the white arc on a light aircraft.`,`Her: ${c.LM.fe.map(([n,v])=>n+' '+v+' kt').join(' · ')}. Full klaff ${c.fe} kt er toppen av den hvite buen på et småfly.`)},
+ {k:'vlo',n:'VLO',row:'lim',v:c=>c.LM.vlo||null,t:t2('Maximum landing gear operating speed','Maks fart for å operere understellet'),
+  d:t2('The highest speed at which you may extend or retract the gear. The doors are open while it moves, so VLO is lower than VLE.','Den høyeste farten der du kan senke eller heve understellet. Lukene er åpne mens det beveger seg, så VLO er lavere enn VLE.'),
+  r:c=>t2(`Here ${c.LM.vlo} kt${c.LM.vloE?` to retract and ${c.LM.vloE} kt to extend`:''}.`,`Her ${c.LM.vlo} kt${c.LM.vloE?` for å heve og ${c.LM.vloE} kt for å senke`:''}.`),na:t2('This light single has fixed gear.','Dette lette enmotorsflyet har fast understell.')},
+ {k:'vle',n:'VLE',row:'lim',v:c=>c.LM.vle||null,t:t2('Maximum landing gear extended speed','Maks fart med understellet ute'),
+  d:t2('The highest speed with the gear down and locked. A gear-down descent can use it to slow down or steepen the path.','Den høyeste farten med understellet ute og låst. En nedstigning med understell ute kan bruke den til å bremse eller gjøre banen brattere.'),
+  r:c=>t2(`Here ${c.LM.vle} kt.`,`Her ${c.LM.vle} kt.`),na:t2('This light single has fixed gear.','Dette lette enmotorsflyet har fast understell.')},
+ {k:'vno',n:'VNO',row:'lim',v:c=>c.LM.vno||null,t:t2('Maximum structural cruising speed','Maks strukturell marsjfart'),
+  d:t2('Top of the green arc. Above it, in the yellow arc, fly only in smooth air: a strong gust there can overstress the structure.','Toppen av den grønne buen. Over den, i den gule buen, flyr du bare i rolig luft: et kraftig vindkast der kan overbelaste strukturen.'),
+  r:c=>t2(`Here ${c.LM.vno} kt.`,`Her ${c.LM.vno} kt.`),na:t2('Turbine aircraft use VMO/MMO instead of the green and yellow arcs.','Turbinfly bruker VMO/MMO i stedet for den grønne og gule buen.')},
+ {k:'vne',n:'VNE',row:'lim',v:c=>c.LM.vne||null,t:t2('Never exceed speed','Aldri-overskrid-fart'),
+  d:t2('The red line on a light aircraft. Above it flutter or structural failure can happen. It is an indicated airspeed, so at altitude the true airspeed at VNE is higher.','Den røde streken på et småfly. Over den kan flutter eller strukturbrudd skje. Den er en indikert fart, så i høyden er den sanne farten ved VNE høyere.'),
+  r:c=>t2(`Here ${c.LM.vne} kt.`,`Her ${c.LM.vne} kt.`),na:t2('Turbine aircraft use VMO/MMO.','Turbinfly bruker VMO/MMO.')},
+ {k:'vmo',n:'VMO',row:'lim',v:c=>c.LM.vmo&&c.A?c.LM.vmo:null,t:t2('Maximum operating speed and Mach (VMO/MMO)','Maks operasjonsfart og Mach (VMO/MMO)'),
+  d:t2('The limit for turbine aircraft, shown as the red and black barber pole. Low down the IAS limit VMO governs; above the crossover altitude the Mach limit MMO does.','Grensen for turbinfly, vist som den rød-svarte «barberstangen». Lavt nede gjelder IAS-grensen VMO; over kryssingshøyden gjelder Mach-grensen MMO.'),
+  r:c=>t2(`Here VMO ${c.LM.vmo} kt${c.LM.mmo?`, MMO ${nf(c.LM.mmo,2)}; the crossover is near FL 300`:''}. Exceeding it triggers the overspeed warning.`,`Her VMO ${c.LM.vmo} kt${c.LM.mmo?`, MMO ${nf(c.LM.mmo,2)}; kryssingen er nær FL 300`:''}. Overskridelse gir overfartsvarsel.`),na:t2('A piston single uses VNO and VNE.','Et enmotors stempelfly bruker VNO og VNE.')},
+ {k:'vref',n:'VREF',row:'land',v:c=>c.vref,t:t2('Reference landing speed','Referansefart for landing'),
+  d:t2('The speed at 50 ft over the threshold in the landing configuration. The landing distance is measured from it.','Farten i 50 ft over terskelen i landingskonfigurasjon. Landingsdistansen måles fra den.'),
+  r:c=>c.A?t2(`VREF ≥ 1.23 VSR0 = 1.23 × ${kt(c.vs0)} ≈ ${kt(c.vref)} at ${massF(S.lm)}, and not below VMCL, the control speed on the approach.`,`VREF ≥ 1,23 VSR0 = 1,23 × ${kt(c.vs0)} ≈ ${kt(c.vref)} ved ${massF(S.lm)}, og ikke under VMCL, kontrollfarten under innflygingen.`)
+   :t2(`On a light aircraft VREF ≈ 1.3 VS0 = 1.3 × ${kt(c.vs0)} ≈ ${kt(c.vref)}.`,`På et småfly er VREF ≈ 1,3 VS0 = 1,3 × ${kt(c.vs0)} ≈ ${kt(c.vref)}.`)},
+ {k:'vapp',n:'VAPP',row:'land',v:c=>c.vapp,t:t2('Final approach speed','Innflygingsfart'),
+  d:t2('VREF plus an additive for wind and gusts, flown down the final approach. You bleed it back towards VREF by the threshold.','VREF pluss et tillegg for vind og vindkast, fløyet på finalen. Du lar den falle mot VREF innen terskelen.'),
+  r:c=>t2(`A typical rule: + half the headwind, at least 5 and at most 15 kt. Reported wind ${sg(S.wind)} kt → + ${Math.round(c.add)} → ${kt(c.vapp)}. Your operator's rule applies.`,`En typisk regel: + halve motvinden, minst 5 og høyst 15 kt. Rapportert vind ${sg(S.wind)} kt → + ${Math.round(c.add)} → ${kt(c.vapp)}. Operatørens regel gjelder.`)}];
+const spdOf=k=>SPD.find(s=>s.k===k)||SPD[0];
+const spdName=(s,c)=>(!c.A&&s.nB)?s.nB:s.n;
+let SH=[];
+function wrapLines(g,t,maxW,sz){ const out=[]; let cur=''; for(const w of t.split(' ')){ const n=cur?cur+' '+w:w; if(tw(g,n,sz,500,SANS)>maxW&&cur){ out.push(cur); cur=w; } else cur=n; } if(cur) out.push(cur); return out; }
+function drawSpd(g,W,H,top){ const ph=W<640, c=spdCtx(), sel=spdOf(S.vsel);
+  const vals=SPD.map(s=>({s,v:s.v(c)})).filter(o=>o.v!=null&&isFinite(o.v));
+  const lo=Math.min(...vals.map(o=>o.v)), hi=Math.max(...vals.map(o=>o.v)), s0=Math.floor((lo-8)/10)*10, s1=Math.ceil((hi+8)/10)*10;
+  const LW=ph?58:104, R0=ph?12:22, X=v=>LW+10+(v-s0)/(s1-s0)*(W-LW-10-R0);
+  let y=top+8;
+  txt(g,L(t2(`kt CAS · take-off mass ${massF(S.m)} · landing mass ${massF(S.lm)}`,`kt CAS · startmasse ${massF(S.m)} · landingsmasse ${massF(S.lm)}`)),LW+10,y+8,C.mut,'left',ph?9:10,500,SANS);
+  y+=26; const pk=(W-LW-R0)/(s1-s0), stp=pk*10>=40?10:pk*20>=40?20:50;
+  line(g,X(s0),y,X(s1),y,'#6F7E8B',1);
+  for(let v=s0;v<=s1;v+=10){ line(g,X(v),y,X(v),y+(v%stp?3:5),'#6F7E8B',1); if(v%stp===0) txt(g,String(v),X(v),y-5,C.dim,'center',9.5); }
+  const top0=y+6; y+=12;
+  /* light single: the ASI arcs, the picture every PPL knows */
+  if(S.type==='sep'){ const rh=ph?20:22, yy=y+rh/2; txt(g,L(t2('ASI ARCS','FARTSBUER')),8,yy+4,'#AEB8C1','left',ph?8.5:9.5,600);
+    const arc=(a,b,col,w,dy)=>{ g.strokeStyle=col; g.lineWidth=w; g.beginPath(); g.moveTo(X(a),yy+dy); g.lineTo(X(b),yy+dy); g.stroke(); };
+    arc(c.vs0,c.fe,'#EEF2F5',4,-4); arc(c.vs1,c.LM.vno,'#4FBF7A',5,3); arc(c.LM.vno,c.LM.vne,'#F0C040',5,3); line(g,X(c.LM.vne),yy-7,X(c.LM.vne),yy+8,'#EC5A47',2.6);
+    y+=rh+6; }
+  SH=[];
+  const rowH=ph?50:54;
+  ROWS.forEach(([rk,rn,col])=>{ const yy=y+rowH*0.68; txt(g,L(rn).toUpperCase(),8,yy+4,col,'left',ph?8.5:9.5,600);
+    line(g,X(s0),yy,X(s1),yy,'rgba(200,215,225,.16)',1);
+    const here=SPD.filter(s=>s.row===rk).map(s=>({s,v:s.v(c)})).filter(o=>o.v!=null&&isFinite(o.v)).sort((a,b)=>a.v-b.v);
+    if(!here.length){ txt(g,L(t2('does not apply to this aircraft','gjelder ikke for dette flyet')),X(s0)+4,yy-6,C.dim,'left',ph?8.5:9.5,500,SANS); }
+    /* labels spread apart with short leader lines where the speeds are close together (V1, VR, VLOF, V2 …) */
+    const fsz=ph?9:10, L2=here.map(({s,v})=>{ const nm=spdName(s,c); return {s,v,x:X(v),nm,w:Math.max(tw(g,nm,fsz,700),tw(g,String(Math.round(v)),fsz-1,600))+(ph?5:8)}; });
+    for(let it=0;it<40;it++){ let moved=false; for(let i=1;i<L2.length;i++){ const A2=L2[i-1], B2=L2[i], lx=(A2.lx??A2.x), rx=(B2.lx??B2.x), need=(A2.w+B2.w)/2;
+        if(rx-lx<need){ const d=(need-(rx-lx))/2; A2.lx=lx-d; B2.lx=rx+d; moved=true; } } if(!moved) break; }
+    L2.forEach(o=>{ o.lx=clamp(o.lx??o.x,LW+10+o.w/2-6,W-R0-o.w/2+6); });
+    L2.forEach(({s,v,x,nm,lx})=>{ const on=s.k===sel.k;
+      line(g,x,yy-5,x,yy+5,on?'#FFFFFF':col,on?2.6:1.8);
+      if(Math.abs(lx-x)>2) line(g,lx,yy-9,x,yy-5,on?'#FFFFFF':'rgba(200,215,225,.45)',1);
+      if(on){ g.fillStyle='#E46BAE'; g.beginPath(); g.arc(x,yy,4.2,0,7); g.fill(); }
+      txt(g,nm,lx,yy-(ph?21:23),on?'#FFFFFF':col,'center',fsz,on?800:700);
+      txt(g,String(Math.round(v)),lx,yy-11,on?'#FFFFFF':C.dim,'center',fsz-1,on?700:500);
+      SH.push({k:s.k,x:lx,y:yy-16}); SH.push({k:s.k,x,y:yy}); });
+    y+=rowH; });
+  /* the selected speed: a guide line down all the rows */
+  const sv=sel.v(c); if(sv!=null&&isFinite(sv)){ line(g,X(sv),top0,X(sv),y-4,'rgba(228,107,174,.55)',1.2,[3,3]); }
+  /* the explanation box */
+  y+=6; const bx=ph?8:LW+10, bw=W-bx-R0; const head=spdName(sel,c)+(sv!=null&&isFinite(sv)?' · '+kt(sv):'')+'  '+L(sel.t);
+  const fz=ph?10:11.5, lh=fz*FS*1.5, ok=sv!=null&&isFinite(sv), rule=ok?L(sel.r(c)):L(sel.na||NA_B);
+  const LD=wrapLines(g,L(sel.d),bw-28,fz), LR=wrapLines(g,rule,bw-28,fz), bh=22+(ph?18:20)+LD.length*lh+4+LR.length*lh+6;
+  g.fillStyle='rgba(8,12,16,.5)'; rr(g,bx,y,bw,bh,6); g.fill(); g.strokeStyle='rgba(228,107,174,.6)'; g.lineWidth=1; g.stroke();
+  let yy=y+22; txt(g,head,bx+14,yy,'#FFFFFF','left',ph?11.5:13,700,SANS); yy+=ph?18:20;
+  LD.forEach(t=>{ txt(g,t,bx+14,yy,'#D5DDE4','left',fz,500,SANS); yy+=lh; }); yy+=4;
+  LR.forEach(t=>{ txt(g,t,bx+14,yy,ok?'#F0C470':C.mut,'left',fz,500,SANS); yy+=lh; });
+  yy=y+bh;
+  txt(g,L(t2('Tap a speed on the scale, or pick one in Controls.','Trykk på en fart på skalaen, eller velg en i Kontroller.')),bx,yy+18,C.dim,'left',ph?9:9.5,500,SANS);
+  return yy+24; }
+cv.addEventListener('click',e=>{ if(S.mode!=='spd'||!SH.length) return; const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  let b=null, bd=1e9; for(const h of SH){ const d=Math.hypot(h.x-mx,(h.y-my)*0.6); if(d<bd){ bd=d; b=h; } } if(b&&bd<26){ S.vsel=b.k; drawSpdBtns(); upd(true); } });
+function drawSpdBtns(){ const c=spdCtx(); el('spdBtns').innerHTML=ROWS.map(([rk,rn])=>`<div class="sgrp"><span>${L(rn)}</span><div>${SPD.filter(s=>s.row===rk).map(s=>{ const v=s.v(c), na=v==null||!isFinite(v); return `<button type="button" data-k="${s.k}" class="${s.k===S.vsel?'on':''}${na?' na':''}" aria-pressed="${s.k===S.vsel}">${spdName(s,c)}</button>`; }).join('')}</div></div>`).join(''); }
+el('spdBtns').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; S.vsel=b.dataset.k; drawSpdBtns(); upd(true); });
+
 /* ---------------- readout chip, legend, "what you're seeing" ---------------- */
 const ch=(i,b,cls)=>`<span><i>${i}</i><b${cls?` class="${cls}"`:''}>${b}</b></span>`;
 function readout(){ let h=''; const T=TO;
-  if(S.mode==='to'){ if(T.cls==='A'){ const x=curV(), sp=T.sp; const req=Math.max(x.go,T.aeoReq);
+  if(S.mode==='spd'){ const c=spdCtx(), sel=spdOf(S.vsel), v=sel.v(c); h=ch(spdName(sel,c),v!=null&&isFinite(v)?kt(v):L(t2('n/a here','gjelder ikke')))+ch(c.A?'VSR':'VS1',kt(c.A?c.vsr:c.vs1))+ch(c.A?'V1 · VR · V2':'VR · V50',c.A?`${Math.round(S.v1)} · ${Math.round(c.sp.vr)} · ${Math.round(c.sp.v2)} kt`:`${Math.round(c.sp.vr)} · ${Math.round(c.sp.v2)} kt`)+ch('VREF',kt(c.vref)); }
+  else if(S.mode==='to'){ if(T.cls==='A'){ const x=curV(), sp=T.sp; const req=Math.max(x.go,T.aeoReq);
       h=ch('V1 · VR · V2',`${Math.round(S.v1)} · ${Math.round(sp.vr)} · ${Math.round(sp.v2)} kt`)+ch(L(t2('Take-off distance / TODA','Startdistanse / TODA')),m0(req)+' / '+m0(T.toda),req<=T.toda&&x.run<=T.tora?'g':'r')
        +ch(L(t2('Accelerate-stop / ASDA','Akselerer-stopp / ASDA')),m0(x.stop)+' / '+m0(T.asda),x.stop<=T.asda?'g':'r')+ch(L(t2('Wind used','Vind brukt')),sg(P.windF(S.wind))+' kt'); }
     else h=ch('VR · V50',`${Math.round(T.sp.vr)} · ${Math.round(T.sp.v2)} kt`)+ch(L(t2('Distance to 50 ft','Distanse til 50 ft')),m0(T.aeo.dist))+ch(L(t2('Required / TORA','Påkrevd / TORA')),m0(T.req)+' / '+m0(S.tora),T.ok?'g':'r')+ch(L(t2('Wind used','Vind brukt')),sg(P.windF(S.wind))+' kt'); }
@@ -231,12 +385,15 @@ function readout(){ let h=''; const T=TO;
   else { const Lr=P.landReq(lp()); h=ch('VREF',Math.round(Lr.cert.vref)+' kt')+ch(L(t2('Certified distance','Sertifisert distanse')),m0(Lr.cert.ld))+ch(L(t2('Required / LDA','Påkrevd / LDA')),m0(Lr.req)+' / '+m0(S.lda),Lr.req<=S.lda?'g':'r')+ch(L(t2('Wind used','Vind brukt')),sg(P.windF(S.wind))+' kt'); }
   el('chip').innerHTML=h; const v=VIEWS.find(v=>v[0]===S.mode); el('xsv').textContent=v?L(v[1]):''; }
 function legend(){ const lg=(c,t,k)=>`<span><i class="${k||''}" style="--c:${c}"></i>${L(t)}</span>`; let s='';
-  if(S.mode==='to'){ s=lg(C.aeo,t2('all engines','alle motorer'))+(isA()?lg(C.go,t2('engine out: go','motorstans: fortsett'))+lg(C.stop,t2('engine out: stop','motorstans: stopp')):lg(C.go,t2('regulatory margin','lovpålagt margin')))+lg('#AEB8C1',t2('dashed: in the air','stiplet: i luften')); }
+  if(S.mode==='spd'){ s=ROWS.map(([k,n,c])=>lg(c,n)).join('')+(S.type==='sep'?lg('#4FBF7A',t2('ASI: green arc normal range','Fartsmåler: grønn bue normalområde'))+lg('#F0C040',t2('yellow: smooth air only','gul: bare rolig luft')):''); }
+  else if(S.mode==='to'){ s=lg(C.aeo,t2('all engines','alle motorer'))+(isA()?lg(C.go,t2('engine out: go','motorstans: fortsett'))+lg(C.stop,t2('engine out: stop','motorstans: stopp')):lg(C.go,t2('regulatory margin','lovpålagt margin')))+lg('#AEB8C1',t2('dashed: in the air','stiplet: i luften')); }
   else if(S.mode==='climb') s=isA()?lg(C.aeo,t2('gross path','bruttobane'),'ln')+lg(C.net,t2('net path','nettobane'),'ln'):lg(C.aeo,t2('climb at Vx','stigning ved Vx'),'ln')+lg(C.go,t2('climb at Vy','stigning ved Vy'),'ln');
   else s=lg(C.aeo,t2('air distance','luftdistanse'))+lg(C.go,t2('braking','bremsing'))+lg('#C9B6F2',t2('required margin','påkrevd margin'));
   el('vleg').innerHTML=s; }
 function see(){ let t; const T=TO;
-  if(S.mode==='to'){ if(T.cls==='A'){ const x=curV(); const go=Math.max(x.go,T.aeoReq)<=T.toda&&x.run<=T.tora, st=x.stop<=T.asda;
+  if(S.mode==='spd'){ const c=spdCtx(); t=c.A?t2(`<b>Every speed sits on one line.</b> The stall speed is the foundation: V2, VFTO and VREF are fixed multiples of it, the control speeds set the floor for V1 and V2, and the limits set the ceiling. Heavier moves the stall-based speeds up; hot and high moves VMCG and VMCA down.`,`<b>Alle fartene ligger på én linje.</b> Stallfarten er grunnmuren: V2, VFTO og VREF er faste multipler av den, kontrollfartene setter gulvet for V1 og V2, og grensene setter taket. Tyngre flytter de stallbaserte fartene opp; varmt og høyt flytter VMCG og VMCA ned.`)
+      :t2(`<b>Every speed sits on one line.</b> A light single needs fewer: the stall speeds, VR and the 50 ft speed, VX and VY, the limits that make up the arcs on the airspeed indicator, and VREF.`,`<b>Alle fartene ligger på én linje.</b> Et lett enmotors fly trenger færre: stallfartene, VR og 50 ft-farten, VX og VY, grensene som utgjør buene på fartsmåleren, og VREF.`); }
+  else if(S.mode==='to'){ if(T.cls==='A'){ const x=curV(); const go=Math.max(x.go,T.aeoReq)<=T.toda&&x.run<=T.tora, st=x.stop<=T.asda;
       t= go&&st? t2(`<b>Legal take-off.</b> If the engine fails before V1 you stop on the runway (and stopway); at or after V1 you continue and reach ${S.surf==='dry'?35:15} ft within the TODA.`,`<b>Lovlig start.</b> Stanser motoren før V1, stopper du på banen (og stoppflaten); ved eller etter V1 fortsetter du og når ${S.surf==='dry'?35:15} ft innenfor TODA.`)
        : !st&&go? t2('<b>Too far to stop.</b> At this V1 the accelerate-stop distance does not fit the ASDA. Lower V1, or add a stopway.','<b>For langt å stoppe.</b> Med denne V1 får ikke akselerer-stopp-distansen plass i ASDA. Senk V1 eller legg til stoppflate.')
        : go&&!st? '' : st? t2('<b>Too far to go.</b> At this V1 the engine-out take-off does not reach the screen height within the TODA. Raise V1, or a clearway helps.','<b>For langt å fortsette.</b> Med denne V1 når ikke starten med én motor skjermhøyden innenfor TODA. Øk V1, eller en klarflate hjelper.')
@@ -263,16 +420,17 @@ function advRo(){ const r=[]; const ro=(k,v,c)=>`<div class="rrow"><span>${L(k)}
   el('advRoL').innerHTML=ro(t2('Certified (dry)','Sertifisert (tørr)'),m0(Lr.cert.ld))+ro(t2('Actual conditions','Faktiske forhold'),m0(ta.ld))+ro(t2('× 1.15 before landing','× 1,15 før landing'),m0(ta.req),ta.req<=S.lda?'#2C7A4B':'#B3261E'); }
 
 /* ---------------- modes and controls ---------------- */
-const VIEWS=[['to',t2('Take-off','Start')],['climb',t2('Climb-out','Utflyging')],['land',t2('Landing','Landing')]];
+const VIEWS=[['spd',t2('Speeds','Farter')],['to',t2('Take-off','Start')],['climb',t2('Climb-out','Utflyging')],['land',t2('Landing','Landing')]];
 function drawTabs(){ el('vtabs').innerHTML=VIEWS.map(([k,t])=>`<button type="button" role="tab" data-v="${k}" class="${k===S.mode?'on':''}" aria-selected="${k===S.mode}">${L(t)}</button>`).join(''); }
 el('vtabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) setMode(b.dataset.v); });
-function setMode(m){ if(!VIEWS.some(v=>v[0]===m)) m='to'; S.mode=m; if(m==='to'&&S.type==='sep'&&S.surf==='wet') S.surf='dry';
+function syncCtl(){ [['m','m'],['m2','m'],['lm','lm'],['lm2','lm']].forEach(([k,f])=>{ if(sl[k]) sl[k].set(S[f]); }); if(flapSeg) flapSeg.set(S.flap); if(flapSeg2) flapSeg2.set(S.flap); }
+function setMode(m){ if(!VIEWS.some(v=>v[0]===m)) m='to'; S.mode=m; syncCtl(); if(m==='to'&&S.type==='sep'&&S.surf==='wet') S.surf='dry';
   el('xpanel').querySelectorAll('[data-pv]').forEach(d=>{ d.hidden=!d.dataset.pv.split(' ').includes(m); }); buildSurf(); drawTabs(); drawPre(); upd(); }
 
 LAB.add({},{'Take-off mass':'Startmasse','Landing mass':'Landingsmasse','V1':'V1','Aerodrome pressure altitude':'Flyplassens trykkhøyde','Outside air temperature':'Utetemperatur','Reported wind (+ head, − tail)':'Rapportert vind (+ mot, − med)','Runway slope (+ uphill)':'Banehelning (+ oppover)',
  'TORA (runway length)':'TORA (banelengde)','Clearway':'Klarflate','Stopway':'Stoppflate','LDA':'LDA','Obstacle height':'Hinderhøyde','Obstacle distance (from end of TOD)':'Hinderavstand (fra slutten av TOD)','Assumed temperature (reduced thrust)':'Antatt temperatur (redusert skyvekraft)',
  'Dry':'Tørr','Wet':'Våt','Contaminated':'Kontaminert','Paved':'Fast dekke','Paved wet':'Fast dekke, våt','Grass':'Gress','Wet grass':'Vått gress','Full flap':'Full klaff','Reduced flap':'Redusert klaff'});
-const sl={}; let typeSeg=null, flapSeg=null, surfSeg=null, lflapSeg=null;
+const sl={}; let typeSeg=null, flapSeg=null, flapSeg2=null, surfSeg=null, lflapSeg=null;
 function buildCtl(){ const D=DEF[S.type], ty=P.TYPES[S.type];
   ['v1Ctl','obsCtl','ldaCtl','wxCtl','rwyCtl','advCtl'].forEach(i=>el(i).innerHTML='');
   const add=(box,k,o)=>{ sl[k]=LAB.slider(el(box),o); };
@@ -291,6 +449,9 @@ function buildCtl(){ const D=DEF[S.type], ty=P.TYPES[S.type];
     add('rwyCtl','swy',{label:'Stopway',min:0,max:400,step:25,v:S.swy,f:m0,on:v=>{ S.swy=v; upd(); }});
     add('advCtl','tass',{label:'Assumed temperature (reduced thrust)',min:Math.round(S.oat),max:70,step:1,v:S.tAss??Math.round(S.oat),f:v=>v<=S.oat?L(t2('off (full thrust)','av (full skyvekraft)')):v+' °C',on:v=>{ S.tAss=v<=S.oat?null:v; S.v1=null; upd(); }}); }
   flapSeg=LAB.seg(el('flapSeg'),ty.flaps.map((f,i)=>[i,f.n]),S.flap,v=>{ S.flap=+v; S.v1=null; upd(); });
+  el('spdCtl').innerHTML=''; add('spdCtl','m2',{label:'Take-off mass',min:D.mR[0],max:D.mR[1],step:D.mR[2],v:S.m,f:massF,on:v=>{ S.m=v; S.v1=null; upd(); }});
+  add('spdCtl','lm2',{label:'Landing mass',min:D.lmR[0],max:D.lmR[1],step:D.lmR[2],v:S.lm,f:massF,on:v=>{ S.lm=v; upd(); }});
+  flapSeg2=LAB.seg(el('spdFlap'),ty.flaps.map((f,i)=>[i,f.n]),S.flap,v=>{ S.flap=+v; S.v1=null; upd(); });
   lflapSeg=LAB.seg(el('lflapSeg'),[['full','Full flap'],['red','Reduced flap']],S.lred?'red':'full',v=>{ S.lred=v==='red'; upd(); });
   buildSurf(); }
 function buildSurf(){ const A=isA(); const items=A?[['dry','Dry'],['wet','Wet'],['cont','Contaminated']]:S.mode==='land'?[['dry','Paved'],['wet','Paved wet'],['grass','Grass'],['wetgrass','Wet grass']]:[['dry','Paved'],['grass','Grass'],['wetgrass','Wet grass']];
@@ -304,7 +465,8 @@ el('balBtn').addEventListener('click',()=>{ S.v1=TO.bal.v1; upd(); });
 el('revChk').addEventListener('change',e=>{ S.rev=e.target.checked; upd(); });
 
 /* scenarios: conditions only (the aircraft stays) */
-const SCN={to:[[t2('Standard day','Standarddag'),{pa:0,oat:15,wind:0,slope:0,surf:'dry'}],[t2('Hot and high','Varmt og høyt'),{pa:5000,oat:35,wind:0,slope:0,surf:'dry'}],[t2('Wet runway','Våt bane'),{surf:'wet',pa:0,oat:10,wind:0}],[t2('Tailwind 10 kt','Medvind 10 kt'),{wind:-10,pa:0,oat:15}],[t2('Short runway + stopway + clearway','Kort bane + stoppflate + klarflate'),{short:1}]],
+const SCN={spd:[[t2('Heavy','Tung'),{heavy:1,mto:1}],[t2('Light','Lett'),{light:1}],[t2('Hot and high','Varmt og høyt'),{pa:5000,oat:35}],[t2('Standard day','Standarddag'),{pa:0,oat:15,wind:0}],[t2('Gusty headwind 20 kt','Byget motvind 20 kt'),{wind:20}]],
+ to:[[t2('Standard day','Standarddag'),{pa:0,oat:15,wind:0,slope:0,surf:'dry'}],[t2('Hot and high','Varmt og høyt'),{pa:5000,oat:35,wind:0,slope:0,surf:'dry'}],[t2('Wet runway','Våt bane'),{surf:'wet',pa:0,oat:10,wind:0}],[t2('Tailwind 10 kt','Medvind 10 kt'),{wind:-10,pa:0,oat:15}],[t2('Short runway + stopway + clearway','Kort bane + stoppflate + klarflate'),{short:1}]],
  climb:[[t2('Obstacle close in','Hinder tett på'),{obsH:'hi',obsD:'near'}],[t2('Hot day','Varm dag'),{oat:38,pa:2000}],[t2('No obstacle','Uten hinder'),{obsH:0}]],
  land:[[t2('Dry','Tørr'),{surf:'dry',wind:0,slope:0}],[t2('Wet','Våt'),{surf:'wet'}],[t2('Contaminated (compacted snow)','Kontaminert (pakket snø)'),{surf:'cont',oat:-5,dp:1}],[t2('Tailwind 10 kt','Medvind 10 kt'),{wind:-10}],[t2('Heavy','Tung'),{heavy:1}]]};
 function drawPre(){ el('pre').innerHTML=(SCN[S.mode]||[]).map(([t,o],i)=>(o.dp&&!deepOn())||(o.short&&!isA())||(o.surf==='cont'&&!isA())?'':`<button type="button" class="btn" data-s="${i}">${L(t)}</button>`).join(''); }
@@ -314,13 +476,13 @@ function setS(o){ if(!o) return; o=Object.assign({},o); const D=DEF[S.type];
   if(o.mode&&o.mode!==S.mode) setMode(o.mode); delete o.mode;
   if(o.short){ Object.assign(S,{tora:Math.round(D.tora*0.8/50)*50,swy:Math.round(D.tora*0.08/25)*25,cwy:Math.round(D.tora*0.16/25)*25}); delete o.short; }
   if(o.obsH==='hi'){ o.obsH=D.obs.h*2; } if(o.obsD==='near'){ o.obsD=Math.round(D.obs.d*0.6/100)*100; }
-  if(o.heavy){ S.lm=D.lmR[1]; delete o.heavy; } delete o.dp;
+  if(o.heavy){ S.lm=D.lmR[1]; if(o.mto) S.m=D.mR[1]; delete o.heavy; delete o.mto; } if(o.light){ S.m=D.mR[0]; S.lm=D.lmR[0]; delete o.light; } delete o.dp;
   if(o.surf==='cont') S.tAss=null; Object.assign(S,o); S.v1=o.v1??null; buildCtl(); upd(); }
 
 /* ---------------- update ---------------- */
 let raf=0;
 function upd(fast){ model(); if(sl.v1&&TO.cls==='A'){ sl.v1.inp.min=TO.arr[0].v1; sl.v1.inp.max=TO.arr[TO.arr.length-1].v1; sl.v1.set(Math.round(S.v1)); }
-  readout(); legend(); if(!fast) schedLim(); if(!raf) raf=requestAnimationFrame(()=>{ raf=0; draw(); see(); readout(); }); advRo(); }
+  readout(); legend(); if(!fast) schedLim(); if(!raf) raf=requestAnimationFrame(()=>{ raf=0; draw(); see(); readout(); if(S.mode==='spd') drawSpdBtns(); }); advRo(); }
 
 /* ---------------- Try it ---------------- */
 let ti=0; const ansv={}, done={};
@@ -375,27 +537,44 @@ el('tstep').addEventListener('click',e=>{ const b=e.target.closest('button'); if
 const {sv,tx,ar}=KCS;
 const go=o=>({click:()=>setS(o),to:'#pfVp'});
 const rwyIll=(extra)=>`<rect x="10" y="26" width="120" height="12" fill="#3a444e"/>${extra||''}`;
+/* The ladder, basics first: the stall speeds every other speed is built on, the control speeds that set the floor,
+   the runway the rules see, the take-off speeds in the order you meet them, the climb, the limits, the landing,
+   and last the rules and margins that turn speeds into distances. Every speed card opens the Speeds view on that speed. */
+const RC={stall:'#C9B6F2',ctl:'#EC5A47',to:'#F0B440',clb:'#71CC93',lim:'#7FCBE8',land:'#EEF2F5'};
+const POS={vs0:.08,vs1:.16,vsr:.2,vmcg:.25,vmca:.29,vmu:.33,vef:.36,v1:.4,vr:.45,vlof:.49,v2:.53,vfto:.6,vx:.55,vy:.66,va:.72,vfe:.5,vlo:.76,vle:.84,vno:.8,vne:.93,vmo:.95,vref:.3,vapp:.36};
+const NEED_A=['vsr','vmcg','vmca','vmu','vef','v1','vfto','vlo','vle','vmo'], NEED_B=['vno','vne'];
+function spIll(k){ const s=spdOf(k), x=10+POS[k]*180, col=RC[s.row]; let b=`<line x1="10" y1="40" x2="190" y2="40" stroke="#5e6d7c"/>`;
+  for(let i=0;i<=10;i++) b+=`<line x1="${10+i*18}" y1="40" x2="${10+i*18}" y2="${i%5?43:45}" stroke="#5e6d7c"/>`;
+  if(k==='vs0'||k==='vfe') b+=`<line x1="${10+POS.vs0*180}" y1="50" x2="${10+POS.vfe*180}" y2="50" stroke="#eef2f5" stroke-width="3"/>`;
+  if(k==='vs1'||k==='vno'||k==='vne') b+=`<line x1="${10+POS.vs1*180}" y1="55" x2="${10+POS.vno*180}" y2="55" stroke="#4fbf7a" stroke-width="3.5"/><line x1="${10+POS.vno*180}" y1="55" x2="${10+POS.vne*180}" y2="55" stroke="#f0c040" stroke-width="3.5"/><line x1="${10+POS.vne*180}" y1="50" x2="${10+POS.vne*180}" y2="60" stroke="#ec5a47" stroke-width="2.2"/>`;
+  if(k==='vmo') b+=`${[0,1,2,3,4,5].map(i=>`<rect x="${x+i*3}" y="34" width="3" height="12" fill="${i%2?'#ec5a47':'#14181c'}"/>`).join('')}`;
+  b+=`<line x1="${x}" y1="28" x2="${x}" y2="50" stroke="${col}" stroke-width="2.6"/><circle cx="${x}" cy="40" r="3.4" fill="#E46BAE"/>`;
+  b+=tx(Math.min(176,Math.max(24,x)),22,s.n,col,'middle',9.5);
+  return sv(b); }
+const spCard=k=>{ const s=spdOf(k); return {k:'s-'+k,t:t2(s.n+' · '+s.t.en,s.n+' · '+s.t.no),d:s.d,ill:()=>spIll(k),
+  click:()=>{ const o={mode:'spd',vsel:k}; if(NEED_A.includes(k)&&S.type==='sep') o.type='jet'; if(NEED_B.includes(k)&&S.type!=='sep') o.type='sep'; setS(o); drawSpdBtns(); },to:'#pfVp'}; };
+const G=(en,no,sen,sno)=>({grp:t2(en,no),sub:sen?t2(sen,sno):null});
 const KC=[
- Object.assign({k:'dist',t:t2('The runway as the rules see it','Banen slik reglene ser den'),d:t2('<b>TORA</b> is the runway you can roll on, <b>ASDA</b> adds a stopway you can brake on, <b>TODA</b> adds a clearway you may fly over to 35 ft.','<b>TORA</b> er banen du kan rulle på, <b>ASDA</b> legger til en stoppflate du kan bremse på, <b>TODA</b> legger til en klarflate du kan fly over til 35 ft.'),
+ G('1 · Stall','1 · Stall','everything is built on the stall speed','alt bygger på stallfarten'),spCard('vs0'),spCard('vs1'),spCard('vsr'),
+ G('2 · Control after an engine failure','2 · Kontroll etter motorstans','the floor for V1 and V2','gulvet for V1 og V2'),spCard('vmcg'),spCard('vmca'),
+ G('3 · The runway','3 · Rullebanen','what the rules let you use','det reglene lar deg bruke'),Object.assign({k:'dist',t:t2('The runway as the rules see it','Banen slik reglene ser den'),d:t2('<b>TORA</b> is the runway you can roll on, <b>ASDA</b> adds a stopway you can brake on, <b>TODA</b> adds a clearway you may fly over to 35 ft.','<b>TORA</b> er banen du kan rulle på, <b>ASDA</b> legger til en stoppflate du kan bremse på, <b>TODA</b> legger til en klarflate du kan fly over til 35 ft.'),
   dd:t2('Only half of the TORA can be added as clearway. The landing uses its own distance, the LDA.','Bare halve TORA kan legges til som klarflate. Landingen bruker sin egen distanse, LDA.'),
   ill:()=>sv(rwyIll(`<rect x="130" y="26" width="22" height="12" fill="#6b5b3a"/><rect x="130" y="18" width="56" height="28" fill="none" stroke="#7fcbe8" stroke-dasharray="3 2"/><line x1="10" y1="10" x2="130" y2="10" stroke="#aeb8c1"/><line x1="10" y1="54" x2="152" y2="54" stroke="#ec5a47"/><line x1="10" y1="60" x2="186" y2="60" stroke="#7fcbe8"/>${tx(70,8,'TORA','#aeb8c1','middle',7)}${tx(80,52,'ASDA','#ec5a47','middle',7)}`))},go({mode:'to',short:1})),
- Object.assign({k:'v1',t:t2('V1: stop or go','V1: stopp eller fortsett'),d:t2('Engine fails <b>below V1</b>: stop; at or <b>above V1</b>: go; V1 is set so that both end safely on your runway. A higher V1 means a longer stop but a shorter go.','Motoren stanser <b>under V1</b>: stopp; ved eller <b>over V1</b>: fortsett; V1 settes slik at begge ender trygt på banen din. Høyere V1 gir lengre stopp, men kortere fortsettelse.'),
+ G('4 · Take-off speeds','4 · Startfarter','in the order you meet them','i den rekkefølgen du møter dem'),spCard('vmu'),spCard('vef'),spCard('v1'),Object.assign({k:'v1',t:t2('Stop or go on this runway','Stopp eller fortsett på denne banen'),d:t2('Engine fails <b>below V1</b>: stop; at or <b>above V1</b>: go; V1 is set so that both end safely on your runway. A higher V1 means a longer stop but a shorter go.','Motoren stanser <b>under V1</b>: stopp; ved eller <b>over V1</b>: fortsett; V1 settes slik at begge ender trygt på banen din. Høyere V1 gir lengre stopp, men kortere fortsettelse.'),
   dd:t2('Where the two are equal is the balanced V1.','Der de to er like, er balansert V1.'),
-  ill:()=>sv(`<line x1="10" y1="40" x2="190" y2="40" stroke="#5e6d7c"/><rect x="60" y="34" width="70" height="12" fill="#71cc93" opacity=".8"/><line x1="96" y1="26" x2="96" y2="50" stroke="#fff" stroke-width="2"/>${tx(96,22,'V1','#fff','middle',8)}${tx(30,58,'stop','#ec5a47','middle',7.5)}${tx(165,58,'go','#f0b440','middle',7.5)}`)},go({mode:'to'})),
- Object.assign({k:'longer',t:t2('What makes it longer','Hva som gjør den lengre'),d:t2('<b>Heavy, hot, high, tailwind, uphill, wet</b>: each one adds runway. Mass counts roughly squared.','<b>Tung, varmt, høyt, medvind, oppoverbakke, vått</b>: hver av dem krever mer bane. Massen teller omtrent i annen.'),
-  dd:t2('The calculation uses only half of a reported headwind and one and a half times a reported tailwind.','Beregningen bruker bare halvparten av rapportert motvind og halvannen gang rapportert medvind.'),
-  ill:()=>sv(`<rect x="10" y="20" width="70" height="10" fill="#7fcbe8"/><rect x="10" y="38" width="130" height="10" fill="#ec5a47" opacity=".85"/>${tx(84,29,'ISA','#7fcbe8','start',8)}${tx(144,47,'35 °C','#ec5a47','start',8)}`)},go({mode:'to',pa:5000,oat:35})),
- Object.assign({k:'climb',t:t2('Climb after take-off','Stigning etter avløft'),d:t2('With an engine out the <b>net</b> path, a pessimistic copy of the real one, must clear obstacles by <b>35 ft</b>.','Med én motor ute må <b>nettobanen</b>, en pessimistisk kopi av den virkelige, klare hindre med <b>35 ft</b>.'),
+  ill:()=>sv(`<line x1="10" y1="40" x2="190" y2="40" stroke="#5e6d7c"/><rect x="60" y="34" width="70" height="12" fill="#71cc93" opacity=".8"/><line x1="96" y1="26" x2="96" y2="50" stroke="#fff" stroke-width="2"/>${tx(96,22,'V1','#fff','middle',8)}${tx(30,58,'stop','#ec5a47','middle',7.5)}${tx(165,58,'go','#f0b440','middle',7.5)}`)},go({mode:'to'})),spCard('vr'),spCard('vlof'),spCard('v2'),spCard('vfto'),
+ G('5 · Climb','5 · Stigning'),spCard('vx'),spCard('vy'),Object.assign({k:'climb',t:t2('Climb after take-off','Stigning etter avløft'),d:t2('With an engine out the <b>net</b> path, a pessimistic copy of the real one, must clear obstacles by <b>35 ft</b>.','Med én motor ute må <b>nettobanen</b>, en pessimistisk kopi av den virkelige, klare hindre med <b>35 ft</b>.'),
   dd:t2('For a twin the net path is the gross gradient minus 0.8 %. The second segment must give at least 2.4 % gross.','For tomotors er nettobanen bruttogradienten minus 0,8 %. Andre segment må gi minst 2,4 % brutto.'),
   ill:()=>sv(`<line x1="8" y1="56" x2="192" y2="56" stroke="#5f8a69"/><path d="M10,54 L190,14" stroke="#7fcbe8" stroke-width="2" fill="none"/><path d="M10,54 L190,26" stroke="#c9b6f2" stroke-width="1.6" stroke-dasharray="4 3" fill="none"/><path d="M120,56 L128,40 L136,56Z" fill="#5b6670"/>`)},go({mode:'climb'})),
- Object.assign({k:'land',t:t2('Landing margins','Landingsmarginer'),d:t2('The test-pilot (<b>certified</b>) distance must fit in <b>60 %</b> of the runway for a jet, 70 % for props, plus 15 % if wet.','Testpilotdistansen (<b>sertifisert</b>) må få plass på <b>60 %</b> av banen for jet, 70 % for propellfly, pluss 15 % hvis våt.'),
+ G('6 · Limits','6 · Grenser','the ceiling: never above these','taket: aldri over disse'),spCard('va'),spCard('vfe'),spCard('vlo'),spCard('vle'),spCard('vno'),spCard('vne'),spCard('vmo'),
+ G('7 · Approach and landing','7 · Innflyging og landing'),spCard('vref'),spCard('vapp'),Object.assign({k:'land',t:t2('Landing margins','Landingsmarginer'),d:t2('The test-pilot (<b>certified</b>) distance must fit in <b>60 %</b> of the runway for a jet, 70 % for props, plus 15 % if wet.','Testpilotdistansen (<b>sertifisert</b>) må få plass på <b>60 %</b> av banen for jet, 70 % for propellfly, pluss 15 % hvis våt.'),
   dd:t2('VREF, the speed over the threshold, is at least 1.23 × the stall speed in landing configuration (1.3 for light aircraft).','VREF, farten over terskelen, er minst 1,23 × stallfarten i landingskonfigurasjon (1,3 for småfly).'),
   ill:()=>sv(`<path d="M10,14 L60,40" stroke="#7fcbe8" stroke-width="2"/><rect x="60" y="38" width="130" height="10" fill="#3a444e"/><rect x="60" y="52" width="60" height="6" fill="#f0b440"/><rect x="60" y="52" width="100" height="6" fill="none" stroke="#c9b6f2" stroke-dasharray="3 2"/>${tx(64,34,'50 ft','#8b99a7','start',7.5)}`)},go({mode:'land'})),
- Object.assign({k:'cls',t:t2('Light single vs airliner','Småfly mot trafikkfly'),d:t2('Turboprops and jets (<b>Class A</b>) must survive an engine failure at the worst moment. A light single (<b>Class B</b>) cannot, so it gets a simple margin instead: × 1.25 on the take-off.','Turbopropfly og jetfly (<b>klasse A</b>) må tåle motorstans i verste øyeblikk. Et lett enmotors fly (<b>klasse B</b>) kan ikke det, så det får en enkel margin i stedet: × 1,25 på starten.'),
-  ill:()=>sv(`<rect x="10" y="20" width="80" height="12" fill="#3a444e"/><rect x="10" y="38" width="64" height="7" fill="#7fcbe8"/><rect x="74" y="38" width="16" height="7" fill="#f0b440"/>${tx(100,44,'× 1.25','#f0b440','start',9)}${tx(150,30,'A / B','#c9d2da','middle',11)}`)},go({type:'sep',mode:'to'})),
- Object.assign({k:'flex',dp:1,t:t2('Reduced thrust','Redusert skyvekraft'),d:t2('When the aircraft is lighter than the limit, a jet takes off with less thrust: the computer pretends it is hotter (<b>assumed temperature</b>). It saves engine wear; full thrust stays available.','Når flyet er lettere enn grensen, starter et jetfly med mindre skyvekraft: datamaskinen later som det er varmere (<b>antatt temperatur</b>). Det sparer motorslitasje; full skyvekraft er fortsatt tilgjengelig.'),
-  ill:()=>sv(`<path d="M14,18 L110,18 L186,52" stroke="#f0b440" stroke-width="2" fill="none"/><line x1="110" y1="10" x2="110" y2="58" stroke="#5e6d7c" stroke-dasharray="2 3"/>${tx(60,32,'flat rated','#8b99a7','middle',7.5)}${tx(160,26,'flex','#7fcbe8','middle',8)}`)},go({type:'jet',mode:'to',m:62000,tora:3200,tAss:45})),
- Object.assign({k:'cont',dp:1,t:t2('Wet and contaminated','Våt og kontaminert'),d:t2('On a wet runway the brakes stop you more slowly, so V1 comes down. On a contaminated runway (snow, slush, ice) the aircraft also needs its own data, and no reduced thrust.','På våt bane stopper bremsene deg saktere, så V1 går ned. På kontaminert bane (snø, sludd, is) trenger flyet egne data, og ingen redusert skyvekraft.'),
+ G('8 · What changes the numbers','8 · Hva som endrer tallene'),Object.assign({k:'longer',t:t2('What makes it longer','Hva som gjør den lengre'),d:t2('<b>Heavy, hot, high, tailwind, uphill, wet</b>: each one adds runway. Mass counts roughly squared.','<b>Tung, varmt, høyt, medvind, oppoverbakke, vått</b>: hver av dem krever mer bane. Massen teller omtrent i annen.'),
+  dd:t2('The calculation uses only half of a reported headwind and one and a half times a reported tailwind.','Beregningen bruker bare halvparten av rapportert motvind og halvannen gang rapportert medvind.'),
+  ill:()=>sv(`<rect x="10" y="20" width="70" height="10" fill="#7fcbe8"/><rect x="10" y="38" width="130" height="10" fill="#ec5a47" opacity=".85"/>${tx(84,29,'ISA','#7fcbe8','start',8)}${tx(144,47,'35 °C','#ec5a47','start',8)}`)},go({mode:'to',pa:5000,oat:35})),Object.assign({k:'cls',t:t2('Light single vs airliner','Småfly mot trafikkfly'),d:t2('Turboprops and jets (<b>Class A</b>) must survive an engine failure at the worst moment. A light single (<b>Class B</b>) cannot, so it gets a simple margin instead: × 1.25 on the take-off.','Turbopropfly og jetfly (<b>klasse A</b>) må tåle motorstans i verste øyeblikk. Et lett enmotors fly (<b>klasse B</b>) kan ikke det, så det får en enkel margin i stedet: × 1,25 på starten.'),
+  ill:()=>sv(`<rect x="10" y="20" width="80" height="12" fill="#3a444e"/><rect x="10" y="38" width="64" height="7" fill="#7fcbe8"/><rect x="74" y="38" width="16" height="7" fill="#f0b440"/>${tx(100,44,'× 1.25','#f0b440','start',9)}${tx(150,30,'A / B','#c9d2da','middle',11)}`)},go({type:'sep',mode:'to'})),Object.assign({k:'flex',dp:1,t:t2('Reduced thrust','Redusert skyvekraft'),d:t2('When the aircraft is lighter than the limit, a jet takes off with less thrust: the computer pretends it is hotter (<b>assumed temperature</b>). It saves engine wear; full thrust stays available.','Når flyet er lettere enn grensen, starter et jetfly med mindre skyvekraft: datamaskinen later som det er varmere (<b>antatt temperatur</b>). Det sparer motorslitasje; full skyvekraft er fortsatt tilgjengelig.'),
+  ill:()=>sv(`<path d="M14,18 L110,18 L186,52" stroke="#f0b440" stroke-width="2" fill="none"/><line x1="110" y1="10" x2="110" y2="58" stroke="#5e6d7c" stroke-dasharray="2 3"/>${tx(60,32,'flat rated','#8b99a7','middle',7.5)}${tx(160,26,'flex','#7fcbe8','middle',8)}`)},go({type:'jet',mode:'to',m:62000,tora:3200,tAss:45})),Object.assign({k:'cont',dp:1,t:t2('Wet and contaminated','Våt og kontaminert'),d:t2('On a wet runway the brakes stop you more slowly, so V1 comes down. On a contaminated runway (snow, slush, ice) the aircraft also needs its own data, and no reduced thrust.','På våt bane stopper bremsene deg saktere, så V1 går ned. På kontaminert bane (snø, sludd, is) trenger flyet egne data, og ingen redusert skyvekraft.'),
   ill:()=>sv(`<rect x="10" y="26" width="180" height="14" fill="#3a444e"/>${[0,1,2,3,4,5,6,7].map(i=>`<circle cx="${20+i*22}" cy="33" r="3" fill="#e6f0ff" opacity=".7"/>`).join('')}`)},go({mode:'to',surf:'cont',oat:-5}))];
 KCS.render(el('kcGrid'),KC);
 
@@ -465,11 +644,11 @@ LAB.quiz(el('qbox'),'perf',()=>LAB.shuffle([
 /* ---------------- static strings, text, start ---------------- */
 LAB.add({},{'Take-off and landing performance':'Start- og landingsytelse','NORDAP Virtual Labs · Performance':'NORDAP Virtual Labs · Ytelse',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Key concepts':'Nøkkelbegreper','Deep dive':'Dypdykk','The runway lab':'Rullebanelabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv',
- 'Controls':'Kontroller','Aircraft':'Fly','Take-off':'Start','Obstacle':'Hinder','Landing':'Landing','Conditions':'Forhold','Runway':'Rullebane','Scenarios':'Scenarier','Advanced':'Avansert','Use the balanced V1':'Bruk balansert V1','Flaps':'Klaff','Runway surface':'Banedekke','Mode':'Modus','Sections':'Seksjoner',
+ 'Controls':'Kontroller','Aircraft':'Fly','Speeds':'Farter','Take-off flap':'Startklaff','Take-off':'Start','Obstacle':'Hinder','Landing':'Landing','Conditions':'Forhold','Runway':'Rullebane','Scenarios':'Scenarier','Advanced':'Avansert','Use the balanced V1':'Bruk balansert V1','Flaps':'Klaff','Runway surface':'Banedekke','Mode':'Modus','Sections':'Seksjoner',
  'The runway seen from above with the declared distances, the take-off and stopping distances and the V1 window; in the other modes the climb after take-off from the side and the landing distance.':'Rullebanen sett ovenfra med de oppgitte distansene, start- og stoppdistansene og V1-vinduet; i de andre modusene stigningen etter avløft fra siden og landingsdistansen.'});
 LAB.tx({lead:'Hvor mye bane trenger dagens start, og hva skjer hvis en motor stanser halvveis? Se banen slik reglene ser den, finn V1 som lar deg enten stoppe eller fortsette, klar hindrene etter avløft, og land med marginene loven krever. For et lett enmotors fly, et turbopropfly og et jetfly.'});
 function texts(){
-  el('kin').textContent=L(t2('Six ideas carry take-off and landing performance. “Show in the model” sets the lab up so you can see it.','Seks ideer bærer start- og landingsytelse. «Vis i modellen» setter opp labben så du kan se det.'));
+  el('kin').textContent=L(t2('Every speed you use from brake release to touchdown, starting with the stall speed they are all built on, and then the rules that turn those speeds into runway.','Alle fartene du bruker fra bremseslipp til landing, med stallfarten de alle bygger på først, og så reglene som gjør fartene om til rullebane.'));
   el('xLead').textContent=L(t2('Pick the aircraft on the left and a mode above the picture. Change the mass, the weather and the runway, and watch whether the take-off and the landing still fit.','Velg fly til venstre og modus over bildet. Endre massen, været og banen, og se om starten og landingen fortsatt får plass.'));
   el('tryLead').textContent=L(t2('Work it out first, then check. "Set it up in the model" shows you why.','Regn det ut først, og sjekk. «Sett det opp i modellen» viser deg hvorfor.'));
   el('revL').textContent=L(t2('Reverse thrust (in-flight check)','Reversering (sjekk i luften)'));

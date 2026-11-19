@@ -76,6 +76,14 @@ The site is static: plain HTML and vanilla JS with no build step. Every lab page
 
 - **Three steps** in the bar: 1 Understand, 2 Explore, 3 Test yourself. `data-step` values `try` map to Explore and `debrief` to Test yourself (see `STEP3` in `lab.js`). "Next" is the end link, not a step.
 - **Understand** = a *Key concepts* grid: small cards with a tiny illustration, a short title, one line, and "Show it in the model" that jumps to and highlights the right place/state. Longer text goes in `.deep`.
+- **The Key concepts ladder (owner decision, 19 Nov 2026: "get the basics right on every subject").** Every lab's Understand step is the same:
+  1. H2 **Key concepts** (never renamed), then a one-line topic intro (`.kintro`, no card counts, no "Show in the model" sentence).
+  2. The shared ladder line (`.kladder`, from `concepts.js`): "Read them in order. Card 1 is the foundation and each card builds on the one before."
+  3. The cards, **visible and open**, numbered 01, 02 … by a CSS counter, ordered **basics first** (the tunnel's angle of attack → critical α → stagnation point is the model). Never fold them into a closed box.
+  4. **Every card** has "Show in the model" (`click`/`to`), or, only when the idea lives in another lab, a link `href:'other.html#kc-<key>'` + `hl` ("See it in the … lab"). The `#kc-<key>` hash opens that card's place in the target model.
+  5. Long ladders may use group headings (`{grp, sub}` items, not numbered), as in performance.html (stall → control → runway → take-off speeds → climb → limits → landing → what changes the numbers).
+  6. *Then* the core picture (`corepic.js`, "Put together · the whole topic in one picture"). It always sits after the cards and never takes the heading or folds the cards (it moves itself after the grid).
+  Use `KCS.order(items, keys)` to put an existing list in ladder order without rewriting it.
 - **Explore** = control panel on the left (groups: Conditions / Show / Advanced, the tunnel's component styles), a dark premium viewport with the view tabs on top, a compact readout chip in a viewport corner, the legend in the viewport, a one-line "What you're seeing" under it, then the *Try it* tasks as small boxes.
 - **Test yourself** = "Key points" ("Det viktigste") with at most one memory-aid card, then the quiz.
 - Charts: plain-language "How to read this", key points labelled in words on the chart, a simple default view with "Show full chart" for the rest, and one take-away sentence.

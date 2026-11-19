@@ -387,6 +387,7 @@ body.depth-instructor .memo h3{font-size:20px}
 #t3Sp{grid-template-columns:1fr 1fr}
 #pConfH,#t3ConfH{font-variant-numeric:tabular-nums}
 .kcgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:8px}
+.kcgrid{counter-reset:kc}.kcgrid>.kc{counter-increment:kc}.kc .kh{display:flex;align-items:baseline;gap:7px;margin-top:2px}.kc .kn{flex:none;font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--smoke,var(--accent));min-width:1.6em;letter-spacing:.02em}.kc .kn::before{content:counter(kc,decimal-leading-zero)}.kc .kh h3{margin:0}.kladder{margin:6px 0 0;color:var(--ink-2);font-size:13px;max-width:80ch}.kladder b{color:var(--ink);font-weight:600}
 .kc{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;display:flex;flex-direction:column;gap:5px;min-width:0}
 .kc svg{display:block;width:100%;height:auto;aspect-ratio:200/64;background:#0f161d;border-radius:4px}
 .kc h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:14.5px;margin:2px 0 0;color:var(--fg);line-height:1.2}
@@ -449,7 +450,7 @@ body.depth-instructor .memo h3{font-size:20px}
 <div class="app">
   <div class="main">
     <section class="profile" id="concepts" data-step="understand">
-      <div class="phead"><div><h2 id="kcT">Key concepts</h2><p class="kintro" id="kcL"></p></div></div>
+      <div class="phead"><div><h2 id="kcT">Key concepts</h2><p class="kintro" id="kcL"></p><p class="kladder" id="kcLad"></p></div></div>
       <div class="kcgrid" id="kcGrid"></div>
     </section>
 
@@ -862,10 +863,11 @@ const KC=[
 ];
 function concepts(){
   el('kcT').textContent=L({en:'Key concepts',no:'Nøkkelbegreper'});
-  el('kcL').textContent=L({en:'The words used in the models below. Each card links to the place in the model where it is shown.',no:'Ordene som brukes i modellene under. Hvert kort lenker til stedet i modellen der det vises.'});
+  el('kcL').textContent=L({en:'The words used in the models below.',no:'Ordene som brukes i modellene under.'});
+  el('kcLad').innerHTML=L({en:'<b>Read them in order.</b> Card 1 is the foundation and each card builds on the one before. “Show in the model” sets the lab up so you see it.',no:'<b>Les dem i rekkefølge.</b> Kort 1 er grunnmuren, og hvert kort bygger på det før. «Vis i modellen» setter opp labben så du ser det.'});
   // kort: første setning synlig, resten og utdypingen i «Mer» (skjult i Kort og Instruktør)
   const split=h=>{ let i=h.indexOf('. '); if(i>=0&&i<40){ const j=h.indexOf('. ',i+2); if(j>0) i=j; } return i<0? [h,''] : [h.slice(0,i+1),h.slice(i+2)]; };
-  el('kcGrid').innerHTML=KC.map(([k,t,d,dd])=>{ const [a,b]=split(L(d)); return `<div class="kc${k==='hl'||k==='vs'?' deep':''}">${ILL[k]()}<h3>${L(t)}</h3><p>${a}</p><details class="deep kmore"><summary>${L({en:'More',no:'Mer'})}</summary>${b?`<p>${b}</p>`:''}<p>${L(dd)}</p></details><button class="kgo" type="button" data-k="${k}">${L({en:'Show in the model →',no:'Vis i modellen →'})}</button></div>`; }).join('');
+  el('kcGrid').innerHTML=KC.map(([k,t,d,dd])=>{ const [a,b]=split(L(d)); return `<div class="kc${k==='hl'||k==='vs'?' deep':''}">${ILL[k]()}<div class="kh"><span class="kn" aria-hidden="true"></span><h3>${L(t)}</h3></div><p>${a}</p><details class="deep kmore"><summary>${L({en:'More',no:'Mer'})}</summary>${b?`<p>${b}</p>`:''}<p>${L(dd)}</p></details><button class="kgo" type="button" data-k="${k}">${L({en:'Show in the model →',no:'Vis i modellen →'})}</button></div>`; }).join('');
 }
 window.__tunConcepts=concepts; concepts();
 })();

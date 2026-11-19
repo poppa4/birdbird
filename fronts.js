@@ -604,7 +604,7 @@ LAB.add({},{'Fronts and air masses':'Fronter og luftmasser','Fronts and air mass
  'Vertical cross-section through a front with cloud, precipitation, freezing level, icing and turbulence, the aircraft, and a strip with surface temperature, dew point, wind and QNH along the route':'Vertikalsnitt gjennom en front med skyer, nedbør, frysenivå, ising og turbulens, flyet, og en stripe med temperatur, duggpunkt, vind og QNH ved bakken langs ruten',
  'Plan view of a frontal depression with isobars and front symbols, developing from a wave to an occlusion':'Kart over et frontlavtrykk med isobarer og frontsymboler, som utvikler seg fra en bølge til en okklusjon'});
 LAB.tx({lead:'Der to luftmasser møtes, løftes den varmeste luften, og det er der været skjer. Fly gjennom en varmfront, en kaldfront eller en okklusjon og se skyer, nedbør, frysenivå, ising og turbulens der du er, mens vind, temperatur og QNH endrer seg når du passerer. Se så et frontlavtrykk vokse fra en bølge til en okklusjon.',
- kin:'Ordene som brukes i modellen under. Hvert kort lenker til stedet i modellen der det vises.',kfs:'Luftmasser og fronter i sin helhet'});
+ kin:'Ordene som brukes i modellen under.',kfs:'Luftmasser og fronter i sin helhet'});
 el('occBox').hidden=S.type!=='occl';
 function runHooks(){ hooks.forEach(f=>f()); }
 runHooks(); LAB.onLang(()=>{ runHooks(); rebuild(); planDraw(); });

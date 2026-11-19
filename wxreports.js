@@ -414,7 +414,7 @@ LAB.tx({lead:'METAR, SPECI og TAF, gruppe for gruppe. Velg et norsk eksempel ell
  goal:'<span class="k">Læringsmål</span>Avkode en METAR og en TAF uten nøkkel, finne skydekket og sikten som gjelder på et gitt tidspunkt, og lese farene på et significant weather-kart.',
  kAll:'Koder, endringsgrupper og varsler i sin helhet'});
 on(()=>{
-  el('kIntro').textContent=L(t2('The words used in the decoder below. Each card opens an example in the model and points at the group.','Ordene som brukes i dekoderen under. Hvert kort åpner et eksempel i modellen og peker på gruppen.'));
+  el('kIntro').textContent=L(t2('The words used in the decoder below.','Ordene som brukes i dekoderen under.'));
   el('refT').innerHTML=REF_T();
   el('mLead').innerHTML=L(t2('Pick an example from Norwegian aerodromes (or paste your own under Advanced). Every group is underlined by its type: <b>tap one</b> to read it. A TAF is drawn as a <b>timeline</b> over its validity; move the time and see what applies and whether it is VFR. The second tab is a <b>significant weather chart</b> with its symbols.','Velg et eksempel fra norske flyplasser (eller lim inn din egen under Avansert). Hver gruppe er understreket etter type: <b>trykk på en</b> for å lese den. En TAF tegnes som en <b>tidslinje</b> over gyldighetstiden; flytt tiden og se hva som gjelder og om det er VFR. Den andre fanen er et <b>significant weather-kart</b> med symbolene.'));
   el('tryLead').innerHTML=L(t2('Six short tasks. Two you do in the decoder, with live feedback; the others you answer here, then see them in the model.','Seks korte oppgaver. To gjør du i dekoderen, med fortløpende tilbakemelding; de andre svarer du på her, og ser dem så i modellen.'));
@@ -435,7 +435,7 @@ on(()=>{
 
 /* ---------------- start ---------------- */
 LAB.start('wxreports');
-KCS.render(el('wKc'),KCI);
+KCS.render(el('wKc'),KCS.order(KCI,['metar','wind','vis','wx','cloud','cavok','trend','speci','taf','chg','sigmet','sigwx','wt','cat']));
 hooks.forEach(f=>f());
 load('tBR'); setTab('dec');
 /* Reset (the shell's button in the viewport bar): starting values, same view */

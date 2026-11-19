@@ -145,7 +145,7 @@ ol.steps li{margin:4px 0}
   <!-- 0 · P-factor and the critical engine (light twin) -->
   <section class="card" id="pfactor" data-step="understand">
     <div class="eyebrow">1 · Understand</div>
-    <h2>P-factor and the critical engine</h2>
+    <h2>Key concepts</h2>
     <div id="corePic"></div>
     <p class="lead" id="pfLead"></p>
     <div id="pfKc"></div>
@@ -341,7 +341,7 @@ ol.steps li{margin:4px 0}
 </div>
 <script src="lab.js?v=55"></script>
 <script src="chartnote.js?v=3"></script>
-<script src="concepts.js?v=3"></script>
+<script src="concepts.js?v=4"></script>
 <script src="stab.js?v=2"></script>
 <script src="vmc.js?v=3"></script>
 <script>
@@ -882,10 +882,10 @@ LAB.onLang(()=>{ hooks.forEach(f=>f()); vmRead(); acC.draw(); trC.draw(); mvC.dr
     ill:()=>sv(`${ar(40,50,160,50,'#8b99a7')}${ar(160,50,160,14,'#7fcbe8')}${ar(40,50,160,14,'#f0b440')}${tx(100,60,L({en:'rotation',no:'rotasjon'}),'#8b99a7','middle')}${tx(166,24,'TAS','#7fcbe8')}`),click:'#pwPre button[data-k="climb"]',to:'#pwCv'},
    {k:'feather',t:{en:'Feathering',no:'Fløying'},d:{en:'Turning the dead propeller’s blades edge-on to the airflow stops it windmilling and removes most of its drag, which lowers VMCA and improves the climb.',no:'Å vri bladene på den døde propellen kant mot luftstrømmen stopper vindmøllingen og fjerner det meste av motstanden, som senker VMCA og bedrer stigningen.'},
     ill:()=>sv(`<line x1="100" y1="8" x2="100" y2="58" stroke="#c9d3da" stroke-width="3"/>${ar(30,32,90,32,'#7fcbe8')}${tx(110,36,L({en:'blades edge-on',no:'bladene på kant'}),'#71cc93')}`),click:'#pwPre button[data-k="fe"]',to:'#pwCv'}];
-  const g=document.getElementById('pfKc'); if(g) KCS.render(g,KCP);
+  const g=document.getElementById('pfKc'); if(g) KCS.render(g,KCS.order(KCP,['wing','pf','crit','past','vmca','dead','feather']));
 })();
 </script>
-<script src="corepic.js?v=11"></script>
+<script src="corepic.js?v=12"></script>
 <script src="pic-vmc.js?v=1"></script>
 </body>
 </html>

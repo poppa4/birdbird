@@ -26,6 +26,16 @@ body.depth-deep .pf-vp .vtabs button.dp,body.depth-instructor .pf-vp .vtabs butt
 .xsec .seg.wrap{flex-wrap:wrap}
 .xsec .seg.wrap button{flex:1 1 46%}
 @media (max-width:640px){#pfv{aspect-ratio:1/1.5;max-height:none}.pf-vp .vchip{position:static;margin:0;border-radius:0;max-width:none;border-left:0;border-right:0}}
+/* Speeds view: the speed picker */
+.spdb{display:flex;flex-direction:column;gap:6px;margin:2px 0 8px}
+.spdb .sgrp{display:grid;grid-template-columns:62px 1fr;gap:6px;align-items:start}
+.spdb .sgrp>span{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);padding-top:6px}
+.spdb .sgrp>div{display:flex;flex-wrap:wrap;gap:4px}
+.spdb button{font-family:var(--f-mono);font-size:12px;font-weight:600;padding:4px 7px;min-height:28px;border:1px solid var(--rule);border-radius:4px;background:var(--sheet);color:var(--ink);cursor:pointer}
+.spdb button:hover{border-color:var(--ink)}
+.spdb button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.spdb button.na{color:var(--ink-3);border-style:dashed}
+@media (pointer:coarse){.spdb button{min-height:40px;padding:6px 9px}}
 /* Try it: one task at a time */
 .tstep{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:14px 16px;max-width:860px}
 .tstep .th{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
@@ -135,6 +145,7 @@ body.cls-A .xsec [data-cls~=A],body.cls-B .xsec [data-cls~=B]{display:block}
       <details class="xpanel" id="xpanel" open aria-label="Controls">
         <summary class="xsum"><span>Controls</span><span class="xsv" id="xsv"></span></summary>
         <details class="xsec" open><summary>Aircraft</summary><div id="typeSeg" class="typeseg"></div></details>
+        <details class="xsec" open data-pv="spd"><summary>Speeds</summary><div id="spdBtns" class="spdb"></div><div id="spdCtl"></div><div class="grp">Take-off flap</div><div id="spdFlap"></div></details>
         <details class="xsec" open data-pv="to"><summary>Take-off</summary><div id="v1Ctl" data-cls="A"></div><div class="btns" data-cls="A"><button type="button" class="btn sm" id="balBtn">Use the balanced V1</button></div><div class="grp" id="flapL">Flaps</div><div id="flapSeg"></div></details>
         <details class="xsec" open data-pv="climb"><summary>Obstacle</summary><div id="obsCtl"></div></details>
         <details class="xsec" open data-pv="land"><summary>Landing</summary><div id="ldaCtl"></div><div id="lflapSeg"></div></details>
@@ -167,10 +178,10 @@ body.cls-A .xsec [data-cls~=A],body.cls-B .xsec [data-cls~=B]{display:block}
   <p class="foot" id="foot"></p>
 </div>
 <script src="lab.js?v=55"></script>
-<script src="concepts.js?v=3"></script>
-<script src="corepic.js?v=11"></script>
+<script src="concepts.js?v=4"></script>
+<script src="corepic.js?v=12"></script>
 <script src="pic-perf.js?v=2"></script>
 <script src="perfcore.js?v=2"></script>
-<script src="perf.js?v=4"></script>
+<script src="perf.js?v=5"></script>
 </body>
 </html>

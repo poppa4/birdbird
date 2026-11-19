@@ -1,6 +1,6 @@
-/* NORDAP – corepic.js: "The essentials in one picture", the first thing in every lab's Understand step.
+/* NORDAP – corepic.js: "The whole topic in one picture", in every lab's Understand step, right after the Key concepts ladder.
    One dark, animated picture that is built up step by step (the most central idea first), with a numbered
-   step list beside it, Previous / Play / Next and a scrubber. The lab's own Key concepts and model follow.
+   step list beside it, Previous / Play / Next and a scrubber. It always follows the lab's Key concepts cards.
 
    CORE.mount(hostEl, cfg) with cfg:
      title, sub      {en,no}  heading and one-line purpose
@@ -16,7 +16,7 @@
 'use strict';
 if(window.CORE) return;
 const css=`
-.cpic{margin:6px 0 30px;scroll-margin-top:72px}
+.cpic{margin:30px 0 6px;padding-top:22px;border-top:1px solid var(--rule-2);scroll-margin-top:72px}
 .cpic-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin:0 0 12px}
 .cpic-h .k{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
 .cpic-h h3{font-family:var(--f-display);font-stretch:90%;font-weight:700;font-size:22px;line-height:1.15;margin:0;color:var(--ink);flex-basis:100%}
@@ -53,16 +53,6 @@ const css=`
 .cpic-ls li.c-past i{border-color:rgba(228,107,174,.55);color:#E9A9CC}
 .cpic-ls .ft{margin:0;padding:10px 16px 12px;border-top:1px solid rgba(255,255,255,.06);font-size:11.5px;line-height:1.45;color:#7F8B96}
 .cpic-cap{display:none}
-.cpic.cpic-merged .cpic-h h3,.cpic.cpic-merged .cpic-h .k{display:none}
-.cpic.cpic-merged{margin-top:0}
-.cpic.cpic-merged .cpic-h{margin-bottom:12px}
-.cpic-more{margin:22px 0 0;border-top:1px solid var(--rule-2)}
-.cpic-more>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:10px;padding:14px 0 4px;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;color:var(--ink)}
-.cpic-more>summary::-webkit-details-marker{display:none}
-.cpic-more>summary::before{content:"+";font-family:var(--f-mono);color:var(--accent);width:14px}
-.cpic-more[open]>summary::before{content:"−"}
-.cpic-more>summary small{font-family:var(--f-body);font-weight:400;font-size:13.5px;color:var(--ink-2)}
-.cpic-more>summary:hover{color:var(--accent)}
 body.depth-instructor .cpic-ls li b{font-size:16px}
 body.depth-instructor .cpic-ls li p{font-size:15.5px}
 body.depth-instructor .cpic-g{grid-template-columns:minmax(0,1fr) 360px}
@@ -262,7 +252,7 @@ function mount(host,cfg){
     cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
   function list(){
     const i0=Math.round(p);
-    root.querySelector('.cpic-h .k').textContent=L({en:'Start here · the essentials in one picture',no:'Start her · det viktigste i ett bilde'});
+    root.querySelector('.cpic-h .k').textContent=L({en:'Put together · the whole topic in one picture',no:'Satt sammen · hele emnet i ett bilde'});
     root.querySelector('.cpic-h h3').textContent=L(cfg.title); root.querySelector('.cpic-h p').textContent=cfg.sub?L(cfg.sub):'';
     ol.innerHTML=cfg.steps.map((s,i)=>`<li class="${i===i0?'c-on':i<i0?'c-past':''}"><button type="button" data-i="${i}" aria-current="${i===i0?'step':'false'}"><i>${i+1}</i><b>${esc(L(s.t))}</b><p>${L(s.d)}</p></button>${s.go?`<button type="button" class="go" data-g="${i}">${esc(L(s.go))} →</button>`:''}</li>`).join('');
     const s=cfg.steps[i0]; cap.innerHTML=`<b>${i0+1} · ${esc(L(s.t))}</b><p>${L(s.d)}</p>${s.go?`<button type="button" class="go" data-g="${i0}">${esc(L(s.go))} →</button>`:''}`;
@@ -307,16 +297,13 @@ function mount(host,cfg){
     new IntersectionObserver(es=>{ const e=es[0]; if(e.isIntersecting&&e.intersectionRatio>=.55&&!autoDone&&!touched&&!reduced()){ autoDone=true; setTimeout(()=>{ if(!touched&&!playing) setPlay(true); },500); } },{threshold:[.55]}).observe(cv); }
   new ResizeObserver(()=>{ size(); kick(); }).observe(cv);
   size(); list();
-  /* one heading, not two: the section's H2 takes the picture's title; the small "Start here" line stays above it */
-  const merge=()=>{ const sec=root.closest('section'); const h2=sec&&sec.querySelector(':scope > h2'); if(!h2||h2.contains(root)) return;
-    if(h2.compareDocumentPosition(root)&Node.DOCUMENT_POSITION_FOLLOWING){ root.classList.add('cpic-merged'); h2.dataset.cpicTitle='1'; h2.textContent=L(cfg.title); h2.classList.add('cpic-h2'); } };
-  if(cfg.merge!==false){ merge(); if(window.LAB&&LAB.onLang) LAB.onLang(merge); }
-  const fold=()=>{ const sec=root.closest('section'); if(!sec||sec.querySelector('.cpic-more')) return; const grid=sec.querySelector('.kcgrid,#kcGrid'); if(!grid||!grid.children.length) return false;
-    const intro=sec.querySelector('.kintro'); const d=document.createElement('details'); d.className='cpic-more';
-    const sm=document.createElement('summary'); d.appendChild(sm); grid.parentNode.insertBefore(d,grid); if(intro&&intro.compareDocumentPosition(grid)&Node.DOCUMENT_POSITION_FOLLOWING) d.appendChild(intro); d.appendChild(grid);
-    const lab=()=>{ sm.innerHTML=`${L({en:'All key concepts',no:'Alle nøkkelbegreper'})} <small>${grid.children.length} ${L({en:'cards, each linked to the model',no:'kort, hvert koblet til modellen'})}</small>`; }; lab(); if(window.LAB&&LAB.onLang) LAB.onLang(lab);
-    grid.addEventListener('click',e=>{ if(e.target.closest('.kgo')) d.open=true; }); return true; };
-  if(cfg.fold!==false){ let n=0; const tryFold=()=>{ if(fold()===false&&n++<20) setTimeout(tryFold,150); }; setTimeout(tryFold,0); }
+  /* Key concepts come first (owner's standard, Nov 2026): the section keeps its "Key concepts" heading and the
+     numbered card ladder stays open on top. The picture follows the cards as the whole topic put together.
+     (cfg.merge / cfg.fold are ignored: the picture never takes the heading or folds the cards away again.) */
+  const place=()=>{ const sec=root.closest('section'); if(!sec) return true; const grid=sec.querySelector('.kcgrid,#kcGrid'); if(!grid) return true;
+    if(!grid.children.length) return false;
+    if(host.compareDocumentPosition(grid)&Node.DOCUMENT_POSITION_FOLLOWING){ grid.after(host); kick(); } return true; };
+  { let n=0; const tryPlace=()=>{ if(place()===false&&n++<20) setTimeout(tryPlace,150); }; tryPlace(); }
   if(window.LAB&&LAB.onLang) LAB.onLang(()=>{ list(); kick(); });
   document.addEventListener('labdepth',()=>{ setTimeout(()=>{ size(); kick(); },30); });
   Object.assign(api,{go:i=>{ playing=false; go(i); }, step:()=>cur, el:root, redraw:kick});

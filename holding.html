@@ -117,7 +117,7 @@ body.depth-instructor .vchip.hl-ro{font-size:12.5px}
     <div class="eyebrow">1 · Understand</div>
     <h2>Key concepts</h2>
     <div id="corePic"></div>
-    <p class="kintro" data-tx="kin">A hold keeps you near a fix while you wait; the approach takes you from that fix to a point where you either see the runway or go around. Each card opens the right scenario in the lab.</p>
+    <p class="kintro" data-tx="kin">A hold keeps you near a fix while you wait; the approach takes you from that fix to a point where you either see the runway or go around.</p>
     <div id="kcGrid"></div>
     <div class="dd deep" id="full">
       <h3>Deep dive</h3>
@@ -177,7 +177,7 @@ body.depth-instructor .vchip.hl-ro{font-size:12.5px}
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Training model, not for navigation. Holding rules from ICAO Doc 8168 (PANS-OPS) Vol I: entry sectors with 5° flexibility, 1 min outbound at or below 14 000 ft and 1.5 min above, turns at 25° bank or rate one, whichever needs less bank. The hold is flown at constant TAS; outbound it uses three times the inbound drift correction and an outbound time that counts the along-track drift in the turns, so the inbound leg comes out at about the planned time. The approach is illustrative, not the published Bergen chart: IAF 14 NM, IF 10 NM, FAP where 2000 ft meets the 3° path, DA 370 ft (DH 200 ft), localiser-only MDA 600 ft, missed approach climbing straight ahead at 4 % to 3000 ft and back to a hold at FLS. FLS position and the ILS RWY 17 geometry are the radio navigation simulator’s (OurAirports data, approximate threshold); relief and coastline from Mapzen/AWS Terrain Tiles. No magnetic variation, no wind on the approach, constant ground speed, no instrument errors. Classifications from ICAO Annex 6; operator and aerodrome minima can be higher.</p>
 </div>
 <script src="lab.js?v=55"></script>
-<script src="concepts.js?v=3"></script>
+<script src="concepts.js?v=4"></script>
 <script src="navcore.js?v=3"></script>
 <script src="navgauges.js?v=5"></script>
 <script src="holdcore.js?v=3"></script>
@@ -189,7 +189,7 @@ LAB.add({},{
 });
 LAB.tx({
  lead:'Slutten på hver IFR-flyging: vent i en holding, fly innflygingen ned til minimum, og gå rundt hvis du ikke ser rullebanen. Fly holdinginnflyginger og holding i vind ved FLS VOR, og så en ILS, en ikke-presisjons CDFA og en avbrutt innflyging til bane 17 på Bergen, med kartet, profilen og instrumentene side om side.',
- kin:'En holding holder deg nær en fiks mens du venter; innflygingen tar deg fra den fiksen til et punkt der du enten ser rullebanen eller går rundt. Hvert kort åpner riktig scenario i laben.',
+ kin:'En holding holder deg nær en fiks mens du venter; innflygingen tar deg fra den fiksen til et punkt der du enten ser rullebanen eller går rundt.',
  xlead:'Velg et scenario over kartet. Sett det opp i panelet, trykk <b>Fly</b>, eller dra tidslinjen til et hvilket som helst øyeblikk: kartet, profilen og begge instrumentene følger med.',
  tryl:'Sju korte oppgaver, én om gangen. Noen svarer du på her, noen setter du opp i laben, som sier fra med en gang du har fått det til.',
  foot:'<b>Modell og begrensninger.</b> Opplæringsmodell, ikke for navigasjon. Holdingreglene er fra ICAO Doc 8168 (PANS-OPS) bind I: innflygingssektorer med 5° slingringsmonn, 1 min utgående til og med 14 000 ft og 1,5 min over, svinger med 25° krengning eller standardsving, det som gir minst krengning. Holdingen flys med konstant TAS; utgående bruker den tre ganger avdriftskorreksjonen inngående og en utgående tid som regner med avdriften langs kursen i svingene, så inngående legg blir omtrent planlagt tid. Innflygingen er illustrerende, ikke det publiserte kartet for Bergen: IAF 14 NM, IF 10 NM, FAP der 2000 ft møter 3°-banen, DA 370 ft (DH 200 ft), MDA 600 ft med bare localizer, avbrutt innflyging med 4 % stigning rett fram til 3000 ft og tilbake til holding ved FLS. Posisjonen til FLS og geometrien for ILS RWY 17 er radionavigasjonssimulatorens (OurAirports-data, omtrentlig terskel); relieff og kystlinje fra Mapzen/AWS Terrain Tiles. Ingen misvisning, ingen vind på innflygingen, konstant fart over bakken, ingen instrumentfeil. Klassifiseringer fra ICAO Annex 6; operatør- og flyplassminima kan være høyere.'
@@ -199,7 +199,7 @@ LAB.start('hold');
 <script src="navmap.js?v=2"></script>
 <script src="holdlab.js?v=4"></script>
 <script src="holdpage.js?v=3"></script>
-<script src="corepic.js?v=11"></script>
+<script src="corepic.js?v=12"></script>
 <script src="pic-hold.js?v=1"></script>
 </body>
 </html>

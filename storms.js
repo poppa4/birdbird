@@ -403,7 +403,7 @@ const DDLIST=[t2('Stay at least 10 NM from any thunderstorm and 20 NM from sever
 
 /* ---------------- text ---------------- */
 on(()=>{
-  el('kin').textContent=L(t2('Sixteen ideas, each small. “Show in the model” sets up the 3D storm so you can see it.','Seksten ideer, hver liten. «Vis i modellen» setter opp 3D-stormen så du kan se det.'));
+  el('kin').textContent=L(t2('From the conditions that build a CB to how you stay clear of one.','Fra forholdene som bygger en CB til hvordan du holder deg unna.'));
   el('ddH').textContent=L(t2('Deep dive','Dypdykk'));
   const open=[...document.querySelectorAll('#ddList details[open]')].map(d=>d.id);
   el('ddList').innerHTML=DD.map(([t,s,ps],i)=>`<details class="dfold" id="dd${i}"><summary>${L(t)} <small>${L(s)}</small></summary><div>${ps.map(p=>p==='TABLE'?`<div class="wrapx"><table class="ftab">${DDTAB.map((r,j)=>`<tr>${r.map(c=>j?`<td>${L(c)}</td>`:`<th>${L(c)}</th>`).join('')}</tr>`).join('')}</table></div>`:p==='LIST'?`<ul>${DDLIST.map(x=>`<li>${L(x)}</li>`).join('')}</ul>`:`<p>${L(p)}</p>`).join('')}</div></details>`).join('');

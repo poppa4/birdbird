@@ -68,6 +68,7 @@ body.depth-short .presec{display:none}
 .kc .kmore summary::-webkit-details-marker{display:none}
 .kc .kmore summary::before{content:"▸ ";color:var(--accent)}.kc .kmore[open] summary::before{content:"▾ "}
 .kc .kmore p{margin:5px 0 0;color:var(--ink)}
+.kcgrid{counter-reset:kc}.kcgrid>.kc{counter-increment:kc}.kc .kh{display:flex;align-items:baseline;gap:7px;margin-top:2px}.kc .kn{flex:none;font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--smoke,var(--accent));min-width:1.6em;letter-spacing:.02em}.kc .kn::before{content:counter(kc,decimal-leading-zero)}.kc .kh h3{margin:0}.kladder{margin:6px 0 0;color:var(--ink-2);font-size:13px;max-width:80ch}.kladder b{color:var(--ink);font-weight:600}
 .kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
 /* ECTM memory aid */
 .ectm{margin-top:18px;border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg,6px) var(--radius-lg,6px) 0;background:var(--sheet);padding:16px 18px}
@@ -110,9 +111,10 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
   <!-- 1 · UNDERSTAND -->
   <section class="card" id="understand" data-step="understand">
     <div class="eyebrow">1 · Understand</div>
-    <h2>Two limits: drag at the slow end, Mach at the fast end</h2>
+    <h2>Key concepts</h2>
     <div id="corePic"></div>
     <p class="kintro" id="uLead" data-tx="u1">At the <b>slow end</b> the limit is drag and the stall. Drag is <b>parasite drag</b>, which grows with speed, plus <b>induced drag</b>, the price of lift, which falls with speed. Below the bottom of the curve, the minimum drag speed, the speed is <b>unstable</b>. At the <b>fast end</b> the limit is the <b>Mach number</b>: past the <b>critical Mach number</b> part of the flow over the wing goes supersonic, a shock wave forms, and wave drag and buffet follow.</p>
+    <p class="kladder" id="kcLad"></p>
     <div class="kcgrid" id="kcGrid"></div>
     <div class="ectm" id="ectm">
       <div class="eyebrow" id="ecE"></div>
@@ -894,7 +896,7 @@ const KC=[
  ['coffin',t2('Coffin corner','Coffin corner'),t2('Climb high enough and the low- and high-speed buffet limits meet: no speed is left with margin. That is the <b>coffin corner</b>.','Stig høyt nok, så møtes buffetgrensene for lav og høy fart: ingen fart har margin igjen. Det er <b>coffin corner</b>.'),t2('Operators keep a 0.3 g margin to buffet onset (1.3 g, about 40° of bank). That sets the recommended maximum altitude.','Operatørene holder 0,3 g margin til buffet (1,3 g, rundt 40° krengning). Det setter anbefalt maksimal høyde.'),()=>{ preset('preC','coffin'); goV('buffet'); }],
  ['sweep',t2('Wing sweep','Pilform'),t2('A swept wing feels mainly the flow at right angles to its leading edge, <b>V cos Λ</b>, so the shock comes at a higher Mach.','En pilvinge merker mest strømmen vinkelrett på forkanten, <b>V cos Λ</b>, så sjokket kommer ved høyere Mach.'),t2('The price: a lower CLmax, tip stall with pitch-up and a Dutch roll tendency. Slats, flaps and the yaw damper deal with it.','Prisen: lavere CLmax, tippstall med pitch-up og en tendens til Dutch roll. Slats, flaps og girdemperen tar seg av det.'),()=>{ preset('preW','a320'); goV('sweep'); }],
  ['tuck',t2('Mach tuck','Mach tuck'),t2('Well past Mcrit the shock moves aft and the centre of pressure with it: the nose drops. That is <b>Mach tuck</b>.','Godt forbi Mcrit flytter sjokket seg bakover, og trykksentrum med det: nesen synker. Det er <b>Mach tuck</b>.'),t2('On a swept wing, less downwash on the tail adds to it. Mach trim or the flight controls counter it, and MMO keeps you clear of it.','På en pilvinge forsterkes det av mindre nedvask over halen. Mach-trim eller flykontrollene motvirker det, og MMO holder deg unna.'),()=>{ preset('preF','tuck'); goV('shock'); }]];
-function concepts(){ el('kcGrid').innerHTML=KC.map(([k,t,d,dd])=>`<div class="kc">${ILL[k]()}<h3>${L(t)}</h3><p>${L(d)}</p><details class="deep kmore"><summary>${L(t2('More','Mer'))}</summary><p>${L(dd)}</p></details><button class="kgo" type="button" data-k="${k}">${L(t2('Show it in the model →','Vis i modellen →'))}</button></div>`).join(''); }
+function concepts(){ el('kcLad').innerHTML=L(t2('<b>Read them in order.</b> Card 1 is the foundation and each card builds on the one before. “Show in the model” sets the lab up so you see it.','<b>Les dem i rekkefølge.</b> Kort 1 er grunnmuren, og hvert kort bygger på det før. «Vis i modellen» setter opp labben så du ser det.')); el('kcGrid').innerHTML=KC.slice().sort((x,y)=>['drag','stab','mach','mcrit','shock','sweep','tuck','buffet','coffin'].indexOf(x[0])-['drag','stab','mach','mcrit','shock','sweep','tuck','buffet','coffin'].indexOf(y[0])).map(([k,t,d,dd])=>`<div class="kc">${ILL[k]()}<div class="kh"><span class="kn" aria-hidden="true"></span><h3>${L(t)}</h3></div><p>${L(d)}</p><details class="deep kmore"><summary>${L(t2('More','Mer'))}</summary><p>${L(dd)}</p></details><button class="kgo" type="button" data-k="${k}">${L(t2('Show it in the model →','Vis i modellen →'))}</button></div>`).join(''); }
 el('kcGrid').addEventListener('click',e=>{ const b=e.target.closest('.kgo'); if(!b) return; const c=KC.find(x=>x[0]===b.dataset.k); if(c) c[4](); });
 
 /* ---------- try: tasks with feedback ---------- */
@@ -975,7 +977,7 @@ LAB.onLang(()=>{ uD(); uS(); uF(); uC(); uW(); conf(); cards(); machm(); dU(); r
 
 })();
 </script>
-<script src="corepic.js?v=11"></script>
+<script src="corepic.js?v=12"></script>
 <script src="pic-hs.js?v=1"></script>
 </body>
 </html>

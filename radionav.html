@@ -56,7 +56,7 @@ body.depth-instructor .maid b{font-size:24px}
     <div class="eyebrow">1 · Understand</div>
     <h2>Key concepts</h2>
     <div id="corePic"></div>
-    <p class="kintro" data-tx="u0">Every radio aid answers one question: where is the station from me, or where am I from the station? Each card opens the lesson in the simulator where you see it happen.</p>
+    <p class="kintro" data-tx="u0">Every radio aid answers one question: where is the station from me, or where am I from the station?</p>
     <div id="kcGrid"></div>
     <details class="kfull"><summary>Every term in full</summary><div>
       <dl class="terms" data-tx="terms">
@@ -173,7 +173,7 @@ body.depth-instructor .maid b{font-size:24px}
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Simplified training simulation, not for navigation. Navaid positions, idents and frequencies come from OurAirports (public domain, as used by Route Explorer); the ILS RWY 17 geometry at Bergen is approximate and its frequency is not shown; coastline and relief come from the Mapzen/AWS Terrain Tiles elevation data the site already uses for Route Explorer (about 0.25′ resolution; see Sources). Geometry uses a flat local projection around the area’s VOR (under 0.2° and 0.1 NM error within 40 NM) and one magnetic variation for the whole area (WMM 2025, optional). VOR: ±10° full scale (2° per dot on the CDI, 5° per dot on the HSI), flag OFF within 2° of abeam, in a 45° cone over the station and beyond line of sight. Localiser ±2.5° full scale, glide slope 3° with ±0.7° full scale; coverage simplified. DME: slant range from altitude and station elevation, ground speed from the rate of change. The aircraft flies at constant TAS with rate-one turns (max 25° bank); no instrument errors, no NDB night effect or coastal refraction, no turbulence.</p>
 </div>
 <script src="lab.js?v=55"></script>
-<script src="concepts.js?v=3"></script>
+<script src="concepts.js?v=4"></script>
 <script src="navcore.js?v=3"></script>
 <script src="navgauges.js?v=5"></script>
 <script>
@@ -195,7 +195,7 @@ LAB.add({},{
 LAB.tx({
  lead:'Et komplett sett med radionavigasjonsinstrumenter over et kart over Bergen og Oslo: VOR og CDI, HSI, RMI, ADF, DME og ILS, med en «six-pack» ved siden av. Lær ett begrep om gangen med en veileder som forteller deg neste steg og hvorfor hver nål flyttet seg, øv med direkte tilbakemelding, eller sett opp hvilken flyging du vil.',
  goal:'<span class="k">Læringsmål</span>Les VOR-, ADF-, DME-, HSI- og ILS-indikasjoner raskt og riktig, og bruk dem til å avskjære, følge en kurs, holde og fly en innflyging i vind.',
- u0:'Hvert radiohjelpemiddel svarer på ett spørsmål: hvor er stasjonen fra meg, eller hvor er jeg fra stasjonen? Hvert kort åpner leksjonen i simulatoren der du ser det skje.',
+ u0:'Hvert radiohjelpemiddel svarer på ett spørsmål: hvor er stasjonen fra meg, eller hvor er jeg fra stasjonen?',
  terms:'<div><dt>Radial (QDR)</dt><dd>En magnetisk peiling FRA en VOR. Du er på 090-radialen når stasjonen ligger rett vest for deg, uansett hvilken kurs du har.</dd></div><div><dt>QDM</dt><dd>Den magnetiske peilingen TIL stasjonen: radial ± 180. Fly kurs QDM i stille luft, så kommer du over stasjonen.</dd></div><div><dt>OBS og CDI</dt><dd>OBS (Omni Bearing Selector) velger en kurs; CDI (Course Deviation Indicator) viser hvor langt du er fra den: 2° per prikk, fullt utslag 10° for en VOR.</dd></div><div><dt>TO / FROM</dt><dd>Om den valgte kursen fører mot eller bort fra stasjonen der du er. Tvers av og over stasjonen viser flagget OFF.</dd></div><div><dt>Relativ peiling (RB)</dt><dd>Vinkelen fra nesen til NDB-en, med klokka, vist av en ADF med fast skive. QDM = magnetisk kurs + RB.</dd></div><div><dt>RMI</dt><dd>En slavet kompasskive med nåler som peker mot stasjonene: spissen viser QDM, halen radialen.</dd></div><div><dt>DME</dt><dd>Skrådistansen til stasjonen i NM, hvor fort den endrer seg, og tiden dit. Farten stemmer bare når du flyr rett mot eller fra stasjonen.</dd></div><div><dt>HSI</dt><dd>En CDI på en kursskive: kurspilen og avviksstreken dreier med flyet, så streken ligger alltid på den siden kursen er.</dd></div><div><dt>Vindkorreksjonsvinkel</dt><dd>Vinkelen mellom kurs og track som trengs for å oppheve avdriften: omtrent asin(sidevind / TAS).</dd></div><div><dt>Localizer og glidebane</dt><dd>ILS: en sidestråle omtrent fire ganger så følsom som en VOR (≈ ±2,5° fullt utslag) og en høydestråle på en 3°-bane (≈ ±0,7°).</dd></div>',
  u2:'<span class="k">Dypdykk · slik virker mottakerne</span><p><b>VOR.</b> Stasjonen sender et referansesignal og et variabelt signal der faseforskjellen er lik den magnetiske peilingen fra stasjonen. Mottakeren sammenligner peilingen med kursen du har satt: nålen viser forskjellen (opptil 10°), flagget hvilken halvdel av sirkelen du er i.</p><p><b>ADF og NDB.</b> En rammeantenne finner retningen til LF/MF-signalet i forhold til flyet. Natteffekt, kystrefraksjon, fjell og tordenvær bøyer den retningen; en VOR har ikke disse feilene.</p><p><b>DME.</b> Flyet sender pulspar, bakkestasjonen svarer etter en fast forsinkelse, og tiden tur–retur gir skrådistansen. Fart og tid regnes ut fra hvor fort avstanden endrer seg.</p>',
  e1:'<b>Lær</b> tar deg gjennom ti leksjoner med en veileder, <b>Øv</b> gir korte oppgaver med tilbakemelding, <b>Utforsk</b> lar alt være fritt, og <b>Instruktør</b> har scenarier og kan skjule svarene. Dra flyet, drei på knappene, eller skriv inn verdier.',
@@ -213,7 +213,7 @@ LAB.start('radionav');
 <script src="navsim.js?v=6"></script>
 <script src="navlessons.js?v=4"></script>
 <script src="navpage.js?v=3"></script>
-<script src="corepic.js?v=11"></script>
+<script src="corepic.js?v=12"></script>
 <script src="pic-vor.js?v=1"></script>
 </body>
 </html>

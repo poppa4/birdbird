@@ -166,7 +166,7 @@ body.depth-instructor .maid b{font-size:24px}
   <!-- 1 · UNDERSTAND -->
   <section class="card" id="understand" data-step="understand">
     <div class="eyebrow">1 · Understand</div>
-    <h2>CG, lift and the tail: one balance</h2>
+    <h2>Key concepts</h2>
     <div id="corePic"></div>
     <p class="lead" id="unLead"></p>
     <div id="unKc"></div>
@@ -358,7 +358,7 @@ body.depth-instructor .maid b{font-size:24px}
 </div>
 <script src="lab.js?v=55"></script>
 <script src="chartnote.js?v=3"></script>
-<script src="concepts.js?v=3"></script>
+<script src="concepts.js?v=4"></script>
 <script src="stab.js?v=2"></script>
 <script src="cgmodel.js?v=7"></script>
 <script>
@@ -388,7 +388,7 @@ body.depth-instructor .maid b{font-size:24px}
     ill:()=>sv(`<line x1="16" y1="34" x2="184" y2="34" stroke="#55626e"/><path d="M16,34 C30,4 44,4 58,34 S86,60 100,34 S128,14 142,34 S170,48 184,34" fill="none" stroke="#f0b440" stroke-width="1.6"/>${tx(180,58,L({en:'phugoid',no:'fugoide'}),'#f0b440','end')}`),to:'#pCv',dp:true},
    {k:'vn',t:{en:'Load factor and V-n',no:'Lastfaktor og V-n'},d:{en:'Below the manoeuvring speed VA the wing stalls before it can be overstressed; above VA a hard pull can damage the structure first.',no:'Under manøverfarten VA staller vingen før den kan overbelastes; over VA kan et hardt trekk skade strukturen først.'},
     ill:()=>sv(`<line x1="16" y1="50" x2="184" y2="50" stroke="#55626e"/><path d="M16,50 C50,48 70,30 92,12 L184,12 L184,50" fill="rgba(113,204,147,.12)" stroke="#71cc93"/><line x1="92" y1="8" x2="92" y2="54" stroke="#f0b440" stroke-dasharray="3 2"/>${tx(96,24,'VA','#f0b440')}${tx(30,26,'STALL','#71cc93')}`),to:'#vnCv'}];
-  const g=document.getElementById('unKc'); if(g) KCS.render(g,KCS_);
+  const g=document.getElementById('unKc'); if(g) KCS.render(g,KCS.order(KCS_,['static','dyn','cg','mac','tail','np','fwd','aft','env','vn']));
 })();
 </script>
 <script>
@@ -1045,7 +1045,7 @@ LAB.onLang(()=>{ all(); });
 if(!reduce){ PD.t0=-1; LD.t0=-1; }
 })();
 </script>
-<script src="corepic.js?v=11"></script>
+<script src="corepic.js?v=12"></script>
 <script src="pic-stab.js?v=1"></script>
 </body>
 </html>
