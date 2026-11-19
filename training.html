@@ -236,17 +236,17 @@
 </style>
 </head>
 <body data-title="Training">
-<script src="site.js?v=105"></script>
+<script src="site.js?v=106"></script>
 <main class="tv" id="main">
 
   <header class="tv-hero">
     <div>
       <span class="tv-eb tv-mono" data-tx="eb">NORDAP · Training</span>
       <h1 data-tx="h1">Cockpit trainers, IFR procedures, briefing and radio</h1>
-      <p class="tv-lede" data-tx="lede">Everything NORDAP offers for training, in one place: working cockpits for three aircraft, an IFR trainer that teaches one procedure at a time, briefings scored by the instructor, and radio practice from single calls to a whole flight. Type rating study and check preparation are here too.</p>
+      <p class="tv-lede" data-tx="lede">Everything NORDAP offers for training, in one place: working cockpits for six aircraft, an IFR trainer that teaches one procedure at a time, briefings scored by the instructor, and radio practice from single calls to a whole flight. Type rating study and check preparation are here too.</p>
     </div>
     <dl class="tv-facts">
-      <div><dt data-tx="fA">Aircraft</dt><dd>Cessna 172, DA42, King Air B200</dd></div>
+      <div><dt data-tx="fA">Aircraft</dt><dd>Cessna 172, DA42, King Air B200, ATR 72-500, Airbus A320, Boeing 737-800</dd></div>
       <div><dt data-tx="fP">Platform</dt><dd data-tx="fPv">Browser-based, no installation</dd></div>
       <div><dt data-tx="fL">Languages</dt><dd data-tx="fLv">English and Norwegian; type rating in English</dd></div>
     </dl>
@@ -254,12 +254,13 @@
 
   <nav class="tv-idx" aria-label="On this page">
     <ol>
-      <li><a href="#simulators"><span class="n">01</span><b data-tx="x1">Simulators</b><small data-tx="x1s">3 aircraft, 2D and 3D</small></a></li>
+      <li><a href="#simulators"><span class="n">01</span><b data-tx="x1">Simulators</b><small data-tx="x1s">6 aircraft, 2D and 3D</small></a></li>
       <li><a href="#ifr"><span class="n">02</span><b data-tx="x2">IFR trainer</b><small data-tx="x2s">46 exercises</small></a></li>
       <li><a href="#briefing"><span class="n">03</span><b data-tx="x3">Briefing</b><small data-tx="x3s">Departures and approaches, scored</small></a></li>
       <li><a href="#radio"><span class="n">04</span><b data-tx="x4">Radio</b><small data-tx="x4s">Radio drills and gate to gate</small></a></li>
       <li><a href="mcdu.html"><span class="n">05</span><b data-tx="x5">MCDU trainer</b><small data-tx="x5s">A320, 13 tasks</small></a></li>
       <li><a href="fmc.html"><span class="n">06</span><b data-tx="x6">FMC trainer</b><small data-tx="x6s">737, 17 tasks</small></a></li>
+      <li><a href="gns530.html"><span class="n">07</span><b data-tx="x7">GNS 530 trainer</b><small data-tx="x7s">GPS/NAV/COM, 14 tasks</small></a></li>
     </ol>
   </nav>
 
@@ -267,7 +268,7 @@
   <section class="tv-sec" id="simulators" aria-labelledby="h-sim">
     <div class="tv-sh">
       <div><span class="n" aria-hidden="true">01</span><h2 id="h-sim" data-tx="simH">Simulators</h2></div>
-      <p data-tx="simP">Working cockpits for three aircraft, from the six basic instruments to a two-pilot turboprop. Each runs as a 2D panel; the 3D cockpits are in beta.</p>
+      <p data-tx="simP">Working cockpits for six aircraft, from the six basic instruments to two-pilot turboprops and two airliners, and trainers for the MCDU, the 737 FMC and the GNS 530. Each cockpit runs as a 2D panel; the 3D cockpits are in beta.</p>
     </div>
     <div class="sims">
       <article class="sy" aria-labelledby="s-c172">
@@ -343,6 +344,18 @@
           <p class="sy-kind" data-tx="atK">Twin turboprop, conventional controls, two-pilot flight deck</p>
           <dl class="tv-wh"><dt data-tx="tr">Trains</dt><dd data-tx="atT">Cold and dark to the runway: dark-cockpit overhead, hotel mode with the propeller brake, engine start, power and condition levers, PWR MGT and torque, AFCS with the ADU, the crew alerting panel, and hand flying without autothrottle.</dd></dl>
           <div class="sy-go"><a class="tv-btn sm" href="atr72.html"><span data-tx="o2">Open 2D</span><span class="sr"> – ATR 72-500</span></a></div>
+        </div>
+      </article>
+      <article class="sy" aria-labelledby="s-gns">
+        <a class="sy-ph" href="gns530.html" tabindex="-1" aria-hidden="true">
+          <img src="img/training/gns530-608.webp" srcset="img/training/gns530-608.webp 608w, img/training/gns530-1216.webp 1216w, img/training/gns530-1440.webp 1440w" sizes="(max-width:640px) calc(100vw - 48px), (max-width:899px) calc((100vw - 48px) * .44), (max-width:980px) calc((100vw - 96px) * .44), (max-width:1336px) calc((100vw - 160px) / 3), 392px" width="1440" height="864" loading="lazy" decoding="async"
+            alt="The GNS 530 trainer on the map page: the ODRUP2W arrival and the ILS 25 at Skarhamn loaded, the active leg to TOLKA in magenta, with DTK, distance, ETE and ground speed beside the map and the COM and NAV frequencies on the left." data-alt-no="GNS 530-treneren på kartsiden: ODRUP2W-arrivalen og ILS 25 på Skarhamn lastet inn, aktivt leg til TOLKA i magenta, med DTK, distanse, ETE og fart ved siden av kartet og COM- og NAV-frekvensene til venstre.">
+        </a>
+        <div class="sy-b">
+          <h3 id="s-gns"><a href="gns530.html">GNS 530 trainer</a> <span class="st beta" data-tx="stN">New</span></h3>
+          <p class="sy-kind" data-tx="gK">GPS/NAV/COM navigator, knob by knob, with a CDI and a simple autopilot</p>
+          <dl class="tv-wh"><dt data-tx="tr">Trains</dt><dd data-tx="gT">Pages and the cursor, COM and NAV with 8.33 kHz, the flight plan, direct to, OBS holds, departures, arrivals and approaches, vectors to final, the ILS on VLOC, RNAV with LPV, the nearest airport, SUSP and the missed approach.</dd></dl>
+          <div class="sy-go"><a class="tv-btn sm" href="gns530.html"><span data-tx="mGo">Open the trainer</span><span class="sr"> – GNS 530</span></a></div>
         </div>
       </article>
       <article class="sy sy-wide" aria-labelledby="s-mcdu">
@@ -529,11 +542,12 @@ LAB.add({},{'Training':'Trening'});
 LAB.tx({
  eb:'NORDAP · Trening',
  h1:'Cockpittrenere, IFR-prosedyrer, briefing og radio',
- lede:'Alt NORDAP tilbyr for trening, samlet på ett sted: fungerende cockpiter for tre flytyper, en IFR-trener som lærer deg én prosedyre om gangen, briefinger som instruktøren vurderer, og radiotrening fra enkeltkall til en hel flyging. Typeratingstudier og kontrollforberedelse finner du også her.',
+ lede:'Alt NORDAP tilbyr for trening, samlet på ett sted: fungerende cockpiter for seks flytyper, en IFR-trener som lærer deg én prosedyre om gangen, briefinger som instruktøren vurderer, og radiotrening fra enkeltkall til en hel flyging. Typeratingstudier og kontrollforberedelse finner du også her.',
  fA:'Flytyper', fP:'Plattform', fPv:'I nettleseren, uten installasjon', fL:'Språk', fLv:'Engelsk og norsk; typerating på engelsk',
- x1:'Simulatorer', x1s:'3 flytyper, 2D og 3D', x2:'IFR-trener', x2s:'46 øvelser', x3:'Briefing', x3s:'Avganger og innflyginger, med poeng', x4:'Radio', x4s:'Radiodriller og gate to gate', x5:'MCDU-trener', x5s:'A320, 13 oppgaver', x6:'FMC-trener', x6s:'737, 17 oppgaver', fK:'Boeing-CDU fra IDENT til APPROACH REF, med MOD og EXEC og en ND i MAP og PLAN', fT:'Preflight fra IDENT til TAKEOFF REF, kryssjekken som PM, rullebanebytte og våt rullebane, direct to og intercept course, holding på et fix eller nåværende posisjon, ny marsjhøyde, navaid inhibit, FIX-ringer, nedstigningsprognoser og DES NOW, arrival og innflyging, diskontinuiteter, restriksjoner, diversjon og APPROACH REF. Med ND i MAP og PLAN. Steg for steg, eller bare fra papirene.',
+ x1:'Simulatorer', x1s:'6 flytyper, 2D og 3D', x2:'IFR-trener', x2s:'46 øvelser', x3:'Briefing', x3s:'Avganger og innflyginger, med poeng', x4:'Radio', x4s:'Radiodriller og gate to gate', x5:'MCDU-trener', x5s:'A320, 13 oppgaver', x6:'FMC-trener', x6s:'737, 17 oppgaver', fK:'Boeing-CDU fra IDENT til APPROACH REF, med MOD og EXEC og en ND i MAP og PLAN', fT:'Preflight fra IDENT til TAKEOFF REF, kryssjekken som PM, rullebanebytte og våt rullebane, direct to og intercept course, holding på et fix eller nåværende posisjon, ny marsjhøyde, navaid inhibit, FIX-ringer, nedstigningsprognoser og DES NOW, arrival og innflyging, diskontinuiteter, restriksjoner, diversjon og APPROACH REF. Med ND i MAP og PLAN. Steg for steg, eller bare fra papirene.',
  simH:'Simulatorer',
- simP:'Fungerende cockpiter for tre flytyper, fra de seks grunnleggende instrumentene til en turboprop med to piloter. Alle kjører som 2D-panel; 3D-cockpitene er i beta.',
+ simP:'Fungerende cockpiter for seks flytyper, fra de seks grunnleggende instrumentene til turboproper med to piloter og to passasjerfly, og trenere for MCDU-en, 737-FMC-en og GNS 530. Alle cockpitene kjører som 2D-panel; 3D-cockpitene er i beta.',
+ gK:'GPS/NAV/COM-navigator, knott for knott, med en CDI og en enkel autopilot', gT:'Sider og cursor, COM og NAV med 8,33 kHz, flyplanen, direct to, holding med OBS, avganger, arrivals og innflyginger, vectors to final, ILS på VLOC, RNAV med LPV, nærmeste flyplass, SUSP og bomflyging.', x7:'GNS 530-trener', x7s:'GPS/NAV/COM, 14 oppgaver',
  stB:'Beta', tr:'Trener', o2:'Åpne 2D',
  cK:'Enmotors stempel, analogt panel',
  cT:'Instrumentscanen, attitydeflyging, VOR-, ADF- og DME-navigasjon, landingsrunden og grunnleggende instrumentprosedyrer.',

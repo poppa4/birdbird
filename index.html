@@ -244,7 +244,8 @@
   .sm{margin-top:72px;padding:40px 32px 0}
   .sm-top,.sm-grid{grid-template-columns:minmax(0,1fr)}
   .sm-top{margin-bottom:28px}
-  .sm-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:0}
+  .sm-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(132px,1fr);gap:0;border-top:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+  .sm-tabs::-webkit-scrollbar{display:none}
   .sm-tabs button{grid-template-columns:minmax(0,1fr);gap:8px;padding:0 0 12px;border:0;border-bottom:2px solid var(--navy-rule);height:100%;align-content:start}
   .sm-tabs li+li button{margin-left:0}
   .sm-tabs li{padding:0 6px}.sm-tabs li:first-child{padding-left:0}.sm-tabs li:last-child{padding-right:0}
@@ -503,7 +504,7 @@
 </style>
 </head>
 <body data-home="1" data-title="NORDAP · Nordic Aviation Platform">
-<script src="site.js?v=105"></script>
+<script src="site.js?v=106"></script>
 <main class="fp" id="main">
 
   <!-- 1. Hero -->
@@ -598,14 +599,14 @@
         </div>
       </div>
 
-      <!-- the cockpit trainers: Cessna 172, DA42, King Air B200, each in 2D and 3D -->
+      <!-- the cockpit trainers: Cessna 172, DA42, King Air B200, Airbus A320, Boeing 737-800 and ATR 72-500 -->
       <section class="sm" id="fpSims" data-ac="b200" aria-labelledby="h-sims">
         <div class="sm-top sm-rv">
           <div>
             <p class="sm-k" data-tx="smK">Cockpit trainers</p>
             <h3 id="h-sims" data-tx="smH">Take your seat in the cockpit</h3>
           </div>
-          <p class="sm-lede" data-tx="smP">Three working cockpits, from the six basic instruments to a two-pilot turboprop. Each one is a whole panel you can fly, from the ground or straight onto an ILS in one click, and each also has a 3D cockpit, in beta.</p>
+          <p class="sm-lede" data-tx="smP">Six working cockpits, from the six basic instruments to two-pilot turboprops and two airliners. Each one is a whole panel you can fly, from the ground or straight onto an ILS in one click, and most also have a 3D cockpit, in beta.</p>
         </div>
         <div class="sm-grid">
           <div class="sm-view sm-rv d1" id="smView">
@@ -624,12 +625,30 @@
                 alt="The King Air B200 trainer's flight deck on the ILS 36 approach with the autopilot coupled: attitude and situation displays for both pilots, the round engine instruments in the centre, the navigator and the weather display, and the annunciator panel above." data-alt-no="Cockpiten i King Air B200-treneren på ILS 36-innflygingen med autopiloten koblet inn: attityde- og kursskjermer for begge piloter, de runde motorinstrumentene i midten, navigatoren og værskjermen, og varselpanelet over."></div>
               <figcaption data-tx="smCapb200"><b>King Air B200, on the ILS 36 with the autopilot coupled.</b> Displays for both pilots, the engine instruments in the centre and the annunciator panel.</figcaption>
             </figure>
+            <figure class="sm-fig" data-ac="a320">
+              <div class="sm-shot"><img data-srcset="img/front/sim-a320-panel-760.webp 760w, img/front/sim-a320-panel-1400.webp 1400w, img/front/sim-a320-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
+                alt="The A320 trainer's flight deck on the ILS 36 with both autopilots engaged: PFDs with the FMA, the NDs, the E/WD and the system display, the FCU and the EFIS control panels." data-alt-no="Cockpiten i A320-treneren på ILS 36 med begge autopilotene inne: PFD-ene med FMA, ND-ene, E/WD og systemskjermen, FCU og EFIS-panelene."></div>
+              <figcaption data-tx="smCapa320"><b>Airbus A320, on the ILS 36 with both autopilots engaged.</b> PFDs with the FMA, the NDs, the ECAM displays and the FCU.</figcaption>
+            </figure>
+            <figure class="sm-fig" data-ac="b737">
+              <div class="sm-shot"><img data-srcset="img/front/sim-b737-panel-760.webp 760w, img/front/sim-b737-panel-1400.webp 1400w, img/front/sim-b737-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
+                alt="The 737-800 trainer's flight deck on the ILS 36 with CMD B engaged: PFDs with the FMA, the NDs, the engine display, the MCP and the EFIS control panels." data-alt-no="Cockpiten i 737-800-treneren på ILS 36 med CMD B inne: PFD-ene med FMA, ND-ene, motorskjermen, MCP og EFIS-panelene."></div>
+              <figcaption data-tx="smCapb737"><b>Boeing 737-800, on the ILS 36 with CMD B engaged.</b> PFDs with the FMA, the NDs, the engine display and the MCP.</figcaption>
+            </figure>
+            <figure class="sm-fig" data-ac="atr72">
+              <div class="sm-shot"><img data-srcset="img/front/sim-atr72-panel-760.webp 760w, img/front/sim-atr72-panel-1400.webp 1400w, img/front/sim-atr72-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
+                alt="The ATR 72 trainer's flight deck at 5,000 ft with AP and YD on in HDG SEL: the EADIs and EHSIs, the ADU, the round engine gauges and the crew alerting panel." data-alt-no="Cockpiten i ATR 72-treneren i 5000 fot med AP og YD inne i HDG SEL: EADI-ene og EHSI-ene, ADU-en, de runde motorinstrumentene og crew alerting panel."></div>
+              <figcaption data-tx="smCapatr"><b>ATR 72-500, at 5,000 ft with AP and YD in HDG SEL.</b> EADIs and EHSIs, the ADU, the engine gauges and the crew alerting panel.</figcaption>
+            </figure>
           </div>
           <div class="sm-side sm-rv d2">
             <ul class="sm-tabs" id="smTabs" aria-label="Aircraft" data-aria-no="Flytype">
               <li><button type="button" data-ac="c172" aria-pressed="false" aria-controls="smView smAcC172"><img data-src="img/front/sim-c172-thumb.webp" width="176" height="110" alt=""><b>Cessna 172</b><span data-tx="smC1">Single-engine piston, analogue panel</span></button></li>
               <li><button type="button" data-ac="da42" aria-pressed="false" aria-controls="smView smAcDA42"><img data-src="img/front/sim-da42-thumb.webp" width="176" height="110" alt=""><b>DA42</b><span data-tx="smD1">Twin piston, glass cockpit</span></button></li>
               <li><button type="button" data-ac="b200" aria-pressed="true" aria-controls="smView smAcB200"><img data-src="img/front/sim-b200-thumb.webp" width="176" height="110" alt=""><b>King Air B200</b><span data-tx="smB1">Twin turboprop, two-pilot flight deck</span></button></li>
+              <li><button type="button" data-ac="a320" aria-pressed="false" aria-controls="smView smAcA320"><img data-src="img/front/sim-a320-thumb.webp" width="176" height="110" alt=""><b>Airbus A320</b><span data-tx="smA1">Twin jet, fly-by-wire</span></button></li>
+              <li><button type="button" data-ac="b737" aria-pressed="false" aria-controls="smView smAcB737"><img data-src="img/front/sim-b737-thumb.webp" width="176" height="110" alt=""><b>Boeing 737-800</b><span data-tx="smJ1">Twin jet, conventional controls</span></button></li>
+              <li><button type="button" data-ac="atr72" aria-pressed="false" aria-controls="smView smAcAtr"><img data-src="img/front/sim-atr72-thumb.webp" width="176" height="110" alt=""><b>ATR 72-500</b><span data-tx="smR1">Twin turboprop, regional airliner</span></button></li>
             </ul>
             <div class="sm-info">
               <div class="sm-ac" id="smAcC172" data-ac="c172">
@@ -644,6 +663,18 @@
                 <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smB2">A two-crew turboprop from battery start to shutdown: systems such as pressurisation, autofeather and fire protection, and type-rating preparation with 320 questions.</dd></dl>
                 <div class="sm-go"><a class="fp-btn pri" href="b200.html" data-tx="smB3">Fly the King Air</a><a class="fp-btn sec" href="b200-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – King Air B200</span><small>beta</small></a></div>
               </div>
+              <div class="sm-ac" id="smAcA320" data-ac="a320">
+                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smA2">Cold and dark to take-off: the overhead panel, APU and engine start, ECAM with warnings and procedures, the FCU, FMA and MCDU, and the ILS in normal law.</dd></dl>
+                <div class="sm-go"><a class="fp-btn pri" href="a320.html" data-tx="smA3">Fly the A320</a><a class="fp-btn sec" href="a320-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – Airbus A320</span><small>beta</small></a></div>
+              </div>
+              <div class="sm-ac" id="smAcB737" data-ac="b737">
+                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smJ2">Cold and dark to take-off: the overhead panel, APU and engine start, the MCP and FMA, the autothrottle, the CDU with LNAV and VNAV, and hand flying with stabilizer trim.</dd></dl>
+                <div class="sm-go"><a class="fp-btn pri" href="b737.html" data-tx="smJ3">Fly the 737</a><a class="fp-btn sec" href="b737-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – Boeing 737-800</span><small>beta</small></a></div>
+              </div>
+              <div class="sm-ac" id="smAcAtr" data-ac="atr72">
+                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smR2">Cold and dark to the runway: the dark-cockpit overhead, hotel mode with the propeller brake, engine start, power and condition levers, PWR MGT and torque, AFCS with the ADU, and the crew alerting panel.</dd></dl>
+                <div class="sm-go"><a class="fp-btn pri" href="atr72.html" data-tx="smR3">Fly the ATR</a></div>
+              </div>
             </div>
             <p class="sm-req"><span data-tx="smRq">Is your aircraft missing?</span> <button type="button" data-reqplane="sim">Request your aircraft</button></p>
           </div>
@@ -654,7 +685,7 @@
           <li data-tx="smF3"><b>Start on the ILS</b>In the air on the approach, in one click</li>
           <li data-tx="smF4"><b>Keyboard, mouse or touch</b>A gamepad works too</li>
         </ul>
-        <p class="sm-foot"><span data-tx="smFoot">Also in Training: the IFR trainer with 46 exercises, briefings and radio drills.</span><a class="sm-all" href="training.html" data-tx="smAll">All training →</a></p>
+        <p class="sm-foot"><span data-tx="smFoot">Also in Training: the IFR trainer with 46 exercises, the MCDU, FMC and GNS 530 trainers, briefings and radio drills.</span><a class="sm-all" href="training.html" data-tx="smAll">All training →</a></p>
       </section>
     </div>
   </section>
@@ -807,8 +838,8 @@ LAB.tx({
  depth:'Les hver lab på det nivået du trenger: Kort, Fordypning eller Instruktør. På engelsk og norsk.',
  capSt:'<b>Tordenvær og vindskjær.</b> Uværslabbens enkeltcelle, fra en godværscumulus til en moden cumulonimbus og oppløsningen, en time stormtid på et halvt minutt. Velg et stadium i panelet, eller åpne labben for å fly gjennom den.',
  smK:'Cockpittrenere', smH:'Ta plass i cockpiten',
- smP:'Tre fungerende cockpiter, fra de seks grunnleggende instrumentene til en turboprop med to piloter. Hver av dem er et helt panel du kan fly, fra bakken eller rett inn på en ILS med ett klikk, og alle tre har også en 3D-cockpit, i beta.',
- smC1:'Enmotors stempelfly, analogt panel', smD1:'Tomotors stempelfly, glasscockpit', smB1:'Tomotors turboprop, cockpit for to piloter',
+ smP:'Seks fungerende cockpiter, fra de seks grunnleggende instrumentene til turboproper med to piloter og to passasjerfly. Hver av dem er et helt panel du kan fly, fra bakken eller rett inn på en ILS med ett klikk, og de fleste har også en 3D-cockpit, i beta.',
+ smC1:'Enmotors stempelfly, analogt panel', smD1:'Tomotors stempelfly, glasscockpit', smB1:'Tomotors turboprop, cockpit for to piloter', smA1:'Tomotors jetfly, fly-by-wire', smJ1:'Tomotors jetfly, konvensjonelle styringer',
  smTr:'Trener',
  smCapc172:'<b>Cessna 172, på ILS 36.</b> De seks grunnleggende instrumentene, to VOR-indikatorer og ADF-en, og en full radiostakk du stiller inn selv.',
  smCapda42:'<b>DA42, på ILS 36 med autopiloten koblet inn.</b> PFD og MFD med motorsiden og kartet, reserveinstrumentene og bryterraden.',
@@ -816,10 +847,16 @@ LAB.tx({
  smC2:'Instrumentskanning og attitydeflyging, navigasjon med VOR, ADF og DME, og landingsrunden.',
  smD2:'Flermotorsflyging med glasscockpit: ILS- og RNP-innflyginger, autopiloten, motorbortfall og asymmetrisk flyging.',
  smB2:'En turboprop med to piloter fra batteristart til avslåing: systemer som trykkabin, autofeather og brannvern, og forberedelse til typerating med 320 spørsmål.',
- smRq:'Mangler flyet ditt?', smC3:'Fly Cessna 172', smD3:'Fly DA42', smB3:'Fly King Air', sm3d:'Også i 3D',
+ smRq:'Mangler flyet ditt?', smC3:'Fly Cessna 172', smD3:'Fly DA42', smB3:'Fly King Air', smA3:'Fly A320', smJ3:'Fly 737', smR3:'Fly ATR', smR1:'Tomotors turboprop, regionalfly',
+ smCapatr:'<b>ATR 72-500, i 5000 fot med AP og YD i HDG SEL.</b> EADI-ene og EHSI-ene, ADU-en, motorinstrumentene og crew alerting panel.',
+ smR2:'Fra kald og mørk til rullebanen: mørk-cockpit-takpanel, hotel mode med propellbremsen, motorstart, power- og condition-spakene, PWR MGT og torque, AFCS med ADU-en og crew alerting panel.', sm3d:'Også i 3D',
+ smCapa320:'<b>Airbus A320, på ILS 36 med begge autopilotene inne.</b> PFD-ene med FMA, ND-ene, ECAM-skjermene og FCU.',
+ smCapb737:'<b>Boeing 737-800, på ILS 36 med CMD B inne.</b> PFD-ene med FMA, ND-ene, motorskjermen og MCP.',
+ smA2:'Fra cold and dark til avgang: overheadpanelet, APU- og motorstart, ECAM med varsler og prosedyrer, FCU, FMA og MCDU, og ILS i normal law.',
+ smJ2:'Fra cold and dark til avgang: overheadpanelet, APU- og motorstart, MCP og FMA, autothrottle, CDU med LNAV og VNAV, og håndflyging med stabilisatortrim.',
  smF1:'<b>I nettleseren</b>Ingenting å installere', smF2:'<b>2D og 3D</b>Et panel i full størrelse, og en 3D-cockpit i beta',
  smF3:'<b>Start på ILS-en</b>I luften på innflygingen, med ett klikk', smF4:'<b>Tastatur, mus eller berøring</b>En spillkontroller virker også',
- smFoot:'Også under Trening: IFR-treneren med 46 øvelser, briefinger og radiodriller.', smAll:'All trening →',
+ smFoot:'Også under Trening: IFR-treneren med 46 øvelser, MCDU-, FMC- og GNS 530-treneren, briefinger og radiodriller.', smAll:'All trening →',
  goSt:'Åpne uværslabben', fsNote:'Høyder tegnet 1,5 ganger høyere', fsK:'Utvikling · enkeltcelle', fsLay:'Vis',
  h2b:'Fra teori til cockpit',
  p2b:'Én rute, Oslo lufthavn Gardermoen til Stockholm Arlanda, fulgt fra kartet til den utskrevne pakken. Flight Intelligence svarer på spørsmålene underveis.',
@@ -892,8 +929,8 @@ function show(a){ box.dataset.ac=a;
   $$('.sm-tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ac===a))); }
 box.classList.add('js');
 /* the aircraft chosen in Flows opens first here too, and a choice here is remembered for Flows */
-try{ const m={c172:'c172',da42:'da42',b200s:'b200',b200:'b200'}[localStorage.getItem('bb-flows-ac')||'']; if(m&&m!==box.dataset.ac) show(m); }catch(e){}
-$$('.sm-tabs button').forEach(b=>{ b.addEventListener('click',()=>{ show(b.dataset.ac); try{ localStorage.setItem('bb-flows-ac',{b200:'b200s'}[b.dataset.ac]||b.dataset.ac); }catch(e){} }); ['pointerenter','focus'].forEach(e=>b.addEventListener(e,()=>load(img(b.dataset.ac)))); });
+try{ const m={c172:'c172',da42:'da42',b200s:'b200',b200:'b200',a320:'a320',b738:'b737',atr72:'atr72'}[localStorage.getItem('bb-flows-ac')||'']; if(m&&m!==box.dataset.ac) show(m); }catch(e){}
+$$('.sm-tabs button').forEach(b=>{ b.addEventListener('click',()=>{ show(b.dataset.ac); try{ localStorage.setItem('bb-flows-ac',{b200:'b200s',b737:'b738'}[b.dataset.ac]||b.dataset.ac); }catch(e){} }); ['pointerenter','focus'].forEach(e=>b.addEventListener(e,()=>load(img(b.dataset.ac)))); });
 ready(img(box.dataset.ac));
 const thumbs=()=>$$('.sm-tabs img[data-src]').forEach(i=>{ i.src=i.dataset.src; i.removeAttribute('data-src'); });
 if(!('IntersectionObserver' in window)){ thumbs(); box.classList.add('in'); return; }
