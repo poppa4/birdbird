@@ -719,7 +719,7 @@ VP.addEventListener('wheel',e=>{ const [wx,wy]=toWorld(e.clientX,e.clientY); con
 function guardOK(c){ if(!c.guard) return true; const t=performance.now(); if(c.gOpenT&&t-c.gOpenT<4000){ c.gOpenT=0; return true; } c.gOpenT=t; tip(c,'Guard lifted: click again'); return false; }
 function press(c,wx,wy,e){
   const r=c.r, fx=(wx-r[0])/r[2], fy=(wy-r[1])/r[3];
-  snd('click');
+  snd('click'); if(CTL&&CTL.press) CTL.press(c);
   switch(c.t){
     case 'pb': if(!guardOK(c)) break; if(c.on) c.on(); else if(c.once){ A.sw[c.k]=1; } else A.sw[c.k]=A.sw[c.k]?0:1; tip(c); break;
     case 'mom': if(!guardOK(c)) break; if(c.down) c.down(); if(c.k){ if(c.latch) A.sw[c.k]=1; else A.sw[c.k]=1; } break;
@@ -758,6 +758,7 @@ function dragCtl(dr,e,dx,dy){
   if(c.t==='knob'||c.t==='sel'||c.t==='selF'||c.t==='cont'){ dr.acc+=e.movementX||0; const step=14; while(Math.abs(dr.acc)>=step){ const d=Math.sign(dr.acc); dr.acc-=d*step; turn(c,d,false); } }
 }
 function turn(c,d,big){
+  if(CTL&&CTL.turn) CTL.turn(c,d);
   if(c.t==='knob'){ c.turn&&c.turn(d*(big?10:1)); tip(c); }
   else if(c.t==='sel'){ A.sw[c.k]=clamp(A.sw[c.k]+d,0,c.pos.length-1); tip(c); }
   else if(c.t==='selF'){ c.set(clamp(c.get()+d,0,c.pos.length-1)); tip(c); }
@@ -880,7 +881,7 @@ if(SH&&SH.touch) SH.touch({stage:ST,stick:v=>{ UI.inp.stick=v; },rud:v=>{ UI.inp
    Knobs and toggle switches are real 3D parts that turn and flip; lit legends are sharp quads from one text atlas; the
    small read-outs (BAT volts, FCU window, gear lights, lever labels) are their own little textures, redrawn only when they
    change. All knobs are one draw call, all toggles one, all legends one, so the cost is a handful of draw calls. */
-let CTL=null;
+let CTL=null; window.__ctl=()=>CTL;
 function buildCtl3D(){
   const T=window.THREE; if(!CK||!CK.place||!T) return;
   const scene=CK.scene, PX=12; // atlas / chip pixels per sheet unit
@@ -910,17 +911,26 @@ function buildCtl3D(){
   const tip=colorGeo(new T.SphereGeometry(0.17,12,8),0xeef1f4); tip.translate(0,0,0.96);
   const togGeo=merge([nut,bat,tip]);
   const mat=new T.MeshPhongMaterial({vertexColors:true,shininess:46,specular:0x555a60});
-  const knobs=[], togs=[], legs=[], chips=[];
+  const knobs=[], togs=[], caps=[], chips=[], fknobs=[];
   for(const c of OV){ if(!c.r) continue; const [x,y,w,h]=c.r;
-    if(c.t==='sel'||c.t==='selF'||c.t==='cont'||(c.t==='knob'&&c.ang)){ const pl=CK.place(x+w/2,y+h/2); if(pl) knobs.push({c,pl,r:Math.min(w,h)*0.39*pl.s,last:null}); }
+    if(c.t==='knob'&&!c.ang&&w/h>0.6&&w/h<1.7){ const pl=CK.place(x+w/2,y+h/2); if(pl) fknobs.push({c,pl,r:Math.min(w,h)*0.44*pl.s,rot:0,push:0,dirty:true}); }
+    else if(c.t==='sel'||c.t==='selF'||c.t==='cont'||(c.t==='knob'&&c.ang)){ const pl=CK.place(x+w/2,y+h/2); if(pl) knobs.push({c,pl,r:Math.min(w,h)*0.39*pl.s,last:null}); }
     else if(c.t==='tog'){ const pl=CK.place(x+w/2,y+h/2); if(pl){ const tw=Math.min(w,h*0.7); togs.push({c,pl,w:tw*pl.s,L:Math.min(h*0.55,tw*1.5)*pl.s,last:null}); } }
-    else if(c.t==='pb'||c.t==='mom'||c.t==='ann'){ const big=c.cls&&c.cls.includes('big');
-      if(big){ if(c.dn) legs.push({c,src:'dn',x,y,w,h,txt:c.dn[0],col:c.dn[1],bg:'#c0140e'}); }
-      else { if(c.up) legs.push({c,src:'up',x,y,w,h:h/2,txt:c.up[0],col:c.up[1]}); if(c.dn) legs.push({c,src:'dn',x,y:y+h/2,w,h:h/2,txt:c.dn[0],col:c.dn[1]}); } }
-    else if(c.t==='key') legs.push({c,src:'key',x,y,w,h,txt:c.id.split('|')[1].replace(' L',''),col:'w'});
+    else if(c.t==='pb'||c.t==='mom'||c.t==='ann'||c.t==='key'){ const big=!!(c.cls&&c.cls.includes('big')), cap={c,x,y,w,h,big,ann:c.t==='ann',press:0};
+      if(c.t==='key'){ cap.up={src:'key',txt:c.id.split('|')[1].replace(' L',''),col:'w',w,h}; }
+      else if(big){ if(c.dn) cap.up={src:'dn',txt:c.dn[0],col:c.dn[1],w,h}; }
+      else { if(c.up) cap.up={src:'up',txt:c.up[0],col:c.up[1],w,h:h/2}; if(c.dn) cap.dn={src:'dn',txt:c.dn[0],col:c.dn[1],w,h:h/2}; }
+      if(cap.up||cap.dn||c.t!=='ann') caps.push(cap); }
     else if(c.t==='seg'||c.t==='gearInd'||c.t==='fcu'||c.t==='bar'||c.t==='thr'||c.t==='lever') chips.push({c,box:chipBox(c),last:null}); }
   // ---- knobs and toggles
   const KM=inst(knobGeo,mat,knobs.length), TM=inst(togGeo,mat,togs.length);
+  // FCU-type knobs: round, knurled rim so a turn is visible, pushed and pulled with the click
+  const fk=new T.LatheGeometry([V2(0,0),V2(0.94,0),V2(1,0.06),V2(1,0.62),V2(0.92,0.7),V2(0,0.72)],32); fk.rotateX(Math.PI/2);
+  const knurl=[]; for(let i=0;i<20;i++){ const b=colorGeo(new T.BoxGeometry(0.08,0.12,0.5),0x5c636b); b.translate(0,1.0,0.36); b.rotateZ(i/20*Math.PI*2); knurl.push(b); }
+  const fkGeo=merge([colorGeo(fk,0x30353b),...knurl]);
+  const FK=inst(fkGeo,mat,fknobs.length);
+  function setFk(i){ const o=fknobs[i]; if(!o.dirty) return false; o.push*=0.8; if(o.push<0.02){ o.push=0; o.dirty=false; }
+    FK.setMatrixAt(i,frame(o.pl,o.rot,ZA,o.r,o.r,o.r*0.75*(1-0.35*o.push),0.0002)); return true; }
   function knobAng(c){ return c.t==='sel'?c.ang[A.sw[c.k]]:c.t==='selF'?c.ang[c.get()]:c.t==='cont'?c.ang(A.sw[c.k]):c.ang(); }
   function setKnob(i){ const o=knobs[i], a=knobAng(o.c); if(a==null||a===o.last) return false; o.last=a; KM.setMatrixAt(i,frame(o.pl,-a*Math.PI/180,ZA,o.r,o.r,o.r*0.9,0.0004)); return true; }
   function setTog(i){ const o=togs[i], c=o.c, v=c.get?c.get():A.sw[c.k]; if(v===o.last) return false; o.last=v; const n=c.vals.length, j=c.vals.indexOf(v);
@@ -929,26 +939,44 @@ function buildCtl3D(){
   const AT=document.createElement('canvas'); AT.width=2048; AT.height=2048; const ag=AT.getContext('2d'); let sx=0, sy=0, rowH=0; const cells=new Map();
   function cell(txt,w,h){ const key=txt+'|'+Math.round(w*4)+'|'+Math.round(h*4); if(cells.has(key)) return cells.get(key);
     const cw=Math.ceil(w*0.88*PX), ch=Math.ceil(h*0.94*PX); if(sx+cw+8>AT.width){ sx=0; sy+=rowH+10; rowH=0; } if(sy+ch>AT.height) return null;
-    const L=String(txt).split('\n'), n=L.length, mw=Math.max(...L.map(t=>t.length)), fs=Math.min(h*0.62/n,w*1.7/Math.max(4,mw),w*0.30)*PX, fh=fs*1.08;
+    const L=String(txt).split('\n'), n=L.length, mw=Math.max(...L.map(t=>t.length)), fs=Math.min(h*0.62/n,w*1.5/Math.max(4,mw),w*0.28)*PX, fh=fs*1.08;
     ag.save(); ag.translate(sx,sy); ag.beginPath(); ag.rect(1,1,cw-2,ch-2); ag.clip(); ag.font='700 '+fs.toFixed(1)+'px Archivo,Arial'; ag.textAlign='center'; ag.textBaseline='middle'; ag.fillStyle='#fff'; ag.shadowColor='rgba(255,255,255,.9)'; ag.shadowBlur=fs*0.22;
     L.forEach((t,i)=>ag.fillText(t,cw/2,ch/2+0.1*PX+(i-(n-1)/2)*fh)); ag.restore();
     const r=[(sx+0.5)/AT.width,1-(sy+ch-0.5)/AT.height,(cw-1)/AT.width,(ch-1)/AT.height]; sx+=cw+10; rowH=Math.max(rowH,ch); cells.set(key,r); return r; }
-  for(const l of legs){ l.uv=cell(l.txt,l.w,l.h); }
-  const LG=legs.filter(l=>l.uv&&CK.place(l.x+l.w/2,l.y+l.h/2)); const nL=LG.length;
-  const atex=new T.CanvasTexture(AT); atex.anisotropy=8; atex.minFilter=T.LinearFilter; atex.generateMipmaps=false;
-  const qg=new T.InstancedBufferGeometry(); const pq=new T.PlaneGeometry(1,1); qg.index=pq.index; qg.attributes.position=pq.attributes.position; qg.attributes.uv=pq.attributes.uv;
-  const aUV=new Float32Array(nL*4), aCol=new Float32Array(nL*3), aBg=new Float32Array(nL*3), aOn=new Float32Array(nL), aM=[new Float32Array(nL*4),new Float32Array(nL*4),new Float32Array(nL*4),new Float32Array(nL*4)];
-  const hexRGB=h=>{ const c=new T.Color(h); return [c.r,c.g,c.b]; };
-  LG.forEach((l,i)=>{ aUV.set(l.uv,i*4); aCol.set(hexRGB(COL[l.col]||'#fff'),i*3); aBg.set(hexRGB(l.bg||'#0b0c0d'),i*3);
-    const pl=CK.place(l.x+l.w/2,l.y+l.h/2), m=frame(pl,0,ZA,l.w*0.88*pl.s,l.h*0.94*pl.s,1,0.0006).elements; for(let k=0;k<4;k++) aM[k].set([m[k*4],m[k*4+1],m[k*4+2],m[k*4+3]],i*4); });
-  qg.setAttribute('iUV',new T.InstancedBufferAttribute(aUV,4)); qg.setAttribute('iCol',new T.InstancedBufferAttribute(aCol,3)); qg.setAttribute('iBg',new T.InstancedBufferAttribute(aBg,3));
-  const onA=new T.InstancedBufferAttribute(aOn,1); onA.setUsage&&onA.setUsage(T.DynamicDrawUsage); qg.setAttribute('iOn',onA); for(let k=0;k<4;k++) qg.setAttribute('iM'+k,new T.InstancedBufferAttribute(aM[k],4)); qg.instanceCount=nL;
-  const lmat=new T.ShaderMaterial({uniforms:{map:{value:atex}},transparent:false,depthWrite:true,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4,
-    vertexShader:'attribute vec4 iUV; attribute vec3 iCol; attribute vec3 iBg; attribute float iOn; attribute vec4 iM0; attribute vec4 iM1; attribute vec4 iM2; attribute vec4 iM3; varying vec2 vUv; varying vec3 vCol; varying vec3 vBg; varying float vOn;'+
-      'void main(){ vUv=iUV.xy+uv*iUV.zw; vCol=iCol; vBg=iBg; vOn=iOn; mat4 m=mat4(iM0,iM1,iM2,iM3); gl_Position=projectionMatrix*viewMatrix*m*vec4(position,1.0); }',
-    fragmentShader:'uniform sampler2D map; varying vec2 vUv; varying vec3 vCol; varying vec3 vBg; varying float vOn; void main(){ if(vOn<0.5) discard; float t=texture2D(map,vUv).a; gl_FragColor=vec4(mix(vBg,vCol*1.15,t),1.0); }'});
-  const LM=new T.Mesh(qg,lmat); LM.frustumCulled=false; LM.renderOrder=3; scene.add(LM);
-  function legOn(l){ if(!A.dc) return false; const test=A.sw.annLt===2&&A.dc, c=l.c; if(l.src==='key') return A.bus.dcEss&&(test||c.lit()); const s=c[l.src]; return !!(s&&(test||s[2]())); }
+  // ---- pushbuttons: one 3D cap per button; the top shows the panel picture (printed legend) or, lit, a sharp legend from the atlas
+  const PAL=['a','w','b','g','r'].map(k=>new T.Color(COL[k]));
+  for(const cp of caps){ for(const h of ['up','dn']) if(cp[h]) cp[h].uv=cell(cp[h].txt,cp[h].w,cp[h].h); }
+  const atex=new T.CanvasTexture(AT); atex.minFilter=T.LinearFilter; atex.generateMipmaps=false;
+  const byP={}; for(const cp of caps){ const pl=CK.place(cp.x+cp.w/2,cp.y+cp.h/2); if(!pl) continue; cp.pl=pl; (byP[pl.k]=byP[pl.k]||[]).push(cp); }
+  const box=new T.BoxGeometry(1,1,1); box.translate(0,0,0.5);
+  const VS='attribute vec4 iM0; attribute vec4 iM1; attribute vec4 iM2; attribute vec4 iTex; attribute vec4 iUp; attribute vec4 iDn; attribute vec4 iSt;'+
+    'varying vec3 vN; varying vec3 vL; varying vec4 vTex; varying vec4 vUp; varying vec4 vDn; varying vec4 vSt;'+
+    'void main(){ vec3 p=position; p.z*=1.0-0.6*iSt.w; vec4 q=vec4(p,1.0); vec3 w=vec3(dot(iM0,q),dot(iM1,q),dot(iM2,q));'+
+    'vec3 n=normalize(vec3(dot(iM0.xyz,normal),dot(iM1.xyz,normal),dot(iM2.xyz,normal))); vN=n; vL=vec3(position.x+0.5,0.5-position.y,normal.z);'+
+    'vTex=iTex; vUp=iUp; vDn=iDn; vSt=iSt; gl_Position=projectionMatrix*viewMatrix*vec4(w,1.0); }';
+  const FS='uniform sampler2D map; uniform sampler2D atl; uniform vec3 pal[5]; varying vec3 vN; varying vec3 vL; varying vec4 vTex; varying vec4 vUp; varying vec4 vDn; varying vec4 vSt;'+
+    'vec3 colOf(float f){ int i=int(f-10.0+0.5); vec3 c=pal[0]; if(i==1) c=pal[1]; if(i==2) c=pal[2]; if(i==3) c=pal[3]; if(i==4) c=pal[4]; return c; }'+
+    'vec3 leg(vec4 r,float st,float y0,float y1,vec3 base,vec3 bg){ if(st<5.0) return base; float b=(vL.y-y0)/(y1-y0); if(b<0.0||b>1.0) return base; float a=(vL.x-0.06)/0.88, bb=(b-0.03)/0.94; if(a<0.0||a>1.0||bb<0.0||bb>1.0) return base;'+
+    ' float t=texture2D(atl,vec2(r.x+a*r.z,r.y+(1.0-bb)*r.w)).a; return mix(bg,colOf(st)*1.15,t); }'+
+    'void main(){ if(vL.z<0.5){ float l=0.35+0.65*max(0.0,dot(vN,normalize(vec3(0.2,0.8,0.5)))); gl_FragColor=vec4(vec3(0.07,0.075,0.085)*l+0.02,1.0); return; }'+
+    ' vec3 base=texture2D(map,vec2(vTex.x+vL.x*vTex.z,vTex.y-vL.y*vTex.w)).rgb; base*=1.0-0.25*vSt.w;'+
+    ' if(vSt.z>0.5){ gl_FragColor=vec4(leg(vUp,vSt.x,0.0,1.0,base,vec3(0.75,0.08,0.06)),1.0); return; }'+
+    ' vec3 c=leg(vUp,vSt.x,0.0,0.5,base,vec3(0.043,0.047,0.05)); c=leg(vDn,vSt.y,0.5,1.0,c,vec3(0.043,0.047,0.05)); gl_FragColor=vec4(c,1.0); }';
+  const capSets=[];
+  for(const k in byP){ const L=byP[k], n=L.length, v=CK.P[k].v, r=v.r, g=new T.InstancedBufferGeometry(); g.index=box.index; g.attributes.position=box.attributes.position; g.attributes.normal=box.attributes.normal;
+    const M0=new Float32Array(n*4), M1=new Float32Array(n*4), M2=new Float32Array(n*4), TX=new Float32Array(n*4), UP=new Float32Array(n*4), DN=new Float32Array(n*4), ST=new Float32Array(n*4);
+    L.forEach((cp,i)=>{ const pl=cp.pl, ht=cp.ann?0.0006:(cp.big?0.0032:0.0024), m=frame(pl,0,ZA,cp.w*0.92*pl.s,cp.h*0.96*pl.s,ht,0).elements;
+      M0.set([m[0],m[4],m[8],m[12]],i*4); M1.set([m[1],m[5],m[9],m[13]],i*4); M2.set([m[2],m[6],m[10],m[14]],i*4);
+      const x0=cp.x+cp.w*0.04, y0=cp.y+cp.h*0.02; TX.set([(x0-r[0])/r[2],1-(y0-r[1])/r[3],cp.w*0.92/r[2],cp.h*0.96/r[3]],i*4);
+      if(cp.up&&cp.up.uv) UP.set(cp.up.uv,i*4); if(cp.dn&&cp.dn.uv) DN.set(cp.dn.uv,i*4); cp.i=i; cp.set=null; });
+    const at=(a,s)=>{ const b=new T.InstancedBufferAttribute(a,s); return b; };
+    g.setAttribute('iM0',at(M0,4)); g.setAttribute('iM1',at(M1,4)); g.setAttribute('iM2',at(M2,4)); g.setAttribute('iTex',at(TX,4)); g.setAttribute('iUp',at(UP,4)); g.setAttribute('iDn',at(DN,4));
+    const stA=at(ST,4); stA.setUsage&&stA.setUsage(T.DynamicDrawUsage); g.setAttribute('iSt',stA); g.instanceCount=n;
+    const mat=new T.ShaderMaterial({uniforms:{map:{value:CK.P[k].mesh.material.map},atl:{value:atex},pal:{value:PAL}},vertexShader:VS,fragmentShader:FS});
+    const mesh=new T.Mesh(g,mat); mesh.frustumCulled=false; mesh.renderOrder=2; scene.add(mesh); capSets.push({k,L,ST,stA,mat,mesh}); }
+  const colIdx=c=>Math.max(0,['a','w','b','g','r'].indexOf(c));
+  function lit(cp,h){ const l=cp[h]; if(!l||!A.dc) return false; const test=A.sw.annLt===2&&A.dc, c=cp.c; if(l.src==='key') return !!(A.bus.dcEss&&(test||c.lit())); const s=c[l.src]; return !!(s&&(test||s[2]())); }
+  function pressCap(c){ for(const cs of capSets) for(const cp of cs.L) if(cp.c===c){ cp.press=1; } }
   // ---- chips: small canvases at 12 px per unit, painted with the same code as the 2D page
   function chipBox(c){ const [x,y,w,h]=c.r;
     if(c.t==='thr') return [x+(c.i?w:-12),y+h+1,12,4.6];
@@ -968,10 +996,16 @@ function buildCtl3D(){
   function tick(force){ frameN++; let k=false, t=false;
     for(let i=0;i<knobs.length;i++) k=setKnob(i)||k; for(let i=0;i<togs.length;i++) t=setTog(i)||t;
     if(k) KM.instanceMatrix.needsUpdate=true; if(t) TM.instanceMatrix.needsUpdate=true;
-    let l=false; for(let i=0;i<nL;i++){ const v=legOn(LG[i])?1:0; if(aOn[i]!==v){ aOn[i]=v; l=true; } } if(l) onA.needsUpdate=true;
+    let f=false; for(let i=0;i<fknobs.length;i++) f=setFk(i)||f; if(f) FK.instanceMatrix.needsUpdate=true;
+    for(const cs of capSets){ cs.mat.uniforms.map.value=CK.P[cs.k].mesh.material.map; let ch=false;
+      for(const cp of cs.L){ const j=cp.i*4, u=(lit(cp,'up')?10:0)+colIdx(cp.up&&cp.up.col), d=(lit(cp,'dn')?10:0)+colIdx(cp.dn&&cp.dn.col), p=cp.press>0.02?cp.press:0;
+        if(cs.ST[j]!==u||cs.ST[j+1]!==d||cs.ST[j+3]!==p||cs.ST[j+2]!==(cp.big?1:0)){ cs.ST[j]=u; cs.ST[j+1]=d; cs.ST[j+2]=cp.big?1:0; cs.ST[j+3]=p; ch=true; } if(cp.press>0) cp.press=cp.press>0.02?cp.press*0.78:0; }
+      if(ch) cs.stA.needsUpdate=true; }
     if(force||frameN%2===0) for(const o of CH) setChip(o); }
   // hide parts on hidden panels (side consoles when the shell is up)
-  CTL={tick,knobs,togs,LG,CH,legs};
+  CTL={tick,knobs,togs,caps,CH,fknobs,
+    press(c){ pressCap(c); const o=fknobs.find(z=>z.c===c); if(o){ o.push=1; o.dirty=true; } },
+    turn(c,d){ const o=fknobs.find(z=>z.c===c); if(o){ o.rot-=d*0.26; o.dirty=true; } }};
   tick(true);
 }
 let otwReady=false;
