@@ -782,6 +782,11 @@ const ar=(x1,y1,x2,y2,c,w)=>{ const a=Math.atan2(y2-y1,x2-x1), h=6; return `<lin
 const tx=(x,y,t,c,a)=>`<text x="${x}" y="${y}" fill="${c||'#c9d2da'}" font-size="9" font-family="Public Sans,system-ui,sans-serif"${a?` text-anchor="${a}"`:''}>${t}</text>`;
 const SV=b=>`<svg viewBox="0 0 200 64" aria-hidden="true">${b}</svg>`;
 const ILL={
+ ind:()=>SV(`<path d="M30,34 L170,34" stroke="#e2e8ee" stroke-width="3"/>${ar(100,30,100,8,'#71cc93')}${ar(100,38,100,56,'#7fcbe8')}<circle cx="172" cy="34" r="9" fill="none" stroke="#f0b440" stroke-dasharray="2 2"/><circle cx="28" cy="34" r="9" fill="none" stroke="#f0b440" stroke-dasharray="2 2"/>${tx(108,52,L({en:'downwash',no:'nedvask'}),'#7fcbe8')}${tx(108,14,'L','#71cc93')}`),
+ span:()=>SV(`<path d="M20,44 L100,26 L180,44" fill="none" stroke="#e2e8ee" stroke-width="2.4"/><path d="M70,33 L130,33" stroke="#ec5a47" stroke-width="5" opacity=".75"/>${tx(100,54,L({en:'root stalls first',no:'roten staller først'}),'#ec5a47','middle')}${tx(24,30,L({en:'tip: ailerons still work',no:'tupp: balanseror virker'}),'#71cc93')}`),
+ ge:()=>SV(`<line x1="8" y1="54" x2="192" y2="54" stroke="#5f8a69" stroke-width="2"/><path d="M40,36 L160,36" stroke="#e2e8ee" stroke-width="3"/><circle cx="162" cy="40" r="6" fill="none" stroke="#f0b440" stroke-dasharray="2 2" transform="scale(1 .7) translate(0 18)"/>${tx(100,24,L({en:'within one span: less downwash',no:'innen ett spenn: mindre nedvask'}),'#c9d2da','middle')}`),
+ dump:()=>SV(`<path d="M20,40 C60,30 120,30 180,40" fill="none" stroke="#e2e8ee" stroke-width="3"/><path d="M110,33 L130,18" stroke="#f0b440" stroke-width="3"/>${ar(150,34,150,52,'#ec5a47')}${tx(132,14,L({en:'spoiler up',no:'spoiler opp'}),'#f0b440')}${tx(156,52,L({en:'lift dumped',no:'løft dumpet'}),'#ec5a47')}`),
+ ice:()=>SV(`<path d="M30,40 C40,22 90,20 180,38 C90,46 40,48 30,40Z" fill="none" stroke="#e2e8ee" stroke-width="1.6"/><path d="M28,40 C27,34 30,28 36,26 L32,33 L38,32 L31,38 L37,40 L30,44Z" fill="#dbeaff"/>${tx(46,58,L({en:'a little ice: much less CL max',no:'litt is: mye lavere CL maks'}),'#dbeaff')}`),
  aoa:()=>SV(`<line x1="8" y1="50" x2="192" y2="50" stroke="#55626e" stroke-dasharray="3 3"/>${tx(190,60,L({en:'horizon',no:'horisont'}),'#8b99a7','end')}
   <line x1="30" y1="50" x2="176" y2="14" stroke="#e2e8ee" stroke-width="1.6"/>${ar(30,50,170,38,'#7fcbe8')}
   <path d="M84,50 A54,54 0 0 0 82.5,37.5" fill="none" stroke="#f0b440"/>${tx(90,47,'γ','#f0b440')}
@@ -857,6 +862,21 @@ const KC=[
  ['hl',{en:'High-lift devices',no:'Høyløftinnretninger'},
   {en:'<b>Flaps</b> add camber and chord: more lift at the same α, a higher CL max and a lower critical α. <b>Slats</b> delay leading-edge separation: a higher critical α. <b>Slots</b> feed high-energy air over the next element. <b>Spoilers</b> do the opposite: dump lift and add drag.',no:'<b>Klaffer</b> gir mer krumning og korde: mer løft ved samme α, høyere CL maks og lavere kritisk α. <b>Lameller</b> utsetter separasjon ved forkanten: høyere kritisk α. <b>Spalter</b> leder luft med høy energi over neste element. <b>Spoilere</b> gjør det motsatte: dumper løft og gir motstand.'},
   {en:'The price is drag and a nose-down pitching moment, and each setting has a maximum speed (VFE).',no:'Prisen er motstand og et nese ned-moment, og hver innstilling har en maksimal fart (VFE).'}],
+ ['ind',{en:'Induced drag and wingtip vortices',no:'Indusert motstand og tippvirvler'},
+  {en:'High pressure under the wing spills round the tips into <b>vortices</b> that push the air behind the wing down (<b>downwash</b>). Tilting the lift back costs drag: induced drag, largest when slow and heavy.',no:'Høyt trykk under vingen strømmer rundt tuppene og danner <b>virvler</b> som presser luften bak vingen ned (<b>nedvask</b>). Løftet vippes bakover og gir motstand: indusert motstand, størst når du er treg og tung.'},
+  {en:'Induced drag falls with a long, slender wing (high aspect ratio) and with winglets. The same vortices are the wake turbulence behind every aircraft.',no:'Indusert motstand faller med en lang, slank vinge (høyt sideforhold) og med winglets. De samme virvlene er virvelturbulensen bak hvert fly.'}],
+ ['span',{en:'Where the wing stalls first',no:'Hvor vingen staller først'},
+  {en:'A good wing stalls at the <b>root first</b>, so the ailerons near the tip keep working and the nose drops straight ahead. Washout (less incidence at the tip) and stall strips make that happen.',no:'En god vinge staller ved <b>roten først</b>, så balanserorene ved tuppen fortsatt virker og nesen faller rett fram. Vridning (mindre innfallsvinkel ved tuppen) og stallstriper sørger for det.'},
+  {en:'A swept or tapered wing tends to stall at the tip: one wing drops and, swept, the CP moves forward and the nose pitches up. Slats at the tips and fences help.',no:'En pilvinge eller avsmalnet vinge staller lett i tuppen: én vinge faller og, med pilform, flytter CP seg fram og nesen stiger. Slats ved tuppene og grenseskjold hjelper.'}],
+ ['ge',{en:'Ground effect',no:'Bakkeeffekt'},
+  {en:'Within about one wingspan of the runway the ground blocks the downwash: <b>less induced drag</b> and a little more lift. The aircraft floats in the flare.',no:'Innen omtrent ett vingespenn over banen stenger bakken for nedvasken: <b>mindre indusert motstand</b> og litt mer løft. Flyet flyter i utflatingen.'},
+  {en:'On take-off it can let an aircraft lift off too slowly, then sink as it climbs out of ground effect. Static pressure errors also change close to the ground.',no:'Under start kan det la flyet løfte av for sakte, og så synke når det stiger ut av bakkeeffekten. Feil i statisk trykk endres også nær bakken.'}],
+ ['dump',{en:'Spoilers and lift dumpers',no:'Spoilere og løftdumpere'},
+  {en:'Panels on top of the wing that <b>spoil the lift</b> and add drag. In flight they help roll and slow down; on the ground they dump the lift so the weight goes onto the wheels and the brakes work.',no:'Paneler på oversiden av vingen som <b>ødelegger løftet</b> og gir motstand. I luften hjelper de rulling og nedbremsing; på bakken dumper de løftet så vekten kommer på hjulene og bremsene virker.'},
+  {en:'With speedbrakes out the stall speed goes up a little, because the wing has lost part of its CL max.',no:'Med fartsbremser ute går stallfarten litt opp, fordi vingen har mistet en del av CL maks.'}],
+ ['ice',{en:'Ice and contamination',no:'Is og forurensning'},
+  {en:'Even frost as rough as sandpaper on the leading edge trips the boundary layer: <b>CL max falls and the wing stalls at a lower angle</b>, often before the stall warning.',no:'Selv rim like ru som sandpapir på forkanten forstyrrer grensesjiktet: <b>CL maks faller og vingen staller ved lavere vinkel</b>, ofte før stallvarselet.'},
+  {en:'That is why the wing must be clean for take-off, and why icing speeds and stall warning settings are raised when ice is detected.',no:'Derfor må vingen være ren før start, og derfor økes farter og stallvarsling når is er oppdaget.'}],
  ['vs',{en:'Stall speed',no:'Stallfart'},
   {en:'The speed where 1 g needs CL max: VS1g = √(2W / (ρ·S·CL max)). It grows with <b>√W</b>, with <b>√n</b> in a turn, and falls when flaps raise CL max.',no:'Farten der 1 g krever CL maks: VS1g = √(2W / (ρ·S·CL maks)). Den øker med <b>√W</b>, med <b>√n</b> i sving, og synker når klaff øker CL maks.'},
   {en:'In IAS (≈ EAS at low speed) the stall speed does not change with altitude; in TAS it does.',no:'I IAS (≈ EAS ved lav fart) endres ikke stallfarten med høyden; i TAS gjør den det.'}]
@@ -3994,6 +4014,10 @@ window.__tunGo=function(k){
   else if(k==='tr') secF(4,'tr'); else if(k==='sep') secF(SEC.crit()-1,'sep'); else if(k==='cp') secF(2,'cp','pRead');
   else if(k==='slat'){ setConf(1); st.sp='off'; rebuild(); secF(SEC.crit(),'alpha','chPolar'); }
   else if(k==='dump'){ resetAtm(); loadAircraft('a320'); setConf(5); Object.assign(st,{mode:'alpha',alpha:4,view:'tufts'}); rebuild(); saveA(); go('t3'); }
+  else if(k==='ind'){ resetAtm(); const l=lessons.find(x=>x.t==='Lav fart og indusert motstand'); if(l) l.run(); go('t3'); }
+  else if(k==='span'){ resetAtm(); const l=lessons.find(x=>x.t==='DA42: stall ved roten'); if(l) l.run(); const m=document.getElementById('moreVals'); if(m) m.open=true; setTimeout(()=>go('chStall'),120); }
+  else if(k==='ge') go('ground');
+  else if(k==='ice'){ resetAtm(); const l=lessons.find(x=>x.t==='Profil: is på forkanten'); if(l) l.run(); document.getElementById('profil').scrollIntoView({behavior:'smooth',block:'start'}); }
   else if(k==='clcd'||k==='ld') go('t3Bal'); else if(k==='hl') go('pConf'); else if(k==='vs') go('stall');
 };
 // test-krok (brukes av automatiske skjermbildetester og ?shot)
