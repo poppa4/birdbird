@@ -102,7 +102,7 @@ function drawFan(g,b,M,ph){ const G=geo(b), pw=M.frac??0.5, sm=ST.w<640;
   /* combustor glow */
   glow(g,G,0.51,0.24,pw);
   /* labels */
-  if(!S.stnTags){ const yl=G.Yt(1.0)-12;
+  if(!S.stnTags){ const yl=Math.max(b[1]+11,G.Yt(1.0)-12);
     lab(g,G.X(0.13),yl,L(t2('Fan · N1','Fan · N1')),C.lp); if(!sm){ lab(g,G.X(0.34),G.Yt(0.62),L(t2('bypass air','omløpsluft')),'#BFE3F5'); }
     lab(g,G.X(0.35),G.Yb(0.62),L(t2('Compressor · N2','Kompressor · N2')),C.hp); lab(g,G.X(0.51),G.Yb(0.88)+2,L(t2('Combustor','Brennkammer')),C.amb);
     lab(g,G.X(0.68),G.Yb(0.62),L(t2('Turbines','Turbiner')),'#F2B8A8'); if(!sm) lab(g,G.X(0.9),G.Yt(0.5),L(t2('Nozzle','Dyse')),C.mut); }

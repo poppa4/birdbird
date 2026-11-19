@@ -70,7 +70,7 @@ const sty=document.createElement('style'); sty.textContent=css; document.head.ap
 const L=o=>window.LAB?LAB.L(o):o.en;
 /* the card shows one short sentence; the rest goes under "More". A first sentence over about 26 words is cut at its first semicolon. */
 const split=s=>{ const i=s.search(/\.\s/); let a=i>0&&i<s.length-2?s.slice(0,i+1):s, b=i>0&&i<s.length-2?s.slice(i+2):'';
-  if(a.replace(/<[^>]+>/g,'').split(/\s+/).length>26){ const j=a.indexOf('; '); if(j>20){ const r=a.slice(j+2); b=r.charAt(0).toUpperCase()+r.slice(1)+(b?' '+b:''); a=a.slice(0,j)+'.'; } }
+  if(a.replace(/<[^>]+>/g,'').split(/\s+/).length>26){ const j=a.indexOf('; '); if(j>20){ const r=a.slice(j+2); b=r.replace(/^((?:<[^>]+>)*)(\S)/,(m,t,c)=>t+c.toUpperCase())+(b?' '+b:''); a=a.slice(0,j)+'.'; } }
   return [a,b]; };
 /* SVG helpers (same vocabulary as the tunnel's illustrations) */
 const sv=b=>`<svg viewBox="0 0 200 64" aria-hidden="true">${b}</svg>`;
