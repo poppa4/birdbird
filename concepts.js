@@ -59,6 +59,12 @@ const css=`
 .kc-spot.in{animation:kcspot .22s ease-out 1}
 @media (max-width:640px){.kc-spot{padding:8px 8px 8px 10px;gap:8px}.kc-spot b.t{font-size:15px}.kc-spot p{font-size:13.5px}}
 @media (prefers-reduced-motion:reduce){.kc-spot.in{animation:none}}
+/* the ring a card puts round its item in the model (a label the model itself drew) */
+.kc-ring{position:absolute;z-index:40;box-sizing:border-box;pointer-events:none;border:2px solid #FFD666;border-radius:9px;box-shadow:0 0 0 3px rgba(255,214,102,.28),0 0 14px 2px rgba(255,214,102,.45)}
+.kc-ring[hidden]{display:none}
+@keyframes kcring{0%,100%{box-shadow:0 0 0 3px rgba(255,214,102,.28),0 0 14px 2px rgba(255,214,102,.45)}50%{box-shadow:0 0 0 7px rgba(255,214,102,.14),0 0 22px 4px rgba(255,214,102,.6)}}
+.kc-ring{animation:kcring 1.6s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.kc-ring{animation:none}}
 `;
 const sty=document.createElement('style'); sty.textContent=css; document.head.appendChild(sty);
 const L=o=>window.LAB?LAB.L(o):o.en;
@@ -80,7 +86,7 @@ function render(grid,items){
   const m=/^#kc-([\w-]+)$/.exec(location.hash); if(m){ const go=()=>{ const b=grid.querySelector(`.kgo[data-k="${m[1]}"]`); if(b) b.click(); }; setTimeout(go,400); }
   grid.addEventListener('click',e=>{ const b=e.target.closest('.kgo'); if(!b) return; const it=items.find(x=>x.k===b.dataset.k); if(!it) return;
     if(typeof it.click==='function') it.click(); else if(it.click){ const c=document.querySelector(it.click); if(c) c.click(); }
-    const t=it.to?document.querySelector(it.to):null; { const sx=it.see||seeOf(it.k); spot(b.closest('.kc'),t?(t.closest('.view')||t):null,sx?L(sx):''); } if(!t) return;
+    const t=it.to?document.querySelector(it.to):null; { const sx=it.see||seeOf(it.k); spot(b.closest('.kc'),t?(t.closest('.view')||t):null,sx?L(sx):'',it); } if(!t) return;
     const tg=t.closest('.view')||t; tg.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:tg.getBoundingClientRect().height>innerHeight-120?'start':'center'}); /* a model taller than the screen: show its top (tabs) below the sticky step bar */
     tg.classList.remove('kc-flash'); void tg.offsetWidth; tg.classList.add('kc-flash'); });
 }
@@ -154,13 +160,85 @@ const SEE={
 };
 const PAGE=(location.pathname.split('/').pop()||'').replace(/\.html$/,'');
 const seeOf=(k)=>{ const m=SEE[PAGE]; return m&&m[k]?m[k]:null; };
-let spotEl=null, spotIO=null, spotT=0;
-function spotHide(){ if(spotEl) spotEl.hidden=true; if(spotIO){ spotIO.disconnect(); spotIO=null; } clearTimeout(spotT); }
+/* ---- In-model highlight ------------------------------------------------------------------------------------
+   Every lab model draws its own labels on a canvas. We note where each label lands (a light wrapper round
+   fillText), so a card can ring "its" label in the model without the model knowing about cards: the ring follows
+   redraws, the language and the screen size, because it always uses the position the model drew last.
+   RING[page][cardKey] = the English label, or a list of up to four (the start of the label text; numbers after it may change).
+   Where the Norwegian label is not a straight translation, give {en:'…',no:'…'}. A card may instead carry ring:'label' or ring:[...]. No entry = no ring: the caption alone tells the reader what to look at. */
+const REC=new WeakMap(); let FRAME=0;
+(function tick(){ FRAME++; if(typeof requestAnimationFrame==='function') requestAnimationFrame(tick); })();
+if(typeof CanvasRenderingContext2D!=='undefined'&&!CanvasRenderingContext2D.prototype.__kc){
+  const P=CanvasRenderingContext2D.prototype, ft=P.fillText, cr=P.clearRect; P.__kc=true;
+  P.fillText=function(str,x,y,mw){ try{ const c=this.canvas; if(c&&c.width&&typeof str==='string'&&str.trim().length&&str.length<80&&this.globalAlpha>0.2&&!(typeof this.fillStyle==='string'&&/^rgba\(.*,\s*0?\.[01]\d*\)$/.test(this.fillStyle))){
+      let r=REC.get(c); if(!r){ r={f:FRAME,items:[]}; REC.set(c,r); } else if(r.f!==FRAME){ if(FRAME-r.f>1||r.cleared){ /* a later frame: start again */ } r.f=FRAME; r.items=r.items.slice(-400); }
+      const m=this.getTransform(), w=this.measureText(str).width, fs=parseFloat((/([\d.]+)px/.exec(this.font)||[0,12])[1]), al=this.textAlign, bl=this.textBaseline;
+      const x0=al==='center'?x-w/2:(al==='right'||al==='end')?x-w:x, y0=bl==='middle'?y-fs*.55:bl==='top'||bl==='hanging'?y:bl==='bottom'?y-fs:y-fs*.82;
+      const X=m.a*x0+m.c*y0+m.e, Y=m.b*x0+m.d*y0+m.f, Wd=Math.hypot(m.a,m.b)*w, Ht=Math.hypot(m.c,m.d)*fs;
+      r.items.push({t:str,x:X,y:Y,w:Wd,h:Ht,f:FRAME}); } }catch(e){}
+    return mw===undefined?ft.call(this,str,x,y):ft.call(this,str,x,y,mw); };
+  /* a model that paints its labels on an off-screen layer and then copies the layer in: the labels come along */
+  const di=P.drawImage; P.drawImage=function(img){ try{ const src=img&&img.tagName==='CANVAS'||(typeof OffscreenCanvas!=='undefined'&&img instanceof OffscreenCanvas)?REC.get(img):null;
+      if(src&&src.items.length){ const c=this.canvas, A=arguments, m=this.getTransform(); let sx=0,sy=0,sw=img.width,sh=img.height,dx=A[1],dy=A[2],dw=img.width,dh=img.height;
+        if(A.length>=9){ sx=A[1]; sy=A[2]; sw=A[3]; sh=A[4]; dx=A[5]; dy=A[6]; dw=A[7]; dh=A[8]; } else if(A.length>=5){ dw=A[3]; dh=A[4]; }
+        let r=REC.get(c); if(!r){ r={f:FRAME,items:[]}; REC.set(c,r); } r.f=FRAME; const kx=dw/sw, ky=dh/sh;
+        src.items.slice(-300).forEach(it=>{ const ux=dx+(it.x-sx)*kx, uy=dy+(it.y-sy)*ky; r.items.push({t:it.t,x:m.a*ux+m.c*uy+m.e,y:m.b*ux+m.d*uy+m.f,w:it.w*kx*Math.hypot(m.a,m.b),h:it.h*ky*Math.hypot(m.c,m.d),f:FRAME}); });
+        if(r.items.length>900) r.items=r.items.slice(-600); } }catch(e){}
+    return di.apply(this,arguments); };
+  P.clearRect=function(x,y,w,h){ try{ const c=this.canvas, r=REC.get(c); if(r&&w*h>=c.width*c.height*.2) r.items=[]; }catch(e){} return cr.call(this,x,y,w,h); };
+}
+const canvasesOf=t=>!t?[]:t.tagName==='CANVAS'?[t]:[...t.querySelectorAll('canvas')].filter(c=>c.offsetParent!==null);
+/* the labels a model shows right now (also used by the mapping tool): canvas text, and short DOM labels inside the model */
+const cssk=c=>c.clientWidth/c.width;
+const domLabels=t=>{ if(!t||t.tagName==='CANVAS') return []; const out=[]; t.querySelectorAll('*').forEach(e=>{ if(e.children.length||e.offsetParent===null) return; if(e.closest('.xpanel,.kcgrid,.tstep,.tryblk,.cpic,details.kfull,.vtabs,.vbar,[role=tablist],.kc-spot')) return; const tx=(e.textContent||'').trim(); if(tx.length<1||tx.length>48) return; out.push(e); }); return out; };
+function labels(target){ const out=[]; canvasesOf(target).forEach((c,ci)=>{ const r=REC.get(c); if(!r||!r.items.length) return; const k=cssk(c), seen=new Map(), newest=r.items[r.items.length-1].f; r.items.forEach(it=>{ if(it.f<newest-2) return; seen.set(it.t+'|'+Math.round(it.x/8)+'|'+Math.round(it.y/8),it); }); seen.forEach(it=>out.push({c:ci,t:it.t,x:Math.round(it.x*k),y:Math.round(it.y*k)})); });
+  const tb=target&&target.getBoundingClientRect?target.getBoundingClientRect():{left:0,top:0}; domLabels(target).forEach(e=>{ const b=e.getBoundingClientRect(); out.push({c:'dom',t:e.textContent.trim(),x:Math.round(b.left-tb.left),y:Math.round(b.top-tb.top)}); }); return out; }
+const norm=t=>String(t).replace(/\s+/g,' ').trim().toLowerCase();
+/* a pattern hits a label when the label is that text or starts with it; a one- or two-letter name (L, W, CG) must be followed by a number */
+const hits=(t,p)=>t===p||(p.length<=2?new RegExp('^'+p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+' [\\d+\\-−.]').test(t):(t.startsWith(p+' ')||t.startsWith(p+':')||(p.length>=4&&t.startsWith(p))));
+/* RING holds the English label. In Norwegian the page has itself translated that label through LAB.L / LAB.T, so we note
+   every translation it makes and look the pattern up there: no second list to keep in step. */
+const TR=new Map();
+if(window.LAB&&!LAB.__kc){ LAB.__kc=true; const oL=LAB.L, oT=LAB.T;
+  const note=(no,en)=>{ if(typeof no==='string'&&typeof en==='string'&&no!==en&&no.length<90&&TR.size<6000) TR.set(norm0(no),en); };
+  LAB.L=function(o){ const r=oL.apply(this,arguments); try{ if(o&&typeof o==='object'&&'en' in o) note(o.no,o.en); else if(typeof o==='string'&&r!==o) note(r,o); }catch(e){} return r; };
+  if(typeof oT==='function') LAB.T=function(x){ const r=oT.apply(this,arguments); try{ if(typeof x==='string'&&r!==x) note(r,x); }catch(e){} return r; }; }
+function norm0(t){ return String(t).replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim().toLowerCase(); }
+const stem=t=>{ const m=/^[^\d]*/.exec(t), x=(m?m[0]:t).replace(/[\s·:=+−-]+$/,''); return x.length?x:t; };
+const altCache=new Map();
+function alts(pat){ const p=norm(pat), key=p+'|'+TR.size; if(altCache.has(key)) return altCache.get(key); const out=[p];
+  TR.forEach((en,no)=>{ const e=norm0(en); if(e===p) out.push(no); else if(p.length>2&&hits(e,p)){ const st=norm(stem(no)); if(st.length>=3) out.push(st); } });
+  altCache.clear(); altCache.set(key,out); return out; }
+function findLabel(target,pat){ if(!pat) return null; const ps=alts(pat), hit=t=>ps.some(p=>hits(t,p)), exact=t=>ps.includes(t); let best=null;
+  for(const c of canvasesOf(target)){ const r=REC.get(c); if(!r||!r.items.length) continue; const k=cssk(c), newest=r.items[r.items.length-1].f; for(let i=r.items.length-1;i>=0;i--){ const it=r.items[i], t=norm(it.t); if(it.f<newest-2) break;
+      if(hit(t)){ const ex=exact(t); if(!best||it.f>best.f||(it.f===best.f&&ex&&!best.ex)){ best={f:it.f,ex,box:()=>{ const bb=c.getBoundingClientRect(), o={x:bb.left+it.x*k,y:bb.top+it.y*k,w:it.w*k,h:it.h*k}; const cx=o.x+o.w/2, cy=o.y+o.h/2; if(cx>0&&cy>0&&cx<innerWidth&&cy<innerHeight){ const top=document.elementFromPoint(cx,cy); if(top&&top!==c&&!top.contains(c)&&!(top.closest&&top.closest('.kc-spot'))) return null; }
+          /* nothing readable where the label should be (painted over, or drawn transparent): no ring round an empty spot */
+          if(it.v===undefined||FRAME-it.vf>20){ it.vf=FRAME; it.v=true; try{ const g2=c.getContext('2d'); if(g2){ const w=Math.max(4,Math.min(260,Math.round(it.w))), h=Math.max(4,Math.min(40,Math.round(it.h))), d=g2.getImageData(Math.max(0,Math.round(it.x)),Math.max(0,Math.round(it.y)),w,h).data; let lo=765, hi=0; for(let q=0;q<d.length;q+=16){ const v=d[q]+d[q+1]+d[q+2]; if(v<lo) lo=v; if(v>hi) hi=v; } it.v=hi-lo>110; } }catch(e){} }
+          if(!it.v) return null; return o; }}; } if(ex) break; } } }
+  if(best) return best;
+  for(const e of domLabels(target)){ const t=norm(e.textContent); if(hit(t)) return {f:0,ex:exact(t),box:()=>{ const b=e.getBoundingClientRect(); return {x:b.left,y:b.top,w:b.width,h:b.height}; }}; }
+  return null; }
+let ringEls=[], ringOn=null, ringRaf=0;
+function ringStop(){ ringOn=null; ringEls.forEach(e=>{ e.hidden=true; }); if(ringRaf){ cancelAnimationFrame(ringRaf); ringRaf=0; } }
+function ringLoop(){ ringRaf=0; if(!ringOn) return;
+  ringOn.pats.forEach((pat,i)=>{ let el=ringEls[i]; if(!el){ el=ringEls[i]=document.createElement('div'); el.className='kc-ring'; el.setAttribute('aria-hidden','true'); document.body.appendChild(el); }
+    const hit=findLabel(ringOn.target,pat);
+    const it=hit?hit.box():null; if(it){ const pad=7; el.hidden=false; el.style.left=(scrollX+it.x-pad)+'px'; el.style.top=(scrollY+it.y-pad)+'px'; el.style.width=(Math.max(it.w,10)+pad*2)+'px'; el.style.height=(Math.max(it.h,10)+pad*2)+'px'; }
+    else el.hidden=true; });
+  for(let i=ringOn.pats.length;i<ringEls.length;i++) ringEls[i].hidden=true;
+  ringRaf=requestAnimationFrame(ringLoop); }
+/* ring(target, pattern or [patterns]): ring those labels in the model until ringStop() */
+function ring(target,pat){ ringStop(); if(!target||!pat) return; ringOn={target,pats:(Array.isArray(pat)?pat:[pat]).slice(0,4)}; ringRaf=requestAnimationFrame(ringLoop); }
+const RING=/*RING*/{"forces":{"lift":"L","weight":"W","td":["T","D"],"steady":"closed: steady","climb":"W·sin γ","vxvy":"Vx","desc":"γ","glide":["L","D"],"gwind":"γ","dcurve":"total drag","turn":"n =","rate1":"r","vsturn":"n ="},"stability":{"static":"α after the gust","cg":"CG","mac":["leading edge","trailing edge"],"tail":"Tail down-force","np":"neutral point","fwd":"forward limit","aft":"aft limit","vn":"VA","gust":"VB","advyaw":"nose yaws","aerobal":"hinge","tabs":"stick force","flutter":"surface CG ahead","law":"THS"},"propeller":{"wing":"relative wind","blade":["β","α"],"fpcs":"β","wm":"α","feather":"β","pf":"↓ descending blade","crit":"DEAD","past":"arm","vmca":"VMCA","dead":"DEAD"},"highspeed":{"drag":"Vmd","stab":"back side","mach":"Mach held","xover":"crossover","mcrit":"Mcrit","shock":"shock wave","sweep":"V cos Λ","tuck":"Mach tuck","buffet":["← low-speed buffet","high-speed buffet"],"coffin":"Coffin corner","upset":"out of stall"},"pressure":{"hpa":"Probe","height":"indicated","hl":["L","H"],"grad":"Pressure gradient","cor":"Coriolis","geo":"wind","fr":"Friction","bb":"low on your left","q":["indicated","true"],"sea":"sea breeze","valley":"Sun-warmed slopes","foehn":"rotor"},"clouds":{"elr":"air around","dalr":{"en":"— dry adiabats","no":"— tørradiabater"},"salr":{"en":"— saturated adiabats","no":"— fuktigadiabater"},"stab":"stable","cond":"conditionally unstable","inv":"air around","dew":"dew point","base":"base","lifts":"parcel","forms":["CU","ST"],"lev":["CI","AC","ST"],"cb":"CB","prec":"NS","radfog":"sunrise","advfog":"warm, moist air","vis":"Visibility"},"fronts":{"am":"warm air","mc":"warm air","wf":"FRONT","cf":"FRONT","oc":"FRONT","sl":"FRONT","pf":"L","ws":"warm sector","jet":"jet core","fz":"below cloud"},"storms":{"ing":"CB ·","cu":"Cumulus humilis","tcu":"TCU","cb":"Cumulonimbus","ud":"Downdraft","hail":"HAIL","gf":"GUST FRONT","mb":"MICROBURST","ws":"headwind","wx":"Radar beam","emb":"CB ·"},"hazards":{"scw":"0 °C","band":["0 °C","−20 °C"],"rime":"Rime ice","clear":"Clear ice","sld":"freezing rain","where":"ice protection","aero":"stalls before","ttypes":["CAT","rotor"],"wave":["lenticular","rotor"],"cat":"CAT"},"wxreports":{"metar":"METAR","wind":"Wind","wx":"Present weather","cloud":"Cloud","cavok":"CAVOK","trend":"NOSIG","speci":"SPECI","taf":"TAF","chg":"TEMPO","wt":"Wind and temperature","cat":"SVFR"},"gennav":{"tmc":"HDG","var":"HDG","ht":["HDG","TRK"],"dr":"drift","gs":["TAS","GS"],"sixty":"TE","gc":["great circle","rhumb line"],"proj":"rhumb line","conv":"standard parallels","pet":["PET","PNR"]},"radionav":{"wt":"WIND","dme":"slant","ils":"LOC","psr":"PSR","ssr":"SSR","sq":"7700","adsb":"ADS-B"},"gnss":{"sbas":"EGNOS","min":"DA","jam":"Jammed","raim":"LOI"},"holding":{"anat":"FLS ·","sec":["TEARDROP","PARALLEL","DIRECT"],"wind":"WIND","segs":["Initial","Intermediate","Final"],"ils":"3° glide slope","rod":"3° glide slope","min":"DA","cdfa":"3° CDFA","ma":"Missed"},"airdata":{"press":"static port","isa":"ISA","baro":"ALTIMETER","set":"ALTIMETER","ta":"FL 080","hilo":"ALTIMETER","cold":"ALTIMETER","spd":"FROM IAS TO TAS","da":"÷ √(density ratio)","mach":"MACH","vsi":"VSI","pit":"Real IAS","stat":"static port","alts":"static port","uas":"Real IAS"},"gyros":{"tvmc":"MAGNETIC","dip":"dip","ands":"acceleration","turn":"COMPASS SHOWS","rig":"spin axis","prec":["you push here","it moves here"],"drift":"HEADING INDICATOR DRIFT","three":"ATTITUDE","vac":"ATTITUDE","glass":"AHRS 1","rlg":"POSITION ERRO","align":"ALIGNMENT"},"autoflight":{"ga":"AP","fma":"SPEED","pair":"THR CLB","rev":"V/S","lev":"A/THR","tau":"TA","ra":"RA","gpws":"SINK RATE","la":"TERRAIN DISPL"},"engines":{"four":"crankshaft","gt":["Compressor","Combustor","Turbine"],"tp":"Power turbine","mix":"EGT","cs":["MAP","RPM"],"beta":"Propeller","gauges":"N1","lapse":"Max power or thrust","flat":"flat-rating corner","start":"START"},"jetsystems":{"src":["GEN 1","AC BUS 1"],"dcac":"28 V DC","mag":["ALT 1","ALT 2"],"par":"AC ESS","emer":["RAT","EMER GEN"],"ptu":"PTU","fuel":"X-FEED","fc":"NORMAL LAW","gear":"free fall","brk":"ANTI-SKID"},"pressurisation":{"cab":"cabin","ovf":["PACK","outflow valve"],"ldg":"cabin controller","rel":"safety and negative","rate":"cabin","dec":"window lost","tuc":"Critical","oxy":"passenger O₂","rule":"10 000"},"flightplanning":{"vxvy":["Vx","Vy"],"range":["best range","best endurance"],"wind":"best range","high":"best range","stack":["Taxi","Trip","Contingency"],"frf":"Final reserve","nco":"Trip"},"orientation":{"eyes":["REAL","FELT"],"canal":"canal signal","oto":"go-around pow","leans":"≠","spiral":"≠","soma":"go-around pow","cor":"canal signal","rwy":"what your eye","bh":"what your eye","cure":"REAL"},"humanperf":{"att":"DEMAND ON YOU","wl":"DEMAND ON YOU","startle":"startle","fat":"WOCL","alc":"Like blood alcohol"},"performance":{"s-vs0":"VS0","s-vs1":"VS1","s-vsr":"VSR","s-vmcg":"VMCG","s-vmca":"VMCA","s-vmu":"VMU","s-vef":"VEF","s-v1":"V1","s-vr":"VR","s-vlof":"VLOF","s-v2":"V2","s-vfto":"VFTO","s-vx":"VX","s-vy":"VY","s-va":"VA","s-vfe":"VFE","s-vlo":"VLO","s-vle":"VLE","s-vno":"VNO","s-vne":"VNE","s-vmo":"VMO","s-vref":"VREF","s-vapp":"VAPP","dist":["TORA","ASDA","TODA"],"v1":"V1","climb":"net path","land":"LDA"}}/*RING*/;
+const ringOf=(k,it)=>{ const r=(it&&it.ring)||(RING[PAGE]&&RING[PAGE][k])||null; return r&&!Array.isArray(r)&&typeof r==='object'?L(r):r; };
+let spotEl=null, spotIO=null, spotT=0, lastSpot=null;
+function spotHide(){ ringStop(); if(spotEl) spotEl.hidden=true; if(spotIO){ spotIO.disconnect(); spotIO=null; } clearTimeout(spotT); }
 function spotPlace(){ if(!spotEl||spotEl.hidden) return; const bar=document.querySelector('.atl-bar'), main=document.querySelector('.atl-main')||document.body;
   const br=bar?bar.getBoundingClientRect():{bottom:0}, mr=main.getBoundingClientRect(), w=Math.min(mr.width,860);
   spotEl.style.top=Math.max(8,Math.min(br.bottom,120))+8+'px'; spotEl.style.left=Math.max(8,mr.left)+'px'; spotEl.style.width=Math.min(w,innerWidth-16)+'px'; }
 /* KCS.spot(cardEl, targetEl, html): show the caption for this card while its place in the model is on screen */
-function spot(card,target,html){ if(!card) return;
+function spot(card,target,html,item){ if(!card) return;
+  { const bt=card.querySelector('.kgo'), k=bt&&bt.dataset?bt.dataset.k:null; lastSpot={k,target}; const rt=target&&!canvasesOf(target).length?(target.closest('.xvp,.view,.viewport,section')||target):target; ring(rt,ringOf(k,item)); }
   if(!spotEl){ spotEl=document.createElement('div'); spotEl.className='kc-spot'; spotEl.setAttribute('role','status'); document.body.appendChild(spotEl);
     spotEl.addEventListener('click',e=>{ if(e.target.closest('.x')) spotHide(); }); addEventListener('resize',spotPlace); document.addEventListener('keydown',e=>{ if(e.key==='Escape') spotHide(); }); }
   const grid=card.closest('.kcgrid'), vis=grid?[...grid.querySelectorAll('.kc')].filter(c=>c.offsetParent!==null):[card], n=Math.max(1,vis.indexOf(card)+1);
@@ -178,5 +256,5 @@ function ladder(grid){ if(!grid||grid.previousElementSibling&&grid.previousEleme
   const p=document.createElement('p'); p.className='kladder'; grid.before(p); const w=()=>{ p.innerHTML=L(LADDER); }; w(); if(window.LAB) LAB.onLang(w); }
 /* KCS.order(items, keys): the same cards in ladder order (keys first, in that order; any others keep their place after). */
 const order=(items,keys)=>{ const by=k=>{ const i=keys.indexOf(k); return i<0?keys.length:i; }; return items.map((it,i)=>[it,i]).sort((a,b)=>by(a[0].k)-by(b[0].k)||a[1]-b[1]).map(x=>x[0]); };
-window.KCS={render,sv,tx,ar,ladder,LADDER,order,spot,spotHide,SEE};
+window.KCS={render,sv,tx,ar,ladder,LADDER,order,spot,spotHide,SEE,RING,labels,ring,ringStop,get last(){ return lastSpot; }};
 })();
