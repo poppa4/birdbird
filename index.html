@@ -29,7 +29,7 @@
 .fp h3{font-size:clamp(22px,1.9vw,27px);line-height:1.12;color:var(--navy)}
 .fp p{margin:0}
 .fp a{color:inherit}
-.fp .tl{color:var(--acc);font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+.fp .tl{color:var(--navy);font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:color-mix(in srgb,var(--navy) 45%,transparent)}
 .fp .tl:hover{text-decoration-color:currentColor;text-decoration-thickness:2px}
 .fp .code{font-family:var(--mono);font-size:.82em;font-weight:500;letter-spacing:0}
 .fp .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -501,6 +501,63 @@
   .fs-stages button{min-height:44px}
   .fp .txt>.tl,.fp .foot>.tl,.fp-model>.tl,.fp-maker>.tl,.fp .sm-all{display:inline-flex;align-items:center;min-height:44px}
 }
+
+/* ---------- tidy lower half: three tiles, a reference band, the numbers ---------- */
+.fx-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px}
+.fx-tiles a{position:relative;display:block;aspect-ratio:4/3;overflow:hidden;background:var(--navy);text-decoration:none;color:#fff}
+.fx-tiles img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
+.fx-tiles a:hover img{transform:scale(1.03)}
+.fx-tiles a::after{content:'';position:absolute;inset:30% 0 0 0;background:linear-gradient(180deg,rgba(7,22,42,0),rgba(7,22,42,.94) 74%)}
+.fx-tiles a>span{position:absolute;z-index:1;left:26px;right:22px;bottom:22px}
+.fx-tiles b{display:block;font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.fx-tiles i{display:block;margin-top:6px;font-style:normal;font-size:15.5px;line-height:1.45;color:#DCE4EC}
+.fx-chev::after{content:'';display:inline-block;width:.46em;height:.46em;margin-left:.6em;border-right:2px solid currentColor;border-top:2px solid currentColor;transform:rotate(45deg) translateY(-.08em)}
+.fx-credit{margin-top:12px!important;font-size:12.5px;color:var(--ink-3)}
+.fx-ref{background:#3A4654;color:#fff;margin-top:104px;padding-top:52px;padding-bottom:52px}
+.fp .fx-ref h2,.fp .fx-num h2,.fp .fx-side h2{color:#fff;font-size:clamp(26px,2.4vw,34px)}
+.fx-ref h2{margin-bottom:26px!important}
+.fp .fx-ref ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px 40px}
+.fx-ref li,.fx-side li{display:flex;align-items:baseline;gap:12px}
+.fx-ref li::before,.fx-side li::before{content:'';flex:0 0 auto;width:6px;height:6px;border-right:1.5px solid #fff;border-top:1.5px solid #fff;transform:rotate(45deg) translateY(-2px)}
+.fx-ref a,.fx-side a{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.fx-ref a:hover,.fx-side a:hover{text-decoration-thickness:2px}
+.fx-ref a:focus-visible,.fx-side a:focus-visible,.fx-side button:focus-visible{outline-color:#fff}
+.fx-model{margin-top:30px!important;padding-top:22px;border-top:1px solid rgba(255,255,255,.2);font-size:15px;color:#D3DBE4;max-width:84ch}
+.fx-band{position:relative;margin-top:72px}
+.fx-band::before{content:'';position:absolute;left:0;right:0;top:64px;bottom:0;background:#3A4654}
+.fx-grid{display:grid;grid-template-columns:minmax(0,13fr) minmax(0,8fr);gap:0 64px;align-items:start;padding-bottom:64px}
+.fx-num{background:var(--navy);color:#fff;padding:44px 48px 52px}
+.fx-num h2{margin-bottom:36px!important}
+.fx-num dl{margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px 24px;text-align:center}
+.fx-num dl div{display:flex;flex-direction:column-reverse;align-items:center}
+.fx-num dd{margin:0;font-family:var(--disp);font-stretch:92%;font-weight:300;font-size:54px;line-height:1;padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.55);min-width:2.2em}
+.fx-num dt{margin-top:12px;font-size:15px;line-height:1.4;color:#E3E9F0}
+.fx-side{color:#fff;padding-top:116px}
+.fx-side h2{margin-bottom:16px!important}
+.fx-side p{font-size:16px;line-height:1.6;color:#D3DBE4;margin-bottom:22px!important}
+.fp .fx-side ul{list-style:none;margin:0 0 26px;padding:0}
+.fx-side li{margin-bottom:12px}
+.fx-btn{display:inline-flex;align-items:center;min-height:48px;padding:0 24px;font:inherit;font-size:16px;font-weight:600;background:#fff;color:var(--navy);border:1px solid #fff;border-radius:2px;cursor:pointer}
+.fx-btn:hover{background:#E4EAF1}
+@media (max-width:900px){
+  .fx-tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  .fx-tiles a:last-child{grid-column:1/-1;aspect-ratio:16/9}
+  .fx-ref{margin-top:72px}
+  .fp .fx-ref ul{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fx-band{margin-top:0}
+  .fx-band::before{top:0}
+  .fx-grid{grid-template-columns:minmax(0,1fr);padding-top:0;padding-bottom:48px}
+  .fx-num{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));padding:44px var(--gr,24px) 48px var(--gl,24px)}
+  .fx-side{padding-top:44px}
+}
+@media (max-width:640px){
+  .fx-tiles{grid-template-columns:minmax(0,1fr)}
+  .fx-tiles a,.fx-tiles a:last-child{aspect-ratio:16/10}
+  .fp .fx-ref ul{grid-template-columns:minmax(0,1fr)}
+  .fx-num dl{grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 16px}
+  .fx-num dd{font-size:42px}
+}
+@media (prefers-reduced-motion:reduce){.fx-tiles img{transition:none}}
 </style>
 </head>
 <body data-home="1" data-title="NORDAP · Nordic Aviation Platform">
@@ -690,101 +747,64 @@
     </div>
   </section>
 
-  <!-- 3. From theory to the flight deck -->
+  <!-- 3. From theory to the flight deck: three tiles -->
   <section class="fp-sec" id="flightdeck" aria-labelledby="h-fd">
     <div class="fp-wrap">
       <header class="fp-head">
         <h2 id="h-fd" data-tx="h2b">From theory to the flight deck</h2>
-        <p data-tx="p2b">One route, Oslo Gardermoen to Stockholm Arlanda, followed from the map to the printed pack. Flight Intelligence answers the questions along the way.</p>
+        <p data-tx="p2b">Draw the route, build the briefing pack and check the rules before you fly.</p>
       </header>
-
-      <div class="fp-row">
-        <figure class="fp-fig">
-          <div class="shot shot-169"><img src="img/front/route-sat-1400.webp" srcset="img/front/route-sat-700.webp 700w, img/front/route-sat-1400.webp 1400w" sizes="(max-width:980px) 100vw, 700px" width="1400" height="788" loading="lazy" decoding="async"
-            alt="Route Explorer in 3D, seen from the side and close to the terrain: a route drawn in magenta over mountains on satellite imagery." data-alt-no="Route Explorer i 3D, sett fra siden og tett på terrenget: en rute tegnet i magenta over fjell på satellittbilder."></div>
-          <figcaption data-tx="capRt"><b>Route Explorer, 3D:</b> a route drawn over the terrain on satellite imagery, terrain 1.5× exaggerated, satellite imagery © Esri, Maxar, Earthstar Geographics</figcaption>
-        </figure>
-        <div class="txt">
-          <h3>Route Explorer</h3>
-          <p data-tx="rt">Draw the route on a VFR map in 2D or 3D, with airspace, airports and navaids, and read the terrain under it. The profile is computed from public elevation data.</p>
-          <dl class="fp-facts">
-            <dt data-tx="f1">Route</dt><dd>ENGM → ESSA</dd>
-            <dt data-tx="f2">Distance</dt><dd data-tx="d2">207.8 NM</dd>
-            <dt data-tx="f3">Highest terrain within 4.3 NM</dt><dd data-tx="d3">2,756 ft</dd>
-            <dt data-tx="f4">Highest point under the track</dt><dd data-tx="d4">1,376 ft</dd>
-          </dl>
-          <a class="tl" href="route.html" data-tx="goRt">Open Route Explorer</a>
-        </div>
+      <div class="fx-tiles">
+        <a href="route.html"><img src="img/front/route-sat-1400.webp" srcset="img/front/route-sat-700.webp 700w, img/front/route-sat-1400.webp 1400w" sizes="(max-width:640px) 100vw, (max-width:900px) 50vw, 400px" width="1400" height="788" loading="lazy" decoding="async" alt="">
+          <span><b><span class="fx-chev">Route Explorer</span></b><i data-tx="tRt">Draw the route in 2D or 3D and read the terrain under it.</i></span></a>
+        <a href="prep.html"><img src="img/front/briefing-1120.webp" srcset="img/front/briefing-560.webp 560w, img/front/briefing-1120.webp 1120w" sizes="(max-width:640px) 100vw, (max-width:900px) 50vw, 400px" width="1120" height="1252" loading="lazy" decoding="async" alt="" style="object-position:50% 0">
+          <span><b><span class="fx-chev" data-tx="h3bp">Briefing pack</span></b><i data-tx="tBp">NOTAM, weather, minima, performance and fuel, printed as a booklet.</i></span></a>
+        <a href="fi.html"><img src="img/cockpits/a320-deck.jpg" width="1024" height="683" loading="lazy" decoding="async" alt="" style="object-position:50% 55%">
+          <span><b><span class="fx-chev">Flight Intelligence</span></b><i data-tx="tFi">Answers from the EASA rules and your own AFM, QRH and SOP.</i></span></a>
       </div>
-
-      <div class="fp-row flip">
-        <figure class="fp-fig fig-bp">
-          <div class="shot"><img src="img/front/briefing-1120.webp" srcset="img/front/briefing-560.webp 560w, img/front/briefing-1120.webp 1120w" sizes="(max-width:980px) 100vw, 560px" width="1120" height="1252" loading="lazy" decoding="async"
-            alt="The cover of an IFR briefing pack, ENGM to ESSA, with fields for pilot, aircraft and alternates, a contents list of the pack's twelve pages and signature lines." data-alt-no="Forsiden av en IFR-briefingpakke, ENGM til ESSA, med felt for pilot, fly og alternativer, en innholdsliste over pakkens tolv sider og signaturlinjer."></div>
-          <figcaption data-tx="capBp"><b>Briefing pack, cover page.</b> An IFR training flight, ENGM to ESSA: the contents follow the fixed order of the pack, and the cover is signed by pilot and instructor.</figcaption>
-        </figure>
-        <div class="txt">
-          <h3 data-tx="h3bp">Briefing pack</h3>
-          <p data-tx="bp">One pack per flight, in a fixed order: aircraft, NOTAM, weather, minima, profile, performance, fuel, mass and balance, radio failure and the flight plan. VFR or IFR. Add or remove pages as you need, then print it as a booklet.</p>
-          <a class="tl" href="prep.html" data-tx="goBp">Make a briefing pack</a>
-        </div>
-      </div>
-
-      <div class="fp-row">
-        <div class="fp-ex" role="group" aria-labelledby="exq">
-          <p class="who" data-tx="exWho">Example answer, from illustrative documents</p>
-          <p class="q" id="exq" data-tx="exQ">What is the maximum crosswind for landing?</p>
-          <div class="a">
-            <p data-tx="exA1">The maximum demonstrated crosswind is 25 kt.<cite>AFM 2.10, p. 2-14</cite></p>
-            <p data-tx="exA2">It is a demonstrated value, not a limitation. Your SOP may set a lower one.<cite>SOP 4.3, p. 4-7</cite></p>
-          </div>
-          <p class="note" data-tx="exNote">Rules questions cite NORDAP’s EASA rules library: Easy Access Rules for Air Operations, Revision 24, March 2026.</p>
-        </div>
-        <div class="txt">
-          <h3>Flight Intelligence</h3>
-          <p data-tx="fi">An instructor that answers from your own AFM, QRH and SOP and from the EASA rules, and shows the passage each answer is built on. Use it to learn, to practise an oral or to work through a scenario. The documents you add are read and stored in your browser.</p>
-          <a class="tl" href="fi.html" data-tx="goFi">Ask Flight Intelligence</a>
-        </div>
-      </div>
+      <p class="fx-credit">Satellite imagery © Esri, Maxar, Earthstar Geographics · Flight deck photo: Louis from Paris, <a href="https://creativecommons.org/licenses/by-sa/2.0/" rel="noopener">CC BY-SA 2.0</a></p>
     </div>
   </section>
 
-  <!-- 4. Sources -->
-  <section class="fp-sec" id="sources" aria-labelledby="h-src">
+  <!-- 4. Standards and sources: a reference band -->
+  <section class="fx-ref fp-band" id="sources" aria-labelledby="h-src">
     <div class="fp-wrap">
-      <header class="fp-head">
-        <h2 id="h-src" data-tx="h2c">What it is built on</h2>
-        <p data-tx="p2c">Rules are summarised and referenced, never reproduced, and every reference says which revision it is based on.</p>
-      </header>
-      <div class="fp-src">
-        <div><h3>EASA</h3><p data-tx="src1">Easy Access Rules for Air Operations (Revision 24, March 2026) for minima and fuel, Aircrew for the ATPL subjects, and SERA for the rules of the air.</p></div>
-        <div><h3>ICAO</h3><p data-tx="src2">Standard terminology, phraseology and procedure design concepts, such as holding entries and approach segments, in NORDAP’s own words.</p></div>
-        <div><h3>AIP</h3><p data-tx="src3">Not an official chart. NORDAP does not use AIP data without the publisher’s permission, so check positions, airspace and frequencies against the current AIP.</p></div>
-        <div><h3 data-tx="src4h">Your documents</h3><p data-tx="src4">Flight Intelligence answers from your AFM, QRH and SOP first. They stay in your browser. No analytics and no tracking cookies; an account is optional.</p></div>
-      </div>
-      <p class="fp-model"><span data-tx="model"><b>Teaching models, not operational data.</b> The labs use simplified physics and typical values; A320 and B200 figures are illustrative, not manufacturer data.</span><a class="tl" href="sources.html" data-tx="goSrc">Data sources and licences</a></p>
+      <h2 id="h-src" data-tx="h2c">Standards &amp; sources</h2>
+      <ul>
+        <li><a href="quality.html" data-tx="r1">How content is checked</a></li>
+        <li><a href="rules.html" data-tx="r2">EASA rules we link to</a></li>
+        <li><a href="sources.html" data-tx="goSrc">Data sources and licences</a></li>
+        <li><a href="models.html" data-tx="r4">Model profiles</a></li>
+        <li><a href="about.html" data-tx="goAb">About NORDAP</a></li>
+        <li><a href="privacy.html" data-tx="r6">Privacy</a></li>
+      </ul>
+      <p class="fx-model" data-tx="model"><b>Teaching models, not operational data.</b> The labs use simplified physics and typical values; A320 and B200 figures are illustrative, not manufacturer data.</p>
     </div>
   </section>
 
-  <!-- 5. Schools and the maker -->
-  <div class="fp-wrap">
-    <div class="fp-end">
-      <section class="fp-schools" aria-labelledby="h-sch">
-        <h2 id="h-sch" data-tx="h2d">Interested?</h2>
-        <p data-tx="sch">Do you run a flight school, an operator or another training organisation? NORDAP gives you one consistent set of interactive theory, briefing material and type-rating preparation. Tell us a little about you, and we will get in touch.</p>
-        <ul>
-          <li data-tx="sc1">Labs an instructor can project, aligned to the ATPL subjects</li>
-          <li data-tx="sc2">One standard briefing pack, VFR and IFR</li>
-          <li data-tx="sc3">Type-rating setups: the King Air B200 trainer with 320 questions</li>
-        </ul>
-        <button type="button" class="fp-btn" data-schoolform data-tx="goInt">I'm interested</button>
-        <a class="fp-more" href="schools.html" data-tx="goSch">How a school can use NORDAP</a>
+  <!-- 5. Numbers, and flight schools -->
+  <div class="fx-band fp-band">
+    <div class="fp-wrap fx-grid">
+      <section class="fx-num" aria-labelledby="h-num">
+        <h2 id="h-num" data-tx="numH">NORDAP by the numbers</h2>
+        <dl>
+          <div><dt data-tx="n1">Interactive labs</dt><dd class="nLabs">25</dd></div>
+          <div><dt data-tx="n2">Cockpits in the flow trainer</dt><dd>14</dd></div>
+          <div><dt data-tx="n3">Cockpit trainers you can fly</dt><dd>6</dd></div>
+          <div><dt data-tx="n4">IFR exercises</dt><dd>46</dd></div>
+          <div><dt data-tx="n5">Type-rating questions, King Air B200</dt><dd>320</dd></div>
+          <div><dt data-tx="n6">Languages: English and Norwegian</dt><dd>2</dd></div>
+        </dl>
       </section>
-      <section class="fp-maker" aria-labelledby="h-me">
-        <div class="face"><img src="daniel.jpg" width="96" height="96" loading="lazy" decoding="async" alt="Daniel Nilsson" onerror="this.remove()"></div>
-        <h2 id="h-me" data-tx="h2e" style="font-size:clamp(26px,2.4vw,32px)">Daniel Nilsson</h2>
-        <p data-tx="me">During flight training, the hard part was rarely the flying itself. It was the order of things, and what you cannot see: the air over the wing, or why the altimeter reads wrong on a cold day. NORDAP is the set of tools I wish I had.</p>
-        <a class="tl" href="about.html" data-tx="goAb">About NORDAP</a>
+      <section class="fx-side" aria-labelledby="h-sch">
+        <h2 id="h-sch" data-tx="h2d">For flight schools</h2>
+        <p data-tx="sch">Do you run a flight school, an operator or another training organisation? Tell us a little about you, and we will get in touch.</p>
+        <ul>
+          <li><a href="schools.html" data-tx="goSch">How a school can use NORDAP</a></li>
+          <li><a href="typerating.html" data-tx="sc3">Type-rating preparation</a></li>
+          <li><a href="about.html" data-tx="sc4">Who is behind NORDAP</a></li>
+        </ul>
+        <button type="button" class="fx-btn" data-schoolform data-tx="goInt">I'm interested</button>
       </section>
     </div>
   </div>
@@ -859,7 +879,10 @@ LAB.tx({
  smFoot:'Også under Trening: IFR-treneren med 46 øvelser, MCDU-, FMC- og GNS 530-treneren, briefinger og radiodriller.', smAll:'All trening →',
  goSt:'Åpne uværslabben', fsNote:'Høyder tegnet 1,5 ganger høyere', fsK:'Utvikling · enkeltcelle', fsLay:'Vis',
  h2b:'Fra teori til cockpit',
- p2b:'Én rute, Oslo lufthavn Gardermoen til Stockholm Arlanda, fulgt fra kartet til den utskrevne pakken. Flight Intelligence svarer på spørsmålene underveis.',
+ p2b:'Tegn ruten, bygg briefingpakken og sjekk reglene før du flyr.',
+ tRt:'Tegn ruten i 2D eller 3D og les terrenget under den.', tBp:'NOTAM, vær, minima, ytelse og drivstoff, skrevet ut som et hefte.', tFi:'Svar fra EASA-reglene og din egen AFM, QRH og SOP.',
+ r1:'Slik kontrolleres innholdet', r2:'EASA-regler vi lenker til', r4:'Modellprofiler', r6:'Personvern',
+ numH:'NORDAP i tall', n1:'Interaktive labber', n2:'Cockpiter i flow-treneren', n3:'Cockpittrenere du kan fly', n4:'IFR-øvelser', n5:'Typerating-spørsmål, King Air B200', n6:'Språk: engelsk og norsk', sc4:'Hvem står bak NORDAP',
  capRt:'<b>Route Explorer, 3D:</b> en rute tegnet over terrenget på satellittbilder, terrenget 1,5× overdrevet, satellittbilder © Esri, Maxar, Earthstar Geographics',
  rt:'Tegn ruten på et VFR-kart i 2D eller 3D, med luftrom, flyplasser og navigasjonshjelpemidler, og les terrenget under den. Profilen beregnes fra offentlige høydedata.',
  d2:'207,8 NM', d3:'2 756 ft', d4:'1 376 ft',
@@ -875,7 +898,7 @@ LAB.tx({
  exNote:'Spørsmål om regelverk viser til NORDAPs EASA-regelbibliotek: Easy Access Rules for Air Operations, revisjon 24, mars 2026.',
  fi:'En instruktør som svarer ut fra din egen AFM, QRH og SOP og fra EASA-reglene, og viser avsnittet hvert svar bygger på. Bruk den til å lære, øve til en muntlig eksamen eller jobbe gjennom et scenario. Dokumentene du legger til, leses og lagres i nettleseren din.',
  goFi:'Spør Flight Intelligence',
- h2c:'Hva det bygger på',
+ h2c:'Standarder og kilder',
  p2c:'Regelverk oppsummeres og henvises til, aldri gjengis, og hver henvisning sier hvilken revisjon den bygger på.',
  src1:'Easy Access Rules for Air Operations (revisjon 24, mars 2026) for minima og drivstoff, Aircrew for ATPL-fagene og SERA for lufttrafikkreglene.',
  src2:'Standard terminologi, fraseologi og prinsipper for prosedyredesign, som inngang til holding og innflygingssegmenter, med NORDAPs egne ord.',
@@ -884,11 +907,11 @@ LAB.tx({
  src4:'Flight Intelligence svarer først ut fra din AFM, QRH og SOP. De blir i nettleseren din. Ingen analyseverktøy og ingen sporingskapsler; konto er valgfritt.',
  model:'<b>Pedagogiske modeller, ikke operative data.</b> Labbene bruker forenklet fysikk og typiske verdier; tall for A320 og B200 er illustrasjoner, ikke produsentdata.',
  goSrc:'Datakilder og lisenser',
- h2d:'Interessert?',
- sch:'Driver du en flyskole, en operatør eller en annen opplæringsorganisasjon? NORDAP gir dere ett samlet sett med interaktiv teori, briefingmateriell og forberedelse til typerating. Fortell litt om dere, så tar vi kontakt.',
+ h2d:'For flyskoler',
+ sch:'Driver du en flyskole, en operatør eller en annen opplæringsorganisasjon? Fortell litt om dere, så tar vi kontakt.',
  sc1:'Labber en instruktør kan vise på storskjerm, knyttet til ATPL-fagene',
  sc2:'Én standard briefingpakke, VFR og IFR',
- sc3:'Oppsett for typerating: King Air B200-treneren med 320 spørsmål',
+ sc3:'Forberedelse til typerating',
  goSch:'Slik kan en skole bruke NORDAP',
  goInt:'Jeg er interessert',
  h2e:'Daniel Nilsson',
