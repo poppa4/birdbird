@@ -275,6 +275,7 @@
     if (sq) LB.push([T('Separation', 'Separasjon') + ' ' + nf(Math.round(b0.xsep * 100), 0) + ' %', sq[0], sq[1] - 30, '#E6EDF5', 'center']);
     ctx.font = `500 ${sm ? 11.5 : 12.5}px "Public Sans", system-ui, sans-serif`; ctx.textBaseline = 'middle';
     const boxes = [];
+    if (window.__ffNoLab) return;   // the still poster is drawn without words (it is shown in both languages)
     for (const [t, x, y0, col, al] of LB) {
       const w = ctx.measureText(t).width, x0 = Math.max(Math.max(BX0 - K * 0.15, 8), Math.min(BX1 - w - 4, al === 'right' ? x - w : al === 'center' ? x - w / 2 : x)); let y = y0;
       for (let it = 0; it < 12; it++) { const hit = boxes.find(q => x0 < q[0] + q[2] + 6 && x0 + w + 6 > q[0] && Math.abs(y - q[1]) < 17); if (!hit) break; y = y <= hit[1] ? hit[1] - 18 : hit[1] + 18; }
