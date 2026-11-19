@@ -6,7 +6,7 @@
 <title>NORDAP · Nordic Aviation Platform</title>
 <meta name="description" content="NORDAP is an aviation platform built in Norway for pilots, students and flight schools: 25 interactive labs on the EASA ATPL syllabus, Route Explorer, a printable briefing pack, and an instructor that answers from your own AFM, QRH and SOP.">
 <meta name="theme-color" content="#0B2545">
-<link rel="preload" as="image" href="img/front/fan-1400.webp" imagesrcset="img/front/fan-760.webp 760w, img/front/fan-1400.webp 1400w, img/front/fan-2000.webp 2000w, img/front/fan-2576.webp 2576w" imagesizes="100vw" type="image/webp">
+<link rel="preload" as="image" href="img/front/cockpit-night-840.webp" imagesrcset="img/front/cockpit-night-520.webp 520w, img/front/cockpit-night-840.webp 840w, img/front/cockpit-night-1200.webp 1200w, img/front/cockpit-night-1588.webp 1588w" imagesizes="(max-width:1100px) 100vw, 420px" type="image/webp">
 <link rel="stylesheet" href="lab.css?v=15">
 <link rel="stylesheet" href="site.css?v=35">
 <style>
@@ -606,6 +606,15 @@
   .nx-sheet{padding:26px 20px 24px}
   .fp .fp-lede{font-size:18px}
 }
+/* hero: the photograph stands in a frame on the right; the copy sits on plain navy, never on the picture */
+.fp-hero::after{background:none!important}
+.fp .fp-relief{inset:auto;top:44px;right:max(24px,calc((100vw - 1240px)/2));width:clamp(300px,29vw,420px);height:calc(100% - 44px - 118px);border:1px solid rgba(255,255,255,.14);-webkit-mask-image:none;mask-image:none}
+.fp .fp-relief img{object-position:50% 62%;filter:none}
+@media (max-width:1100px){
+  /* narrow screens: the horizon and the glareshield as a band above the headline */
+  .fp .fp-relief{position:relative;top:auto;right:auto;width:auto;height:clamp(150px,34vw,260px);border:0;border-bottom:1px solid rgba(255,255,255,.14)}
+  .fp .fp-relief img{object-position:50% 33%}
+}
 </style>
 </head>
 <body data-home="1" data-title="NORDAP · Nordic Aviation Platform">
@@ -615,7 +624,7 @@
   <!-- 1. Hero -->
   <section class="fp-hero fp-band" id="fpHero" aria-labelledby="fp-h1">
     <div class="fp-relief" aria-hidden="true">
-      <img src="img/front/fan-1400.webp" srcset="img/front/fan-760.webp 760w, img/front/fan-1400.webp 1400w, img/front/fan-2000.webp 2000w, img/front/fan-2576.webp 2576w" sizes="100vw" width="1400" height="714" alt="" fetchpriority="high" decoding="async">
+      <img src="img/front/cockpit-night-840.webp" srcset="img/front/cockpit-night-520.webp 520w, img/front/cockpit-night-840.webp 840w, img/front/cockpit-night-1200.webp 1200w, img/front/cockpit-night-1588.webp 1588w" sizes="(max-width:1100px) 100vw, 420px" width="840" height="1270" alt="" fetchpriority="high" decoding="async">
     </div>
     <div class="fp-wrap">
       <div class="fp-stage">
