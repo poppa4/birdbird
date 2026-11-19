@@ -116,6 +116,12 @@
     return cp;
   }
   // colour position: the lab's fixed Cp scale −3…+1, split at Cp = 0 (free stream) = CFD.cpMid on the Turbo map
+  /* the plate's own two-tone scale instead of a rainbow: free stream is the navy of the plate, suction lightens towards
+     ice white, pressure above free stream warms towards copper. Reads like a tunnel photograph, and prints in one ink. */
+  const NAVY = [11, 37, 69], MIDB = [52, 104, 160], ICE = [226, 238, 250], COPPER = [188, 124, 74];
+  const mix3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  const fcol = v => { if (v >= 0) return mix3(NAVY, COPPER, Math.min(1, v) ** 0.9); const t = Math.min(1, -v / 2.6) ** 0.75; return t < 0.45 ? mix3(NAVY, MIDB, t / 0.45) : mix3(MIDB, ICE, (t - 0.45) / 0.55); };
+  const fgrad = () => { const st = []; for (let i = 0; i <= 20; i++) { const cp = -3 + 4 * i / 20, c = fcol(cp); st.push(`rgb(${c.map(Math.round).join(',')}) ${i * 5}%`); } return `linear-gradient(to right, ${st.join(', ')})`; };
   const fieldT = v => { const m = CFD.cpMid(CMAP); return Math.max(0, Math.min(1, v < 0 ? m + m * v / 3 : m + (1 - m) * v)); };
 
   /* streamlines from the left edge, RK2 through the grid; in the separated region they ride its edge (tunnel.html traceLines) */
@@ -161,14 +167,14 @@
     if (!img || img.width !== F.nx) { img = new ImageData(F.nx, F.ny); tmp.width = F.nx; tmp.height = F.ny; }
     const d = img.data;
     for (let k = 0; k < q.length; k++) { const o = k * 4; if (!Number.isFinite(q[k])) { d[o + 3] = 0; continue; }
-      const col = CFD.cmap(CMAP, fieldT(q[k])); d[o] = col[0] * 255; d[o + 1] = col[1] * 255; d[o + 2] = col[2] * 255; d[o + 3] = 255 * MASK[k]; }
+      const col = fcol(q[k]); d[o] = col[0]; d[o + 1] = col[1]; d[o + 2] = col[2]; d[o + 3] = 255 * MASK[k]; }
     tctx.putImageData(img, 0, 0);
     c.save(); c.translate(sx(0.25), sy(0)); c.scale(K, -K); c.rotate(-ps.alpha * DEG); c.translate(-0.25, 0);
     c.imageSmoothingEnabled = true; c.globalAlpha = 0.88; c.drawImage(tmp, AX0 - GD / 2, AY0 - GD / 2, F.nx * GD, F.ny * GD); c.globalAlpha = 1;
     // iso-lines (marching squares) every 0.25 in Cp, stronger on whole numbers; faded with the field
     const nx = F.nx, lv = []; for (let v = -3; v <= 1 + 1e-6; v += 0.25) { const qq = +v.toFixed(2); if (Math.abs(qq) > 1e-6) lv.push(qq); }
     for (const major of [false, true]) {
-      c.lineWidth = (major ? 1.25 : 0.7) / K; c.strokeStyle = major ? 'rgba(6,12,24,0.5)' : 'rgba(6,12,24,0.26)'; c.beginPath();
+      c.lineWidth = (major ? 1.25 : 0.7) / K; c.strokeStyle = major ? 'rgba(232,240,250,0.26)' : 'rgba(232,240,250,0.11)'; c.beginPath();
       for (let j = 0; j < F.ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
         const k = j * nx + i; if (MASK[k] < 0.08) continue;
         const a = q[k], b = q[k + 1], e1 = q[k + nx], e = q[k + nx + 1]; if (!(Number.isFinite(a) && Number.isFinite(b) && Number.isFinite(e1) && Number.isFinite(e))) continue;
@@ -262,18 +268,18 @@
       [T('Relative wind', 'Relativ vind'), wx0, wy + 16, '#fff', 'left'],
       ['α ' + nf(ps.alpha, 1) + '°', am[0] - 10, am[1], '#fff', 'right'],
       [T('Stagnation point', 'Stagnasjonspunkt'), st0[0] - 12, st0[1] + 22, '#fff', 'right'],
-      [T('Suction: low pressure', 'Sug: lavt trykk'), su[0] - K * 0.02, su[1] - K * (sm ? 0.2 : 0.17), '#CFE4FF', 'center'],
-      [T('High pressure', 'Høyt trykk'), lo[0], lo[1] + K * 0.16, '#FFE1C2', 'center'],
-      [T('Lift', 'Løft') + ' · CL ' + nf(vis.CL, 2), c0[0] + 10, c0[1] - Ll * 0.62, '#9FF0C2', 'left']];
-    if (trq) LB.push([T('Transition', 'Omslag'), trq[0] + 4, trq[1] - 30, '#FFD58A', 'left']);
-    if (sq) LB.push([T('Separation', 'Separasjon') + ' ' + nf(Math.round(b0.xsep * 100), 0) + ' %', sq[0], sq[1] - 30, '#FFB3A6', 'center']);
-    ctx.font = `600 ${sm ? 11.5 : 12.5}px "Public Sans", system-ui, sans-serif`; ctx.textBaseline = 'middle';
+      [T('Suction: low pressure', 'Sug: lavt trykk'), su[0] - K * 0.02, su[1] - K * (sm ? 0.2 : 0.17), '#E6EDF5', 'center'],
+      [T('High pressure', 'Høyt trykk'), lo[0], lo[1] + K * 0.16, '#E6EDF5', 'center'],
+      [T('Lift', 'Løft') + ' · CL ' + nf(vis.CL, 2), c0[0] + 10, c0[1] - Ll * 0.62, '#E6EDF5', 'left']];
+    if (trq) LB.push([T('Transition', 'Omslag'), trq[0] + 4, trq[1] - 30, '#E6EDF5', 'left']);
+    if (sq) LB.push([T('Separation', 'Separasjon') + ' ' + nf(Math.round(b0.xsep * 100), 0) + ' %', sq[0], sq[1] - 30, '#E6EDF5', 'center']);
+    ctx.font = `500 ${sm ? 11.5 : 12.5}px "Public Sans", system-ui, sans-serif`; ctx.textBaseline = 'middle';
     const boxes = [];
     for (const [t, x, y0, col, al] of LB) {
       const w = ctx.measureText(t).width, x0 = Math.max(Math.max(BX0 - K * 0.15, 8), Math.min(BX1 - w - 4, al === 'right' ? x - w : al === 'center' ? x - w / 2 : x)); let y = y0;
       for (let it = 0; it < 12; it++) { const hit = boxes.find(q => x0 < q[0] + q[2] + 6 && x0 + w + 6 > q[0] && Math.abs(y - q[1]) < 17); if (!hit) break; y = y <= hit[1] ? hit[1] - 18 : hit[1] + 18; }
       boxes.push([x0, y, w]);
-      ctx.lineJoin = 'round'; ctx.lineWidth = 4.5; ctx.strokeStyle = 'rgba(7,18,34,.88)'; ctx.textAlign = 'left'; ctx.strokeText(t, x0, y);
+      ctx.lineJoin = 'round'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(11,37,69,.92)'; ctx.textAlign = 'left'; ctx.strokeText(t, x0, y);
       ctx.fillStyle = col; ctx.fillText(t, x0, y);
     }
   }
@@ -352,7 +358,7 @@
     precompute(() => {
       fieldMask(); rebuild(true);
       if (RM) { for (let i = 0; i < 120; i++) step(1 / 60); }
-      const cb = box.querySelector('.ff-cbar .bar'); if (cb) cb.style.background = CFD.cssGrad(CMAP, 'to right', 24);
+      const cb = box.querySelector('.ff-cbar .bar'); if (cb) cb.style.background = fgrad();
       draw(); box.classList.add('live');
       window.__heroFoil.ready = true;
       new ResizeObserver(() => { if (layout()) { traceLines(); buildBase(); draw(); } }).observe(cv);
