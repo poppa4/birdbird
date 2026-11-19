@@ -44,7 +44,7 @@ function init(o){
   for(const k in VIEWS){ const v=VIEWS[k], r=v.r, cv=document.createElement('canvas'); cv.width=Math.round(r[2]*K); cv.height=Math.round(r[3]*K);
     const tex=new THREE.CanvasTexture(cv); tex.anisotropy=Math.min(4,o.R.capabilities.getMaxAnisotropy()); tex.minFilter=THREE.LinearMipmapLinearFilter; if(THREE.sRGBEncoding&&o.R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding;
     const pg=new THREE.PlaneGeometry(v.W,v.H,24,24); pg.setAttribute('color',new THREE.BufferAttribute(new Float32Array(pg.attributes.position.count*3).fill(1),3));
-    const mesh=new THREE.Mesh(pg,new THREE.MeshBasicMaterial({map:tex,vertexColors:true,transparent:k.startsWith('side'),alphaTest:k.startsWith('side')?0.5:0}));
+    const cut=k.startsWith('side')||!!v.cut; const mesh=new THREE.Mesh(pg,new THREE.MeshBasicMaterial({map:tex,vertexColors:true,transparent:cut,alphaTest:cut?0.5:0}));
     mesh.matrixAutoUpdate=false; mesh.matrix.copy(basis(v)).setPosition(v.C); scene.add(mesh); P[k]={cv,g:cv.getContext('2d'),tex,mesh,v}; }
   /* ---- shell: one closed room around the panels (flat colours, double-sided, no gaps), with the windshield and side
      windows left open. Corners come from the panel planes themselves, so every piece meets its neighbour. ---- */
@@ -111,7 +111,7 @@ function init(o){
       const uv=new Float32Array(gr.nv*2); for(let i=0;i<gr.nv;i++){ uv[i*2]=gr.uv[0]+UV[i*2]/65535*gr.uv[2]; uv[i*2+1]=gr.uv[1]+UV[i*2+1]/65535*gr.uv[3]; } g.setAttribute('uv',new THREE.BufferAttribute(uv,2));
       g.setAttribute('color',new THREE.InterleavedBufferAttribute(new THREE.InterleavedBuffer(new Uint8Array(buf,N.byteOffset,gr.nv*4),4),3,0,true)); g.setIndex(new THREE.BufferAttribute(I,1));
       const tex=gr.tex==='flat'?null:TL.load((CF3?CF3.shellTex:'models/a320-shell-')+gr.tex+'.jpg'); if(tex){ tex.anisotropy=1; tex.flipY=false; tex.wrapS=tex.wrapT=THREE.RepeatWrapping; if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding; }
-      const mat=new THREE.MeshBasicMaterial({map:gr.tex==='flat'?null:tex,vertexColors:true,side:hdr.double?THREE.DoubleSide:THREE.FrontSide}); mat.color.setScalar((hdr.lmax||1)*1.22); const mesh=new THREE.Mesh(g,mat); mesh.scale.setScalar(32767/hdr.S); mesh.matrixAutoUpdate=false; mesh.updateMatrix(); mesh.frustumCulled=false; grp.add(mesh); }
+      const mat=new THREE.MeshBasicMaterial({map:gr.tex==='flat'?null:tex,vertexColors:true,side:hdr.double?THREE.DoubleSide:THREE.FrontSide}); mat.color.setScalar((hdr.lmax||1)*1.22); const mesh=new THREE.Mesh(g,mat); mesh.scale.setScalar(32767/hdr.S); if(hdr.o) mesh.position.set(...hdr.o); mesh.matrixAutoUpdate=false; mesh.updateMatrix(); mesh.frustumCulled=false; grp.add(mesh); }
     if(hdr.panels) for(const k in hdr.panels){ const pb=hdr.panels[k], p=P[k]; if(!p) continue; const col=p.mesh.geometry.attributes.color, n=24;
       for(let j=0;j<=n;j++) for(let i=0;i<=n;i++){ const x=i/n*pb.nx, y=j/n*pb.ny, x0=Math.min(pb.nx-1,Math.floor(x)), y0=Math.min(pb.ny-1,Math.floor(y)), fx=x-x0, fy=y-y0, at=(a,b)=>pb.v[b*(pb.nx+1)+a];
         const L=(at(x0,y0)*(1-fx)+at(x0+1,y0)*fx)*(1-fy)+(at(x0,y0+1)*(1-fx)+at(x0+1,y0+1)*fx)*fy, c=Math.min(1,0.12+0.9*L); col.setXYZ(j*(n+1)+i,c,c,c*1.01); } col.needsUpdate=true; }
@@ -153,7 +153,10 @@ function init(o){
   let img=null; const pending=new Set(Object.keys(P));
   function setImage(im){ img=im; Object.keys(P).forEach(k=>pending.add(k)); }
   function repaint(painter){ if(!img) return; for(const k in P){ const p=P[k], r=p.v.r, sx=img.naturalWidth/1000; p.g.setTransform(1,0,0,1,0,0); p.g.clearRect(0,0,p.cv.width,p.cv.height); p.g.drawImage(img,r[0]*sx,r[1]*sx,r[2]*sx,r[3]*sx,0,0,p.cv.width,p.cv.height);
-      p.g.setTransform(K,0,0,K,-r[0]*K,-r[1]*K); painter(p.g,r); p.tex.needsUpdate=true; } }
+      p.g.setTransform(K,0,0,K,-r[0]*K,-r[1]*K); painter(p.g,r);
+      if(p.v.cut){ /* parts of the picture that are background (the dark render behind the glareshield): see-through, so the 3D structure and the world show */
+        p.g.save(); p.g.globalCompositeOperation='destination-out'; p.g.beginPath(); for(const poly of p.v.cut){ poly.forEach(([x,y],i)=>i?p.g.lineTo(x,y):p.g.moveTo(x,y)); p.g.closePath(); } p.g.fill(); p.g.restore(); }
+      p.tex.needsUpdate=true; } }
   function draw(R){ R.render(scene,cam); }
   return {scene,cam,head,updCam,draw,pick,LOOK,visible,pxSize,setImage,repaint,K,disp,mobile,
     drag(dx,dy){ const s=head.fov/62*0.0042; head.tYaw+=dx*s; head.tPitch=Math.max(-80*D2R,Math.min(85*D2R,head.tPitch+dy*s)); head.yaw=head.tYaw; head.pitch=head.tPitch; },

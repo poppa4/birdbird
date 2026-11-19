@@ -339,8 +339,8 @@ window.SIMAC={T:window.ATR72T,H:1266.7,key:'bb-atr72-start',img:['img/cockpits/a
   DISP,draw:DSP,cdu:null,cduCls:'',trainer:'',cduHTML:()=>'',detents:[PL.GI,PL.FI,PL.NOTCH,PL.RAMP],
   B,speedsPane,init,defs,dispData,reset,postSys,tla,thrTxt,levTxt,lever,thrDrag,keydown,
   d3:{VIEWS:{ovh:{c:[-10.819,1.369,0],n:[-0.361,0.932,0],up:[0.932,0.361,0],W:0.769,H:0.608,r:[300,0,388,306.7]},
-      front:{c:[-11.29,0.66,0],n:[-0.985,-0.173,0],up:[0,1,0],W:1.9,H:0.74,r:[0,330,1000,385]},
+      front:{c:[-11.29,0.66,0],n:[-0.985,-0.173,0],up:[0,1,0],W:1.9,H:0.74,r:[0,330,1000,385],cut:[[[0,320],[1000,320],[1000,425],[613,361],[387,361],[0,425]]]},
       ped:{c:[-10.72,0.2,0],n:[0,-1,0],up:[-1,0,0],W:0.56,H:1.08,r:[352,717,296,549.7]}},
-    eye:[-10.25,1.12,0.42],pitch:-14,yaw:-0.12,phoneMain:[200,560,44],
+    eye:[-10.25,1.12,0.42],pitch:-14,yaw:-0.12,phoneMain:[200,560,44],shell:'models/atr72-shell.bin',shellTex:'models/atr72-shell-',
     look:{main:1,ovhd:[500,150,64,-0.02],ped:[500,980,58,-0.18],afcs:[500,415,30],eng:[485,600,38,-0.2]}}};
 })();
