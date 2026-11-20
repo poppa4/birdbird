@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Privacy · NORDAP</title>
 <meta name="description" content="NORDAP privacy in plain language: accounts are optional, what an account stores and where, documents stay in your browser, no analytics or tracking, and how to delete your data.">
+<link rel="canonical" href="https://nordap.eu/privacy">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NORDAP">
+<meta property="og:title" content="Privacy · NORDAP">
+<meta property="og:description" content="NORDAP privacy in plain language: accounts are optional, what an account stores and where, documents stay in your browser, no analytics or tracking, and how to delete your data.">
+<meta property="og:url" content="https://nordap.eu/privacy">
+<meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="lab.css?v=15">
 <link rel="stylesheet" href="site.css?v=35">
 <style>
@@ -42,24 +52,25 @@
 </style>
 </head>
 <body data-title="Privacy">
-<script src="site.js?v=109"></script>
+<script src="site.js?v=110"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
       <div class="eyebrow">NORDAP · Privacy</div>
       <h1>Privacy</h1>
       <p>What NORDAP stores, where it is stored, and how to remove it, in plain language.</p>
-      <div class="lmeta"><span class="mi"><span class="k">Last updated</span><span class="v">2026-11-08</span></span></div>
+      <div class="lmeta"><span class="mi"><span class="k">Last updated</span><span class="v">2026-11-20</span></span></div>
     </div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#short">The short version</a><a href="#stored">What is stored</a><a href="#account">Accounts and sync</a><a href="#ai">AI features</a><a href="#tracking">Cookies and tracking</a><a href="#clear">Clear your data</a><a href="#changes">Changes</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#short">The short version</a><a href="#stored">What is stored</a><a href="#account">Accounts and sync</a><a href="#ai">AI features</a><a href="#forms">Forms and sharing</a><a href="#tracking">Cookies and tracking</a><a href="#clear">Clear your data</a><a href="#who">Who is responsible</a><a href="#changes">Changes</a></nav>
 
   <section class="card" id="short">
     <h2>The short version</h2>
     <ul class="pv-short">
-      <li>An account is optional. Without one, your progress, ranks and settings are stored in your own browser only.</li>
+      <li>An account is optional. Without one, your progress and settings are stored in your own browser only.</li>
       <li>With an account, your progress, briefing packs, routes and settings are also saved on NORDAP’s server, so they follow you to your other devices. You can delete the account at any time.</li>
-      <li>Documents you add, such as an AFM, QRH or SOP, are processed and stored in your own browser.</li>
+      <li>Documents you add, such as an AFM, QRH or SOP, are processed and stored in your own browser. A private copy is kept in your account only if you are signed in and cloud storage for documents is switched on.</li>
+      <li>Messages you send through a form, and flows you publish in the flow library, are stored on NORDAP’s server. See Forms and sharing.</li>
       <li>AI features only send something when you use them. On nordap.eu the requests go to Cloudflare Workers AI (or Anthropic, if that is switched on); nothing of the question or the answer is stored.</li>
       <li>No analytics, no tracking cookies and no advertising. The only cookie is the sign-in cookie, and only if you sign in.</li>
       <li>Fonts are served from NORDAP itself, not from Google or another third party.</li>
@@ -72,7 +83,7 @@
     <table class="reg">
       <thead><tr><th>What</th><th>Why</th><th>Where</th></tr></thead>
       <tbody>
-        <tr><td>Progress, test results and rank</td><td>To show which labs you have done and your rank.</td><td class="w">Local storage</td></tr>
+        <tr><td>Progress and test results</td><td>To show your results in the labs and trainers, and what to revise.</td><td class="w">Local storage</td></tr>
         <tr><td>Language and display choices</td><td>To remember English or Norwegian and how you left a page.</td><td class="w">Local storage</td></tr>
         <tr><td>Briefing packs, aircraft and navigation logs</td><td>So you can return to a plan you have made.</td><td class="w">Local storage</td></tr>
         <tr><td>Your documents (AFM, QRH, SOP, checklists)</td><td>So Flight Intelligence can answer from them.</td><td class="w">IndexedDB</td></tr>
@@ -126,6 +137,26 @@
     </div>
   </section>
 
+  <section class="card" id="forms">
+    <h2>Forms and sharing</h2>
+    <div class="pv-text">
+      <p>These features send what you write to NORDAP’s server. No account is needed for them. Messages are kept in a Cloudflare D1 database in the EU and passed on to NORDAP by e-mail through Resend (Resend, Inc.).</p>
+    </div>
+    <table class="reg">
+      <thead><tr><th>What</th><th>What is stored</th><th>How long</th></tr></thead>
+      <tbody>
+        <tr><td>Contact form and Report an error</td><td>Your message, your e-mail address, your name if you give it, and the page you sent it from. Used only to answer you.</td><td class="w">Deleted 90 days after it has reached NORDAP</td></tr>
+        <tr><td>Form for flight schools and operators</td><td>The organisation, your e-mail address, and your name, role, country, size and message if you give them. Used only to answer you.</td><td class="w">Deleted 90 days after it has reached NORDAP</td></tr>
+        <tr><td>Request your aircraft, and corrections to a cockpit</td><td>The aircraft, what you write, any links, your name and e-mail address if you give them, and up to three pictures you have the right to share.</td><td class="w">Pictures are removed when the request has reached NORDAP; the rest 90 days later</td></tr>
+        <tr><td>Flows you publish in the flow library</td><td>The flow, its name and the name you choose to show with it. It is public: anyone can open a copy. Do not publish an operator’s confidential material.</td><td class="w">Until you delete it with your key, or it is removed after reports</td></tr>
+        <tr><td>Practising a flow together in a room</td><td>The flow, the names and roles you enter, and the taps and calls passed between the devices.</td><td class="w">6 hours after the last message</td></tr>
+      </tbody>
+    </table>
+    <div class="pv-text">
+      <p>To stop misuse, each of these counts how often it is used per day under a one-way code made from your IP address, never the address itself.</p>
+    </div>
+  </section>
+
   <section class="card" id="tracking">
     <h2>Cookies, analytics and tracking</h2>
     <div class="pv-text">
@@ -157,15 +188,27 @@
     </div>
   </section>
 
+  <section class="card" id="who">
+    <h2>Who is responsible, and your rights</h2>
+    <div class="pv-text">
+      <p>NORDAP is run by Daniel Nilsson, a private person in Norway, who is responsible for the processing of personal data described on this page (the data controller).</p>
+      <p>Why the data is processed: for an account and the features you choose to use, to provide the service you ask for (GDPR article 6(1)(b)). For forms, to answer you, and for sign-in counters and server logs, to keep NORDAP secure and working (legitimate interest, article 6(1)(f)).</p>
+      <p>Cloudflare (hosting, database, file storage and the free AI model), Resend (e-mail) and, if switched on, Anthropic (AI answers) process data on NORDAP’s behalf. Some of them are based in the United States; transfers rely on the EU–US Data Privacy Framework or the EU standard contractual clauses.</p>
+      <p>You can ask to see, correct, export or delete your data, and you can object to processing. Much of it you can do yourself on My page. For anything else, write through the contact form and choose Privacy.</p>
+      <p>You can also complain to the Norwegian Data Protection Authority (Datatilsynet), datatilsynet.no.</p>
+    </div>
+    <p class="btns"><a class="btn" href="#who" data-contactform data-topic="privacy">Privacy request</a></p>
+  </section>
+
   <section class="card" id="changes">
     <h2>Changes to this page</h2>
     <div class="pv-text">
       <p>School features or other new services would change what is stored and where. This page will be updated before any of that is switched on.</p>
     </div>
-    <p class="btns"><a class="btn" href="about.html#contact">Contact</a><a class="btn quiet" href="sources.html">Data sources and licences</a></p>
+    <p class="btns"><a class="btn" href="about.html#contact" data-contactform>Contact</a><a class="btn quiet" href="sources.html">Data sources and licences</a></p>
   </section>
 </div>
-<script src="lab.js?v=57"></script>
+<script src="lab.js?v=58"></script>
 <script src="localdata.js?v=3"></script>
 <script>
 (function(){
@@ -187,7 +230,39 @@ btn.addEventListener('click',async()=>{
 LAB.add({'Sections':'Sections'},{
  'Privacy':'Personvern','NORDAP · Privacy':'NORDAP · Personvern',
  'What NORDAP stores, where it is stored, and how to remove it, in plain language.':'Hva NORDAP lagrer, hvor det lagres, og hvordan du fjerner det, i klartekst.',
- 'Last updated':'Sist oppdatert','Sections':'Seksjoner',
+ 'Last updated':'Sist oppdatert',
+ "An account is optional. Without one, your progress and settings are stored in your own browser only.":"En konto er valgfri. Uten konto lagres progresjon og innstillinger bare i din egen nettleser.",
+ "Documents you add, such as an AFM, QRH or SOP, are processed and stored in your own browser. A private copy is kept in your account only if you are signed in and cloud storage for documents is switched on.":"Dokumenter du legger inn, som AFM, QRH eller SOP, behandles og lagres i din egen nettleser. En privat kopi lagres på kontoen din bare hvis du er logget inn og skylagring for dokumenter er slått på.",
+ "Messages you send through a form, and flows you publish in the flow library, are stored on NORDAP’s server. See Forms and sharing.":"Meldinger du sender via et skjema, og flows du publiserer i flow-biblioteket, lagres på NORDAPs server. Se Skjemaer og deling.",
+ "Progress and test results":"Progresjon og testresultater",
+ "To show your results in the labs and trainers, and what to revise.":"For å vise resultatene dine i labbene og trenerne, og hva du bør repetere.",
+ "Forms and sharing":"Skjemaer og deling",
+ "Who is responsible":"Hvem som er ansvarlig",
+ "These features send what you write to NORDAP’s server. No account is needed for them. Messages are kept in a Cloudflare D1 database in the EU and passed on to NORDAP by e-mail through Resend (Resend, Inc.).":"Disse funksjonene sender det du skriver til NORDAPs server. Du trenger ikke konto for dem. Meldinger lagres i en Cloudflare D1-database i EU og sendes videre til NORDAP på e-post via Resend (Resend, Inc.).",
+ "What is stored":"Hva som lagres",
+ "How long":"Hvor lenge",
+ "Contact form and Report an error":"Kontaktskjema og Meld fra om en feil",
+ "Your message, your e-mail address, your name if you give it, and the page you sent it from. Used only to answer you.":"Meldingen, e-postadressen din, navnet ditt hvis du oppgir det, og siden du sendte fra. Brukes bare til å svare deg.",
+ "Deleted 90 days after it has reached NORDAP":"Slettes 90 dager etter at den har kommet fram til NORDAP",
+ "Form for flight schools and operators":"Skjema for flyskoler og operatører",
+ "The organisation, your e-mail address, and your name, role, country, size and message if you give them. Used only to answer you.":"Organisasjonen, e-postadressen din, og navn, rolle, land, størrelse og melding hvis du oppgir dem. Brukes bare til å svare deg.",
+ "Request your aircraft, and corrections to a cockpit":"Be om flyet ditt, og rettelser til en cockpit",
+ "The aircraft, what you write, any links, your name and e-mail address if you give them, and up to three pictures you have the right to share.":"Flyet, det du skriver, eventuelle lenker, navn og e-postadresse hvis du oppgir dem, og opptil tre bilder du har rett til å dele.",
+ "Pictures are removed when the request has reached NORDAP; the rest 90 days later":"Bildene fjernes når forespørselen har kommet fram til NORDAP; resten 90 dager senere",
+ "Flows you publish in the flow library":"Flows du publiserer i flow-biblioteket",
+ "The flow, its name and the name you choose to show with it. It is public: anyone can open a copy. Do not publish an operator’s confidential material.":"Flowen, navnet på den og navnet du velger å vise. Den er offentlig: alle kan åpne en kopi. Ikke publiser en operatørs konfidensielle materiale.",
+ "Until you delete it with your key, or it is removed after reports":"Til du sletter den med nøkkelen din, eller den fjernes etter rapporter",
+ "Practising a flow together in a room":"Øve på en flow sammen i et rom",
+ "The flow, the names and roles you enter, and the taps and calls passed between the devices.":"Flowen, navnene og rollene dere skriver inn, og trykkene og utropene som sendes mellom enhetene.",
+ "6 hours after the last message":"6 timer etter siste melding",
+ "To stop misuse, each of these counts how often it is used per day under a one-way code made from your IP address, never the address itself.":"For å hindre misbruk teller hver av disse hvor ofte de brukes per dag under en enveiskode laget av IP-adressen din, aldri selve adressen.",
+ "Who is responsible, and your rights":"Hvem som er ansvarlig, og rettighetene dine",
+ "NORDAP is run by Daniel Nilsson, a private person in Norway, who is responsible for the processing of personal data described on this page (the data controller).":"NORDAP drives av Daniel Nilsson, en privatperson i Norge, som er ansvarlig for behandlingen av personopplysninger som beskrives på denne siden (behandlingsansvarlig).",
+ "Why the data is processed: for an account and the features you choose to use, to provide the service you ask for (GDPR article 6(1)(b)). For forms, to answer you, and for sign-in counters and server logs, to keep NORDAP secure and working (legitimate interest, article 6(1)(f)).":"Hvorfor opplysningene behandles: for en konto og funksjonene du velger å bruke, for å levere tjenesten du ber om (GDPR artikkel 6 nr. 1 b). For skjemaer, for å svare deg, og for innloggingstellere og serverlogger, for å holde NORDAP sikker og i drift (berettiget interesse, artikkel 6 nr. 1 f).",
+ "Cloudflare (hosting, database, file storage and the free AI model), Resend (e-mail) and, if switched on, Anthropic (AI answers) process data on NORDAP’s behalf. Some of them are based in the United States; transfers rely on the EU–US Data Privacy Framework or the EU standard contractual clauses.":"Cloudflare (drift, database, fillagring og den gratis AI-modellen), Resend (e-post) og, hvis det er slått på, Anthropic (AI-svar) behandler opplysninger på vegne av NORDAP. Noen av dem holder til i USA; overføringer bygger på EU–US Data Privacy Framework eller EUs standard personvernbestemmelser.",
+ "You can ask to see, correct, export or delete your data, and you can object to processing. Much of it you can do yourself on My page. For anything else, write through the contact form and choose Privacy.":"Du kan be om å se, rette, eksportere eller slette opplysningene dine, og du kan protestere mot behandlingen. Mye av dette kan du gjøre selv på Min side. For alt annet, skriv via kontaktskjemaet og velg Personvern.",
+ "You can also complain to the Norwegian Data Protection Authority (Datatilsynet), datatilsynet.no.":"Du kan også klage til Datatilsynet, datatilsynet.no.",
+ "Privacy request":"Personvernforespørsel",'Sections':'Seksjoner',
  'The short version':'Kortversjonen','What is stored':'Hva som lagres','AI features':'AI-funksjoner','Cookies and tracking':'Cookies og sporing','Clear your data':'Slett dataene dine','Changes':'Endringer',
  'NORDAP has no user accounts yet. You do not sign up or log in.':'NORDAP har ingen brukerkontoer ennå. Du registrerer deg ikke og logger ikke inn.',
  'Your progress, ranks and settings are stored in your own browser.':'Progresjon, rang og innstillinger lagres i din egen nettleser.',
@@ -228,7 +303,7 @@ LAB.add({'Sections':'Sections'},{
  'Accounts, school features or a hosted AI service would change what is stored and where. This page will be updated before any of that is switched on.':'Kontoer, skolefunksjoner eller en egen AI-tjeneste vil endre hva som lagres og hvor. Denne siden oppdateres før noe av det slås på.',
  'Contact':'Kontakt','Data sources and licences':'Datakilder og lisenser',
  "Accounts and sync":"Kontoer og synkronisering",
- "An account is optional. Without one, your progress, ranks and settings are stored in your own browser only.":"En konto er valgfri. Uten konto lagres progresjon, rang og innstillinger bare i din egen nettleser.",
+ "An account is optional. Without one, your progress and settings are stored in your own browser only.":"En konto er valgfri. Uten konto lagres progresjon, rang og innstillinger bare i din egen nettleser.",
  "With an account, your progress, briefing packs, routes and settings are also saved on NORDAP’s server, so they follow you to your other devices. You can delete the account at any time.":"Med konto lagres progresjon, briefingpakker, ruter og innstillinger også på NORDAPs server, så de følger deg til de andre enhetene dine. Du kan slette kontoen når som helst.",
  "No analytics, no tracking cookies and no advertising. The only cookie is the sign-in cookie, and only if you sign in.":"Ingen analyseverktøy, ingen sporingscookies og ingen reklame. Den eneste cookien er innloggingscookien, og bare hvis du logger inn.",
  "Without an account, nothing is stored on a NORDAP server, so NORDAP cannot see, recover or delete that data for you. Clearing it is in your hands, see below.":"Uten konto lagres ingenting på en NORDAP-server, så NORDAP kan ikke se, gjenopprette eller slette de dataene for deg. Det er du som sletter dem, se under.",

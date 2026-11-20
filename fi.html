@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Flight Intelligence · NORDAP</title>
 <meta name="description" content="An instructor that answers from your own AFM, QRH and SOP: learn, practise orals and work through scenarios, with every answer showing its source.">
+<link rel="canonical" href="https://nordap.eu/fi">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NORDAP">
+<meta property="og:title" content="Flight Intelligence · NORDAP">
+<meta property="og:description" content="An instructor that answers from your own AFM, QRH and SOP: learn, practise orals and work through scenarios, with every answer showing its source.">
+<meta property="og:url" content="https://nordap.eu/fi">
+<meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="lab.css?v=15">
 <link rel="stylesheet" href="site.css?v=35">
 <link rel="stylesheet" href="train.css?v=4">
@@ -137,7 +147,7 @@
 </style>
 </head>
 <body data-title="Flight Intelligence">
-<script src="site.js?v=109"></script>
+<script src="site.js?v=110"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -147,7 +157,7 @@
     </div>
     <div class="hright"></div>
   </header>
-  <a class="trex" href="typerating.html"><span>Example setup</span><b>Type rating trainer: King Air B200</b><em>Study plan, cockpit systems simulators, 320 questions, flashcards, exam mode and an oral examiner that uses your documents. This is how your instructor can be set up for a type rating. →</em></a>
+  <a class="trex" href="typerating.html"><span>Type rating</span><b>Type rating trainer: King Air B200</b><em>Study plan, cockpit systems simulators, 320 questions, flashcards, exam mode and an oral examiner that uses your documents, built on NORDAP’s standard type-rating structure. →</em></a>
   <style>.trex{display:grid;gap:2px;margin:14px 0 6px;padding:12px 14px;border:1px solid #9AA8AF;border-left:4px solid var(--magenta);background:#fff;text-decoration:none;color:var(--ink)}.trex span{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}.trex b{font-size:17px}.trex em{font-style:normal;font-size:14px;color:var(--ink-2)}.trex:hover{background:#FFF6D6}</style>
 
   <div class="welcome" id="welcome" hidden></div>
@@ -208,7 +218,7 @@
       <p class="note" style="margin:0">Documents that are not tied to one aircraft: EASA Easy Access Rules, the AIP, your ATO’s training manual.</p>
       <div id="genDocs"></div>
     </div>
-    <p class="honest">Where things are kept: the documents and their text stay in this browser (IndexedDB); a file is only uploaded, as a private copy, if you are signed in and cloud storage for documents is switched on in My workspace. When you ask a question, only the few passages that matter are sent to Claude with the question. Your aircraft profiles, sessions, grades and topics to revise are saved to your profile, so they are there when you come back.</p>
+    <p class="honest">Where things are kept: the documents and their text stay in this browser (IndexedDB); a file is only uploaded, as a private copy, if you are signed in and cloud storage for documents is switched on in My workspace. When you ask a question, only the few passages that matter are sent to the AI service with the question (see Privacy). Your aircraft profiles, sessions, grades and topics to revise are saved to your profile, so they are there when you come back.</p>
   </section>
 
   <!-- ===== fremgang ===== -->
@@ -238,7 +248,7 @@
 
   <div class="modal" id="modal" hidden><div class="mbox"><div class="btns" style="justify-content:space-between"><b id="mTitle"></b><button class="btn" id="mClose">Close</button></div><div id="mBody"></div></div></div>
 </div>
-<script src="lab.js?v=57"></script>
+<script src="lab.js?v=58"></script>
 <script src="ai.js?v=8"></script>
 <script src="easa.js?v=8"></script>
 <script src="theory.js?v=6"></script>
@@ -525,6 +535,7 @@ async function turn(user,skip,easy){
     if(meta.gap){ const gp=String(meta.gap).slice(0,80); if(!S.gaps.some(x=>x.toLowerCase()===gp.toLowerCase())) S.gaps.push(gp); }
     if(meta.lab&&LABS[meta.lab]){ const lb=LABS[meta.lab]; if(!S.labs.includes(meta.lab)) S.labs.push(meta.lab); extra+=`<div class="labgo">${L({en:'See it in the lab:',no:'Se det i labben:'})} <a href="${lb[0]}" target="_blank" rel="noopener">${esc(T(lb[1]))} →</a> <span class="note">${L({en:'come back and I’ll ask you again',no:'kom tilbake, så spør jeg deg igjen'})}</span></div>`; S.pendingLab=meta.lab; }
     const gl=meta.go&&goList(user).find(g=>g[0]===meta.go); if(gl) extra+=`<div class="labgo">${L({en:'Do it on NORDAP:',no:'Gjør det på NORDAP:'})} <a href="${esc(gl[0])}">${esc(gl[2])} →</a></div>`;
+    if(!ea.length&&user&&EASA.isRules(String(user))) extra+=`<div class="labgo offlib">${L({en:'This rules question is outside NORDAP’s EASA rules library, so the answer is general knowledge. Check it in the current EASA Easy Access Rules.',no:'Dette regelspørsmålet ligger utenfor NORDAPs EASA-regelbibliotek, så svaret er generell kunnskap. Sjekk det i gjeldende EASA Easy Access Rules.'})}</div>`;
     if(MODE==='learn'&&body) extra+=`<div class="easy"><button type="button" class="btn sm" data-easy>${L({en:easy?'Even simpler':'Explain it more simply',no:easy?'Enda enklere':'Forklar enklere'})}</button></div>`;
     d.innerHTML=who+md(body,ex.length,ea,th)+extra; drawSrc(ex,tr.regs,null,ea); if(el('tVoice').checked) NAI.speak(body.replace(/\[(S\d+|E\d+|T\d+|GK)\]/g,''),{radio:false,lang:LAB.lang==='no'?'no':'en'});
     saveSoon(); }
@@ -643,7 +654,7 @@ window.FI_EASA={pick:q=>EASA.search(q,4),block:list=>EASA.promptBlock(list),rend
 /* ---------- språk ---------- */
 const NOI={'Instructor':'Instruktør','Aircraft Instructor':'Instruktør','SOP Instructor':'Instruktør','Aviation Instructor':'Instruktør'};
 const NOM={'An oral like an examiner for a proficiency check or skill test, from your documents and the EASA test content.':'En muntlig som hos en eksaminator, for ferdighetskontroll eller praktisk prøve, fra dokumentene dine og EASA-innholdet.','Ask anything. The instructor explains, then checks your understanding with a follow-up question.':'Spør om hva som helst. Instruktøren forklarer, og sjekker forståelsen med et oppfølgingsspørsmål.','One question at a time, like an examiner. Each answer is graded 0–10 with the correct answer and the source.':'Ett spørsmål om gangen, som en eksaminator. Hvert svar får 0–10 med riktig svar og kilde.','A practical situation that unfolds step by step. You make the decisions and get feedback on each one.':'En praktisk situasjon som utvikler seg steg for steg. Du tar avgjørelsene og får tilbakemelding på hver.','Questions on the topics you found difficult before, until they stick.':'Spørsmål om temaene du syntes var vanskelige, til de sitter.'};
-LAB.add({},Object.assign({},NOI,{'Example setup':'Eksempeloppsett','Type rating trainer: King Air B200':'Typeratingtrener: King Air B200','Study plan, cockpit systems simulators, 320 questions, flashcards, exam mode and an oral examiner that uses your documents. This is how your instructor can be set up for a type rating. →':'Studieplan, simulatorer for cockpitsystemene, 320 spørsmål, flashcards, eksamensmodus og en muntlig eksaminator som bruker dokumentene dine. Slik kan instruktøren din settes opp for en typerating. →',
+LAB.add({},Object.assign({},NOI,{'Type rating':'Typerating','Type rating trainer: King Air B200':'Typeratingtrener: King Air B200','Study plan, cockpit systems simulators, 320 questions, flashcards, exam mode and an oral examiner that uses your documents, built on NORDAP’s standard type-rating structure. →':'Studieplan, simulatorer for cockpitsystemene, 320 spørsmål, flashkort, eksamensmodus og en muntlig sensor som bruker dokumentene dine, bygget på NORDAPs standardstruktur for typerating. →',
  'NORDAP · Flight Intelligence':'NORDAP · Flight Intelligence','Learn':'Lær','Check preparation':'Kontrollforberedelse','An oral like an examiner for a proficiency check or skill test, from your documents and the EASA test content.':'En muntlig som hos en eksaminator, for ferdighetskontroll eller praktisk prøve, fra dokumentene dine og EASA-innholdet.','Check':'Kontroll','Flight':'Tur','Oral exam':'Muntlig eksamen','Scenario':'Scenario','Revision':'Repetisjon',
  'Ask anything about flying, from what lift is to the current EASA rules. Flight Intelligence answers, sends you to the right place on NORDAP, and works from your own AFM, QRH and SOP when you add them. Every answer shows where it comes from.':'Spør om hva som helst om flyging, fra hva løft er til gjeldende EASA-regler. Flight Intelligence svarer, sender deg til riktig sted på NORDAP og jobber ut fra din egen AFM, QRH og SOP når du legger dem inn. Hvert svar viser hvor det kommer fra.',
  'Ask anything: theory, weather, EASA rules, your aircraft and your SOP. Answers from your own documents when you have added them.':'Spør om hva som helst: teori, vær, EASA-regler, flyet ditt og SOP-en din. Svarer fra dine egne dokumenter når du har lagt dem inn.','ask, learn, practise':'spør, lær, øv','Systems, limitations, normal and abnormal procedures, from your AFM, POH, FCOM and QRH.':'Systemer, begrensninger, normale og unormale prosedyrer, fra din AFM, POH, FCOM og QRH.','your aircraft':'ditt fly',
@@ -658,7 +669,7 @@ LAB.add({},Object.assign({},NOI,{'Example setup':'Eksempeloppsett','Type rating 
  'Make one profile per aircraft variant and add its documents. Mark the type and revision of each document, and tick a document as superseded when a new revision arrives. Only add documents you are allowed to use.':'Lag én profil per flyvariant og legg til dokumentene. Merk type og revisjon på hvert dokument, og merk et dokument som erstattet når en ny revisjon kommer. Legg bare til dokumenter du har lov til å bruke.',
  'New aircraft profile':'Ny flyprofil','Type':'Type','Add aircraft':'Legg til fly','Import earlier Check preparation documents':'Hent tidligere dokumenter fra kontrollforberedelsen','General references':'Generelle referanser',
  'Documents that are not tied to one aircraft: EASA Easy Access Rules, the AIP, your ATO’s training manual.':'Dokumenter som ikke hører til ett fly: EASA Easy Access Rules, AIP, skolens treningsmanual.',
- 'Where things are kept: the documents and their text stay in this browser (IndexedDB); a file is only uploaded, as a private copy, if you are signed in and cloud storage for documents is switched on in My workspace. When you ask a question, only the few passages that matter are sent to Claude with the question. Your aircraft profiles, sessions, grades and topics to revise are saved to your profile, so they are there when you come back.':'Hvor ting lagres: dokumentene og teksten blir i denne nettleseren (IndexedDB); en fil lastes bare opp, som en privat kopi, hvis du er logget inn og skylagring for dokumenter er slått på i Mitt arbeidsområde. Når du spør, sendes bare de få avsnittene som betyr noe til Claude sammen med spørsmålet. Flyprofiler, økter, karakterer og temaer å repetere lagres på profilen din, så de er der når du kommer tilbake.',
+ 'Where things are kept: the documents and their text stay in this browser (IndexedDB); a file is only uploaded, as a private copy, if you are signed in and cloud storage for documents is switched on in My workspace. When you ask a question, only the few passages that matter are sent to the AI service with the question (see Privacy). Your aircraft profiles, sessions, grades and topics to revise are saved to your profile, so they are there when you come back.':'Hvor ting lagres: dokumentene og teksten blir i denne nettleseren (IndexedDB); en fil lastes bare opp, som en privat kopi, hvis du er logget inn og skylagring for dokumenter er slått på i Mitt arbeidsområde. Når du spør, sendes bare de få avsnittene som betyr noe til AI-tjenesten sammen med spørsmålet (se Personvern). Flyprofiler, økter, karakterer og temaer å repetere lagres på profilen din, så de er der når du kommer tilbake.',
  'Topics to revise':'Temaer å repetere','Sessions':'Økter','Export my data':'Eksporter dataene mine','Delete all Flight Intelligence data':'Slett alle Flight Intelligence-data','Close':'Lukk',
  'Voice is the browser’s own speech recognition and speech synthesis, so it works best in Chrome or Edge. Audio is never recorded or stored. The instructor is a training aid: formal competency assessment stays with your instructors and examiners, and the approved flight manual always takes precedence.':'Tale bruker nettleserens egen talegjenkjenning og talesyntese, så det virker best i Chrome eller Edge. Lyd blir aldri tatt opp eller lagret. Instruktøren er et treningshjelpemiddel: formell kompetansevurdering ligger hos instruktørene og eksaminatorene dine, og den godkjente flyhåndboken går alltid foran.'
 }));

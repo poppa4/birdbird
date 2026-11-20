@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Training · NORDAP</title>
 <meta name="description" content="NORDAP training in one place: working cockpit trainers for the Cessna 172, DA42 and King Air B200, an IFR trainer with 46 exercises, scored briefings, radio drills and gate-to-gate flights, type rating study, A320 simulator assessment and check preparation.">
+<link rel="canonical" href="https://nordap.eu/training">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NORDAP">
+<meta property="og:title" content="Training · NORDAP">
+<meta property="og:description" content="NORDAP training in one place: working cockpit trainers for the Cessna 172, DA42 and King Air B200, an IFR trainer with 46 exercises, scored briefings, radio drills and gate-to-gate flights, type rating study, A320 simulator assessment and check preparation.">
+<meta property="og:url" content="https://nordap.eu/training">
+<meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#EDF1EE">
 <link rel="stylesheet" href="lab.css?v=15">
 <link rel="stylesheet" href="site.css?v=35">
@@ -200,10 +210,17 @@
   .tv-idx small{font-size:13px}
   .tv-sec{margin-top:64px}
   .tv-sh{padding-bottom:22px}
-  .sy{display:flex}
-  .sy-ph{border-right:0;border-bottom:1px solid var(--frame);height:auto}
-  .sy-ph img{height:auto}
-  .sy h3{font-size:21px}
+  /* phones: each simulator as one compact row (picture beside the name), the long "Trains" list on its own page */
+  .sims{gap:12px}
+  .sy{display:grid;grid-template-columns:minmax(0,36fr) minmax(0,64fr)}
+  .sy-ph{border-bottom:0;border-right:1px solid var(--frame);height:100%}
+  .sy-ph img{height:100%}
+  .sy-b{padding:12px 14px 14px}
+  .sy .tv-wh{display:none}
+  .sy-go{padding-top:10px;gap:6px}
+  .sy-go .tv-btn{padding-left:12px;padding-right:12px}
+  .sy h3{font-size:18px}
+  .sy-kind{font-size:13px}
   .ifr{padding:20px;margin:0 -8px}
   .ifr-ph{border-radius:6px}
   .ifr-f{grid-template-columns:minmax(0,1fr);gap:14px}
@@ -236,7 +253,7 @@
 </style>
 </head>
 <body data-title="Training">
-<script src="site.js?v=109"></script>
+<script src="site.js?v=110"></script>
 <main class="tv" id="main">
 
   <header class="tv-hero">
@@ -534,7 +551,7 @@
   </section>
   <p class="tv-note"><span data-tx="note">Teaching models, not certified simulators. No EASA, Luftfartstilsynet or ATO endorsement is implied.</span><a href="sources.html" data-tx="noteGo">Data sources and licences</a></p>
 </main>
-<script src="lab.js?v=57"></script>
+<script src="lab.js?v=58"></script>
 <script>
 (function(){
 'use strict';

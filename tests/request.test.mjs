@@ -28,3 +28,12 @@ test('mail text leaves out empty lines of the form', () => { const s = mailText(
 test('a correction to a cockpit is stored and mailed as a correction', async () => { const mails = [], env = { DB: makeD1(), REQUEST_TO: 'o@example.org', RESEND_API_KEY: 'k' };
   const r = await post(env, mk(mails), { kind: 'fix', aircraft: 'Boeing 787-8', want: "LOC should be LOC/FAC", rights: true }); assert.equal(r.s, 200);
   assert.equal(mails.length, 1); assert.match(mails[0].b.subject, /correction: Boeing 787-8/); assert.match(mails[0].b.text, /What is wrong:\nLOC should be LOC\/FAC/); });
+test('the contact form: stored and mailed with topic, page and reply-to; e-mail and message are required', async () => { const mails = [], env = { DB: makeD1(), REQUEST_TO: 'owner@example.org', RESEND_API_KEY: 're_test' };
+  t += 86_400_000;
+  const r = await post(env, mk(mails), { kind: 'contact', topic: 'content', name: 'Ann', reply: 'ann@example.org', want: 'The V1 graph has the wrong label.', page: 'performance.html#v1' }, O, '9.9.9.1');
+  assert.deepEqual(r, { s: 200, j: { ok: true, mailed: true } }); const m = mails[0];
+  assert.equal(m.b.reply_to, 'ann@example.org'); assert.match(m.b.subject, /NORDAP contact: Error in content from Ann/); assert.match(m.b.text, /Page: performance\.html#v1/); assert.match(m.b.text, /wrong label/);
+  assert.equal((await post(env, mk([]), { kind: 'contact', reply: 'nope', want: 'Hello there' }, O, '9.9.9.2')).s, 400);
+  assert.equal((await post(env, mk([]), { kind: 'contact', reply: 'a@b.no', want: '' }, O, '9.9.9.3')).s, 400);
+  assert.match(mailText({ kind: 'contact', topic: 'bogus', reply: 'a@b.no', want: 'x' }, t), /Contact form: General/);
+});

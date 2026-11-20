@@ -15,6 +15,7 @@
     pics: ['Pictures of the cockpit (optional, up to 3)', 'Bilder av cockpiten (valgfritt, inntil 3)'],
     rights: ['I took these pictures myself, or I have permission to share them.', 'Jeg har tatt bildene selv, eller har lov til å dele dem.'],
     name: ['Your name (optional)', 'Navnet ditt (valgfritt)'], reply: ['Your e-mail, if you want an answer (optional)', 'E-posten din, om du vil ha svar (valgfritt)'],
+    priv: ['Stored only to handle your request: pictures are removed when it has reached NORDAP, the rest 90 days later. ', 'Lagres bare for å behandle ønsket ditt: bildene fjernes når det har kommet fram til NORDAP, resten 90 dager senere. '], privL: ['Privacy', 'Personvern'],
     send: ['Send request', 'Send ønsket'], cancel: ['Cancel', 'Avbryt'], close: ['Close', 'Lukk'], sending: ['Sending…', 'Sender…'],
     done: ['Thank you. Your request has been received.', 'Takk. Ønsket ditt er mottatt.'],
     eAc: ['Write which aircraft you want.', 'Skriv hvilket fly du ønsker.'], eRights: ['Tick the box about the pictures first.', 'Kryss av i boksen om bildene først.'],
@@ -48,6 +49,7 @@
       + '<label><span data-k="pics"></span><input type="file" name="pics" accept="image/*" multiple></label>'
       + '<label class="rqc" hidden><input type="checkbox" name="rights"><span data-k="rights"></span></label>'
       + '<div class="rq2"><label><span data-k="name"></span><input type="text" name="name" maxlength="80" autocomplete="name"></label><label><span data-k="reply"></span><input type="email" name="reply" maxlength="120" autocomplete="email"></label></div>'
+      + '<p class="rqpv" style="font-size:12.5px;margin:0 0 12px"><span></span><a href="privacy.html#forms"></a></p>'
       + '<label class="rqh" aria-hidden="true">Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label>'
       + '<div class="rqm" role="status" aria-live="polite"></div><div class="rqa"><button type="button" data-x></button><button type="submit" class="pri"></button></div></form>';
     document.body.appendChild(dlg);
@@ -59,6 +61,7 @@
   }
   function texts(done) {
     const f = dlg.querySelector('form');
+    dlg.querySelector('.rqpv span').textContent = t('priv'); dlg.querySelector('.rqpv a').textContent = t('privL');
     dlg.querySelector('#rqh').textContent = t('h'); dlg.querySelector('#rqp').textContent = t(kind === 'sim' ? 'pSim' : 'pFlows');
     dlg.querySelectorAll('[data-k]').forEach(s => { s.textContent = t(s.dataset.k); });
     f.aircraft.placeholder = t('acPh'); f.variant.placeholder = t('vrPh'); f.links.placeholder = t('linksPh');

@@ -3,6 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="description" content="Route Explorer: build a route on the map, see the terrain under it in profile and 3D, and send it to your briefing pack.">
+<link rel="canonical" href="https://nordap.eu/route">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NORDAP">
+<meta property="og:title" content="Route Explorer">
+<meta property="og:description" content="Route Explorer: build a route on the map, see the terrain under it in profile and 3D, and send it to your briefing pack.">
+<meta property="og:url" content="https://nordap.eu/route">
+<meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Route Explorer</title>
 <link rel="stylesheet" href="lab.css?v=15">
@@ -541,7 +551,7 @@
 <link rel="preload" as="style" href="vendor/maplibre/maplibre-gl.css?v=5.24.0">
 </head>
 <body data-title="Route Explorer">
-<script src="site.js?v=109"></script>
+<script src="site.js?v=110"></script>
 <main id="main">
 <h1 class="sr">Route Explorer</h1>
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
@@ -805,7 +815,7 @@
   </div>
 </div>
 </main>
-<script src="lab.js?v=57"></script>
+<script src="lab.js?v=58"></script>
 <script>/* offline for the ground briefing: sw.js */ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')) addEventListener('load',()=>navigator.serviceWorker.register('/sw.js?v=3').catch(()=>{}));</script>
 <script src="ai.js?v=8"></script>
 <script src="store.js?v=4"></script>

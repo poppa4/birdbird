@@ -13,6 +13,7 @@
     reply: ['Your e-mail', 'E-posten din'],
     size: ['Number of students or pilots (optional)', 'Antall elever eller piloter (valgfritt)'], sizePh: ['e.g. about 40', 'f.eks. rundt 40'],
     want: ['What are you interested in? (optional)', 'Hva er dere interessert i? (valgfritt)'], wantPh: ['e.g. the labs in class, the briefing pack, a type-rating setup', 'f.eks. labbene i undervisningen, briefingpakken, et typerating-oppsett'],
+    priv: ['Used only to answer you, and deleted 90 days after it has reached NORDAP. ', 'Brukes bare til å svare deg, og slettes 90 dager etter at det har kommet fram til NORDAP. '], privL: ['Privacy', 'Personvern'],
     send: ['Send', 'Send'], cancel: ['Cancel', 'Avbryt'], close: ['Close', 'Lukk'], sending: ['Sending…', 'Sender…'],
     done: ['Thank you. We have received your message and will get back to you.', 'Takk. Vi har fått meldingen din og tar kontakt.'],
     eOrg: ['Write the name of your school or organisation.', 'Skriv navnet på skolen eller organisasjonen.'],
@@ -40,6 +41,7 @@
       + '<div class="rq2"><label><span data-k="name"></span><input type="text" name="name" maxlength="80" autocomplete="name"></label><label><span data-k="role"></span><input type="text" name="role" maxlength="80" autocomplete="organization-title"></label></div>'
       + '<div class="rq2"><label><span data-k="reply"></span><input type="email" name="reply" maxlength="120" required autocomplete="email"></label><label><span data-k="size"></span><input type="text" name="size" maxlength="40" autocomplete="off"></label></div>'
       + '<label><span data-k="want"></span><textarea name="want" maxlength="2000"></textarea></label>'
+      + '<p class="sfpv" style="font-size:12.5px;margin:0 0 12px"><span></span><a href="privacy.html#forms"></a></p>'
       + '<label class="rqh" aria-hidden="true">Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label>'
       + '<div class="rqm" role="status" aria-live="polite"></div><div class="rqa"><button type="button" data-x></button><button type="submit" class="pri"></button></div></form>';
     document.body.appendChild(dlg);
@@ -52,6 +54,7 @@
     const f = dlg.querySelector('form');
     dlg.querySelector('#sfh').textContent = t('h'); dlg.querySelector('#sfp').textContent = t('p');
     dlg.querySelectorAll('[data-k]').forEach(s => { s.textContent = t(s.dataset.k); });
+    dlg.querySelector('.sfpv span').textContent = t('priv'); dlg.querySelector('.sfpv a').textContent = t('privL');
     f.org.placeholder = t('orgPh'); f.role.placeholder = t('rolePh'); f.size.placeholder = t('sizePh'); f.want.placeholder = t('wantPh');
     dlg.querySelector('[data-x]').textContent = t(done ? 'close' : 'cancel'); const sb = f.querySelector('[type=submit]'); sb.textContent = t('send'); sb.hidden = !!done; sb.disabled = false;
   }

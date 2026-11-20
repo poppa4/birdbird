@@ -162,7 +162,7 @@
      Flight Intelligence page, so every answer offers to continue there. */
   const form = document.getElementById('fiAskF'), inp = document.getElementById('fiAskIn');
   let live = null, turns = [], busy = false, loading = null;
-  const LT = { ph: t2('Ask Flight Intelligence', 'Spør Flight Intelligence'), wait: t2('Thinking…', 'Tenker …'),
+  const LT = { outlib: t2('This rules question is outside NORDAP’s EASA rules library, so the answer is general knowledge. Check it in the current EASA Easy Access Rules.', 'Dette regelspørsmålet ligger utenfor NORDAPs EASA-regelbibliotek, så svaret er generell kunnskap. Sjekk det i gjeldende EASA Easy Access Rules.'), ph: t2('Ask Flight Intelligence', 'Spør Flight Intelligence'), wait: t2('Thinking…', 'Tenker …'),
     cont: t2('Continue in Flight Intelligence →', 'Fortsett i Flight Intelligence →'),
     docs: t2('Answer from my own AFM and SOP →', 'Svar fra min egen AFM og SOP →'),
     clear: t2('Back to the examples', 'Tilbake til eksemplene'),
@@ -171,7 +171,7 @@
     gk: t2('general knowledge', 'generell kunnskap') };
   const setPh = () => { if (inp) inp.placeholder = L(LT.ph); };
   const load = src => new Promise((ok, no) => { if (document.querySelector(`script[src="${src}"]`)) return ok(); const sc = document.createElement('script'); sc.src = src; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
-  function deps() { if (!loading) loading = Promise.all([window.NAI ? 0 : load('ai.js?v=8'), window.EASA ? 0 : load('easa.js?v=8'), window.THEORY ? 0 : load('theory.js?v=5')]).catch(() => {}); return loading; }
+  function deps() { if (!loading) loading = Promise.all([window.NAI ? 0 : load('ai.js?v=8'), window.EASA ? 0 : load('easa.js?v=8'), window.THEORY ? 0 : load('theory.js?v=6')]).catch(() => {}); return loading; }
 
   function md(text, list, th) {
     let h = esc(String(text || '').trim());
@@ -194,7 +194,7 @@
     if (!live) return;
     live.innerHTML = turns.map((t, i) => `<div class="fi-t">
       <p class="fi-q">${esc(t.q)}</p>
-      <div class="fi-a">${t.err ? `<p class="fi-err">${esc(t.err)}</p>` : t.a == null ? `<p class="fi-wait">${esc(L(LT.wait))}</p>` : md(t.a, t.list, t.th)}</div>
+      <div class="fi-a">${t.err ? `<p class="fi-err">${esc(t.err)}</p>` : t.a == null ? `<p class="fi-wait">${esc(L(LT.wait))}</p>` : md(t.a, t.list, t.th) + (!t.easy && !(t.list || []).length && window.EASA && EASA.isRules(t.q) ? `<p class="fi-wait">${esc(L(LT.outlib))}</p>` : '')}</div>
       ${i === turns.length - 1 && t.a != null ? `<div class="fi-go"><button type="button" class="fi-easy" data-fi-easy>${esc(L(t.easy ? LT.easier : LT.easy))}</button><a href="${fiUrl(t.src || t.q)}">${esc(L(LT.cont))}</a><a href="fi.html#docs">${esc(L(LT.docs))}</a><button type="button" data-fi-clear>${esc(L(LT.clear))}</button></div>` : ''}
     </div>`).join('');
     live.scrollTop = live.scrollHeight;

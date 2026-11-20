@@ -43,8 +43,21 @@ export function cleanSchool(b) {
   o.aircraft = o.org; // the shared columns and the subject line use this
   return { o, images: [] };
 }
+/* kind 'contact': the general contact form (schoolform.js, data-contactform), also used to report an error in content or a
+   technical problem from a lab, Flight Intelligence or any other page, and for privacy requests.
+   { kind:'contact', topic:'general'|'content'|'technical'|'privacy', name?, reply (required), want (required), page? } */
+export const TOPICS = { general: 'General', content: 'Error in content', technical: 'Technical problem', privacy: 'Privacy request' };
+export function cleanContact(b) {
+  const topic = Object.prototype.hasOwnProperty.call(TOPICS, b.topic) ? b.topic : 'general';
+  const o = { kind: 'contact', topic, name: str(b.name, 80), reply: str(b.reply, 120), want: str(b.want, 3000), page: str(b.page, 200).replace(/[^\w./#?=&%\-]/g, '') };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(o.reply)) bad(400, 'bad_request', 'Write an e-mail address so we can answer you.');
+  if (o.want.length < 5) bad(400, 'bad_request', 'Write your message.');
+  o.aircraft = TOPICS[topic]; // the shared columns and the subject line use this
+  return { o, images: [] };
+}
 export function clean(b) {
   if (b.kind === 'school') return cleanSchool(b);
+  if (b.kind === 'contact') return cleanContact(b);
   const kind = b.kind === 'sim' ? 'sim' : b.kind === 'flows' ? 'flows' : b.kind === 'fix' ? 'fix' : bad(400, 'bad_request', 'Say whether the request is for a simulator or for the flow trainer.');
   const o = { kind, aircraft: str(b.aircraft, 80), variant: str(b.variant, 80), want: str(b.want, 1500), links: str(b.links, 1000), name: str(b.name, 80), reply: str(b.reply, 120) };
   if (o.aircraft.length < 2) bad(400, 'bad_request', 'Write which aircraft you want.');
@@ -58,6 +71,11 @@ export function clean(b) {
   return { o, images };
 }
 export function mailText(o, t) {
+  if (o.kind === 'contact') {
+    const L = [`Contact form: ${TOPICS[o.topic] || 'General'}`, ''];
+    if (o.page) L.push(`Page: ${o.page}`);
+    L.push(`From: ${o.name || 'no name given'} <${o.reply}>`, '', 'Message:', o.want, '', `Sent: ${new Date(t).toISOString()}`); return L.join('\n');
+  }
   if (o.kind === 'school') {
     const L = ['A school or organisation is interested in NORDAP', '', `Organisation: ${o.org}`];
     if (o.country) L.push(`Country: ${o.country}`); if (o.size) L.push(`Size: ${o.size}`);
@@ -75,7 +93,7 @@ export function mailText(o, t) {
 /* returns true when the mail went out */
 export async function send(env, o, images, t, fetcher) {
   if (!env.REQUEST_TO || !env.RESEND_API_KEY) return false;
-  const body = { from: env.REQUEST_FROM || 'NORDAP <onboarding@resend.dev>', to: [env.REQUEST_TO], subject: (o.kind === 'school' ? `NORDAP: interest from ${o.org}${o.country ? ' (' + o.country + ')' : ''}` : `NORDAP ${o.kind === 'fix' ? 'correction' : 'request'}: ${o.aircraft}${o.variant ? ' ' + o.variant : ''} (${o.kind === 'sim' ? 'simulator' : 'flow trainer'})`).slice(0, 150), text: mailText(o, t) };
+  const body = { from: env.REQUEST_FROM || 'NORDAP <onboarding@resend.dev>', to: [env.REQUEST_TO], subject: o.kind === 'contact' ? `NORDAP contact: ${TOPICS[o.topic] || 'General'}${o.name ? ' from ' + o.name : ''}` : (o.kind === 'school' ? `NORDAP: interest from ${o.org}${o.country ? ' (' + o.country + ')' : ''}` : `NORDAP ${o.kind === 'fix' ? 'correction' : 'request'}: ${o.aircraft}${o.variant ? ' ' + o.variant : ''} (${o.kind === 'sim' ? 'simulator' : 'flow trainer'})`).slice(0, 150), text: mailText(o, t) };
   if (o.reply) body.reply_to = o.reply;
   if (images.length) body.attachments = images.map(im => ({ filename: im.name, content: im.data }));
   try { const r = await (fetcher || fetch)(RESEND, { method: 'POST', headers: { authorization: 'Bearer ' + env.RESEND_API_KEY, 'content-type': 'application/json' }, body: JSON.stringify(body) });

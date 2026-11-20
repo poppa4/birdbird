@@ -4,7 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>My training · NORDAP</title>
-<meta name="description" content="Your NORDAP training dashboard: rank, next steps, learning path, type rating, briefing packs, routes and achievements.">
+<meta name="description" content="My page on NORDAP: your briefing packs, saved routes, account and data.">
+<link rel="canonical" href="https://nordap.eu/profile">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NORDAP">
+<meta property="og:title" content="My training · NORDAP">
+<meta property="og:description" content="My page on NORDAP: your briefing packs, saved routes, account and data.">
+<meta property="og:url" content="https://nordap.eu/profile">
+<meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="lab.css?v=15">
 <link rel="stylesheet" href="site.css?v=35">
 <style>
@@ -249,7 +259,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 </style>
 </head>
 <body data-title="My page">
-<script src="site.js?v=109"></script>
+<script src="site.js?v=110"></script>
 <div class="page">
   <header class="mt-head" id="top">
     <div class="brand">
@@ -338,14 +348,14 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
   <dialog class="rs" id="rsDlg" aria-labelledby="rsH">
     <form method="dialog">
       <h3 id="rsH">Reset your progress?</h3>
-      <p>This deletes your rank and experience points, quiz and lab results, type rating statistics, flashcard boxes, instructor session history and your chosen track in this browser. It cannot be undone. Export a copy first if you might want it back.</p>
+      <p>This deletes your quiz and lab results, type rating statistics, flashcard boxes, instructor session history and your chosen track in this browser. It cannot be undone. Export a copy first if you might want it back.</p>
       <p id="rsAcct" hidden></p>
       <label><input type="checkbox" id="rsPlan"> <span>Also delete my briefing packs, saved routes, map library and saved aircraft</span></label>
       <div class="btns"><button class="btn dangerfill" value="yes" id="rsYes">Delete progress</button><button class="btn" value="no" autofocus>Cancel</button></div>
     </form>
   </dialog>
 </div>
-<script src="lab.js?v=57"></script>
+<script src="lab.js?v=58"></script>
 <script src="store.js?v=4"></script>
 <script src="localdata.js?v=3"></script>
 <script>
@@ -367,7 +377,7 @@ LAB.add({},{
  'Import':'Importer','Load a progress file from another device or browser. Your best results are kept, and newer packs and routes win.':'Last inn en progresjonsfil fra en annen enhet eller nettleser. De beste resultatene beholdes, og nyeste pakker og ruter vinner.','Choose a file…':'Velg en fil …',
  'Start over':'Start på nytt','Delete your training progress in this browser. You choose whether briefing packs and routes go too.':'Slett treningsprogresjonen i denne nettleseren. Du velger selv om briefingpakker og ruter også skal slettes.','Reset progress…':'Nullstill progresjonen …',
  'Reset your progress?':'Nullstille progresjonen?',
- 'This deletes your rank and experience points, quiz and lab results, type rating statistics, flashcard boxes, instructor session history and your chosen track in this browser. It cannot be undone. Export a copy first if you might want it back.':'Dette sletter rangen og erfaringspoengene, quiz- og labresultatene, typeratingstatistikken, flashkortboksene, økthistorikken med instruktøren og valgt løp i denne nettleseren. Det kan ikke angres. Eksporter en kopi først hvis du kanskje vil ha den tilbake.',
+ 'This deletes your quiz and lab results, type rating statistics, flashcard boxes, instructor session history and your chosen track in this browser. It cannot be undone. Export a copy first if you might want it back.':'Dette sletter quiz- og labresultatene, typeratingstatistikken, flashkortboksene, økthistorikken med instruktøren og valgt løp i denne nettleseren. Det kan ikke angres. Eksporter en kopi først hvis du kanskje vil ha den tilbake.',
  'Also delete my briefing packs, saved routes, map library and saved aircraft':'Slett også briefingpakkene, de lagrede rutene, kartbiblioteket og de lagrede flyene mine',
  'Delete progress':'Slett progresjonen','Cancel':'Avbryt',
  'Account':'Konto','Checking your account…':'Sjekker kontoen din …','Delete your account?':'Slette kontoen?'

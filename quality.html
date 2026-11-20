@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>How content is checked · NORDAP</title>
 <meta name="description" content="Who writes the content on NORDAP, what it is checked against, what has not been reviewed by an outside expert, and a change log.">
+<link rel="canonical" href="https://nordap.eu/quality">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NORDAP">
+<meta property="og:title" content="How content is checked · NORDAP">
+<meta property="og:description" content="Who writes the content on NORDAP, what it is checked against, what has not been reviewed by an outside expert, and a change log.">
+<meta property="og:url" content="https://nordap.eu/quality">
+<meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="lab.css?v=15">
 <link rel="stylesheet" href="site.css?v=35">
 <style>
@@ -28,7 +38,7 @@
 </style>
 </head>
 <body data-title="How content is checked">
-<script src="site.js?v=109"></script>
+<script src="site.js?v=110"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -67,13 +77,14 @@
   </section>
   <section class="card" id="errors">
     <h2>Found an error?</h2>
-    <p>The flow trainer has a button for a wrong or missing control name. For everything else, use the contact address on the about page. A confirmed error is corrected and entered in the change log.</p>
-    <p><a class="btn" href="about.html#contact">Contact</a></p>
+    <p>The flow trainer has a button for a wrong or missing control name. For everything else, use Report an error, here or at the bottom of every page. A confirmed error is corrected and entered in the change log.</p>
+    <p><a class="btn" href="#errors" data-contactform data-topic="content">Report an error</a></p>
   </section>
   <section class="card" id="log">
     <h2>Change log</h2>
     <p class="lead">Changes to content, data and models. Changes to layout and wording are not listed.</p>
     <ul class="cl">
+      <li><time datetime="2026-11-20">2026-11-20</time><span>Contact form and Report an error on every page. The privacy page now covers forms, the flow library and who is responsible. Flight Intelligence says when a rules question is outside its EASA library.</span></li>
       <li><time datetime="2026-11-17">2026-11-17</time><span>The platform is renamed NORDAP, Nordic Aviation Platform. Model profiles, status words and this page are added.</span></li>
       <li><time datetime="2026-11-17">2026-11-17</time><span>Flow trainer: 34 ready-made flows from public handbooks and checklists, each with its source. Control names corrected against public references on the 787, the A350 and the Seneca.</span></li>
       <li><time datetime="2026-11-17">2026-11-17</time><span>AIP link check: a portal that fails to answer once is tried again before it counts as dead.</span></li>
@@ -86,7 +97,7 @@
   </section>
 
 </div>
-<script src="lab.js?v=57"></script>
+<script src="lab.js?v=58"></script>
 <script>
 (function(){
 'use strict';
@@ -110,10 +121,11 @@ LAB.add({'Sections':'Sections'},{
  "What each tool is built on and what it leaves out is listed in the model profiles.":"Hva hvert verktøy bygger på og hva det utelater, står i modellprofilene.",
  "Model profiles":"Modellprofiler",
  "What has not been checked":"Hva som ikke er kontrollert",
- "The flow trainer has a button for a wrong or missing control name. For everything else, use the contact address on the about page. A confirmed error is corrected and entered in the change log.":"Flow-treneren har en knapp for feil eller manglende kontrollnavn. For alt annet, bruk kontaktadressen på Om-siden. En bekreftet feil rettes og føres i endringsloggen.",
+ "The flow trainer has a button for a wrong or missing control name. For everything else, use Report an error, here or at the bottom of every page. A confirmed error is corrected and entered in the change log.":"Flow-treneren har en knapp for feil eller manglende kontrollnavn. For alt annet, bruk Meld fra om en feil, her eller nederst på hver side. En bekreftet feil rettes og føres i endringsloggen.",
  "Contact":"Kontakt",
  "Found an error?":"Funnet en feil?",
  "Changes to content, data and models. Changes to layout and wording are not listed.":"Endringer i innhold, data og modeller. Endringer i utseende og ordlyd er ikke med.",
+ "Contact form and Report an error on every page. The privacy page now covers forms, the flow library and who is responsible. Flight Intelligence says when a rules question is outside its EASA library.":"Kontaktskjema og Meld fra om en feil på hver side. Personvernsiden dekker nå skjemaer, flow-biblioteket og hvem som er ansvarlig. Flight Intelligence sier fra når et regelspørsmål ligger utenfor EASA-biblioteket.",
  "The platform is renamed NORDAP, Nordic Aviation Platform. Model profiles, status words and this page are added.":"Plattformen får navnet NORDAP, Nordic Aviation Platform. Modellprofiler, statusord og denne siden legges til.",
  "Flow trainer: 34 ready-made flows from public handbooks and checklists, each with its source. Control names corrected against public references on the 787, the A350 and the Seneca.":"Flow-trener: 34 ferdige flows fra offentlige håndbøker og sjekklister, hver med kilde. Kontrollnavn rettet mot offentlige referanser på 787, A350 og Seneca.",
  "AIP link check: a portal that fails to answer once is tried again before it counts as dead.":"AIP-lenkesjekk: en portal som ikke svarer én gang, prøves på nytt før den regnes som død.",

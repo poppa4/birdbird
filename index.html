@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>NORDAP · Nordic Aviation Platform</title>
 <meta name="description" content="NORDAP is an aviation platform built in Norway for pilots, students and flight schools: 25 interactive labs on the EASA ATPL syllabus, Route Explorer, a printable briefing pack, and an instructor that answers from your own AFM, QRH and SOP.">
+<link rel="canonical" href="https://nordap.eu/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NORDAP">
+<meta property="og:title" content="NORDAP · Nordic Aviation Platform">
+<meta property="og:description" content="NORDAP is an aviation platform built in Norway for pilots, students and flight schools: 25 interactive labs on the EASA ATPL syllabus, Route Explorer, a printable briefing pack, and an instructor that answers from your own AFM, QRH and SOP.">
+<meta property="og:url" content="https://nordap.eu/">
+<meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0B2545">
 <link rel="preload" as="image" href="img/front/sunset2-1400.webp" imagesrcset="img/front/sunset2-760.webp 760w, img/front/sunset2-1400.webp 1400w, img/front/sunset2-1672.webp 1672w, img/front/sunset2-2560.webp 2560w, img/front/sunset2-3344.webp 3344w, img/front/sunset2-3840.webp 3840w" imagesizes="100vw" type="image/webp">
 <link rel="preload" as="script" href="hero-foil.js?v=9">
@@ -544,6 +554,7 @@ html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-d-no.webp)}
 .fx-num dd{margin:0;font-family:var(--disp);font-stretch:92%;font-weight:300;font-size:54px;line-height:1;padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.55);min-width:2.2em}
 .fx-num dt{margin-top:12px;font-size:15px;line-height:1.4;color:#E3E9F0}
 .fx-side{color:#fff;padding-top:116px}
+.fx-solo{grid-template-columns:minmax(0,1fr)}.fx-solo .fx-side{max-width:760px}
 .fx-side h2{margin-bottom:16px!important}
 .fx-side p{font-size:16px;line-height:1.6;color:#D3DBE4;margin-bottom:22px!important}
 .fp .fx-side ul{list-style:none;margin:0 0 26px;padding:0}
@@ -620,7 +631,7 @@ html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-d-no.webp)}
 </style>
 </head>
 <body data-home="1" data-title="NORDAP · Nordic Aviation Platform">
-<script src="site.js?v=109"></script>
+<script src="site.js?v=110"></script>
 <script>/* the still of the aerofoil for this language and screen, fetched before the plate is laid out */(function(){var l=document.createElement("link");l.rel="preload";l.as="image";l.type="image/webp";l.href="img/front/foil-poster-"+(innerWidth<=640?"p":"d")+"-"+(document.documentElement.lang==="nb"?"no":"en")+".webp";document.head.appendChild(l);var k=document.createElement("link");k.rel="preload";k.as="script";k.href="foil-grid-"+((innerWidth<=640||(navigator.hardwareConcurrency||4)<=4)?22:19)+".js?v=1";document.head.appendChild(k);})();</script>
 <main class="fp" id="main">
 
@@ -660,7 +671,7 @@ html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-d-no.webp)}
         <div class="fp-index">
           <h3 class="vh" data-tx="h3idx">Subject areas and their EASA ATPL subjects</h3>
           <ol id="fpAreas"></ol>
-          <p class="foot"><a class="tl" href="lab.html" data-tx="allLabs">All <span class="nLabs">25</span> labs</a><a class="tl" href="lab.html#more" data-tx="hf">Human factors</a></p>
+          <p class="foot"><a class="tl" href="lab.html" data-tx="allLabs">All <span class="nLabs">25</span> labs</a><a class="tl" href="lab.html#more" data-tx="hf">Human factors · 2 labs</a></p>
         </div>
       </div>
       </section>
@@ -689,8 +700,8 @@ html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-d-no.webp)}
       <li><a href="flows.html"><i>2</i><b>Flows</b><span data-tx="s6">Learn your airline’s flows by heart on the real cockpit, alone or with your partner.</span></a></li>
       <li><a href="training.html"><i>3</i><b data-tx="trnB">Cockpit trainers</b><span data-tx="s5">Six cockpits you can fly, from the Cessna 172 to the A320, 737 and ATR 72, in 2D and 3D.</span></a></li>
       <li><a href="prep.html"><i>4</i><b>Briefing pack</b><span data-tx="s3">NOTAM, weather, minima, performance, fuel, mass and balance, printed as a booklet.</span></a></li>
-      <li><a href="route.html"><i>5</i><b>Route Explorer</b><span data-tx="s2">Plan the route on a VFR map and read the terrain under it.</span></a></li>
-      <li><a href="fi.html"><i>6</i><b>Flight Intelligence</b><span data-tx="s4">Answers from your AFM, QRH and SOP, with the page each one comes from.</span></a></li>
+      <li><a href="route.html"><i>5</i><b>Route Explorer</b><span data-tx="s2">Draw the route on a VFR map and see the terrain under it.</span></a></li>
+      <li><a href="fi.html"><i>6</i><b>Flight Intelligence</b><span data-tx="s4">Answers from a curated EASA rules library and your own AFM, QRH and SOP, with the source of each one.</span></a></li>
     </ol>
   </nav>
 
@@ -720,146 +731,13 @@ html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-d-no.webp)}
         </div>
       </div>
 
-      <!-- the cockpit trainers: Cessna 172, DA42, King Air B200, Airbus A320, Boeing 737-800 and ATR 72-500 -->
-      <section class="sm" id="fpSims" data-ac="b200" aria-labelledby="h-sims">
-        <div class="sm-top sm-rv">
-          <div>
-            <p class="sm-k" data-tx="smK">Cockpit trainers</p>
-            <h3 id="h-sims" data-tx="smH">Take your seat in the cockpit</h3>
-          </div>
-          <p class="sm-lede" data-tx="smP">Six working cockpits, from the six basic instruments to two-pilot turboprops and two airliners. Each one is a whole panel you can fly, from the ground or straight onto an ILS in one click, and most also have a 3D cockpit, in beta.</p>
-        </div>
-        <div class="sm-grid">
-          <div class="sm-view sm-rv d1" id="smView">
-            <figure class="sm-fig" data-ac="c172">
-              <div class="sm-shot"><img data-srcset="img/front/sim-c172-panel-760.webp 760w, img/front/sim-c172-panel-1400.webp 1400w, img/front/sim-c172-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
-                alt="The Cessna 172 trainer's instrument panel on the ILS 36 approach: the six basic flight instruments, the VOR indicators and the ADF, and the radio stack with the audio panel, two NAV/COM radios, the ADF, DME and transponder." data-alt-no="Instrumentpanelet i Cessna 172-treneren på ILS 36-innflygingen: de seks grunnleggende flyinstrumentene, VOR-indikatorene og ADF-en, og radiostakken med audiopanel, to NAV/COM-radioer, ADF, DME og transponder."></div>
-              <figcaption data-tx="smCapc172"><b>Cessna 172, on the ILS 36.</b> The six basic instruments, two VOR indicators and the ADF, and a full radio stack you tune yourself.</figcaption>
-            </figure>
-            <figure class="sm-fig" data-ac="da42">
-              <div class="sm-shot"><img data-srcset="img/front/sim-da42-panel-760.webp 760w, img/front/sim-da42-panel-1400.webp 1400w, img/front/sim-da42-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
-                alt="The DA42 trainer's glass cockpit on the ILS 36 approach with the autopilot coupled: the PFD with the localizer and glideslope captured, the MFD with the engine page and the moving map, and the standby instruments above." data-alt-no="Glasscockpiten i DA42-treneren på ILS 36-innflygingen med autopiloten koblet inn: PFD-en med localizer og glidebane fanget, MFD-en med motorsiden og kartet, og reserveinstrumentene over."></div>
-              <figcaption data-tx="smCapda42"><b>DA42, on the ILS 36 with the autopilot coupled.</b> PFD and MFD with the engine page and moving map, the standby instruments and the switch row.</figcaption>
-            </figure>
-            <figure class="sm-fig on" data-ac="b200">
-              <div class="sm-shot"><img src="img/front/sim-b200-panel-1400.webp" srcset="img/front/sim-b200-panel-760.webp 760w, img/front/sim-b200-panel-1400.webp 1400w, img/front/sim-b200-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" loading="lazy" decoding="async"
-                alt="The King Air B200 trainer's flight deck on the ILS 36 approach with the autopilot coupled: attitude and situation displays for both pilots, the round engine instruments in the centre, the navigator and the weather display, and the annunciator panel above." data-alt-no="Cockpiten i King Air B200-treneren på ILS 36-innflygingen med autopiloten koblet inn: attityde- og kursskjermer for begge piloter, de runde motorinstrumentene i midten, navigatoren og værskjermen, og varselpanelet over."></div>
-              <figcaption data-tx="smCapb200"><b>King Air B200, on the ILS 36 with the autopilot coupled.</b> Displays for both pilots, the engine instruments in the centre and the annunciator panel.</figcaption>
-            </figure>
-            <figure class="sm-fig" data-ac="a320">
-              <div class="sm-shot"><img data-srcset="img/front/sim-a320-panel-760.webp 760w, img/front/sim-a320-panel-1400.webp 1400w, img/front/sim-a320-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
-                alt="The A320 trainer's flight deck on the ILS 36 with both autopilots engaged: PFDs with the FMA, the NDs, the E/WD and the system display, the FCU and the EFIS control panels." data-alt-no="Cockpiten i A320-treneren på ILS 36 med begge autopilotene inne: PFD-ene med FMA, ND-ene, E/WD og systemskjermen, FCU og EFIS-panelene."></div>
-              <figcaption data-tx="smCapa320"><b>Airbus A320, on the ILS 36 with both autopilots engaged.</b> PFDs with the FMA, the NDs, the ECAM displays and the FCU.</figcaption>
-            </figure>
-            <figure class="sm-fig" data-ac="b737">
-              <div class="sm-shot"><img data-srcset="img/front/sim-b737-panel-760.webp 760w, img/front/sim-b737-panel-1400.webp 1400w, img/front/sim-b737-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
-                alt="The 737-800 trainer's flight deck on the ILS 36 with CMD B engaged: PFDs with the FMA, the NDs, the engine display, the MCP and the EFIS control panels." data-alt-no="Cockpiten i 737-800-treneren på ILS 36 med CMD B inne: PFD-ene med FMA, ND-ene, motorskjermen, MCP og EFIS-panelene."></div>
-              <figcaption data-tx="smCapb737"><b>Boeing 737-800, on the ILS 36 with CMD B engaged.</b> PFDs with the FMA, the NDs, the engine display and the MCP.</figcaption>
-            </figure>
-            <figure class="sm-fig" data-ac="atr72">
-              <div class="sm-shot"><img data-srcset="img/front/sim-atr72-panel-760.webp 760w, img/front/sim-atr72-panel-1400.webp 1400w, img/front/sim-atr72-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
-                alt="The ATR 72 trainer's flight deck at 5,000 ft with AP and YD on in HDG SEL: the EADIs and EHSIs, the ADU, the round engine gauges and the crew alerting panel." data-alt-no="Cockpiten i ATR 72-treneren i 5000 fot med AP og YD inne i HDG SEL: EADI-ene og EHSI-ene, ADU-en, de runde motorinstrumentene og crew alerting panel."></div>
-              <figcaption data-tx="smCapatr"><b>ATR 72-500, at 5,000 ft with AP and YD in HDG SEL.</b> EADIs and EHSIs, the ADU, the engine gauges and the crew alerting panel.</figcaption>
-            </figure>
-          </div>
-          <div class="sm-side sm-rv d2">
-            <ul class="sm-tabs" id="smTabs" aria-label="Aircraft" data-aria-no="Flytype">
-              <li><button type="button" data-ac="c172" aria-pressed="false" aria-controls="smView smAcC172"><img data-src="img/front/sim-c172-thumb.webp" width="176" height="110" alt=""><b>Cessna 172</b><span data-tx="smC1">Single-engine piston, analogue panel</span></button></li>
-              <li><button type="button" data-ac="da42" aria-pressed="false" aria-controls="smView smAcDA42"><img data-src="img/front/sim-da42-thumb.webp" width="176" height="110" alt=""><b>DA42</b><span data-tx="smD1">Twin piston, glass cockpit</span></button></li>
-              <li><button type="button" data-ac="b200" aria-pressed="true" aria-controls="smView smAcB200"><img data-src="img/front/sim-b200-thumb.webp" width="176" height="110" alt=""><b>King Air B200</b><span data-tx="smB1">Twin turboprop, two-pilot flight deck</span></button></li>
-              <li><button type="button" data-ac="a320" aria-pressed="false" aria-controls="smView smAcA320"><img data-src="img/front/sim-a320-thumb.webp" width="176" height="110" alt=""><b>Airbus A320</b><span data-tx="smA1">Twin jet, fly-by-wire</span></button></li>
-              <li><button type="button" data-ac="b737" aria-pressed="false" aria-controls="smView smAcB737"><img data-src="img/front/sim-b737-thumb.webp" width="176" height="110" alt=""><b>Boeing 737-800</b><span data-tx="smJ1">Twin jet, conventional controls</span></button></li>
-              <li><button type="button" data-ac="atr72" aria-pressed="false" aria-controls="smView smAcAtr"><img data-src="img/front/sim-atr72-thumb.webp" width="176" height="110" alt=""><b>ATR 72-500</b><span data-tx="smR1">Twin turboprop, regional airliner</span></button></li>
-            </ul>
-            <div class="sm-info">
-              <div class="sm-ac" id="smAcC172" data-ac="c172">
-                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smC2">The instrument scan and attitude flying, VOR, ADF and DME navigation, and the circuit.</dd></dl>
-                <div class="sm-go"><a class="fp-btn pri" href="c172.html" data-tx="smC3">Fly the Cessna 172</a><a class="fp-btn sec" href="c172-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – Cessna 172</span><small>beta</small></a></div>
-              </div>
-              <div class="sm-ac" id="smAcDA42" data-ac="da42">
-                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smD2">Multi-engine flying with a glass cockpit: ILS and RNP approaches, the autopilot, and engine failures and asymmetric flight.</dd></dl>
-                <div class="sm-go"><a class="fp-btn pri" href="cockpit.html" data-tx="smD3">Fly the DA42</a><a class="fp-btn sec" href="da42-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – DA42</span><small>beta</small></a></div>
-              </div>
-              <div class="sm-ac on" id="smAcB200" data-ac="b200">
-                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smB2">A two-crew turboprop from battery start to shutdown: systems such as pressurisation, autofeather and fire protection, and type-rating preparation with 320 questions.</dd></dl>
-                <div class="sm-go"><a class="fp-btn pri" href="b200.html" data-tx="smB3">Fly the King Air</a><a class="fp-btn sec" href="b200-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – King Air B200</span><small>beta</small></a></div>
-              </div>
-              <div class="sm-ac" id="smAcA320" data-ac="a320">
-                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smA2">Cold and dark to take-off: the overhead panel, APU and engine start, ECAM with warnings and procedures, the FCU, FMA and MCDU, and the ILS in normal law.</dd></dl>
-                <div class="sm-go"><a class="fp-btn pri" href="a320.html" data-tx="smA3">Fly the A320</a><a class="fp-btn sec" href="a320-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – Airbus A320</span><small>beta</small></a></div>
-              </div>
-              <div class="sm-ac" id="smAcB737" data-ac="b737">
-                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smJ2">Cold and dark to take-off: the overhead panel, APU and engine start, the MCP and FMA, the autothrottle, the CDU with LNAV and VNAV, and hand flying with stabilizer trim.</dd></dl>
-                <div class="sm-go"><a class="fp-btn pri" href="b737.html" data-tx="smJ3">Fly the 737</a><a class="fp-btn sec" href="b737-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – Boeing 737-800</span><small>beta</small></a></div>
-              </div>
-              <div class="sm-ac" id="smAcAtr" data-ac="atr72">
-                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smR2">Cold and dark to the runway: the dark-cockpit overhead, hotel mode with the propeller brake, engine start, power and condition levers, PWR MGT and torque, AFCS with the ADU, and the crew alerting panel.</dd></dl>
-                <div class="sm-go"><a class="fp-btn pri" href="atr72.html" data-tx="smR3">Fly the ATR</a><a class="fp-btn sec" href="atr72-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – ATR 72-500</span><small>beta</small></a></div>
-              </div>
-            </div>
-            <p class="sm-req"><span data-tx="smRq">Is your aircraft missing?</span> <button type="button" data-reqplane="sim">Request your aircraft</button></p>
-          </div>
-        </div>
-        <ul class="sm-facts">
-          <li data-tx="smF1"><b>In the browser</b>Nothing to install</li>
-          <li data-tx="smF2"><b>2D and 3D</b>A full-size panel, and a 3D cockpit in beta</li>
-          <li data-tx="smF3"><b>Start on the ILS</b>In the air on the approach, in one click</li>
-          <li data-tx="smF4"><b>Keyboard, mouse or touch</b>A gamepad works too</li>
-        </ul>
-        <p class="sm-foot"><span data-tx="smFoot">Also in Training: the IFR trainer with 46 exercises, the MCDU, FMC and GNS 530 trainers, briefings and radio drills.</span><a class="sm-all" href="training.html" data-tx="smAll">All training →</a></p>
       </section>
-    </div>
-  </section>
-
-  <!-- 3. From theory to the flight deck: three tiles -->
-  <section class="fp-sec" id="flightdeck" aria-labelledby="h-fd">
-    <div class="fp-wrap">
-      <header class="fp-head">
-        <h2 id="h-fd" data-tx="h2b">From theory to the flight deck</h2>
-        <p data-tx="p2b">Draw the route, build the briefing pack and check the rules before you fly.</p>
-      </header>
-      <div class="fx-tiles">
-        <a href="route.html"><img src="img/front/route-sat-1400.webp" srcset="img/front/route-sat-700.webp 700w, img/front/route-sat-1400.webp 1400w" sizes="(max-width:640px) 100vw, (max-width:900px) 50vw, 400px" width="1400" height="788" loading="lazy" decoding="async" alt="">
-          <span><b><span class="fx-chev">Route Explorer</span></b><i data-tx="tRt">Draw the route in 2D or 3D and read the terrain under it.</i></span></a>
-        <a href="prep.html"><img src="img/front/briefing-1120.webp" srcset="img/front/briefing-560.webp 560w, img/front/briefing-1120.webp 1120w" sizes="(max-width:640px) 100vw, (max-width:900px) 50vw, 400px" width="1120" height="1252" loading="lazy" decoding="async" alt="" style="object-position:50% 0">
-          <span><b><span class="fx-chev" data-tx="h3bp">Briefing pack</span></b><i data-tx="tBp">NOTAM, weather, minima, performance and fuel, printed as a booklet.</i></span></a>
-        <a href="fi.html"><img src="img/cockpits/a320-sim.jpg" width="2000" height="1500" loading="lazy" decoding="async" alt="" style="object-position:50% 62%">
-          <span><b><span class="fx-chev">Flight Intelligence</span></b><i data-tx="tFi">Answers from the EASA rules and your own AFM, QRH and SOP.</i></span></a>
-      </div>
-      <p class="fx-credit">Satellite imagery © Esri, Maxar, Earthstar Geographics · Flight deck photo: Steve Jurvetson, <a href="https://creativecommons.org/licenses/by/2.0/" rel="noopener">CC BY 2.0</a></p>
-    </div>
-  </section>
-
-  <!-- 4. Standards and sources: a reference band -->
-  <section class="fx-ref fp-band" id="sources" aria-labelledby="h-src">
-    <div class="fp-wrap">
-      <h2 id="h-src" data-tx="h2c">Standards &amp; sources</h2>
-      <ul>
-        <li><a href="quality.html" data-tx="r1">How content is checked</a></li>
-        <li><a href="rules.html" data-tx="r2">EASA rules we link to</a></li>
-        <li><a href="sources.html" data-tx="goSrc">Data sources and licences</a></li>
-        <li><a href="models.html" data-tx="r4">Model profiles</a></li>
-        <li><a href="about.html" data-tx="goAb">About NORDAP</a></li>
-        <li><a href="privacy.html" data-tx="r6">Privacy</a></li>
-      </ul>
-      <p class="fx-model" data-tx="model"><b>Teaching models, not operational data.</b> The labs use simplified physics and typical values; A320 and B200 figures are illustrative, not manufacturer data.</p>
     </div>
   </section>
 
   <!-- 5. Numbers, and flight schools -->
   <div class="fx-band fp-band">
-    <div class="fp-wrap fx-grid">
-      <section class="fx-num" aria-labelledby="h-num">
-        <h2 id="h-num" data-tx="numH">NORDAP by the numbers</h2>
-        <dl>
-          <div><dt data-tx="n1">Interactive labs</dt><dd class="nLabs">25</dd></div>
-          <div><dt data-tx="n2">Cockpits in the flow trainer</dt><dd>14</dd></div>
-          <div><dt data-tx="n3">Cockpit trainers you can fly</dt><dd>6</dd></div>
-          <div><dt data-tx="n4">IFR exercises</dt><dd>46</dd></div>
-          <div><dt data-tx="n5">Type-rating questions, King Air B200</dt><dd>320</dd></div>
-          <div><dt data-tx="n6">Languages: English and Norwegian</dt><dd>2</dd></div>
-        </dl>
-      </section>
+    <div class="fp-wrap fx-grid fx-solo">
       <section class="fx-side" aria-labelledby="h-sch">
         <h2 id="h-sch" data-tx="h2d">For flight schools</h2>
         <p data-tx="sch">Do you run a flight school, an operator or another training organisation? Tell us a little about you, and we will get in touch.</p>
@@ -874,11 +752,11 @@ html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-d-no.webp)}
   </div>
 
 </main>
-<script src="lab.js?v=57"></script>
-<script src="reqplane.js?v=2" defer></script>
-<script src="schoolform.js?v=1" defer></script>
+<script src="lab.js?v=58"></script>
+<script src="reqplane.js?v=3" defer></script>
+<script src="schoolform.js?v=2" defer></script>
 <script src="front-flow.js?v=1" defer></script>
-<script src="front-fi.js?v=17" defer></script>
+<script src="front-fi.js?v=18" defer></script>
 <script>
 (function(){
 'use strict';
@@ -900,16 +778,16 @@ LAB.tx({
  fiAsk:'Spør Flight Intelligence', fiGo:'Spør',
  fiPv:'<b>Forhåndsversjon.</b> Flight Intelligence bruker en lettere AI-modell mens NORDAP er i testfasen. Bruk svarene som studiereferanse, og sjekk alltid den offisielle kilden.',
  s1:'<span class="nLabs">25</span> interaktive labber på EASA ATPL-teorifagene.',
- s2:'Planlegg ruten på et VFR-kart og les terrenget under den.',
+ s2:'Tegn ruten på et VFR-kart og se terrenget under den.',
  s3:'NOTAM, vær, minima, ytelse, drivstoff, masse og balanse, skrevet ut som et hefte.',
- s4:'Svar fra din AFM, QRH og SOP, med siden hvert svar kommer fra.',
+ s4:'Svar fra et kuratert EASA-regelbibliotek og din egen AFM, QRH og SOP, med kilden for hvert svar.',
  s5:'Seks cockpiter du kan fly, fra Cessna 172 til A320, 737 og ATR 72, i 2D og 3D.', s6:'Lær flowene til ditt flyselskap utenat i den ekte cockpiten, alene eller med partneren din.', trnB:'Cockpittrenere', bTrn:'Cockpittrenere', bFl:'Flows', bBp:'Briefingpakke',
  h2a:'Seks fagområder, bygd på EASA ATPL-pensumet',
  p2a:'Hver lab er en modell du kan endre og se reagere: fly vingen inn i stall, la et tordenvær vokse, fly en VOR-radial over Bergen. Der en lab viser tall, kommer de fra en illustrerende A320.',
  ffSt0:'Bakkantseparasjon',
  capFoil:'<b>Vingen sett fra siden med 13° angrepsvinkel.</b> Profilsnittet fra aerodynamikklabben, beregnet direkte i nettleseren din: trykkfelt (Cp) og strømlinjer fra en panelmetode, omslag og separasjon fra en grensesjiktmodell. <a class="tl" href="tunnel.html#profil">Åpne profilsnittet</a>',
  h3idx:'Fagområder og tilhørende EASA ATPL-fag',
- allLabs:'Alle <span class="nLabs">25</span> labber', hf:'Menneskelige faktorer',
+ allLabs:'Alle <span class="nLabs">25</span> labber', hf:'Menneskelige faktorer · 2 labber',
  h3how:'Hver lab er bygd likt',
  flH:'Lær flyselskapets flows utenat',
  fl1:'<b>Bygg</b>Trykk bryterne i flyselskapets rekkefølge, eller lim inn SOP-en. På en NORDAP-cockpit, et ekte foto eller en side fra din egen manual.',
@@ -947,7 +825,7 @@ LAB.tx({
  h2b:'Fra teori til cockpit',
  p2b:'Tegn ruten, bygg briefingpakken og sjekk reglene før du flyr.',
  nxLabs:'Fungerende modeller i EASA ATPL-fagene. Endre en verdi og se flyet reagere.',
- tRt:'Tegn ruten i 2D eller 3D og les terrenget under den.', tBp:'NOTAM, vær, minima, ytelse og drivstoff, skrevet ut som et hefte.', tFi:'Svar fra EASA-reglene og din egen AFM, QRH og SOP.',
+ tRt:'Tegn ruten i 2D eller 3D og les terrenget under den.', tBp:'NOTAM, vær, minima, ytelse og drivstoff, skrevet ut som et hefte.', tFi:'Svar fra et kuratert EASA-regelbibliotek og din egen AFM, QRH og SOP.',
  r1:'Slik kontrolleres innholdet', r2:'EASA-regler vi lenker til', r4:'Modellprofiler', r6:'Personvern',
  numH:'NORDAP i tall', n1:'Interaktive labber', n2:'Cockpiter i flow-treneren', n3:'Cockpittrenere du kan fly', n4:'IFR-øvelser', n5:'Typerating-spørsmål, King Air B200', n6:'Språk: engelsk og norsk', sc4:'Hvem står bak NORDAP',
  capRt:'<b>Route Explorer, 3D:</b> en rute tegnet over terrenget på satellittbilder, terrenget 1,5× overdrevet, satellittbilder © Esri, Maxar, Earthstar Geographics',

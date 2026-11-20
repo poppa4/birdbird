@@ -48,7 +48,7 @@
     if (why) { if (d.open) d.close(); B().msg(why, 'err'); return; }
     let by = ''; try { by = localStorage.getItem('bb-flowlib-by') || ''; } catch (e) {}
     d.innerHTML = `<form><h3>${L({ en: 'Share with other pilots', no: 'Del med andre piloter' })}</h3>` +
-      `<p class="fln">${L({ en: 'Everyone can see the flow and open a copy. You can remove it again from this device.', no: 'Alle kan se flowen og åpne en kopi. Du kan fjerne den igjen fra denne enheten.' })}</p>` +
+      `<p class="fln">${L({ en: 'Everyone can see the flow and open a copy. You can remove it again from this device.', no: 'Alle kan se flowen og åpne en kopi. Du kan fjerne den igjen fra denne enheten.' })} <a href="privacy.html#forms" target="_blank" rel="noopener">${L({ en: 'Privacy', no: 'Personvern' })}</a></p>` +
       `<label>${L({ en: 'Name', no: 'Navn' })}<input id="fpn" maxlength="80" value="${esc(cur.name)}"></label>` +
       `<div class="flf"><label>${L({ en: 'Flight phase', no: 'Flyfase' })}<select id="fpp">${phOpts(cur.phase || '', L({ en: 'Not set', no: 'Ikke satt' }))}</select></label><label>${L({ en: 'Your name or callsign (optional)', no: 'Navn eller kallesignal (valgfritt)' })}<input id="fpb" maxlength="30" value="${esc(by)}"></label></div>` +
       `<label class="flc"><input type="checkbox" id="fpr"><span>${L({ en: 'I made this flow myself. It has nothing confidential from my operator, and others may use and change it.', no: 'Jeg har laget denne flowen selv. Den har ikke noe konfidensielt fra operatøren min, og andre kan bruke og endre den.' })}</span></label>` +
