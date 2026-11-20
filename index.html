@@ -671,7 +671,7 @@ html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-d-no.webp)}
         <div class="fp-index">
           <h3 class="vh" data-tx="h3idx">Subject areas and their EASA ATPL subjects</h3>
           <ol id="fpAreas"></ol>
-          <p class="foot"><a class="tl" href="lab.html" data-tx="allLabs">All <span class="nLabs">25</span> labs</a><a class="tl" href="lab.html#more" data-tx="hf">Human factors · 2 labs</a></p>
+          <p class="foot"><a class="tl" href="lab.html" data-tx="allLabs">All&nbsp;<span class="nLabs">25</span>&nbsp;labs</a><a class="tl" href="lab.html#more" data-tx="hf">Human factors · 2 labs</a></p>
         </div>
       </div>
       </section>
@@ -786,7 +786,7 @@ LAB.tx({
  ffSt0:'Bakkantseparasjon',
  capFoil:'<b>Vingen sett fra siden med 13° angrepsvinkel.</b> Profilsnittet fra aerodynamikklabben, beregnet direkte i nettleseren din: trykkfelt (Cp) og strømlinjer fra en panelmetode, omslag og separasjon fra en grensesjiktmodell. <a class="tl" href="tunnel.html#profil">Åpne profilsnittet</a>',
  h3idx:'Fagområder og tilhørende EASA ATPL-fag',
- allLabs:'Alle <span class="nLabs">25</span> labber', hf:'Menneskelige faktorer · 2 labber',
+ allLabs:'Alle&nbsp;<span class="nLabs">25</span>&nbsp;labber', hf:'Menneskelige faktorer · 2 labber',
  h3how:'Hver lab er bygd likt',
  flH:'Lær flyselskapets flows utenat',
  fl1:'<b>Bygg</b>Trykk bryterne i flyselskapets rekkefølge, eller lim inn SOP-en. På en NORDAP-cockpit, et ekte foto eller en side fra din egen manual.',
@@ -865,7 +865,7 @@ LAB.tx({
 });
 
 /* ---------- subject areas, from the learning path (lab.js) ---------- */
-const CODE={pof:'081',met:'050',nav:'061, 062',inst:'022',sys:'021',perf:'032, 033',mb:'031'};
+const CODE={law:'010',pof:'081',met:'050',nav:'061, 062',inst:'022',sys:'021',perf:'032, 033',mb:'031'};
 const AREAS=LAB.AREAS||[], FLAT=LAB.FLAT||[];
 function areas(){
   const ol=el('fpAreas'); if(!ol) return;
