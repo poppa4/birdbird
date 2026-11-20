@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>NORDAP · Nordic Aviation Platform</title>
-<meta name="description" content="NORDAP is an aviation platform built in Norway for pilots, students and flight schools: 25 interactive labs on the EASA ATPL syllabus, Route Explorer, a printable briefing pack, and an instructor that answers from your own AFM, QRH and SOP.">
+<meta name="description" content="NORDAP is an aviation platform built in Norway for pilots and students: 25 interactive labs on the EASA ATPL syllabus, Route Explorer, a printable briefing pack, and an instructor that answers from your own AFM, QRH and SOP.">
 <link rel="canonical" href="https://nordap.eu/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NORDAP">
 <meta property="og:title" content="NORDAP · Nordic Aviation Platform">
-<meta property="og:description" content="NORDAP is an aviation platform built in Norway for pilots, students and flight schools: 25 interactive labs on the EASA ATPL syllabus, Route Explorer, a printable briefing pack, and an instructor that answers from your own AFM, QRH and SOP.">
+<meta property="og:description" content="NORDAP is an aviation platform built in Norway for pilots and students: 25 interactive labs on the EASA ATPL syllabus, Route Explorer, a printable briefing pack, and an instructor that answers from your own AFM, QRH and SOP.">
 <meta property="og:url" content="https://nordap.eu/">
 <meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
 <meta property="og:image:width" content="1200">
@@ -631,7 +631,7 @@ html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-d-no.webp)}
 </style>
 </head>
 <body data-home="1" data-title="NORDAP · Nordic Aviation Platform">
-<script src="site.js?v=110"></script>
+<script src="site.js?v=111"></script>
 <script>/* the still of the aerofoil for this language and screen, fetched before the plate is laid out */(function(){var l=document.createElement("link");l.rel="preload";l.as="image";l.type="image/webp";l.href="img/front/foil-poster-"+(innerWidth<=640?"p":"d")+"-"+(document.documentElement.lang==="nb"?"no":"en")+".webp";document.head.appendChild(l);var k=document.createElement("link");k.rel="preload";k.as="script";k.href="foil-grid-"+((innerWidth<=640||(navigator.hardwareConcurrency||4)<=4)?22:19)+".js?v=1";document.head.appendChild(k);})();</script>
 <main class="fp" id="main">
 
@@ -735,18 +735,18 @@ html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-d-no.webp)}
     </div>
   </section>
 
-  <!-- 5. Numbers, and flight schools -->
+  <!-- 5. About and contact -->
   <div class="fx-band fp-band">
     <div class="fp-wrap fx-grid fx-solo">
       <section class="fx-side" aria-labelledby="h-sch">
-        <h2 id="h-sch" data-tx="h2d">For flight schools</h2>
-        <p data-tx="sch">Do you run a flight school, an operator or another training organisation? Tell us a little about you, and we will get in touch.</p>
+        <h2 id="h-sch" data-tx="h2d">About NORDAP</h2>
+        <p data-tx="sch">NORDAP is built in Norway on EASA rules and European data, and is still being developed. Questions, feedback or an error in the content? Write to us, and we will answer by e-mail.</p>
         <ul>
-          <li><a href="schools.html" data-tx="goSch">How a school can use NORDAP</a></li>
-          <li><a href="typerating.html" data-tx="sc3">Type-rating preparation</a></li>
           <li><a href="about.html" data-tx="sc4">Who is behind NORDAP</a></li>
+          <li><a href="quality.html" data-tx="goQ">How content is checked</a></li>
+          <li><a href="sources.html" data-tx="goSrc">Data sources and licences</a></li>
         </ul>
-        <button type="button" class="fx-btn" data-schoolform data-tx="goInt">I'm interested</button>
+        <button type="button" class="fx-btn" data-contactform data-tx="goInt">Contact us</button>
       </section>
     </div>
   </div>
@@ -754,7 +754,6 @@ html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-d-no.webp)}
 </main>
 <script src="lab.js?v=58"></script>
 <script src="reqplane.js?v=3" defer></script>
-<script src="schoolform.js?v=2" defer></script>
 <script src="front-flow.js?v=1" defer></script>
 <script src="front-fi.js?v=18" defer></script>
 <script>
@@ -852,13 +851,14 @@ LAB.tx({
  src4:'Flight Intelligence svarer først ut fra din AFM, QRH og SOP. De blir i nettleseren din. Ingen analyseverktøy og ingen sporingskapsler; konto er valgfritt.',
  model:'<b>Pedagogiske modeller, ikke operative data.</b> Labbene bruker forenklet fysikk og typiske verdier; tall for A320 og B200 er illustrasjoner, ikke produsentdata.',
  goSrc:'Datakilder og lisenser',
- h2d:'For flyskoler',
- sch:'Driver du en flyskole, en operatør eller en annen opplæringsorganisasjon? Fortell litt om dere, så tar vi kontakt.',
+ h2d:'Om NORDAP',
+ sch:'NORDAP er laget i Norge på EASA-regler og europeiske data, og er fortsatt under utvikling. Spørsmål, tilbakemeldinger eller en feil i innholdet? Skriv til oss, så svarer vi på e-post.',
  sc1:'Labber en instruktør kan vise på storskjerm, knyttet til ATPL-fagene',
  sc2:'Én standard briefingpakke, VFR og IFR',
  sc3:'Forberedelse til typerating',
  goSch:'Slik kan en skole bruke NORDAP',
- goInt:'Jeg er interessert',
+ goInt:'Kontakt oss',
+ goQ:'Slik kontrolleres innholdet',
  h2e:'Daniel Nilsson',
  me:'Under flyutdanningen var det sjelden selve flygingen som var vanskelig. Det var rekkefølgen på ting, og det du ikke kan se: luften over vingen, eller hvorfor høydemåleren viser feil en kald dag. NORDAP er verktøyene jeg skulle ønske jeg hadde.',
  goAb:'Om NORDAP'
