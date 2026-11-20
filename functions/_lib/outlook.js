@@ -15,6 +15,7 @@
    A model estimate, never an official forecast or briefing. The page and the search bar say so every time. */
 
 export const FT = 3.28084;
+export const SPAN = 6; // hours either side of the hour asked for
 export const LEVELS = [1000, 975, 950, 925, 900, 850, 800, 700, 600, 500, 400, 300];
 export const MODELS = [
   { id: 'ecmwf', om: ['ecmwf_ifs025', 'ecmwf_ifs'], name: 'ECMWF IFS', by: 'ECMWF' },
@@ -28,7 +29,7 @@ const SFC = ['temperature_2m', 'dew_point_2m', 'relative_humidity_2m', 'cloud_co
   'freezing_level_height', 'cape', 'pressure_msl'];
 const PL = p => [`temperature_${p}hPa`, `relative_humidity_${p}hPa`, `geopotential_height_${p}hPa`];
 const PLCC = p => `cloud_cover_${p}hPa`;
-const WIND = ['wind_speed_850hPa', 'wind_direction_850hPa', 'wind_speed_700hPa', 'wind_direction_700hPa'];
+const WIND = LEVELS.flatMap(p => [`wind_speed_${p}hPa`, `wind_direction_${p}hPa`]);
 /* three tiers: if Open-Meteo rejects a variable for a model (400), the next tier asks for less */
 export const VAR_TIERS = [
   [...SFC, ...LEVELS.flatMap(PL), ...LEVELS.map(PLCC), ...WIND],
@@ -98,6 +99,9 @@ export function omMember(j, i, elevFt) {
   for (const p of LEVELS) { const zm = g(`geopotential_height_${p}hPa`); if (zm == null) continue; const z = zm * FT; if (z <= elevFt + 80) continue;
     pts.push({ z, t: g(`temperature_${p}hPa`), rh: g(`relative_humidity_${p}hPa`), cc: g(PLCC(p)) }); }
   pts.sort((a, b) => a.z - b.z);
+  /* winds and temperature aloft, level by level (Windy's "altitude" slider, all at once) */
+  const lv = LEVELS.map(p => ({ p, z: g(`geopotential_height_${p}hPa`), t: g(`temperature_${p}hPa`), rh: g(`relative_humidity_${p}hPa`), dir: g(`wind_direction_${p}hPa`), kt: g(`wind_speed_${p}hPa`) }))
+    .filter(x => x.z != null && x.z * FT > elevFt + 80).map(x => ({ ...x, z: x.z * FT }));
   const cov = { low: g('cloud_cover_low'), mid: g('cloud_cover_mid'), high: g('cloud_cover_high'), total: g('cloud_cover') };
   const precip = g('precipitation'), showers = g('showers'), cape = g('cape');
   let layers = pts.length > 3 ? layersFromProfile(pts) : [];
@@ -117,7 +121,7 @@ export function omMember(j, i, elevFt) {
     w850: { dir: g('wind_direction_850hPa'), kt: g('wind_speed_850hPa') }, w700: { dir: g('wind_direction_700hPa'), kt: g('wind_speed_700hPa') },
     frz: g('freezing_level_height') != null ? g('freezing_level_height') * FT : heightOf(pts, 0), m10: heightOf(pts, -10), m20: heightOf(pts, -20),
     cov, layers: layers.map(l => ({ base: l.base, top: l.top, cover: Math.round(l.cover), amt: amount(l.cover), tBase: l.tBase, tTop: l.tTop, est: l.est || null })),
-    lcl, conv, warmAloft: pts.slice(1).some(p => p.t != null && p.t > 0.5), profile: pts.length > 3, pts
+    lcl, conv, warmAloft: pts.slice(1).some(p => p.t != null && p.t > 0.5), profile: pts.length > 3, pts, lv, qnh: g('pressure_msl')
   };
 }
 
@@ -138,7 +142,7 @@ export function metMember(ts, elevFt) {
     t2: T, td: Td, rh: num(d.relative_humidity), vis: null, precip, snow: /snow/.test(sym) ? precip : /sleet/.test(sym) ? (precip || 0) / 2 : 0, showers: /showers/.test(sym) ? precip : 0,
     cape: null, code: null, sym, thunder: num(nd.probability_of_thunder), pop: num(nd.probability_of_precipitation),
     wind: { dir: num(d.wind_from_direction), kt: d.wind_speed != null ? d.wind_speed * 1.94384 : null, gust: d.wind_speed_of_gust != null ? d.wind_speed_of_gust * 1.94384 : null },
-    w850: {}, w700: {}, frz: null, m10: null, m20: null, cov, fog, layers, lcl, conv: /thunder/.test(sym), warmAloft: false, profile: false
+    w850: {}, w700: {}, frz: null, m10: null, m20: null, cov, fog, layers, lcl, conv: /thunder/.test(sym), warmAloft: false, profile: false, lv: [], qnh: num(d.air_pressure_at_sea_level)
   };
 }
 
@@ -223,7 +227,18 @@ export function consensus(members, elevFt, leadH, opts) {
   if (agree != null && agree < 0.6) conf--; if (agree != null && agree >= 0.9 && leadH <= 72) conf = Math.max(conf, 1);
   if (use.length < 2) conf = Math.min(conf, 0);
   conf = ['low', 'medium', 'high'][clamp(conf, 0, 2)];
+  /* aloft: median height, temperature and humidity per pressure level, vector-mean wind */
+  const aloft = [];
+  for (const p of [1000, 975, 950, 925, 900, 850, 800, 700, 600, 500, 400, 300]) {
+    const xs = ok.map(m => (m.x.lv || []).find(v => v.p === p)).filter(Boolean); if (!xs.length) continue;
+    const ws = xs.filter(v => v.kt != null);
+    aloft.push({ p, z: r100(median(xs.map(v => v.z))), t: median(xs.map(v => v.t)) == null ? null : Math.round(median(xs.map(v => v.t))), rh: median(xs.map(v => v.rh)) == null ? null : Math.round(median(xs.map(v => v.rh))),
+      dir: ws.length ? vmeanDir(ws) : null, kt: ws.length ? Math.round(median(ws.map(v => v.kt))) : null, ktRange: ws.length > 1 ? range(ws.map(v => Math.round(v.kt))) : null, n: xs.length });
+  }
+  const covMed = k => { const v = median(ok.map(m => m.x.cov && m.x.cov[k])); return v == null ? null : Math.round(v); };
+  const qnh = median(ok.map(m => m.x.qnh)), pop = ok.map(m => m.x.pop).find(v => v != null);
   return {
+    aloft, qnh: qnh == null ? null : Math.round(qnh), cov: { low: covMed('low'), mid: covMed('mid'), high: covMed('high'), total: covMed('total') }, pop: pop ?? null,
     n: ok.length, ceil: ceilMed === Infinity ? null : r100(ceilMed), ceilRange: spreadCeil && [r100(spreadCeil[0]), r100(spreadCeil[1])], ceilNone: use.filter(s => s.ceil == null).length,
     lowest: lowMed === Infinity ? null : r100(lowMed), lowestAmt: R ? (R.x.layers[0] || {}).amt || null : null,
     vis: vis == null ? null : vis >= 10000 ? 10000 : vis >= 5000 ? Math.round(vis / 1000) * 1000 : Math.round(vis / 100) * 100, visRange: range(visArr), fog: fog >= 0.5 ? 'likely' : fog >= 0.25 ? 'possible' : null,
@@ -277,8 +292,8 @@ export async function buildOutlook(p, deps) {
   const fetchFn = deps.fetch, now = deps.now ? deps.now() : Date.now();
   const { lat, lon, elevFt, t, origin, icao } = p;
   const H = 36e5, T = Date.parse(t);
-  const hours = []; for (let k = -3; k <= 3; k++) hours.push(new Date(T + k * H).toISOString().slice(0, 13) + ':00Z');
-  const t0 = T - 3 * H, t1 = T + 3 * H;
+  const hours = []; for (let k = -SPAN; k <= SPAN; k++) hours.push(new Date(T + k * H).toISOString().slice(0, 13) + ':00Z');
+  const t0 = T - SPAN * H, t1 = T + SPAN * H;
   const jobs = MODELS.map(M => fetchModel(fetchFn, M, lat, lon, elevFt, t0, t1).then(r => ({ M, ...r })));
   const metJob = getJ(fetchFn, `${MET}?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}&altitude=${Math.round(elevFt / FT)}`, 1800).catch(() => ({ status: 0, j: null }));
   const tileLa = Math.floor(lat / 5) * 5, tileLo = Math.floor(lon / 5) * 5;
@@ -298,7 +313,7 @@ export async function buildOutlook(p, deps) {
   }
   /* GFS: the model's own cloud base/top for the hour asked for */
   const gl = gfs.status === 200 ? gfsLayers(gfs.j, lat, lon, elevFt) : null;
-  const tIdx = 3;
+  const tIdx = SPAN;
   if (gl) { const gm = perHour[tIdx].find(m => m.id === 'gfs');
     if (gm) { gm.x.layers = gl.layers.map(l => ({ ...l, tBase: tempAt(gm.x.pts, l.base), tTop: tempAt(gm.x.pts, l.top) })); gm.native = true; } }
   /* MET Norway */

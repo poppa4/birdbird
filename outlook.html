@@ -53,6 +53,9 @@
 .olsrc{font-size:13px;color:var(--ink-2);margin:0;padding-left:18px;line-height:1.6}
 .olsrc .off{opacity:.6}
 @media (max-width:560px){.oltiles{grid-template-columns:1fr 1fr}.oltiles div{border-left:0;padding-left:0}#prof{min-width:620px}}
+.arr{display:inline-block;width:16px;height:16px;vertical-align:-3px;margin-right:6px}
+.otab td.frz{color:#1f6fb5;font-weight:600}.otab tr.ice td{background:#fdf0f5}#aloft td:first-child{padding-left:9px}.otab tr.cld td:first-child,.otab tr.ice td:first-child{box-shadow:inset 3px 0 0 #62798a}
+.otab td.bad{color:var(--warning);font-weight:600}.otab td.warn{color:var(--caution);font-weight:600}
 .olwait{color:var(--ink-2);font-size:14px;padding:18px 0}
 </style>
 </head>
@@ -75,14 +78,24 @@
     </div>
     <div id="out"></div>
   </section>
+  <section class="card" id="rwyc" hidden>
+    <h2>Runway wind</h2>
+    <p class="lead">Head- and crosswind on each runway from the estimated wind and gusts, corrected for magnetic variation.</p>
+    <div class="tw"><table class="otab" id="rwy"></table></div>
+  </section>
   <section class="card" id="profc" hidden>
     <h2>Cloud profile</h2>
     <p class="lead">Each column is one weather model at the hour asked for; the first is NORDAP's estimate from all of them. Heights above the aerodrome.</p>
     <div class="tw"><svg id="prof" viewBox="0 0 740 380" role="img" aria-label="Cloud layers and freezing level by weather model"></svg></div>
     <div class="lg"><span><i style="background:#62798a;opacity:.85"></i>OVC</span><span><i style="background:#62798a;opacity:.62"></i>BKN</span><span><i style="background:#62798a;opacity:.38"></i>SCT</span><span><i style="background:#62798a;opacity:.18"></i>FEW</span><span><i style="background:repeating-linear-gradient(135deg,#c2185b 0 2px,transparent 2px 5px)"></i>Icing likely</span><span><i style="background:none;border-top:2px dashed #1f6fb5;height:0;margin-bottom:3px"></i>Freezing level (0 °C)</span></div>
   </section>
+  <section class="card" id="aloftc" hidden>
+    <h2>Winds and temperature aloft</h2>
+    <p class="lead">Every level the models give, from the ground up to about FL300. Altitudes above mean sea level; the median of the models, with their spread.</p>
+    <div class="tw"><table class="otab" id="aloft"></table></div>
+  </section>
   <section class="card" id="trendc" hidden>
-    <h2>Three hours either side</h2>
+    <h2>Hour by hour</h2>
     <div class="tw"><table class="otab" id="trend"></table></div>
   </section>
   <section class="card" id="modc" hidden>
@@ -100,6 +113,7 @@
 </div>
 <script src="lab.js?v=58"></script>
 <script src="sun.js?v=1"></script>
+<script src="wmm.js?v=2"></script>
 <script src="outlook.js?v=1"></script>
 <script>
 (function(){
@@ -110,7 +124,7 @@ LAB.add({},{
  'How the weather is likely to be at an aerodrome at a given hour, up to 7 days ahead: cloud base and tops, ceiling, visibility, wind, freezing level and icing, read from several weather models side by side. A model estimate, not an official forecast.':'Hvordan været sannsynligvis blir på en flyplass til en gitt time, opptil 7 dager fram: skybase og -topper, skydekke (ceiling), sikt, vind, frysenivå og ising, lest fra flere værmodeller side om side. Et modellestimat, ikke en offisiell prognose.',
  'ICAO code':'ICAO-kode','Date':'Dato','Local time':'Lokal tid','Cloud profile':'Skyprofil',
  "Each column is one weather model at the hour asked for; the first is NORDAP's estimate from all of them. Heights above the aerodrome.":'Hver kolonne er én værmodell for timen du spurte om; den første er NORDAPs estimat fra alle sammen. Høyder over flyplassen.',
- 'Icing likely':'Ising sannsynlig','Freezing level (0 °C)':'Frysenivå (0 °C)','Three hours either side':'Tre timer før og etter','Model by model':'Modell for modell',
+ 'Icing likely':'Ising sannsynlig','Runway wind':'Vind på banene','Head- and crosswind on each runway from the estimated wind and gusts, corrected for magnetic variation.':'Mot- og sidevind på hver bane ut fra estimert vind og kast, korrigert for misvisning.','Winds and temperature aloft':'Vind og temperatur i høyden','Every level the models give, from the ground up to about FL300. Altitudes above mean sea level; the median of the models, with their spread.':'Alle nivåene modellene gir, fra bakken opp til rundt FL300. Høyder over havet; medianen av modellene, med spredningen.','Hour by hour':'Time for time','Freezing level (0 °C)':'Frysenivå (0 °C)','Three hours either side':'Tre timer før og etter','Model by model':'Modell for modell',
  'Where the models agree, the estimate is firmer. A wide spread means the weather at that hour is genuinely uncertain.':'Der modellene er enige, er estimatet sikrere. Stor spredning betyr at været den timen er reelt usikkert.',
  'How it is worked out':'Slik regnes det ut',
  "For the aerodrome's position NORDAP reads several independent weather models: MET Norway's forecast (MEPS, 2.5 km, over the Nordic countries; ECMWF beyond), ECMWF IFS, DWD ICON, the UK Met Office model, DMI HARMONIE-AROME (2 km, Northern Europe, about 2½ days ahead) and NOAA GFS. Each model's vertical profile (height, temperature and humidity at pressure levels from the ground up to about FL300) shows where the air is saturated: that is where the cloud layers are, with base, top and amount. GFS gives its own cloud base and top. Where a model gives no profile, the cumulus base is estimated from the temperature–dew point spread (about 400 ft per °C).":'For flyplassens posisjon leser NORDAP flere uavhengige værmodeller: MET Norways prognose (MEPS, 2,5 km, over Norden; ECMWF utenfor), ECMWF IFS, DWD ICON, UK Met Office-modellen, DMI HARMONIE-AROME (2 km, Nord-Europa, rundt 2½ døgn fram) og NOAA GFS. Hver modells vertikalprofil (høyde, temperatur og fuktighet på trykkflater fra bakken opp til rundt FL300) viser hvor lufta er mettet: der ligger skylagene, med base, topp og mengde. GFS gir sin egen skybase og -topp. Der en modell ikke har profil, anslås cumulus-basen fra spredningen mellom temperatur og duggpunkt (rundt 400 ft per °C).',
@@ -123,7 +137,7 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 const sp=OUT.sp, pad=n=>String(n).padStart(2,'0');
 const wnd=w=>!w||w.kt==null?'—':w.kt<=2?L({en:'calm',no:'stille'}):(w.dir==null?'':String(w.dir).padStart(3,'0')+'°/')+w.kt+(w.gust?'G'+w.gust:'')+' kt';
 let AP=null, apP=null;
-const loadAp=()=>apP||(apP=fetch('data/nav-eu.json').then(r=>r.json()).then(d=>{ AP={}; (d.ap||[]).forEach(a=>{ AP[a[0]]={n:a[1],lat:a[2],lon:a[3],el:a[4]}; }); }));
+const loadAp=()=>apP||(apP=fetch('data/nav-eu.json').then(r=>r.json()).then(d=>{ AP={}; (d.ap||[]).forEach(a=>{ AP[a[0]]={n:a[1],lat:a[2],lon:a[3],el:a[4],rw:a[6]||[]}; }); }));
 const inp=el('icao'), dIn=el('date'), hIn=el('hr');
 for(let h=0;h<24;h++){ const o=document.createElement('option'); o.value=h; o.textContent=pad(h)+':00'; hIn.appendChild(o); }
 const q=new URLSearchParams(location.search);
@@ -147,7 +161,7 @@ function go(){
   el('out').innerHTML=`<p class="olwait">${L({en:'Reading the weather models…',no:'Leser værmodellene …'})}</p>`;
   const my=++seq; OUT.get(ap,icao,T).then(j=>{ if(my!==seq) return; data=j; draw(); });
 }
-function hide(){ ['profc','trendc','modc'].forEach(id=>el(id).hidden=true); }
+function hide(){ ['rwyc','profc','aloftc','trendc','modc'].forEach(id=>el(id).hidden=true); }
 function tile(lab,val,sub){ return `<div><span>${lab}</span><b>${val}</b>${sub?`<small>${sub}</small>`:''}</div>`; }
 function draw(){
   const j=data, ap=AP&&AP[icao]; if(!j||!ap) return; const tz=tzNow();
@@ -166,11 +180,51 @@ function draw(){
     tile(L({en:'Visibility',no:'Sikt'}),OUT.visTxt(c.vis),c.fog?L({en:'fog '+c.fog,no:c.fog==='likely'?'tåke sannsynlig':'mulig tåke'}):'')+
     tile(L({en:'Wind',no:'Vind'}),wnd(c.wind),c.wind.gustMax&&c.wind.gustMax>(c.wind.gust||0)+4?L({en:'gusts up to ',no:'kast opptil '})+c.wind.gustMax+' kt':'')+
     tile(L({en:'Freezing level',no:'Frysenivå'}),c.frz==null?'—':c.frz<=ap.el?L({en:'Ground',no:'Bakken'}):sp(c.frz)+' ft',rg(c.frzRange,' ft')||L({en:'altitude',no:'høyde o.h.'}))+
-    tile(L({en:'Temp / dew point',no:'Temp / duggpunkt'}),c.t2==null?'—':`${c.t2} / ${c.td??'—'} °C`,c.t2!=null&&c.td!=null?L({en:'spread ',no:'spredning '})+(c.t2-c.td)+' °C':'')+`</div>`;
+    tile(L({en:'Temp / dew point',no:'Temp / duggpunkt'}),c.t2==null?'—':`${c.t2} / ${c.td??'—'} °C`,c.t2!=null&&c.td!=null?L({en:'spread ',no:'spredning '})+(c.t2-c.td)+' °C':'')+
+    tile('QNH',c.qnh==null?'—':c.qnh+' hPa',da(c,ap))+
+    tile(L({en:'Cloud cover',no:'Skydekke'}),c.cov&&c.cov.total!=null?c.cov.total+' %':'—',c.cov&&c.cov.low!=null?L({en:'low ',no:'lav '})+c.cov.low+' · '+L({en:'mid ',no:'mid '})+c.cov.mid+' · '+L({en:'high ',no:'høy '})+c.cov.high+' %':'')+
+    tile(L({en:'Precipitation',no:'Nedbør'}),c.precip?c.precip+' mm/h':L({en:'None',no:'Ingen'}),[c.pop!=null?L({en:'chance ',no:'sjanse '})+Math.round(c.pop)+' %':'',c.thunder?L({en:'thunder ',no:'torden '})+Math.round(c.thunder)+' %':''].filter(Boolean).join(' · '))+
+    tile(L({en:'Daylight',no:'Dagslys'}),day(Date.parse(j.t),ap,tz,'v'),day(Date.parse(j.t),ap,tz,'s'))+`</div>`;
   if(j.taf&&j.taf.covers) h+=`<div class="oltaf"><b>${L({en:'The TAF covers this hour: plan with the TAF.',no:'TAF-en dekker denne timen: planlegg etter TAF-en.'})}</b> ${L({en:'The estimate above is only a cross-check.',no:'Estimatet over er bare en ekstra sjekk.'})}<code>${esc(j.taf.raw)}</code></div>`;
   else { const of=OFFICIAL[icao.slice(0,2)]; h+=`<div class="oltaf no">${L({en:'No TAF covers this hour yet (TAFs reach 9–30 hours ahead), so this is a model estimate only. Before flight, check the TAF and the official briefing',no:'Ingen TAF dekker denne timen ennå (TAF går 9–30 timer fram), så dette er bare et modellestimat. Sjekk TAF og offisiell briefing før flyging'})}${of?` (<a href="${of[1]}" target="_blank" rel="noopener">${of[0]}</a>)`:''}.</div>`; }
   el('out').innerHTML=h;
-  profile(j,ap); trend(j,tz); models(j,ap); sources(j);
+  runways(j,ap); profile(j,ap); aloft(j,ap); trend(j,tz); models(j,ap); sources(j);
+}
+
+/* density altitude from QNH and temperature: PA = elev + 30 ft/hPa, DA = PA + 120 ft per °C above ISA */
+function da(c,ap){ if(c.qnh==null||c.t2==null) return ''; const pa=ap.el+(1013-c.qnh)*30, isa=15-2*pa/1000, d=Math.round((pa+120*(c.t2-isa))/100)*100; return L({en:'density altitude ',no:'tetthetshøyde '})+sp(d)+' ft'; }
+/* sun at that hour: EASA night from the end of civil twilight */
+function day(ms,ap,tz,k){ try{ const D=SUN.day(SUN.localDate(new Date(ms),tz),ap.lat,ap.lon); const c0=D.civil[0], c1=D.civil[1];
+  if(!c0||!c1) return k==='v'?(D.allDayLight&&D.allDayLight.civil?L({en:'All day',no:'Hele døgnet'}):L({en:'Night',no:'Natt'})):'';
+  const night=ms<c0.getTime()||ms>=c1.getTime();
+  return k==='v'?(night?L({en:'Night',no:'Natt'}):L({en:'Day',no:'Dag'})):L({en:'civil twilight ',no:'sivilt tussmørke '})+SUN.hm(c0,tz)+'–'+SUN.hm(c1,tz); }catch(e){ return ''; } }
+const arrow=d=>d==null?'':`<svg class="arr" viewBox="-8 -8 16 16" aria-hidden="true"><g transform="rotate(${d})"><path d="M0 -6.5 L0 6.5 M0 6.5 L-3.6 2.4 M0 6.5 L3.6 2.4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></g></svg>`;
+function runways(j,ap){
+  const c=j.hours[j.tIdx].cons, w=c.wind; if(!ap.rw||!ap.rw.length||!w||w.kt==null||w.dir==null){ el('rwyc').hidden=true; return; }
+  let vr=0; try{ if(window.WMM) vr=WMM.declination(ap.lat,ap.lon,ap.el,new Date(j.t)); }catch(e){}
+  const wm=((w.dir-vr)%360+360)%360, ends=[]; ap.rw.forEach(r=>{ [r[0],r[1]].forEach(e=>{ const n=parseInt(e,10); if(n>=1&&n<=36&&!ends.some(x=>x.id===e)) ends.push({id:e,hdg:n*10,len:r[2]}); }); });
+  if(!ends.length){ el('rwyc').hidden=true; return; }
+  const comp=(kt,h)=>{ const a=(wm-h)*Math.PI/180; return {hw:kt*Math.cos(a),xw:kt*Math.sin(a)}; };
+  let t=`<tr><th>${L({en:'Runway',no:'Bane'})}</th><th>${L({en:'Headwind',no:'Motvind'})}</th><th>${L({en:'Crosswind',no:'Sidevind'})}</th><th>${L({en:'In gusts',no:'I kast'})}</th></tr>`;
+  ends.forEach(e=>{ const m=comp(w.kt,e.hdg), g=w.gust?comp(w.gust,e.hdg):null; const xw=Math.abs(Math.round(m.xw)), xg=g?Math.abs(Math.round(g.xw)):null, hw=Math.round(m.hw);
+    const side=m.xw>0.5?L({en:' from the right',no:' fra høyre'}):m.xw<-0.5?L({en:' from the left',no:' fra venstre'}):'';
+    t+=`<tr><td class="m">RWY ${esc(e.id)}${e.len?` <small>${sp(e.len)} ft</small>`:''}</td><td class="m ${hw<-4?'bad':hw<0?'warn':''}">${hw>=0?hw+' kt':L({en:'tailwind ',no:'medvind '})+(-hw)+' kt'}</td><td class="m ${xw>=20?'bad':xw>=12?'warn':''}">${xw} kt${side}</td><td class="m ${xg>=25?'bad':xg>=15?'warn':''}">${xg==null?'—':L({en:'crosswind ',no:'sidevind '})+xg+' kt'}</td></tr>`; });
+  el('rwy').innerHTML=t+`<tr><td colspan="4" class="note">${L({en:'Wind ',no:'Vind '})}${String(w.dir).padStart(3,'0')}° ${L({en:'true',no:'rettvisende'})} ≈ ${String(Math.round(wm)).padStart(3,'0')}° ${L({en:'magnetic',no:'magnetisk'})} (${L({en:'variation',no:'misvisning'})} ${Math.abs(vr).toFixed(0)}° ${vr>=0?'E':'W'}). ${L({en:'Compare with your aircraft\'s demonstrated crosswind.',no:'Sammenlign med flyets demonstrerte sidevind.'})}</td></tr>`;
+  el('rwyc').hidden=false;
+}
+function aloft(j,ap){
+  const c=j.hours[j.tIdx].cons; if(!c.aloft||!c.aloft.length){ el('aloftc').hidden=true; return; }
+  const inCloud=z=>(c.layers||[]).some(l=>z-ap.el>=l.base&&z-ap.el<=l.top);
+  const ice=z=>c.icing&&z>=c.icing.from&&z<=c.icing.to&&inCloud(z);
+  const fl=z=>z>=6000?'FL'+String(Math.round(z/1000)*10).padStart(3,'0'):sp(z)+' ft';
+  let t=`<tr><th>${L({en:'Altitude',no:'Høyde'})}</th><th>${L({en:'Wind',no:'Vind'})}</th><th>${L({en:'Temperature',no:'Temperatur'})}</th><th>${L({en:'Humidity',no:'Fuktighet'})}</th><th></th></tr>`;
+  const rows=c.aloft.slice().reverse(); let frzDone=false;
+  rows.forEach((a,i)=>{ const next=rows[i+1];
+    const tags=[inCloud(a.z)?L({en:'in cloud',no:'i sky'}):'',ice(a.z)?L({en:'icing',no:'ising'}):''].filter(Boolean).join(' · ');
+    t+=`<tr class="${ice(a.z)?'ice':inCloud(a.z)?'cld':''}"><td class="m">${fl(a.z)} <small>${a.p} hPa</small></td><td class="m">${a.kt==null?'—':arrow(a.dir)+String(a.dir).padStart(3,'0')+'° '+a.kt+' kt'}${a.ktRange&&a.ktRange[1]-a.ktRange[0]>=10?` <small>(${a.ktRange[0]}–${a.ktRange[1]})</small>`:''}</td><td class="m">${a.t==null?'—':(a.t>0?'+':'')+a.t+' °C'}</td><td class="m">${a.rh==null?'—':a.rh+' %'}</td><td><small>${tags}</small></td></tr>`;
+    if(!frzDone&&c.frz!=null&&next&&c.frz<a.z&&c.frz>=next.z){ frzDone=true; t+=`<tr><td class="m frz" colspan="5">0 °C · ${L({en:'freezing level',no:'frysenivå'})} ≈ ${sp(c.frz)} ft</td></tr>`; } });
+  t+=`<tr><td class="m">${L({en:'Ground',no:'Bakken'})} <small>${sp(ap.el)} ft</small></td><td class="m">${c.wind.kt==null?'—':arrow(c.wind.dir)+wnd(c.wind)}</td><td class="m">${c.t2==null?'—':(c.t2>0?'+':'')+c.t2+' °C'}</td><td class="m">${c.td==null?'':L({en:'dew point ',no:'duggpunkt '})+c.td+' °C'}</td><td></td></tr>`;
+  el('aloft').innerHTML=t; el('aloftc').hidden=false;
 }
 const AOP={FEW:.18,SCT:.38,BKN:.62,OVC:.85};
 function profile(j,ap){
@@ -196,10 +250,10 @@ function profile(j,ap){
   el('prof').innerHTML=s; el('profc').hidden=false;
 }
 function trend(j,tz){
-  let t=`<tr><th>${L({en:'Time',no:'Tid'})}</th><th>${L({en:'Status',no:'Status'})}</th><th>${L({en:'Lowest cloud',no:'Laveste sky'})}</th><th>${L({en:'Ceiling',no:'Ceiling'})}</th><th>${L({en:'Visibility',no:'Sikt'})}</th><th>${L({en:'Wind',no:'Vind'})}</th><th>${L({en:'Precipitation',no:'Nedbør'})}</th><th>${L({en:'Freezing level',no:'Frysenivå'})}</th></tr>`;
+  let t=`<tr><th>${L({en:'Time',no:'Tid'})}</th><th>${L({en:'Status',no:'Status'})}</th><th>${L({en:'Lowest cloud',no:'Laveste sky'})}</th><th>${L({en:'Ceiling',no:'Ceiling'})}</th><th>${L({en:'Visibility',no:'Sikt'})}</th><th>${L({en:'Wind',no:'Vind'})}</th><th>${L({en:'Precipitation',no:'Nedbør'})}</th><th>${L({en:'Temp',no:'Temp'})}</th><th>QNH</th><th>${L({en:'Freezing level',no:'Frysenivå'})}</th></tr>`;
   j.hours.forEach((hr,i)=>{ const c=hr.cons; const tm=SUN.hm(new Date(hr.t),tz)+(tz?'':'Z');
-    if(!c){ t+=`<tr><td class="m">${tm}</td><td colspan="7">—</td></tr>`; return; }
-    t+=`<tr class="${i===j.tIdx?'on':''}"><td class="m">${tm}</td><td><span class="dot ${c.sera||'na'}"></span>${esc(L(OUT.STATUS[c.sera]||{en:'—',no:'—'}))}</td><td class="m">${c.lowest==null?'—':(c.lowestAmt||'')+' '+sp(c.lowest)}</td><td class="m">${c.ceil==null?L({en:'none',no:'ingen'}):sp(c.ceil)}</td><td class="m">${OUT.visTxt(c.vis)}</td><td class="m">${esc(wnd(c.wind))}</td><td class="m">${c.precip?c.precip+' mm/h':'—'}</td><td class="m">${c.frz==null?'—':sp(c.frz)}</td></tr>`; });
+    if(!c){ t+=`<tr><td class="m">${tm}</td><td colspan="9">—</td></tr>`; return; }
+    t+=`<tr class="${i===j.tIdx?'on':''}"><td class="m">${tm}</td><td><span class="dot ${c.sera||'na'}"></span>${esc(L(OUT.STATUS[c.sera]||{en:'—',no:'—'}))}</td><td class="m">${c.lowest==null?'—':(c.lowestAmt||'')+' '+sp(c.lowest)}</td><td class="m">${c.ceil==null?L({en:'none',no:'ingen'}):sp(c.ceil)}</td><td class="m">${OUT.visTxt(c.vis)}</td><td class="m">${esc(wnd(c.wind))}</td><td class="m">${c.precip?c.precip+' mm/h':'—'}${c.cb?' · CB':''}</td><td class="m">${c.t2==null?'—':c.t2+'/'+(c.td??'—')}</td><td class="m">${c.qnh??'—'}</td><td class="m">${c.frz==null?'—':sp(c.frz)}</td></tr>`; });
   el('trend').innerHTML=t; el('trendc').hidden=false;
 }
 function models(j,ap){

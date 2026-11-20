@@ -26,7 +26,7 @@ test('layers from a humidity profile, with the base between the levels', () => {
 test('the endpoint: stratus deck, IFR, icing above the freezing level, sources listed', async () => {
   const r = await handleOutlook(new Request('https://nordap.eu/api/outlook?icao=ENTO&lat=59.1867&lon=10.2586&el=286&t=2026-11-23T09:00Z'), {}, { fetch: mockFetch('2026-11-23T09:00:00.000Z'), now: () => NOW });
   assert.equal(r.status, 200); const j = await r.json();
-  assert.equal(j.hours.length, 7); assert.equal(j.t, '2026-11-23T09:00Z');
+  assert.equal(j.hours.length, 13); assert.equal(j.t, '2026-11-23T09:00Z');
   const c = j.hours[j.tIdx].cons;
   assert.ok(c.ceil >= 300 && c.ceil <= 800, 'ceiling ' + c.ceil); assert.equal(c.sera, 'ifr');
   assert.equal(c.frz, 3300); assert.ok(c.icing && c.icing.from === 3300);
