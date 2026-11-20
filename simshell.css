@@ -195,3 +195,6 @@
 .cbhome{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;padding:0 10px 0 4px;margin-right:2px;color:#C9D1D8;text-decoration:none;font:650 13.5px/1 system-ui,sans-serif;letter-spacing:-.01em;border-right:1px solid rgba(255,255,255,.14);align-self:stretch}
 .cbhome span{font-size:18px;line-height:1}.cbhome:hover,.cbhome:focus-visible{color:#fff}
 @media (max-width:760px){.cbhome b{display:none}.cbhome{padding:0 8px 0 2px}}
+
+/* the sound button in the toolbar: amber when everything is muted, so it is obvious why the cockpit is quiet */
+.ctop #bSound.muted{color:#ffcf3a;border-color:#6b5a1f}

@@ -24,11 +24,27 @@ if(G.LAB&&G.LAB.add) G.LAB.add({},{
   '✈︎ Start':'✈︎ Start','Auto-fly':'Autofly','Procedures':'Prosedyrer','Pause':'Pause','Resume':'Fortsett','Debrief':'Debrief','More':'Mer',
   'Checklist':'Sjekkliste','Failures':'Feil','Speeds':'Farter',
   'Restart':'Start på nytt','Outside view':'Utsikt','Look ahead':'Se fremover','Panel area':'Panelområde',
-  'Sound':'Lyd','Full screen':'Fullskjerm','Debrief now':'Debrief nå','Open debrief after landing':'Åpne debrief etter landing',
+  'Sound':'Lyd','Sound on':'Lyd på','Sound off':'Lyd av','Full screen':'Fullskjerm','Debrief now':'Debrief nå','Open debrief after landing':'Åpne debrief etter landing',
   'Controls':'Kontroller','Touch controls':'Berøringskontroller','Performance meter':'Ytelsesmåler','← Back':'← Tilbake',
   'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.','← Back to NORDAP':'← Tilbake til NORDAP',
   [NOTE_EN]:NOTE_NO
 });
+
+/* ---------- one mute for every sim: a speaker button in the toolbar, remembered across all cockpit pages.
+   Muting silences everything the page makes (Web Audio and the speech voice), not only what the page's own flag covers. */
+const MUTE_K='nordap.simMuted'; let MUTED=false; try{ MUTED=G.localStorage.getItem(MUTE_K)==='1'; }catch(e){}
+const ACS=[];
+(function(){ const A=G.AudioContext||G.webkitAudioContext; if(!A) return;
+  function W(a){ const c=a===undefined?new A():new A(a); ACS.push(c); const res=c.resume.bind(c);
+    c.resume=()=>MUTED?Promise.resolve():res(); c._res=res; if(MUTED){ try{ c.suspend(); }catch(e){} } return c; }
+  W.prototype=A.prototype; try{ G.AudioContext=W; if(G.webkitAudioContext) G.webkitAudioContext=W; }catch(e){} })();
+try{ const ss=G.speechSynthesis; if(ss&&ss.speak){ const sp=ss.speak.bind(ss); ss.speak=u=>{ if(!MUTED) sp(u); }; } }catch(e){}
+function setMuted(m){ MUTED=!!m; try{ G.localStorage.setItem(MUTE_K,MUTED?'1':'0'); }catch(e){}
+  for(const c of ACS){ try{ if(MUTED) c.suspend(); else c._res(); }catch(e){} }
+  if(MUTED){ try{ G.speechSynthesis&&G.speechSynthesis.cancel(); }catch(e){} } }
+const SPK='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-3px;margin-right:5px"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>',
+      SPK_ON=SPK+'<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+      SPK_OFF=SPK+'<path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
 
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 let PILL=null, stepTxt=null, cur=null /* {kind:'say'|'card'} */, sayT=0, cardT=0, waiting=null, cardAct=null;
@@ -99,13 +115,18 @@ function settings(){
 let CH=null;
 function chrome(o){ const $=id=>document.getElementById(id), bP=$('bPause'), bR=$('bReset'), bS=$('bSound'), bF=$('bFull'), bD=$('bDrawer'), dr=$('drawer'), root=$('cockpit');
   const sync=()=>{ if(bP){ const t=L(o.paused()?tr('Resume','Fortsett'):tr('Pause','Pause')); if(bP.textContent!==t) bP.textContent=t; }
-    if(bS){ bS.textContent=L(tr('Sound','Lyd')); bS.setAttribute('aria-pressed',!!o.sound()); }
+    if(bS){ const on=!MUTED, t=L(on?tr('Sound on','Lyd på'):tr('Sound off','Lyd av')), h=(on?SPK_ON:SPK_OFF)+esc(t); if(bS._h!==h){ bS._h=h; bS.innerHTML=h; }
+      bS.removeAttribute('aria-pressed'); bS.classList.toggle('muted',!on); bS.title=L(on?tr('Turn all sound off','Skru av all lyd'):tr('Turn sound on','Skru på lyden')); }
     if(bR){ const t=L(tr('Restart','Start på nytt')); bR.title=t; bR.setAttribute('aria-label',t); } };
   const setDrawer=on=>{ if(!dr) return; on=!!on; dr.classList.toggle('open',on); dr.inert=!on; if(bD){ bD.setAttribute('aria-pressed',on); bD.setAttribute('aria-expanded',on); }
     if(o.refit) setTimeout(o.refit,320); };
   if(bP) bP.onclick=()=>o.pause();
   if(bR) bR.onclick=()=>o.restart();
-  if(bS) bS.onclick=()=>{ o.setSound(!o.sound()); sync(); };
+  if(bS){ // the sound button moves out of the … menu into the toolbar, next to Pause, so it is always one tap away
+    const hr=bS.previousElementSibling; if(hr&&hr.tagName==='HR'&&(!bS.nextElementSibling||bS.nextElementSibling.tagName==='HR')) hr.remove();
+    if(bP&&bP.parentNode) bP.parentNode.insertBefore(bS,bP.nextSibling);
+    bS.onclick=()=>{ setMuted(!MUTED); try{ o.setSound(!MUTED); }catch(e){} sync(); };
+    if(MUTED){ try{ o.setSound(false); }catch(e){} } }
   if(bF) bF.onclick=()=>{ try{ if(document.fullscreenElement) document.exitFullscreen(); else if(root&&root.requestFullscreen) root.requestFullscreen().catch(()=>say(L(tr('Full screen is blocked here. Open the page in its own tab.','Fullskjerm er blokkert her. Åpne siden i en egen fane.')),'bad',5000)); }catch(e){} };
   if(bD&&dr){ bD.setAttribute('aria-controls','drawer'); bD.onclick=()=>setDrawer(!dr.classList.contains('open')); dr.inert=!dr.classList.contains('open');
     // Esc inside the drawer closes it and gives the focus back to its button
