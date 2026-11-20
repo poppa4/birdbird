@@ -105,11 +105,13 @@ function find(doc, opt) { opt = opt || {}; const P = doc.pages || [];
   L.forEach((l, i) => {
     const R = roleHead(l); if (R) { if (R.length === 1) { role = R[0].r; cols = null; } else cols = R; gap = 0; return; }
     const pg = P[l.p - 1] || {}, inPic = (pg.imgs || []).some(B => B.w * B.h > (pg.w || 600) * (pg.h || 800) * 0.03 && inBox(l.segs[0].x + 2, l.y + l.h / 2, B, 0));
-    const its = inPic ? [] : items(l).filter(x => x.lead || l.h < body * 1.25); // big text is a heading, unless it has dot leaders; text on a picture is a label
+    // struck-through text (an item that does not apply to this aircraft) is not a step: a thin line through the middle of the words
+    const sg = l.segs[0], struck = (pg.paths || []).some(b => b.h < 3 && b.y >= l.y + l.h * 0.28 && b.y <= l.y + l.h * 0.74 && Math.min(b.x + b.w, sg.x2) - Math.max(b.x, sg.x) > (sg.x2 - sg.x) * 0.5);
+    const its = inPic || struck ? [] : items(l).filter(x => x.lead || l.h < body * 1.25); // big text is a heading, unless it has dot leaders; text on a picture is a label
     if (its.length) { if (!B) { const t = titleFor(i); B = { title: t, page: l.p, steps: [], role0: roleInTitle(t) }; }
       its.forEach(it => { let r = it.r; if (!r && cols) { let d = Infinity; cols.forEach(c => { const e = Math.abs(c.x - it.col); if (e < d) { d = e; r = c.r; } }); }
         if (!r) r = role || B.role0 || null; B.steps.push({ r, t: it.st ? it.n + ' – ' + it.st : it.n, k: it.call || /\bchecklist\b|\bC\/L\b/i.test(it.n) ? 'call' : 'act', lead: !!it.lead, sw: STATE.test(it.st || '') }); });
-      gap = 0; return; }
+      B.pageEnd = l.p; gap = 0; return; }
     if (heading(l, body)) { const t = l.text.replace(/\s{2,}/g, ' ').trim();
       if (B && (phaseOf(t) || FLOWWORD.test(t) || l.h >= body * 1.3 || roleInTitle(t))) { close(); role = null; cols = null; }
       else if (B) { gap++; if (gap > 4) close(); }
@@ -125,15 +127,15 @@ function find(doc, opt) { opt = opt || {}; const P = doc.pages || [];
   const key = t => { const m = /^\s*([A-Z]{0,4}\d{1,3}(?:\.\d{1,3})+)\b/.exec(t || ''); return (m ? m[1] + '|' : '') + cleanTitle(t).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); };
   const table = f => f.steps.filter(s => /^[\d.,\/°%\-+ ]+[A-Za-z%°]{0,6}$/.test((s.t.split(' – ')[1] || '').trim())).length > f.steps.length * 0.6;
   let flows = []; out.filter(b => !table(b)).forEach(b => { const name = cleanTitle(b.title) || '', k = key(b.title);
-    const same = k && flows.slice().reverse().find(f => f.key === k && (f.page2 || f.page) >= b.page - 20); if (same) { same.steps = same.steps.concat(b.steps); same.page2 = b.page; return; }
-    flows.push({ key: k, name: name || ('Flow, page ' + b.page), page: b.page, steps: b.steps.slice() }); });
+    const same = k && flows.slice().reverse().find(f => f.key === k && (f.page2 || f.page) >= b.page - 20); if (same) { same.steps = same.steps.concat(b.steps); same.page2 = Math.max(same.page2 || same.page, b.pageEnd || b.page); return; }
+    flows.push({ key: k, name: name || ('Flow, page ' + b.page), page: b.page, page2: b.pageEnd || b.page, steps: b.steps.slice() }); });
   flows = flows.filter(f => f.steps.filter(s => s.k === 'act').length >= (opt.min || 3) && real(f) && !(f.steps.filter(s => /^[\d.,\/°%\-+ ]+[A-Za-z%°]{0,6}$/.test((s.t.split(' – ')[1] || '').trim())).length > f.steps.length * 0.6)); // a table of figures is not a flow
   return flows.map(f => { const used = new Set(f.steps.map(s => s.r).filter(r => r && r !== '*'));
     const rs = [...used].some(r => r === 'CM1' || r === 'CM2') && ![...used].some(r => r === 'PF' || r === 'PM') ? 'cm' : used.size ? 'pfpm' : (opt.crew === 1 ? 'one' : 'pfpm');
     const roles = { pfpm: ['PF', 'PM'], cm: ['CM1', 'CM2'], one: ['P'] }[rs], map = r => { if (rs === 'one') return 'P'; if (!r || r === '*') return roles[0];
       if (rs === 'pfpm') return r === 'CM1' ? 'PF' : r === 'CM2' ? 'PM' : r; return r === 'PF' ? 'CM1' : r === 'PM' ? 'CM2' : r; };
     const steps = []; const seen = new Set(); f.steps.forEach(s => { const r = map(s.r), k = r + '|' + s.t.toUpperCase(); if (seen.has(k)) return; seen.add(k); steps.push({ r, t: s.t.slice(0, 120), k: s.k }); });
-    return { name: f.name.trim().slice(0, 80), phase: phaseOf(f.name), rs, roles, steps, page: f.page }; }); }
+    return { page2: f.page2 || f.page, name: f.name.trim().slice(0, 80), phase: phaseOf(f.name), rs, roles, steps, page: f.page }; }); }
 
 /* ---------- step names → NORDAP's named controls ---------- */
 const SYN = [[/\bBATT?(ERY|ERIES|S)?\b/g, 'BAT'], [/\bENGINES?\b/g, 'ENG'], [/\bFLIGHT\b/g, 'FLT'], [/\bCONTROLS\b/g, 'CONTROL'], [/\bGENERATORS?\b/g, 'GEN'], [/\bLIGHTS?\b|\bLTS\b/g, 'LT'], [/\bSELECTORS?\b/g, 'SEL'], [/\bSWITCH(ES)?\b|\bSW\b|\bP\/?B\b|\bPUSH ?BUTTONS?\b|\bKNOBS?\b/g, ''], [/\bLEVERS?\b/g, 'LVR'], [/\bTHRUST\b/g, 'THR'], [/\bRUDDER\b/g, 'RUD'], [/\bWEATHER\b/g, 'WX'], [/\bOXY(GEN)?\b/g, 'OXYGEN'], [/\bA-ICE\b/g, 'ANTI ICE'], [/\bBRAKES?\b/g, 'BRK'], [/\bSTATUS\b/g, 'STS'], [/\bHEATING\b|\bHEATERS?\b/g, 'HEAT'],
@@ -246,6 +248,10 @@ function link(flows, figs, doc, opt) { opt = opt || {}; const out = flows.slice(
     steps.forEach(s => { s.r = rs === 'one' ? 'P' : roles.includes(s.r) ? s.r : roles[0]; });
     const un = steps.filter(s => !s.named).length, nm = un > steps.length / 2 ? name + ' (figure, p. ' + g.page + ')' : name;
     out.push({ name: nm.slice(0, 80), phase: phaseOf(name), rs, roles, steps, page: g.page, fig: g, unnamed: un, maybe: un > steps.length / 2 }); });
+  // a flow drawn as a scan picture (arrows, no numbers): the picture can be its cockpit; the steps are placed with a tap, in order
+  out.forEach(f => { if (f.fig) return; let best = null; for (let q = f.page; q <= (f.page2 || f.page); q++) { const pg = (doc.pages || [])[q - 1]; if (!pg) continue; const W = pg.w || 600, H = pg.h || 800;
+      (pg.imgs || []).forEach(B => { if (B.w * B.h > W * H * 0.12 && B.y > H * 0.1 && (!best || B.w * B.h > best.box.w * best.box.h)) best = { page: q, box: B }; }); }
+    if (best) f.pic = best; });
   return out.sort((a, b) => a.page - b.page); }
 /* a step's spot on the figure, in the flow's own coordinates (the picture is 1000 wide) */
 function figSpot(g, n) { const pt = g.pts.find(x => x.n === n); if (!pt || pt.x == null) return null; return { x: Math.round((pt.x - g.box.x) / g.box.w * 1000), y: Math.round((pt.y - g.box.y) / g.box.w * 1000) }; }
