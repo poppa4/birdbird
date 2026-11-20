@@ -373,7 +373,7 @@ function cduHTML(){
   <div class="mabc">${'ABCDEFGHIJKLMNOPQRSTUVWXY'.split('').map(k=>`<button type="button" data-k="${k}">${k}</button>`).join('')}${['Z','SP','DEL','/','CLR'].map(k=>`<button type="button" data-k="${k}">${k}</button>`).join('')}</div></div>
   <p class="mhint">Type with the keys (or your keyboard), then press a line key beside the field. A change to the active route lights EXEC: press it to make it active. CLR deletes a character, DEL then a line key deletes a waypoint or a constraint.</p></div></div><div class="mpane" data-p="tr" hidden><iframe title="FMC trainer" loading="lazy"></iframe></div>`; }
 window.SIMAC={T:window.B737T,H:1520,key:'bb-b737-start',img:['img/cockpits/b738-deck-1500.webp','img/cockpits/b738-deck-3000.webp'],cduIds:['CDU L','CDU R'],gshade:null,
-  REG:{ovhd:[282,38,436,428],main:[70,536,860,258],mcp:[250,540,500,56],eng:[425,664,152,290],cdu:[330,815,345,175],ped:[332,992,336,528],side:[0,1300,1000,120]},
+  REG:{ovhd:[282,38,436,428],main:[0,530,1000,272],mcp:[250,540,500,56],eng:[425,664,152,290],cdu:[330,815,345,175],ped:[332,992,336,528],side:[0,1300,1000,120]},
   REGN:{ovhd:'Overhead',main:'Panel',mcp:'MCP and EFIS',eng:'Engine displays',cdu:'CDU',ped:'Pedestal'},
   DISP,draw:{pfd:DSP7.pfd,nd:DSP7.nd,eng:DSP7.eng,eng2:DSP7.eng2,mcdu:DSP7.mcdu,flapind:DSP7.flapind,gearl:DSP7.gearl},cdu:CDU,cduCls:'b737cdu',trainer:'fmc.html',cduHTML,detents:[0,45],
   d3:{VIEWS:{ovh:{c:[0.895,1.53,0.025],n:[-0.396,0.918,0],up:[0.918,0.396,0],W:0.74,H:0.76,r:[262.8,0,474.3,487.2]},
