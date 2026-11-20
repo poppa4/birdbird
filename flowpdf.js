@@ -168,6 +168,11 @@ function match(name, targets) { const p0 = String(name || '').split(' – ')[0];
   return bs >= 0.6 ? best : null; } // a tie between two controls ("MASTER": electric, avionic or engine?) is left for a tap
 function place(steps, targets) { let n = 0; steps.forEach(s => { if (s.k !== 'act') return; const t = match(s.t, targets); if (t) { s.tg = t.id; s.x = Math.round(t.x + t.w / 2); s.y = Math.round(t.y + t.h / 2); n++; } else { s.x = null; s.y = null; } }); return n; }
 
+/* a step with no control to touch: a check, a call to someone, information to get ("Passengers – instructed", "ATIS – completed",
+   "Fuel temperature – check"). Such a step is practised as a check (read it, tap Done) instead of waiting to be placed. */
+const NONCTL = /\b(PASSENGERS?|DOORS?|CANOPY|ATIS|AIRFIELD DATA|CLEARANCE|BRIEFING|DATA ?CARD|HARNESS(ES)?|SEAT BELTS? FASTENED|PEDALS|INSPECTION|ANNUNCIATIONS?|TEMPERATURE|DATA ?BASES?|CHOCKS|WALK ?AROUND|PAPERS|DOCUMENTS|LOAD ?SHEET|TECH(NICAL)? LOG|OPPOSITE ENGINE|IDLE RPM|PROPELLER|FLIGHT PLAN|NOTAMS?|WEATHER|FUEL (QUANTITY|ON BOARD|FIGURES)|CREW|CABIN CREW|GROUND CREW|ATC)\b/i;
+const POS = /^(ON|OFF|AUTO|ARM(ED)?|NORM(AL)?|OPEN|CLOSED?|SET|UP|DOWN|IDLE|START|STBY|STANDBY|TEST|IN|OUT|PULL|PUSH|ENGAGE|RESET|SELECT|NAV|ALIGN|BOTH|MAX|MIN|BRIGHT|DIM|RETRACT|EXTEND|STOW|CAGE|TO|GRD|FLT|CONT|LOW|HIGH|MED|RTO|CROSSFEED|L\/R|LH|RH|\d)/i;
+function isCheck(t) { const [n, st0] = String(t || '').split(' – '), st = (st0 || '').replace(/^(check(ed)?|verify|confirm)\s*/i, '').trim(); return NONCTL.test(n) || !POS.test(st); }
 /* which aircraft the manual is about: the type named most often */
 const ACS = [['b38m', /\b737[- ]?(MAX|8 ?MAX|MAX ?8)\b|\b7M8\b/gi], ['a359', /\bA350\b|\bA359\b/gi], ['b788', /\b787\b/g], ['e190', /\bE[- ]?1[79]0\b|\bE[- ]?JET\b|\bERJ[- ]?190\b|\bEMB[- ]?190\b/gi],
   ['b738', /\b737(-[6-9]00|NG)?\b|\bB73[6-9]\b/g], ['a320', /\bA3(19|20|21|18)\b|\bA32[01N]\b|\bA320 FAMILY\b/gi], ['atr72', /\bATR[- ]?(42|72)?\b/gi], ['b200s', /\bKING ?AIR\b|\bB200\b|\bBE20\b/gi],
@@ -369,6 +374,6 @@ function hide(cv, s, B, pts) { const g = cv.getContext('2d'), W = cv.width, H = 
     const gr = g.createRadialGradient(cx, cy, R * 0.7, cx, cy, R * 1.15); gr.addColorStop(0, col); gr.addColorStop(1, col.replace('rgb', 'rgba').replace(')', ',0)'));
     g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, R * 1.15, 0, 2 * Math.PI); g.fill(); }); }
 
-const API = { read, find, place, match, guessAc, norm, phaseOf, lines, items, roleHead, figures, link, figSpot, callouts, render, ocr, ocrPages, boxes, hide, discsCore, glyphCanvas };
+const API = { isCheck, read, find, place, match, guessAc, norm, phaseOf, lines, items, roleHead, figures, link, figSpot, callouts, render, ocr, ocrPages, boxes, hide, discsCore, glyphCanvas };
 if (typeof module === 'object' && module.exports) module.exports = API; else G.BBFLOWPDF = API;
 })(typeof window !== 'undefined' ? window : globalThis);
