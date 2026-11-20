@@ -259,7 +259,7 @@ const css=`.nsearch .res{position:absolute;left:var(--gl);right:var(--gr);max-wi
 .nsearch .it{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;text-decoration:none;color:var(--ink);border-top:1px solid var(--rule-2);cursor:pointer}
 .nsearch .it:first-child{border-top:0}.nsearch .it.on,.nsearch .it:hover{background:var(--accent-wash)}
 .nsearch .it b{font-weight:600}.nsearch .it small{color:var(--ink-2);font-size:13px}
-.nsearch .calc{background:var(--wash)}.nsearch .wx code{display:block;font-family:var(--f-mono);font-size:12.5px;line-height:1.4;white-space:pre-wrap;margin:3px 0 0;color:var(--ink)}.nsearch .wx .ag{color:var(--ink-2);font-weight:400}.nsearch .calc .v{font-family:var(--f-mono);font-size:14.5px}
+.nsearch .wxl{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:6px;font-size:13.5px;font-weight:600}.nsearch .wxl a{color:var(--accent);text-decoration:none}.nsearch .wxl a:hover{text-decoration:underline}.nsearch .wxl a:after{content:' →'}.nsearch .calc{background:var(--wash)}.nsearch .wx code{display:block;font-family:var(--f-mono);font-size:12.5px;line-height:1.4;white-space:pre-wrap;margin:3px 0 0;color:var(--ink)}.nsearch .wx .ag{color:var(--ink-2);font-weight:400}.nsearch .calc .v{font-family:var(--f-mono);font-size:14.5px}
 .nsearch .ai{padding:12px 14px;font-size:14.5px;line-height:1.5;color:var(--ink);border-top:1px solid var(--rule-2)}
 .nsearch .ai{max-height:min(70vh,640px);overflow:auto}.nsearch .ai .aq{color:var(--ink-2);font-size:13.5px;margin-bottom:6px}.nsearch .ai .aa p{margin:0 0 8px}.nsearch .ai .aa ul{margin:0 0 8px;padding-left:20px}.nsearch .ai .gk{font-size:11px;color:var(--ink-3);border:1px solid var(--rule);border-radius:3px;padding:0 4px;margin-left:3px;white-space:nowrap}.nsearch .ai .er{color:var(--warning)}.nsearch .ai .ft{font-size:12px;color:var(--ink-3);margin:8px 0 0;background:none;padding:0}
 .nsearch .ai .lk{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}.nsearch .ai .lk a{font-size:13.5px;border:1px solid var(--rule);border-radius:var(--radius);padding:3px 10px;text-decoration:none;color:var(--accent)}
@@ -276,7 +276,7 @@ let APN=null, apP=null;
 const loadAp=()=>apP||(apP=fetch('data/nav-eu.json').then(r=>r.json()).then(d=>{ APN={}; (d.ap||[]).forEach(a=>{ APN[a[0]]={n:a[1],lat:a[2],lon:a[3],el:a[4]}; }); }).catch(()=>{ APN={}; }));
 /* sun and twilight (sun.js, computed here) for the aerodrome; loaded the first time an ICAO code is typed */
 /* "now at the aerodrome" (icaobrief.js): SERA status from the METAR, SIGMETs, freezing level and a radar picture */
-let icbP=null; const loadIcb=()=>icbP||(icbP=new Promise(ok=>{ if(window.ICB) return ok(); const sc=document.createElement('script'); sc.src='icaobrief.js?v=7'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
+let icbP=null; const loadIcb=()=>icbP||(icbP=new Promise(ok=>{ if(window.ICB) return ok(); const sc=document.createElement('script'); sc.src='icaobrief.js?v=8'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
 let olP=null; const loadOl=()=>olP||(olP=new Promise(ok=>{ if(window.OUT) return ok(); const sc=document.createElement('script'); sc.src='outlook.js?v=2'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
 let sunP=null; const loadSun=()=>sunP||(sunP=new Promise(ok=>{ if(window.SUN) return ok(); const sc=document.createElement('script'); sc.src='sun.js?v=1'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
 function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.dataset.w) return; const head=document.querySelector('header.site'); if(!head){ setTimeout(mount,50); return; }
@@ -303,6 +303,20 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
       const sb=w.kind!=='TAF'&&c.m&&window.ICB?ICB.badge(c.m,L)+(ICB.ifrBadge?ICB.ifrBadge(c.m,L):''):'';
       return `<b>${id}</b>${c.n?' <span class="ag">'+esc(c.n)+'</span>':''}${sb}${w.kind!=='TAF'&&c.m?`<code>${esc(c.m)}${ag?` <span class="ag">(${ag} ${L({en:'ago',no:'siden'})})</span>`:''}</code>`:''}${w.kind!=='METAR'&&c.t?`<code>${esc(c.t)}</code>`:''}`; }).filter(Boolean);
     return parts.length?`<div class="it calc wx" data-i="0"><span>${parts.join('<br>')}</span><small>${L({en:'Decode',no:'Dekod'})} →</small></div>`:''; }
+  /* one weather block for a single aerodrome: METAR, TAF, SERA status, SIGMETs, freezing level and radar together,
+     with the Weather page's tabs (Now, Forecast, Decode) as links inside it */
+  function wxOne(ic,ap,i){ const c=WXC[ic]; let pre='', bd='';
+    if(!c||c.busy) pre=`<span class="icb-l"><small>METAR / TAF: ${L({en:'fetching…',no:'henter …'})}</small></span>`;
+    else if(c.err) pre=`<span class="icb-l"><small>METAR / TAF: ${L({en:'the weather service did not answer',no:'værtjenesten svarte ikke'})}</small></span>`;
+    else if(!c.m&&!c.t) pre=`<span class="icb-l"><small>${L({en:'No METAR or TAF from this aerodrome',no:'Ingen METAR eller TAF fra denne flyplassen'})}</small></span>`;
+    else { const age=c.mt?Math.round((Date.now()-new Date(c.mt))/60e3):null, ag=age==null?'':age<120?age+' min':Math.round(age/60)+' h';
+      if(c.m&&window.ICB) bd=ICB.badge(c.m,L)+(ICB.ifrBadge?ICB.ifrBadge(c.m,L):'');
+      pre=(c.m?`<code>${esc(c.m)}${ag?` <span class="ag">(${ag} ${L({en:'ago',no:'siden'})})</span>`:''}</code>`:'')+(c.t?`<code>${esc(c.t)}</code>`:''); }
+    const h=`<b>${L({en:'Weather at ',no:'Vær på '})}${esc(ic)}</b>${bd}`;
+    const post=`<span class="wxl"><a href="weather.html?ids=${ic}">${L({en:'Now',no:'Nå'})}</a><a href="outlook.html?icao=${ic}">${L({en:'Forecast, 14 days',no:'Varsel, 14 dager'})}</a><a href="weather.html?ids=${ic}#decode">${L({en:'Decode',no:'Dekod'})}</a></span>`;
+    const met=c&&!c.busy&&!c.err?(c.m||''):c&&c.err?'':undefined;
+    const inner=window.ICB&&ap?ICB.html(ic,met,L,ap,{h,pre,post}):`<span class="icb"><span class="icb-ls"><span class="icb-h">${h}</span>${pre}${post}</span></span>`;
+    return `<div class="it wx icbrow wxone" data-i="${i}">${inner}</div>`; }
   async function wxGet(ids){ const need=ids.filter(id=>!WXC[id]||(!WXC[id].busy&&Date.now()-WXC[id].at>120e3)); if(!need.length) return; need.forEach(id=>WXC[id]={busy:1,at:Date.now()});
     try{ const r=await fetch('/api/wx?ids='+need.join(','),{headers:{accept:'application/json'}}); const j=await r.json(); if(!j||!j.ok) throw 0;
       need.forEach(id=>{ const st=j.stations&&j.stations[id]||{}; WXC[id]={at:Date.now(),m:st.metar&&st.metar.raw||'',mt:st.metar&&st.metar.obsTime,t:st.taf&&st.taf.raw||'',n:st.name||''}; }); }
@@ -339,8 +353,10 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
     const ol=olGet(q);
     const c=wr||ol?null:calc(q), hits=score(q).filter(x=>!c&&!wr&&!ol||x.s>=3); items=[]; let h='';
     if(ol){ items.push(ol.hint?{hint:1}:{u:'outlook.html?icao='+ol.ic+'&t='+new Date(ol.ms).toISOString().slice(0,13)+':00Z',ol:1}); h+=olRow(ol,0); }
-    if(wr){ items.push({u:'weather.html?ids='+w.ids.join(',')+(w.kind==='TAF'?'&k=T':'')}); h+=wr; }
-    const ic=w&&w.forced?null:icaoOf(q); if(ic){ const ap=APN&&APN[ic], nm=ap&&ap.n; if(!APN) loadAp().then(()=>{ if(icaoOf(inp.value.trim())===ic) draw(); }); if(!window.SUN) loadSun().then(()=>{ if(icaoOf(inp.value.trim())===ic) draw(); });
+    const ic=w&&w.forced?null:icaoOf(q), one=!!(ic&&w&&w.ids.length===1&&w.ids[0]===ic);
+    if(wr&&!one){ items.push({u:'weather.html?ids='+w.ids.join(',')+(w.kind==='TAF'?'&k=T':'')}); h+=wr; }
+    if(ic){ const ap=APN&&APN[ic], nm=ap&&ap.n;
+      if(one&&!ol){ items.push({u:'weather.html?ids='+ic}); h+=wxOne(ic,ap,items.length-1); } if(!APN) loadAp().then(()=>{ if(icaoOf(inp.value.trim())===ic) draw(); }); if(!window.SUN) loadSun().then(()=>{ if(icaoOf(inp.value.trim())===ic) draw(); });
       const again=()=>{ if(icaoOf(inp.value.trim())===ic&&!res.hidden) draw(); }; if(!window.ICB) loadIcb().then(again); else if(ap) ICB.ensure(ic,ap,again);
       const u='/api/aip?icao='+ic+'&go=1'; items.push({u,ext:1});
       h+=`<a class="it" data-i="${items.length-1}" href="${u}" target="_blank" rel="noopener"><span><b>${esc(ic)}${nm?' · '+esc(nm):''}</b><br><small>${L({en:'AIP and charts (AD 2), the edition in force today',no:'AIP og kart (AD 2), utgaven som gjelder i dag'})}</small></span><small>AIP ↗</small></a>`;
@@ -349,8 +365,7 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
         const body= D.civil[0]&&D.civil[1] ? `${L({en:'Civil twilight from',no:'Sivilt tussmørke fra'})} ${t(D.civil[0])} · ${L({en:'sunrise',no:'soloppgang'})} ${t(D.rise)} · ${L({en:'sunset',no:'solnedgang'})} ${t(D.set)} · ${L({en:'night (EASA) from',no:'natt (EASA) fra'})} <b>${t(D.civil[1])}</b>`
           : D.allDayLight.civil ? L({en:'No night today: civil twilight or sun all night',no:'Ingen natt i dag: sivilt tussmørke eller sol hele natta'}) : L({en:'Night all day (polar night)',no:'Natt hele døgnet (mørketid)'});
         h+=`<a class="it" data-i="${items.length-1}" href="${su}"><span><b>${L({en:'Sun and twilight today',no:'Sol og tussmørke i dag'})}</b> <small>${tz?L({en:'local time ',no:'lokal tid '})+SUN.offset(D.noon,tz):'UTC'}</small><br><small>${body}</small></span><small>sun</small></a>`; }
-      { const uo='outlook.html?icao='+ic; items.push({u:uo}); h+=`<a class="it" data-i="${items.length-1}" href="${uo}"><span><b>${L({en:'Weather forecast',no:'Værvarsel'})}</b><br><small>${L({en:'Cloud base, ceiling, wind and icing for any hour up to 14 days ahead. Or type e.g. “'+ic+' tomorrow 10”',no:'Skybase, ceiling, vind og ising for en hvilken som helst time opptil 14 dager fram. Eller skriv f.eks. «'+ic+' i morgen kl 10»'})}</small></span><small>outlook</small></a>`; }
-      if(ap&&window.ICB){ const wc=WXC[ic], met= wc&&!wc.busy&&!wc.err ? (wc.m||'') : wc&&wc.err ? '' : undefined; items.push({u:'weather.html?ids='+ic}); h+=`<a class="it icbrow" data-i="${items.length-1}" href="weather.html?ids=${ic}">${ICB.html(ic,met,L,ap)}</a>`; }}
+    }
     if(c){ items.push({u:c.u}); h+=`<div class="it calc" data-i="0"><span><b>${esc(c.h)}</b><br><span class="v">${esc(c.v)}</span></span>${c.u?`<small>${L({en:'Open the tool',no:'Åpne verktøyet'})} →</small>`:''}</div>`; }
     hits.forEach(({e})=>{ items.push({u:e.u}); h+=`<a class="it" data-i="${items.length-1}" href="${e.u}"><span><b>${esc(L(e.t))}</b><br><small>${esc(L(e.d))}</small></span><small>${e.u.split(/[?#]/)[0].replace('.html','')}</small></a>`; });
     items.push({ai:1}); h+=`<div class="it" data-i="${items.length-1}"><span><b>${L({en:'Ask the instructor',no:'Spør instruktøren'})}:</b> ${esc(q)}</span><small>Enter${hits.length||c?' ↵':''}</small></div>`;
@@ -360,7 +375,7 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
   inp.addEventListener('input',draw); inp.addEventListener('focus',()=>{ const t=turns[turns.length-1]; if(t&&t.q===inp.value.trim()) aiPaint(); else if(inp.value.trim()) draw(); });
   inp.addEventListener('keydown',e=>{ if(e.key==='ArrowDown'){ e.preventDefault(); sel=Math.min(items.length-1,sel+1); mark(); } else if(e.key==='ArrowUp'){ e.preventDefault(); sel=Math.max(0,sel-1); mark(); }
     else if(e.key==='Enter'){ e.preventDefault(); const q=inp.value.trim(); if(!q) return; if(items[0]&&items[0].ol) return go(sel); if(/\?$/.test(q)||/^(hva|hvorfor|hvordan|når|what|why|how|when|can|kan|is|er) /i.test(q)) return ask(); go(sel); } else if(e.key==='Escape'){ res.hidden=true; inp.blur(); } });
-  res.addEventListener('click',e=>{ const it=e.target.closest('.it'); if(!it) return; const i=+it.dataset.i; if(items[i]&&items[i].ai){ e.preventDefault(); ask(); } else if(it.tagName!=='A'&&items[i]&&items[i].u){ location.href=items[i].u; } });
+  res.addEventListener('click',e=>{ const it=e.target.closest('.it'); if(!it) return; if(it.tagName!=='A'&&e.target.closest('a')) return; const i=+it.dataset.i; if(items[i]&&items[i].ai){ e.preventDefault(); ask(); } else if(it.tagName!=='A'&&items[i]&&items[i].u){ location.href=items[i].u; } });
   document.addEventListener('pointerdown',e=>{ if(!box.contains(e.target)) res.hidden=true; });
   document.addEventListener('keydown',e=>{ if(e.key==='/'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); inp.focus(); } });
   /* Flight Intelligence answers right here in the box (fiq.js: the same prompt as the front-page box, /api/atc);

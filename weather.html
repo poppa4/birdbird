@@ -64,7 +64,7 @@
 </style>
 </head>
 <body data-title="Weather">
-<script src="site.js?v=118"></script>
+<script src="site.js?v=119"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -303,7 +303,7 @@ function mode(){ const h=location.hash.slice(1), dec=DEC.includes(h);
   const note=document.querySelector('.page > p.note:last-of-type'); if(note) note.hidden=!dec; }
 document.querySelector('.wxtabs a[data-w="now"]').addEventListener('click',e=>{ e.preventDefault(); history.pushState(null,'',location.pathname+location.search); mode(); scrollTo(0,0); });
 addEventListener('hashchange',mode); mode();
-Promise.all([ldS('icaobrief.js?v=7'),loadApW()]).then(paintNow);
+Promise.all([ldS('icaobrief.js?v=8'),loadApW()]).then(paintNow);
 // ?ids=ENGM (from the search bar or a link) fetches it straight away; otherwise the last code you looked up is filled in
 { const q=new URLSearchParams(location.search), id=(q.get('ids')||q.get('icao')||'').split(',')[0].trim().toUpperCase(); let last=''; try{ last=localStorage.getItem('bb-ol-icao')||localStorage.getItem('bb-wxid')||''; }catch(e){}
   if(/^[A-Z]{4}$/.test(id)){ el('liveId').value=id; setTimeout(()=>live(q.get('k')==='T'?'T':'M'),0); } else if(/^[A-Z]{4}$/.test(last)){ el('liveId').value=last; if(!DEC.includes(location.hash.slice(1))) setTimeout(()=>live('M'),0); } }

@@ -142,7 +142,8 @@ function ensure(icao, ap, redraw) {
     fn().then(v => { c[k] = v; c[k + 'Err'] = 0; }).catch(() => { c[k + 'Err'] = 1; }).finally(() => { c[k + 'At'] = Date.now(); c.busy[k] = 0; redraw(); }); };
   run('sig', () => getSig(icao, ap)); run('frz', () => getFrz(ap)); run('rad', () => getRadar(ap));
 }
-function html(icao, metar, L, ap) {
+/* x (optional, the search bar's one weather block): { h: heading html, pre: lines before the SIGMETs, post: html after the note } */
+function html(icao, metar, L, ap, x) {
   const c = C[icao] || { busy: {} }; const lines = [];
   const wait = L({ en: 'fetching…', no: 'henter …' });
   /* 2 */
@@ -156,7 +157,8 @@ function html(icao, metar, L, ap) {
   else if (!c.frzErr) lines.push(`<span class="icb-l"><small>${L({ en: 'Freezing level', no: 'Frysenivå' })}: ${wait}</small></span>`);
   const img = c.rad ? `<figure class="icb-rad"><img src="${c.rad.url}" alt="${esc(L({ en: 'Radar around ', no: 'Radar rundt ' }) + icao)}" width="150" height="90"><figcaption>${c.rad.any ? '' : L({ en: 'No precipitation · ', no: 'Ingen nedbør · ' })}${esc(c.rad.t.slice(9, 11) + ':' + c.rad.t.slice(11, 13))}Z · © EUMETNET</figcaption></figure>`
     : c.radErr ? '' : `<figure class="icb-rad wait"><span>${L({ en: 'Radar', no: 'Radar' })}: ${wait}</span></figure>`;
-  return `<span class="icb"><span class="icb-ls"><b class="icb-h">${L({ en: 'Now at ', no: 'Nå på ' })}${esc(icao)}</b>${lines.join('')}<small class="icb-n">${L({ en: 'Planning aid. The ATIS, the official briefing and the rules decide.', no: 'Planleggingshjelp. ATIS, offisiell briefing og reglene avgjør.' })}</small></span>${img}</span>`;
+  x = x || {};
+  return `<span class="icb"><span class="icb-ls">${x.h ? `<span class="icb-h">${x.h}</span>` : `<b class="icb-h">${L({ en: 'Now at ', no: 'Nå på ' })}${esc(icao)}</b>`}${x.pre || ''}${lines.join('')}<small class="icb-n">${L({ en: 'Planning aid. The ATIS, the official briefing and the rules decide.', no: 'Planleggingshjelp. ATIS, offisiell briefing og reglene avgjør.' })}</small>${x.post || ''}</span>${img}</span>`;
 }
 const SIGNO = { 'Severe icing': 'Kraftig ising', 'Severe icing (freezing rain)': 'Kraftig ising (underkjølt regn)', 'Severe turbulence': 'Kraftig turbulens', 'Moderate icing': 'Moderat ising',
   'Moderate turbulence': 'Moderat turbulens', 'Severe mountain wave': 'Kraftige fjellbølger', 'Moderate mountain wave': 'Moderate fjellbølger', 'Volcanic ash': 'Vulkansk aske',
