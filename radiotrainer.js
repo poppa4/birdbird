@@ -12,7 +12,7 @@ const $=sel=>document.querySelector(sel);
 const K={prefs:'naeroson-radio-prefs',srs:'naeroson-radio-srs',stats:'naeroson-radio-stats'};
 const jget=(k,d)=>{ try{ const v=JSON.parse(localStorage.getItem(k)||'null'); return v==null?d:v; }catch(e){ return d; } };
 const jset=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
-const P=Object.assign({level:'beginner',callsign:'LN-NAE',voice:true,rate:1,fx:true,auto:true,mic:'en-GB'},jget(K.prefs,{}));
+const P=Object.assign({level:'intermediate',callsign:'LN-NAE',voice:true,rate:1,fx:true,auto:true,mic:'en-GB'},jget(K.prefs,{}));
 const saveP=()=>jset(K.prefs,P);
 const best=k=>{ try{ return +(localStorage.getItem('naeroson-radio-'+k)||0); }catch(e){ return 0; } };
 
@@ -24,8 +24,8 @@ const GROUPS={
   emerg:{t:tr('Emergencies','Nødsituasjoner'),d:tr('MAYDAY, PAN PAN, radio failure, lost, fuel, diversion','MAYDAY, PAN PAN, radiosvikt, usikker posisjon, drivstoff, mål-endring'),ic:'M12 4l9 16H3zM12 10v4M12 17v.5'},
   basic:{t:tr('Basics','Grunnleggende'),d:tr('Phonetic alphabet, numbers, callsigns, standard words','Fonetisk alfabet, tall, kallesignaler, standardord'),ic:'M5 6h14M5 12h14M5 18h9'}
 };
-const LEVELS={beginner:{t:tr('Beginner','Nybegynner'),d:tr('Slow controller, the items to include are shown, three tries per call.','Rolig flygeleder, elementene du skal ta med vises, tre forsøk per oppkall.')},
-  intermediate:{t:tr('Intermediate','Middels'),d:tr('Normal pace, hints on request, two tries.','Normalt tempo, hint når du ber om det, to forsøk.')},
+const LEVELS={beginner:{t:tr('Learning','Lære'),d:tr('New to the radio: slow controller, the items to include are shown, three tries per call.','Ny på radio: rolig flygeleder, elementene du skal ta med vises, tre forsøk per oppkall.')},
+  intermediate:{t:tr('Refresher','Oppfriskning'),d:tr('You have flown before: normal pace, a hint only if you ask, two tries.','Du har flydd før: normalt tempo, hint bare om du ber om det, to forsøk.')},
   check:{t:tr('Check-ready','Klar for sjekk'),d:tr('Fast, more static, controller text hidden until you answer, strict readbacks.','Raskt, mer støy, flygelederens tekst skjult til du svarer, strenge tilbakelesinger.')}};
 const CAT={rb:tr('Readbacks','Tilbakelesinger'),call:tr('Calls and reports','Oppkall og meldinger'),copy:tr('Copying','Notering'),emerg:tr('Emergency calls','Nødmeldinger'),basic:tr('Basics','Grunnleggende')};
 const KIND={cs:tr('Callsign','Kallesignal'),stn:tr('Station called','Stasjon'),rwy:tr('Runway','Rullebane'),qnh:tr('QNH','QNH'),alt:tr('Altitude (QNH)','Høyde (QNH)'),fl:tr('Flight level','Flygenivå'),hdg:tr('Heading','Kurs'),turn:tr('Turn direction','Svingretning'),
@@ -162,14 +162,22 @@ function drawTurn(){
   const req=(s.els||[]).filter(e=>!e.opt), opt=(s.els||[]).filter(e=>e.opt);
   const chip=e=>`<span class="ichip${e.opt?' opt':''}">${esc(L(e.l||R.label(e,ses.V)))}</span>`;
   const showList=ses.L.hints||box.dataset.hint==='1';
+  if(need&&need.length&&ses.tries>0){ box.innerHTML=`<div class="tk"><b>${L({en:'Your turn',no:'Din tur'})}</b> ${esc(L({en:'The controller asked for ',no:'Flygelederen ba om '}))}<b class="need">${esc(need.join(', '))}</b>${esc(L({en:'. Give just that, with your callsign.',no:'. Gi bare det, med kallesignalet ditt.'}))}</div>`; el('btnAgain').disabled=!ses.lastAtc; return; }
+  if(!ses.tries) need=null;
   box.innerHTML=`<div class="tk"><b>${L({en:'Your turn',no:'Din tur'})}</b> ${esc(L(s.task))}</div>`+
     (showList? `<div class="inc"><span>${L({en:'Include',no:'Ta med'})}:</span> ${req.map(chip).join('')}${opt.map(chip).join('')}</div>` : ses.level==='intermediate'? `<button class="lnk" id="hintBtn" type="button">${L({en:'Hint: what to include',no:'Hint: hva du skal ta med'})}</button>`:'');
   const hb=el('hintBtn'); if(hb) hb.onclick=()=>{ box.dataset.hint='1'; drawTurn(); };
   box.dataset.hint='';
   el('btnAgain').disabled=!ses.lastAtc;
 }
+/* compact version for the pilot's bubble in the log: only what was wrong or missing (the full list is in the side panel) */
+function fbShort(g){
+  const bad=g.res.filter(r=>r.st!=='ok'&&!r.opt);
+  if(!bad.length&&!g.flags.length) return `<ul class="els"><li class="ok"><span class="sy">✓</span><span>${L({en:'Everything that had to be in it',no:'Alt som måtte være med'})}</span></li></ul>`;
+  return `<ul class="els">${bad.map(r=>`<li class="${r.st}"><span class="sy">${SYM[r.st]}</span><span>${esc(L(r.label))}${r.st==='wrong'&&r.got?` <em>${L({en:'you said',no:'du sa'})} “${esc(r.got)}”</em>`:''}</span></li>`).join('')}${g.flags.map(f=>`<li class="warn"><span class="sy">!</span><span>${esc(L(f))}</span></li>`).join('')}</ul>`;
+}
 function fbHtml(g,s,kind){
-  const rows=g.res.map(r=>`<li class="${r.st}${r.opt&&r.st!=='ok'?' opt':''}"><span class="sy">${r.opt&&r.st!=='ok'?'○':SYM[r.st]}</span><span>${esc(L(r.label))}${r.st==='wrong'&&r.got?` <em>${L({en:'you said',no:'du sa'})} “${esc(r.got)}”</em>`:''}${r.st==='warn'&&r.got?` <em>“${esc(r.got)}”</em>`:''}${r.opt&&r.st!=='ok'?` <em>${L({en:'good to include',no:'bra å ta med'})}</em>`:''}</span></li>`).join('');
+  const rows=g.res.map(r=>`<li class="${r.st}${r.opt&&r.st!=='ok'?' opt':''}"><span class="sy">${r.opt&&r.st!=='ok'?'○':SYM[r.st]}</span><span>${esc(L(r.label))}${r.st==='wrong'&&r.got?` <em>${L({en:'you said',no:'du sa'})} “${esc(r.got)}”</em>`:''}${r.st==='warn'&&r.got?` <em>“${esc(r.got)}”</em>`:''}${r.opt&&r.st!=='ok'?` <em>${L({en:'good to include',no:'bra å ta med'})}</em>`:''}${r.carried?` <em>${L({en:'from your last call',no:'fra forrige oppkall'})}</em>`:''}</span></li>`).join('');
   const fl=g.flags.map(f=>`<li class="warn"><span class="sy">!</span><span>${esc(L(f))}</span></li>`).join('');
   return `<ul class="els">${rows}${fl}</ul>`;
 }
@@ -179,7 +187,7 @@ function whyHtml(g,s){
   if(s.why&&!seen.has(L(s.why))) whys.push(L(s.why));
   return whys.length? `<div class="why"><b>${L({en:'Why',no:'Hvorfor'})}</b>${whys.slice(0,3).map(w=>`<p>${esc(w)}</p>`).join('')}</div>` : '';
 }
-let lastVoice=null;
+let lastVoice=null, need=null;
 async function transmit(byVoice){
   if(!ses||ses.done) return; const ta=el('say'); const txt=ta.value.trim(); if(!txt) return;
   hush(); ta.value=''; revealAll();
@@ -188,10 +196,13 @@ async function transmit(byVoice){
   const me=addMsg('me',ses.V.cs.full,esc(txt));
   if(r.kind==='sayagain'||r.kind==='standby'){ await run(r.ev); return; }
   const g=r.g, ok=r.kind==='pass';
-  const fb=document.createElement('div'); fb.className='fb'; fb.innerHTML=fbHtml(g,s,r.kind); me.appendChild(fb);
+  const fb=document.createElement('div'); fb.className='fb'; fb.innerHTML=fbShort(g); me.appendChild(fb);
   me.classList.add(ok?'good':r.kind==='fail'?'bad':'try');
   const head= ok? (g.flags.length? L({en:'Accepted, with a note',no:'Godkjent, med en merknad'}) : L({en:'Correct',no:'Riktig'})) : r.kind==='retry'? L({en:'Not yet: the controller corrects you',no:'Ikke ennå: flygelederen korrigerer deg'}) : L({en:'Missed',no:'Bommet'});
-  el('fbBox').innerHTML=`<div class="fbh ${ok?'good':r.kind==='fail'?'bad':'try'}">${esc(head)}</div>${fbHtml(g,s,r.kind)}${!ok||g.flags.length?`<div class="model"><b>${L({en:'Correct call',no:'Riktig oppkall'})}</b><span class="mono">${esc(s.model)}</span></div>`:''}${ok&&!g.flags.length?'':whyHtml(g,s)}`;
+  /* on a retry the answer is not shown yet: the controller has asked for the missing part, so the pilot gets one more go */
+  need= r.kind==='retry'? g.res.filter(x=>x.st!=='ok'&&!x.opt).map(x=>L(x.label)) : null;
+  const ask= need&&need.length? `<div class="model"><b>${L({en:'Reply with',no:'Svar med'})}</b><span>${esc(need.join(', '))}${L({en:', and your callsign. You do not need to repeat the rest.',no:', og kallesignalet ditt. Resten trenger du ikke gjenta.'})}</span></div>` : '';
+  el('fbBox').innerHTML=`<div class="fbh ${ok?'good':r.kind==='fail'?'bad':'try'}">${esc(head)}</div>${fbHtml(g,s,r.kind)}${r.kind==='retry'?ask:(!ok||g.flags.length?`<div class="model"><b>${L({en:'Correct call',no:'Riktig oppkall'})}</b><span class="mono">${esc(s.model)}</span></div>`:'')}${ok&&!g.flags.length?'':whyHtml(g,s)}`;
   lastVoice= byVoice&&r.kind==='retry'? me : null;
   el('btnUndo').hidden=!lastVoice;
   await run(r.ev);

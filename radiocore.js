@@ -228,12 +228,18 @@ function check(e,N,ctx){
       if(cs.akey){ for(const k of (cs.akeys&&cs.akeys.length?cs.akeys.slice().reverse():[cs.akey])){ r=seqFind(N,k,U); if(r) break; } if(r){ mark(U,r); ctx.csAt=r; return e.full? {st:'wrong',why:RULE.csabbr,got:cs.abbr} : ctx.abbrOK? {st:'ok'} : {st:'warn',why:RULE.csabbr,got:cs.abbr}; } }
       return {st:'miss'}; }
     case 'stn':{ const ws=key(e.v).length? norm(e.v).toks:[]; const name=ws[0], unit=ws.slice(1).join('');
-      const rn=seqFind(N,name,U,2); const UNITS=['tower','ground','delivery','approach','radar','control','information','traffic','director','apron','radio','centre','center'];
-      const ru=unit? seqFind(N,unit,U) : [0,0];
+      let rn=seqFind(N,name,U,2); const UNITS=['tower','ground','delivery','approach','radar','control','information','traffic','director','apron','radio','centre','center'];
+      const ru0=unit? seqFind(N,unit,U) : [0,0]; const ru=ru0;
+      /* the name only counts where it stands in front of the unit, not later in the call ("… IFR to NORDAP") */
+      if(rn&&unit&&ru&&rn[1]!==ru[0]-1) rn=null;
       if(rn&&ru){ mark(U,rn); if(unit) mark(U,ru); return {st:'ok'}; }
-      const other=T.find((w,i)=>UNITS.includes(w)&&w!==unit&&!U.has(i)&&i<4);
+      /* another unit in the station position (the first two words): "NORDAP Ground" when Delivery was called for */
+      const other=T.find((w,i)=>UNITS.includes(w)&&w!==unit&&!U.has(i)&&i<=1);
       if(other&&unit) return {st:'wrong',got:other};
-      if(ru&&unit&&!rn) return {st:e.strictName?'miss':'ok'};
+      if(ru&&unit&&!rn){ /* the unit without the name is fine ("Tower, LN-NAE"), but another name in front of it is the wrong station */
+        const j=ru[0]-1, w=j>=0?T[j]:'', FILL=['the','good','morning','afternoon','evening','hello','hi','and','uh','er'];
+        if(w&&/^[a-z]{3,}$/.test(w)&&!FILL.includes(w)&&!U.has(j)&&lev(w,name)>2) return {st:'wrong',got:w+' '+unit};
+        return {st:e.strictName?'miss':'ok'}; }
       return {st:'miss'}; }
     case 'rwy':{ const near=numsNear(N,KW.rwy,U,2);
       const hit=near.find(j=>T[j]===String(e.v)||(T[j].length===1&&('0'+T[j])===String(e.v)));
@@ -370,7 +376,7 @@ function grade(step,text,o){
   const res=new Array(els.length);
   for(const i of idx){ const e=els[i]; const r=check(e,N,ctx); res[i]=Object.assign({k:e.k,opt:!!e.opt,soft:!!e.min,label:e.l||label(e,V),why:r.why||e.why||RULE[e.k]||RULE.phr},r); }
   // carry: items correct in an earlier attempt of the same step stay correct (the pilot only repeats the corrected part)
-  if(o.carry) res.forEach((r,i)=>{ if(o.carry[i]==='ok'&&r.st==='miss') r.st='ok'; });
+  if(o.carry) res.forEach((r,i)=>{ if(o.carry[i]==='ok'&&r.st==='miss'){ r.st='ok'; r.carried=true; } });
   const fl=flags(N,step);
   // callsign position: last in a readback, after the station in a first call (advice, check-ready only)
   if(o.level==='check'&&ctx.csAt&&step.rb){ const after=N.toks.slice(ctx.csAt[1]+1).filter(w=>!['over','wilco','roger'].includes(w)); if(after.length>2) fl.push({k:'cspos',en:'Put your callsign at the end of the readback.',no:'Sett kallesignalet sist i tilbakelesingen.'}); }

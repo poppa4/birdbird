@@ -779,8 +779,9 @@ function renderHero(){ const L0=PROG.last&&I.ITEM[PROG.last.item]?PROG.last:null
   const first=!L0&&!Object.keys(PROG.ex).length;
   el('heroCta').innerHTML=(L0?`<button class="btn2 pri lg" type="button" data-go="continue"><span class="k">${tx('Continue','Fortsett')}</span>${esc(itemName(L0.item))}${L0.custom?` <small>${tx('(your setup)','(ditt oppsett)')}</small>`:''}</button>`:'')+
     ((!L0||L0.item!==rec)?`<button class="btn2 ${L0?'':'pri'} lg" type="button" data-go="${rec}"><span class="k">${first?tx('Start with step 1','Start med steg 1'):n>0?tx(`Next on the path: step ${n}`,`Neste på veien: steg ${n}`):tx('Next for you','Neste for deg')}</span>${esc(itemName(rec))}</button>`:'')+
-    `<a class="btn2 q lg" href="#all" id="toAll">${tx(`All ${I.ITEMS.length} exercises`,`Alle ${I.ITEMS.length} øvelsene`)}</a>`;
+    `<button class="btn2 lg" type="button" id="toChk"><span class="k">${tx('Instrument rated?','Har du IR?')}</span>${tx('Refresher check','Oppfriskningssjekk')}</button><a class="btn2 q lg" href="#all" id="toAll">${tx(`All ${I.ITEMS.length} exercises`,`Alle ${I.ITEMS.length} øvelsene`)}</a>`;
   el('heroCta').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ if(b.dataset.go==='continue'){ const l=PROG.last; openItem(l.item,{p:l.custom?l.p:null,custom:l.custom,lv:l.lv,area:l.area,seed:l.custom?l.seed:undefined,step:'fly'}); } else openItem(b.dataset.go,{}); });
+  el('toChk').onclick=()=>el('chkSec').scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'});
   el('toAll').onclick=e=>{ e.preventDefault(); el('all').scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'}); };
   el('figCap').innerHTML=`<b>${tx('The guided screen','Den veiledede skjermen')}</b><span>${tx('Here the instructor flies a holding entry. When you fly, the line at the top tells you what to do next.','Her flyr instruktøren en inngang til holding. Når du flyr selv, sier linjen øverst hva du skal gjøre nå.')}</span>`;
   heroText(true); }
@@ -828,7 +829,31 @@ function renderCat(){ const rec=recommended(), box=el('groups'), res=el('catList
   wireRows(box); }
 function wireRows(root){ root.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>openItem(b.dataset.start,{}));
   root.querySelectorAll('[data-setup]').forEach(b=>b.onclick=()=>{ bldSet(b.dataset.setup); openBld(); }); }
-function renderHome(){ renderHero(); renderPath(); renderCat(); }
+function renderHome(){ renderHero(); renderCheck(); renderPath(); renderCat(); }
+/* ---------- refresher check: for instrument-rated pilots. Six core procedures in a row, map hidden, wind, no help; one score at the end ---------- */
+const CHECK=['trackIn','intIn','holdEntry','hold','dme','ils'], CHK_LV=3;
+function renderCheck(){
+  el('chkH').textContent=tx('Instrument rated? Take the refresher check','Har du instrumentrettighet? Ta oppfriskningssjekken');
+  el('chkSub').textContent=tx('Six core procedures in a row, flown the way a check is flown: map hidden, wind, no instructor. No walk-through first. Each is scored against the IR skill test limits (±100 ft, ±5°, half scale), and you get one result at the end showing what to brush up on. About 30 minutes.',
+   'Seks kjerneprosedyrer etter hverandre, flydd slik en sjekk flys: skjult kart, vind, ingen instruktør. Ingen gjennomgang først. Hver blir vurdert mot grensene i IR-ferdighetsprøven (±100 ft, ±5°, halvt utslag), og du får ett resultat til slutt som viser hva du bør friske opp. Omtrent 30 minutter.');
+  el('chkList').innerHTML=CHECK.map(id=>`<li>${esc(itemName(id))}</li>`).join('');
+  el('chkGo').innerHTML=`<button class="btn2 pri lg" type="button" id="chkStart">${tx('Start the check','Start sjekken')}</button><small>${tx('You can stop at any time.','Du kan stoppe når som helst.')}</small>`;
+  el('chkStart').onclick=startCheck;
+  const R=PROG.check, box=el('chkRes');
+  if(R&&R.res&&R.res.length){ const n=R.res.filter(r=>r&&r.pass).length, weak=R.res.filter(r=>r&&!r.pass);
+    box.hidden=false;
+    box.innerHTML=`<h3>${tx(`Your last check: ${n} of ${CHECK.length} passed`,`Din siste sjekk: ${n} av ${CHECK.length} bestått`)}</h3>
+      <table><thead><tr><th>${tx('Procedure','Prosedyre')}</th><th>${tx('Score','Poeng')}</th><th>${tx('Result','Resultat')}</th><th></th></tr></thead><tbody>${CHECK.map((id,i)=>{ const r=R.res[i];
+        return `<tr><td>${esc(itemName(id))}</td><td>${r&&r.done!==false?r.total+' / 100':'–'}</td><td>${r&&r.done===false?tx('Not finished','Ikke fullført'):r?(r.pass?`<span class="ok">${tx('Passed','Bestått')}</span>`:`<span class="no">${tx('Brush up','Frisk opp')}</span>`):tx('Not flown','Ikke flydd')}</td><td>${r&&r.pass?'':`<button type="button" class="lk" data-learn="${id}">${tx('Practise with the instructor','Øv med instruktøren')}</button>`}</td></tr>`; }).join('')}</tbody></table>
+      ${weak.length?`<p class="note">${tx('“Practise with the instructor” opens the exercise from the walk-through, with Guided help.','«Øv med instruktøren» åpner øvelsen fra gjennomgangen, med veiledning.')}</p>`:''}`;
+    box.querySelectorAll('[data-learn]').forEach(b=>b.onclick=()=>openItem(b.dataset.learn,{help:'guided',step:'understand'})); }
+  else box.hidden=true;
+  const sk=el('skipU'); sk.checked=!!PROG.skipU; el('skipUt').textContent=tx('I know the basics: open every exercise at Fly (the walk-through stays one click away)','Jeg kan det grunnleggende: åpne alle øvelser på Fly (gjennomgangen er ett klikk unna)');
+  sk.onchange=()=>{ PROG.skipU=sk.checked; save(PK,PROG); }; }
+function startCheck(){ S.check={i:0,res:[],help0:S.help}; PROG.check={t:Date.now(),res:[]}; save(PK,PROG); chkOpen(); }
+function chkOpen(){ const id=CHECK[S.check.i]; history.replaceState(null,'','#'+id); openItem(id,{lv:CHK_LV,help:'off',step:'fly',area:'practice'}); }
+function chkNext(){ if(!S.check) return; S.check.i++; if(S.check.i<CHECK.length) chkOpen(); else chkEnd(); }
+function chkEnd(){ const c=S.check; if(!c) return; S.help=c.help0||S.help; PROG.help=S.help; S.check=null; save(PK,PROG); showHome(true); requestAnimationFrame(()=>el('chkSec').scrollIntoView({block:'start'})); }
 (function(){ const si=el('catQ'); si.addEventListener('input',()=>{ HS.q=si.value; renderCat(); }); el('catQx').onclick=()=>{ HS.q=''; si.value=''; renderCat(); si.focus(); };
   let c0=0; addEventListener('resize',()=>{ if(document.body.classList.contains('v-trainer')) return; const c=gridCols(); if(c!==c0){ c0=c; if(HS.g&&!HS.q) renderCat(); } }); })();
 
@@ -981,8 +1006,8 @@ function openItem(id,o){ o=o||{}; const it=I.ITEM[id]; if(!it) return; closeBld(
   if(A().real) map.setRegion(S.area); else map.region=null;
   document.body.classList.add('v-trainer');
   setup(o.seed||Math.floor(Math.random()*9000)+1); if((location.hash||'').slice(1)!==id) history.pushState(null,'','#'+id);
-  S.uStep=0; go(o.step||'understand'); requestAnimationFrame(()=>{ el('trainer').scrollIntoView({block:'start'}); sizeAll(); }); }
-function showHome(push){ if(S.run){ S.run=false; S.started=false; } document.body.classList.remove('v-trainer'); closePops();
+  S.uStep=0; go(o.step||(PROG.skipU?'fly':'understand')); requestAnimationFrame(()=>{ el('trainer').scrollIntoView({block:'start'}); sizeAll(); }); }
+function showHome(push){ if(S.run){ S.run=false; S.started=false; } if(S.check){ const c=S.check; S.check=null; S.help=c.help0||S.help; PROG.help=S.help; save(PK,PROG); } document.body.classList.remove('v-trainer'); closePops();
   if(push&&location.hash) history.pushState(null,'',location.pathname+location.search); renderHome(); scrollTo(0,0); }
 function route(){ const h=decodeURIComponent((location.hash||'').slice(1)); if(I.ITEM[h]){ if(!(document.body.classList.contains('v-trainer')&&S.item===h)) openItem(h,{}); } else if(document.body.classList.contains('v-trainer')) showHome(false); }
 
@@ -1008,12 +1033,12 @@ function go(step){ if(step==='debrief'&&!S.res) return; if(step==='think'&&!S.th
 /* ---------- top bar, help, setup popover, keys ---------- */
 function renderBar(){ const it=ITo();
   el('exName').textContent=itemName(S.item); el('backT').textContent=tx('All exercises','Alle øvelser');
-  el('exSub').textContent=`${tx('Level','Nivå')} ${S.lv}: ${L(W.level[S.lv])} · ${L(W.area[S.area])}${S.custom?' · '+tx('your setup','ditt oppsett'):''}`;
+  el('exSub').innerHTML=esc(`${tx('Level','Nivå')} ${S.lv}: ${L(W.level[S.lv])} · ${L(W.area[S.area])}${S.custom?' · '+tx('your setup','ditt oppsett'):''}`)+(S.check?`<span class="chkbadge">${tx('Check','Sjekk')} ${S.check.i+1}/${CHECK.length}</span>`:'');
   el('steps').innerHTML=STEPS.filter(([k])=>k!=='think'||S.think).map(([k,n],j)=>`<button type="button" data-s="${k}" class="${k===S.step?'on':''}" ${k==='debrief'&&!S.res?'disabled':''} aria-current="${k===S.step?'step':'false'}"><i>${j+1}</i>${esc(L(n))}</button>`).join('');
   el('steps').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.disabled) return; if(b.dataset.s==='fly'&&(S.step==='debrief'||S.started)){ setup(S.seed); } go(b.dataset.s); });
   el('helpK').textContent=tx('Help','Hjelp'); el('keysBtn').setAttribute('aria-label',tx('Controls','Kontroller'));
   el('helpSeg').innerHTML=['guided','hints','off'].map(k=>`<button type="button" data-h="${k}" class="${k===S.help?'on':''}" aria-pressed="${k===S.help}" title="${esc(L(W.helpSub[k]))}">${esc(L(W.help[k]))}</button>`).join('');
-  el('helpSeg').querySelectorAll('button').forEach(b=>b.onclick=()=>setHelp(b.dataset.h));
+  el('helpSeg').querySelectorAll('button').forEach(b=>b.onclick=()=>setHelp(b.dataset.h)); el('helpSeg').hidden=!!S.check; el('helpK').hidden=!!S.check;
   el('setT').textContent=tx('Setup','Oppsett');
   el('mapBtn').textContent=S.mapOpen?tx('Hide map','Skjul kart'):tx('Map','Kart'); el('mapBtn').setAttribute('aria-pressed',S.mapOpen);
   renderItabs(); }
@@ -1058,8 +1083,8 @@ function renderBrief(){ const c=clearance(S.X,A(),S.ex), pl=plain(S.X,A(),S.ex),
   const meta=`<span>${tx('Wind','Vind')} <b>${windTxt()}</b></span><span>${gl('TAS',1)} <b>${Math.round(I.tasOf(S.X.ac.ias,S.X.ac.alt))}</b></span>${A().real?`<span>${tx('Real navaid data','Ekte navigasjonsdata')}</span>`:''}`;
   if(S.step==='fly'&&!S.started){ strip.hidden=true; el('guide').hidden=true;
     cc.innerHTML=`<div class="ccard"><div class="cl"><div class="k">${S.ex==='math'?tx('The task','Oppgaven'):gl(tx('Your clearance','Klareringen din'),1)}</div><div class="ct">${gl(L(c),4,{clearance:1,heading:1,inbound:1,outbound:1,intercept:1,fix:1})}</div>${L(pl)?`<div class="pl"><b>${tx('In plain words','Med vanlige ord')}</b> ${gl(L(pl),2,{heading:1,fix:1,waypoint:1,intercept:1})}</div>`:''}${tb?`<div class="tbl">${tb}</div>`:''}<div class="meta">${meta}</div></div>
-      <div class="hlp" role="radiogroup" aria-labelledby="hlpK"><div class="k" id="hlpK">${tx('How much help?','Hvor mye hjelp?')}</div>${['guided','hints','off'].map(k=>`<button type="button" role="radio" aria-checked="${S.help===k}" class="${S.help===k?'on':''}" data-hp="${k}"><b>${esc(L(W.help[k]))}</b><span>${esc(L(W.helpSub[k]))}</span></button>`).join('')}</div>
-      <div class="go"><button class="dbtn pri" type="button" data-a="start"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg>${tx('Start','Start')}</button>${S.ex!=='math'?`<button class="dbtn lt" type="button" data-a="demo">${tx('Watch the instructor first','Se instruktøren først')}</button>`:''}</div></div>`;
+      ${S.check?`<div class="hlp"><div class="k">${tx(`Refresher check · ${S.check.i+1} of ${CHECK.length}`,`Oppfriskningssjekk · ${S.check.i+1} av ${CHECK.length}`)}</div><p style="margin:0;font-size:14px;line-height:1.5">${tx('Fly it as on a check: no map, no instructor. Limits: ±100 ft, ±5° on a VOR or NDB track, half scale on the ILS. Brief yourself from the clearance, then press Start.','Fly den som på en sjekk: uten kart, uten instruktør. Grenser: ±100 ft, ±5° på en VOR- eller NDB-kurs, halvt utslag på ILS. Brief deg selv fra klareringen, og trykk Start.')}</p></div>`:`<div class="hlp" role="radiogroup" aria-labelledby="hlpK"><div class="k" id="hlpK">${tx('How much help?','Hvor mye hjelp?')}</div>${['guided','hints','off'].map(k=>`<button type="button" role="radio" aria-checked="${S.help===k}" class="${S.help===k?'on':''}" data-hp="${k}"><b>${esc(L(W.help[k]))}</b><span>${esc(L(W.helpSub[k]))}</span></button>`).join('')}</div>`}
+      <div class="go"><button class="dbtn pri" type="button" data-a="start"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg>${tx('Start','Start')}</button>${S.ex!=='math'&&!S.check?`<button class="dbtn lt" type="button" data-a="demo">${tx('Watch the instructor first','Se instruktøren først')}</button>`:''}</div></div>`;
     cc.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>act(b.dataset.a));
     cc.querySelectorAll('[data-hp]').forEach(b=>b.onclick=()=>setHelp(b.dataset.hp)); return; }
   cc.innerHTML=''; strip.hidden=S.step!=='fly'; el('guide').hidden=S.step!=='fly';
@@ -1174,6 +1199,8 @@ function renderTbar(){ const tb=el('tbar'); let h='';
       <span class="clock">${tx('Time','Tid')} <b id="clk">${mmss(S.sim.t)}</b>${S.speed>1?` ×${S.speed}`:''}${S.demo?` <span class="tx">· ${tx('the instructor is flying','instruktøren flyr')}</span>`:''}</span><span class="sp"></span>
       <button class="ib" data-a="more" aria-expanded="${!el('drawer').hidden}" type="button">${ICON.more}<span class="tx">${tx('More','Mer')}</span></button>
       <button class="ib" data-a="end" type="button">${ICON.stop}<span class="tx">${tx('End','Avslutt')}</span></button>`; }
+  else if(S.step==='debrief'&&S.check){ const last=S.check.i>=CHECK.length-1;
+    h=`<span class="hint">${tx(`Refresher check · ${S.check.i+1} of ${CHECK.length}`,`Oppfriskningssjekk · ${S.check.i+1} av ${CHECK.length}`)}</span><span class="sp"></span><button class="ib" data-a="chkStop" type="button">${tx('Stop the check','Stopp sjekken')}</button><button class="dbtn pri" data-a="chkNext" type="button">${last?tx('See your result','Se resultatet'):tx('Next: ','Neste: ')+esc(itemName(CHECK[S.check.i+1]))}</button>`; }
   else if(S.step==='debrief'){ const g=S.res&&S.res.g, nxt=nextItem();
     h=`<button class="dbtn pri" data-a="again" type="button">${ICON.again}${tx('Fly again','Fly igjen')}</button><button class="ib" data-a="repo" type="button">${ICON.dice}<span class="tx">${tx('New start','Ny start')}</span></button>${S.ex!=='math'?`<button class="ib" data-a="demo" type="button">${ICON.eye}<span class="tx">${tx('Watch the instructor','Se instruktøren')}</span></button>`:''}<span class="sp"></span>
       ${g&&g.pass&&S.lv<4&&!S.res.demo?`<button class="dbtn" data-a="nextlv" type="button">${tx('Level','Nivå')} ${S.lv+1}</button>`:''}${nxt?`<button class="dbtn q" data-a="nextex" type="button">${esc(tx('Next: ','Neste: '))}${esc(itemName(nxt))}</button>`:''}`; }
@@ -1202,6 +1229,8 @@ function act(a){
     case 'repo': setup(Math.floor(Math.random()*9000)+1); go('fly'); break;
     case 'restart': setup(S.seed); go('fly'); break;
     case 'end': finish(true); break;
+    case 'chkNext': chkNext(); break;
+    case 'chkStop': chkEnd(); break;
     case 'again': setup(S.seed); go('fly'); break;
     case 'nextlv': S.lv=Math.min(4,S.lv+1); setup(Math.floor(Math.random()*9000)+1); go('fly'); break;
     case 'nextex': { const n=nextItem(); if(n){ history.replaceState(null,'','#'+n); openItem(n,{}); } break; }
@@ -1541,6 +1570,7 @@ function tick(h){ const X=S.X, s=S.sim, ex=EXo(), Ar=A(); const act=S.pendingAct
 function finish(early){ S.run=false; S.started=false; const ex=EXo(); if(S.pause) resumePause();
   if(early&&!S.J.done){ S.J.ev.push({code:'timeout',sev:'err',cat:'proc',p:{},t:S.sim.t,x:S.sim.x,y:S.sim.y}); }
   const g=I.grade(S.J,ex); S.res={g,demo:S.demo&&!S.mistake,first:g.first};
+  if(S.check&&!S.demo&&CHECK[S.check.i]===S.item){ PROG.check.res[S.check.i]={total:g.total,pass:g.pass&&S.J.done,done:!!S.J.done}; save(PK,PROG); }
   if(!S.demo&&!S.mistake){ const p=PROG.ex[S.item]=PROG.ex[S.item]||{lv:0,best:{}}; p.best[S.lv]=Math.max(p.best[S.lv]||0,g.total); if(g.pass) p.lv=Math.max(p.lv||0,S.lv); save(PK,PROG); }
   const app=isApp(S.ex), ok=S.J.done;
   el('doneB').textContent= ok? (app?tx('Missed approach complete.','Missed approach fullført.'):tx('Exercise complete.','Øvelsen er ferdig.')) : tx('Run ended.','Øvelsen avsluttet.');

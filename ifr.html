@@ -68,6 +68,24 @@ body:not(.v-trainer) #trainer{display:none}
 .promise i{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--ink-3)}
 .promise b{font-family:var(--f-display);font-stretch:92%;font-weight:680;font-size:17px;color:var(--ink)}
 .promise span{color:var(--ink-2)}
+/* refresher check (instrument-rated pilots): six procedures in a row, map hidden, no help, one score */
+.chk .chk-box{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px 28px;align-items:center;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:16px 18px}
+.chk-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 8px;counter-reset:ck}
+.chk-list li{counter-increment:ck;display:inline-flex;align-items:center;gap:8px;font-size:14px;padding:6px 11px;border:1px solid var(--rule);border-radius:999px;background:var(--paper,#fff)}
+.chk-list li::before{content:counter(ck);font-family:var(--f-mono);font-size:11px;color:var(--ink-3)}
+.chk-go{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.chk-go small{font-size:12.5px;color:var(--ink-3)}
+.chk-res{margin-top:14px;background:var(--sheet);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:var(--radius-lg);padding:14px 18px}
+.chk-res h3{margin:0 0 8px;font-size:17px}
+.chk-res table{border-collapse:collapse;width:100%;font-size:14px}
+.chk-res td,.chk-res th{padding:7px 8px;border-bottom:1px solid var(--rule-2);text-align:left}
+.chk-res th{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.chk-res .ok{color:var(--ok);font-weight:600}.chk-res .no{color:var(--warning);font-weight:600}
+.chk-res .lk{all:unset;cursor:pointer;color:var(--accent);font-weight:600;text-decoration:underline}
+.chk-skip{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;color:var(--ink-2);cursor:pointer}
+.chk-skip input{accent-color:var(--accent);width:16px;height:16px}
+.chkbadge{font-family:var(--f-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#FFD2E8;border:1px solid rgba(240,107,180,.6);border-radius:3px;padding:1px 6px;margin-left:8px;white-space:nowrap}
+@media (max-width:700px){.chk .chk-box{grid-template-columns:minmax(0,1fr)}.chk-go{align-items:stretch}}
 .hero-cta{display:flex;flex-wrap:wrap;gap:10px 12px;margin:24px 0 18px;align-items:stretch}
 .btn2.lg{padding:9px 20px 10px;font-size:16.5px;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;white-space:normal;max-width:100%}
 .btn2.lg .k{font-size:12.5px;font-weight:500;opacity:.86}
@@ -659,6 +677,12 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
   </header>
 
   <section class="home" id="home" aria-label="What you can practise">
+    <section class="sec chk" id="chkSec" aria-labelledby="chkH">
+      <div class="sech"><h2 id="chkH">Refresher check</h2><p id="chkSub"></p></div>
+      <div class="chk-box"><ol class="chk-list" id="chkList"></ol><div class="chk-go" id="chkGo"></div></div>
+      <div class="chk-res" id="chkRes" hidden></div>
+      <label class="chk-skip"><input type="checkbox" id="skipU"> <span id="skipUt"></span></label>
+    </section>
     <section class="sec" id="pathSec" aria-labelledby="pathH">
       <div class="sech"><h2 id="pathH">Start here</h2><p id="pathSub"></p><div class="side" id="pathProg"></div></div>
       <ol class="path8" id="path"></ol>
@@ -748,6 +772,6 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
 <script src="navgauges.js?v=5"></script>
 <script src="ifrcore.js?v=4"></script>
 <script src="glossary.js?v=4"></script>
-<script src="ifr.js?v=7"></script>
+<script src="ifr.js?v=8"></script>
 </body>
 </html>
