@@ -115,6 +115,50 @@ body.depth-instructor .xsee{font-size:16px}
 body.depth-instructor .tstep .q{font-size:20px}
 body.depth-instructor .gn-ro{font-size:14.5px}body.depth-instructor .gn-ro .r>b{font-size:14px}
 body.depth-instructor .gn-low{grid-template-columns:minmax(0,1fr) clamp(180px,32%,250px)}
+/* the satellites and the Earth (3D globe, gnssglobe.js) */
+.og-vp{background:radial-gradient(120% 95% at 50% 30%,#1c3354 0%,#0f1d33 48%,#070d18 100%)}
+.og-stage{position:relative;height:clamp(420px,62vh,640px)}
+#ogCv{display:block;width:100%;height:100%;touch-action:none;cursor:grab;outline:none}
+#ogCv.drag{cursor:grabbing}
+#ogCv:focus-visible{box-shadow:inset 0 0 0 2px var(--focus-dark)}
+.og-lbl{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.og-pill{position:absolute;left:0;top:0;white-space:nowrap;font-family:var(--f-body);font-size:13px;font-weight:650;letter-spacing:.01em;color:#F3F6F9;padding:4px 12px;border-radius:999px;background:rgba(8,13,22,.78);border:1.5px solid rgba(255,255,255,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);will-change:transform}
+.og-pill.c-gps{border-color:#F0B440;box-shadow:0 0 14px rgba(240,180,64,.55),inset 0 0 8px rgba(240,180,64,.25)}
+.og-pill.c-glo{border-color:#EC5A47;box-shadow:0 0 14px rgba(236,90,71,.55),inset 0 0 8px rgba(236,90,71,.25)}
+.og-pill.c-gal{border-color:#63D9A0;box-shadow:0 0 14px rgba(99,217,160,.55),inset 0 0 8px rgba(99,217,160,.25)}
+.og-pill.c-egnos{border-color:#7FCBE8;box-shadow:0 0 12px rgba(127,203,232,.45);font-size:11.5px}
+.og-pill.c-home{border-color:#F06BB4;font-size:11.5px;padding:2px 9px;box-shadow:0 0 10px rgba(240,107,180,.4)}
+.og-pill.g-ell{font-size:12.5px;font-weight:600}
+.og-pill.g-geo{border-color:#63D9A0;box-shadow:0 0 14px rgba(99,217,160,.5);font-size:12.5px;font-weight:600}
+.og-pill.g-pin{border-color:#F06BB4;box-shadow:0 0 12px rgba(240,107,180,.5);font-family:var(--f-mono);font-weight:500;font-size:12px}
+.og-zoom{position:absolute;right:12px;top:10px;z-index:2;display:flex;align-items:center;gap:8px}
+.og-zoom button{width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(255,255,255,.7);background:rgba(8,13,22,.55);color:#fff;font-size:20px;line-height:1;cursor:pointer;padding:0}
+.og-zoom button:hover{background:rgba(255,255,255,.14)}
+.og-zoom button:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
+.og-hint{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(230,236,242,.7);margin-right:4px}
+.og-load{position:absolute;inset:auto 0 46%;text-align:center;font-family:var(--f-mono);font-size:12px;color:#AEB8C1}
+.og-load[hidden]{display:none}
+.og-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px;padding:10px 12px 12px;border-top:1px solid rgba(255,255,255,.07)}
+.og-card{background:rgba(5,9,15,.7);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 11px;display:flex;flex-direction:column;gap:2px;min-width:0;--c:#E6EBEF}
+.og-card.c-gps{--c:#F0B440}.og-card.c-glo{--c:#EC5A47}.og-card.c-gal{--c:#63D9A0}.og-card.c-home{--c:#F06BB4}
+.og-card.off{opacity:.45}
+.og-card .k{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#9AA6B2}
+.og-card>b{font-family:var(--f-mono);font-weight:600;font-size:14px;color:var(--c);font-variant-numeric:tabular-nums;line-height:1.3}
+.og-card .s{font-size:11.5px;color:#93A0AC;line-height:1.35}
+.og-card .v{font-size:12px;color:#C9D2D8;margin-top:2px}.og-card .v b{color:var(--c);font-family:var(--f-mono)}
+.og-card>b span{white-space:nowrap}
+#ogVp .vchip{max-width:calc(100% - 200px)}
+@media (max-width:640px){
+  .og-stage{height:min(116vw,520px)}
+  .og-pill{font-size:11.5px;padding:3px 9px}.og-pill.g-ell,.og-pill.g-geo{font-size:11px;white-space:normal;max-width:62vw;text-align:center}
+  .og-hint{display:none}
+  .og-zoom button{width:44px;height:44px}
+  #ogVp .vchip{max-width:calc(100% - 120px);font-size:9.5px;gap:2px 10px}
+  .og-cards{grid-template-columns:minmax(0,1fr);gap:6px;padding:8px}.og-card{padding:6px 10px}.og-card>b{font-size:12.5px}.og-card .s{font-size:10.5px}
+  #ogVp[data-view=orb] .og-card .s{display:none}
+  #ogVp .vchip{display:none}
+}
+body.depth-instructor .og-pill{font-size:15px}body.depth-instructor .og-card>b{font-size:17px}
 </style>
 </head>
 <body data-title="GNSS and RNAV">
@@ -130,7 +174,7 @@ body.depth-instructor .gn-low{grid-template-columns:minmax(0,1fr) clamp(180px,32
     </div>
     <div class="hright"></div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#understand">Key concepts</a><a href="#explore">GNSS and RNP lab</a><a href="#try">Try it</a><a href="#debrief">Key points</a><a href="#quiz">Test yourself</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#understand">Key concepts</a><a href="#orbits">Satellites and the Earth</a><a href="#explore">GNSS and RNP lab</a><a href="#try">Try it</a><a href="#debrief">Key points</a><a href="#quiz">Test yourself</a></nav>
 
   <!-- 1 · UNDERSTAND -->
   <section class="card" id="understand" data-step="understand">
@@ -144,6 +188,38 @@ body.depth-instructor .gn-low{grid-template-columns:minmax(0,1fr) clamp(180px,32
       <details class="dfold"><summary><span id="sp1">PBN navigation specifications</span> <small id="sp1s">accuracy and where they are used</small></summary><div><div class="wrapx"><table class="ftab" id="stab"></table></div><p id="stabN"></p></div></details>
       <details class="dfold"><summary><span id="sp2">RNP APCH minima</span> <small id="sp2s">LNAV, LNAV/VNAV, LP, LPV</small></summary><div><div class="wrapx"><table class="ftab" id="mtab"></table></div><p id="mtabN"></p></div></details>
       <details class="dfold"><summary><span id="sp3">How RAIM decides</span> <small id="sp3s">the protection level</small></summary><div data-tx="raimdd"><p>With five or more satellites the receiver has more measurements than unknowns. It solves the position by least squares and looks at what is left over (the residuals). A large residual means one range does not agree with the others.</p><p>From the geometry alone, before any fault, it works out the largest position error a fault could cause without being noticed: the <b>horizontal protection level (HPL)</b>. If HPL is larger than the <b>alert limit</b> for the phase (2 NM en route, 1 NM terminal, 0.3 NM approach), RAIM is <b>not available</b> and the receiver says so. With six or more it can test each subset without one satellite and so <b>exclude</b> the faulty one (FDE).</p><p>So geometry matters twice: a high DOP makes the position less accurate, and a weak geometry makes a fault harder to see.</p></div></details>
+    </div>
+  </section>
+
+  <!-- 2 · EXPLORE: the satellites and the Earth (3D) -->
+  <section class="card" id="orbits" data-step="explore">
+    <div class="eyebrow">2 · Explore</div>
+    <h2 id="ogH">The satellites and the Earth</h2>
+    <p class="lead" id="ogLead">Drag the globe to turn it. Under <b>Constellations</b>, watch GPS, GLONASS and Galileo fly their orbits and see which satellites Bergen can use. Under <b>WGS-84 and the geoid</b>, see why GNSS height is not height above sea level.</p>
+    <div class="xapp">
+      <div class="xvp og-vp" id="ogVp" data-view="orb">
+        <div class="vbar"><div class="vtabs" id="ogTabs" role="tablist" aria-label="View"></div><div class="vtools" id="ogTools"></div></div>
+        <div class="og-stage" id="ogStage">
+          <canvas id="ogCv" tabindex="0" role="application"></canvas>
+          <div class="og-lbl" id="ogLbl" aria-hidden="false"></div>
+          <div class="vchip" id="ogChip" aria-live="polite"></div>
+          <div class="og-zoom"><span class="og-hint" id="ogHint">Drag to turn it</span><button type="button" id="ogZin">+</button><button type="button" id="ogZout">−</button></div>
+          <div class="og-load" id="ogLoad">Loading the Earth…</div>
+        </div>
+        <div class="og-cards" id="ogCards"></div>
+      </div>
+      <p class="xsee" id="ogSee" aria-live="polite"></p>
+      <details class="xpanel" id="ogPanel" open aria-label="Controls">
+        <summary class="xsum"><span id="ogCtlS">Controls</span></summary>
+        <div id="ogOrbCtl">
+          <details class="xsec" open><summary id="ogHTime">Time</summary><div id="ogSpd"></div><p class="hint" id="ogTimeHint"></p></details>
+          <details class="xsec" open><summary id="ogHShow1">Show</summary><div class="xtogs" id="ogShow"></div></details>
+        </div>
+        <div id="ogGeoCtl" hidden>
+          <details class="xsec" open><summary id="ogHPlace">Place</summary><div id="ogPlace"></div><p class="hint" id="ogPlaceHint"></p></details>
+          <details class="xsec" open><summary id="ogHScale">Scale</summary><div id="ogEx"></div><p class="hint" id="ogExHint"></p></details>
+        </div>
+      </details>
     </div>
   </section>
 
@@ -214,15 +290,17 @@ body.depth-instructor .gn-low{grid-template-columns:minmax(0,1fr) clamp(180px,32
     <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
-  <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Training simulation, not for navigation; the route, waypoints and minima are illustrative, not a published procedure. DOP from least squares on the satellites you place (equal weights). Accuracy: 95 % horizontal = 2 × HDOP × σ, vertical = 1.96 × VDOP × σ, with σ = 4 m for GPS alone and 1 m with SBAS corrections. RAIM: snapshot least-squares slopes with σ = 33.3 m, false alarm 1/15 000 and missed detection 0.001 (the conservative values of the original RTCA availability standard); FDE when every subset without one satellite still meets the alert limit; no baro-aiding. SBAS: HPL = 6.0 × σ × d<sub>major</sub>, VPL = 5.33 × σ × VDOP with σ = 2.5 m; LPV needs HPL ≤ 40 m and VPL ≤ 50 m. Turns in still air: r = GS² / (g · tan bank); fly-by starts r · tan(ΔTrack / 2) early; fly-over turns overhead and rejoins with an intercept of up to 30°. CDI full scale 2 NM en route (beyond 30 NM), 1 NM terminal, ramping to 0.3 NM over the 2 NM before the FAF; LPV angular, 105 m at the threshold and at most 0.3 NM. Vertical deviation ±0.7° full scale for both baro-VNAV and LPV (real baro-VNAV displays are often linear). DME/DME reversion uses Flesland, Vollo and Stord with σ = 0.1 NM. No wind, no magnetic variation; coastline and relief as in the radio navigation simulator (Mapzen/AWS Terrain Tiles).</p>
+  <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Training simulation, not for navigation; the route, waypoints and minima are illustrative, not a published procedure. DOP from least squares on the satellites you place (equal weights). Accuracy: 95 % horizontal = 2 × HDOP × σ, vertical = 1.96 × VDOP × σ, with σ = 4 m for GPS alone and 1 m with SBAS corrections. RAIM: snapshot least-squares slopes with σ = 33.3 m, false alarm 1/15 000 and missed detection 0.001 (the conservative values of the original RTCA availability standard); FDE when every subset without one satellite still meets the alert limit; no baro-aiding. SBAS: HPL = 6.0 × σ × d<sub>major</sub>, VPL = 5.33 × σ × VDOP with σ = 2.5 m; LPV needs HPL ≤ 40 m and VPL ≤ 50 m. Turns in still air: r = GS² / (g · tan bank); fly-by starts r · tan(ΔTrack / 2) early; fly-over turns overhead and rejoins with an intercept of up to 30°. CDI full scale 2 NM en route (beyond 30 NM), 1 NM terminal, ramping to 0.3 NM over the 2 NM before the FAF; LPV angular, 105 m at the threshold and at most 0.3 NM. Vertical deviation ±0.7° full scale for both baro-VNAV and LPV (real baro-VNAV displays are often linear). DME/DME reversion uses Flesland, Vollo and Stord with σ = 0.1 NM. No wind, no magnetic variation; coastline and relief as in the radio navigation simulator (Mapzen/AWS Terrain Tiles). <b>3D globe:</b> circular orbits with the nominal radius, inclination, period and number of planes (GPS 6, GLONASS and Galileo 3); the slots drawn are the design constellations, not today's exact fleet; satellite size is greatly exaggerated; EGNOS positions illustrative; elevation mask 5° at Bergen. Earth images NASA Blue Marble and Black Marble. Geoid: EGM96 (NGA) sampled every 2°, heights exaggerated as set; the WGS-84 ellipsoid is drawn round (its 1/298 flattening is not shown at the same scale).</p>
 </div>
-<script src="lab.js?v=59"></script>
-<script src="concepts.js?v=9"></script>
+<script src="lab.js?v=60"></script>
+<script src="concepts.js?v=10"></script>
 <script src="navcore.js?v=3"></script>
 <script src="navgauges.js?v=5"></script>
 <script src="gnsscore.js?v=2"></script>
 <script src="navmap.js?v=2"></script>
-<script src="gnsslab.js?v=9"></script>
+<script src="three.min.js?v=128"></script>
+<script src="gnssglobe.js?v=1"></script>
+<script src="gnsslab.js?v=10"></script>
 <script src="corepic.js?v=13"></script>
 <script src="pic-gnss.js?v=3"></script>
 </body>
