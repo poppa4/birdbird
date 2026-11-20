@@ -134,7 +134,7 @@ details.olhow p{max-width:80ch;margin:8px 0 0}
 </style>
 </head>
 <body data-title="Weather forecast">
-<script src="site.js?v=119"></script>
+<script src="site.js?v=120"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -291,7 +291,7 @@ function draw(){
     tile(L({en:'Temp / dew point',no:'Temp / duggpunkt'}),c.t2==null?'—':`${c.t2}° / ${c.td??'—'}°`,c.t2!=null&&c.td!=null?L({en:'spread ',no:'spredning '})+(c.t2-c.td)+' °C':'')+
     tile('QNH',c.qnh==null?'—':c.qnh+' hPa',da(c,ap))+
     tile(L({en:'Precipitation',no:'Nedbør'}),c.precip?c.precip+' mm/h':L({en:'None',no:'Ingen'}),c.pop!=null?L({en:'chance ',no:'sjanse '})+Math.round(c.pop)+' %':'')+
-    tile(L({en:'Daylight',no:'Dagslys'}),day(tms,ap,tz,'v'),day(tms,ap,tz,'s').replace(/^[^0-9]*/,''))+`</div>`;
+    (()=>{ const cv=day(tms,ap,tz,'s').replace(/^[^0-9]*/,''), dn=day(tms,ap,tz,'v'); return cv?tile(L({en:'Civil twilight',no:'Sivilt tussmørke'}),cv,dn===L({en:'Night',no:'Natt'})?L({en:'Night (EASA) at this hour',no:'Natt (EASA) denne timen'}):L({en:'Day at this hour',no:'Dag denne timen'})):tile(L({en:'Civil twilight',no:'Sivilt tussmørke'}),dn,L({en:'No twilight change this day',no:'Ingen overgang denne dagen'})); })()+`</div>`;
   h+=`<ul class="ollines">${w.lines.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
   if(j.taf&&j.taf.covers&&HI===j.tIdx) h+=`<div class="oltaf"><b>${L({en:'The TAF covers this hour: plan with the TAF.',no:'TAF-en dekker denne timen: planlegg etter TAF-en.'})}</b><code>${esc(j.taf.raw)}</code></div>`;
   else { const of=OFFICIAL[icao.slice(0,2)]; h+=`<div class="oltaf no">${lead>168?`<b>${L({en:'More than 7 days ahead: a trend, not cloud heights to plan with.',no:'Mer enn 7 dager fram: en trend, ikke skyhøyder å planlegge etter.'})}</b> `:''}${L({en:'Model estimate only. Before flight: the TAF and the official briefing',no:'Bare modellestimat. Før flyging: TAF og offisiell briefing'})}${of?` (<a href="${of[1]}" target="_blank" rel="noopener">${of[0]}</a>)`:''}.</div>`; }
