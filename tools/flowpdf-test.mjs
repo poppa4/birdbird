@@ -23,4 +23,13 @@ ok(m('BAT 1 & 2 – ON') === 'ELEC|BAT 1', 'BAT 1 & 2 → BAT 1'); ok(m('BAT 2 �
 ok(m('AUTO BRK – MAX') === 'LDG GEAR / BRAKES|AUTO BRK MAX', 'the state picks the MAX button'); ok(m('FUEL PUMPS – ON') === 'FUEL|L TK PUMP 1', 'fuel pumps'); ok(!m('LIGHTS – ON'), 'a bare generic word is not placed');
 const B = A.targets(A.get('b738')), b = n => (P.match(n, B) || {}).id || '';
 ok(b('IRS mode selectors – NAV') === 'NAVIGATION / DISPLAYS|IRS', '737 IRS'); ok(b('Landing lights – ON') === 'EXT LIGHTS|LANDING RETRACT L', '737 landing lights');
+
+// a figure: numbered callouts over a picture, with its legend under it
+const fp = { w: 595, h: 842, imgs: [{ x: 50, y: 80, w: 300, h: 400 }], paths: [], items: [it('COCKPIT PREPARATION – OVERHEAD FLOW', 50, 50, 14)].concat(
+  [[110, 160], [200, 180], [260, 300], [120, 400]].map(([x, y], i) => it(String(i + 1), x, y, 9)),
+  ['BAT 1 + 2 ...... ON', 'EXT PWR ...... ON', 'APU MASTER SW ...... ON', 'SEAT BELTS ...... ON'].map((t, i) => [it(String(i + 1), 55, 520 + i * 14), it(t, 75, 520 + i * 14)]).flat()) };
+const fd = { pages: [fp] }, figs = P.figures(fd), L2 = P.link(P.find(fd), figs, fd);
+ok(figs.length === 1 && figs[0].pts.length === 4, 'one figure with four callouts');
+ok(L2.length === 1 && L2[0].fig && L2[0].name === 'Cockpit Preparation – Overhead Flow', 'the legend flow takes the figure: ' + L2.map(f => f.name).join(' | '));
+const sp = L2[0] && P.figSpot(L2[0].fig, 3); ok(sp && Math.abs(sp.x - Math.round((262.25 - 50) / 300 * 1000)) < 4, 'step 3 sits on callout 3');
 console.log(bad ? bad + ' failed' : 'all good'); process.exit(bad ? 1 : 0);

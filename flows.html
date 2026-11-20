@@ -127,6 +127,9 @@ dialog.fd.wide{width:min(760px,96vw);max-width:min(760px,calc(100vw - 16px))}dia
 .fmi{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;margin:6px 0 0 26px;font-size:12px;color:var(--muted,#5b6570)}.fmi .ok{color:#1E8E4E;font-weight:600}
 .fmi button{font:inherit;font-weight:600;background:none;border:0;padding:0;color:var(--accent,#0B5CAD);cursor:pointer;margin-left:auto}
 .fms{margin:8px 0 0 26px;padding:0 0 0 18px;font-size:13px;line-height:1.5}.fms b{display:inline-block;min-width:34px;font-size:11px}.fms i{color:#1E8E4E;font-style:normal;font-weight:700}
+.fmfig{display:inline-flex;align-items:center;gap:5px;font-weight:600;color:var(--ink)}dialog.fd .fmi label.fmfig{flex-direction:row;margin:0;font-size:12px}.fmfig input{width:15px;height:15px;margin:0}
+.fmthumb{position:relative;margin:10px 0 0 26px;max-width:460px;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:#f3f4f6;min-height:40px}.fmthumb>span{display:block;padding:12px;font-size:13px;color:var(--muted,#5b6570)}
+.fmthumb img{display:block;width:100%}.fmthumb svg{position:absolute;inset:0;width:100%;height:100%}.fmthumb circle{fill:#F2C230;stroke:#111;stroke-width:3}.fmthumb text{font:700 22px sans-serif;text-anchor:middle;fill:#111}
 @media (max-width:560px){.fmr{flex-wrap:wrap}dialog.fd .fmr .fmn{flex-basis:calc(100% - 30px)}dialog.fd .fmr select{flex:1 1 100%;margin-left:26px}}
 
 .fcomp{width:100%;border-collapse:collapse;font-size:14px}.fcomp td,.fcomp th{padding:7px 8px;border-bottom:1px solid var(--rule);text-align:left}.fcomp td:not(:first-child){text-align:center}
@@ -238,7 +241,7 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
 <script src="lab.js?v=58"></script>
 <script src="flowsac.js?v=30"></script>
 <script src="flowscore.js?v=22"></script>
-<script src="flowpdf.js?v=2"></script>
+<script src="flowpdf.js?v=6"></script>
 <script>
 LAB.add({},{
  'Flow trainer':'Flow-trener','Trainer':'Trener','How it works':'Slik virker det',
@@ -256,7 +259,7 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=35"></script>
+<script src="flows.js?v=37"></script>
 <script src="flowlib.js?v=5"></script>
 <script src="reqplane.js?v=3"></script>
 </body>

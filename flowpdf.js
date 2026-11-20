@@ -46,12 +46,13 @@ function dropRunning(L, pages) { if (pages < 4) return L; const key = l => l.tex
 const upperish = s => { const a = s.replace(/[^A-Za-z]/g, ''); return a.length > 0 && a.replace(/[^A-Z]/g, '').length / a.length >= 0.6; };
 const words = s => s.trim().split(/\s+/).length;
 const BULLET = /^(\(?\d{1,3}[.)]|\(?[a-z][.)]|[-–•*·▪►>✓☐□■◦○]|\[\s?\])\s*/;
-function cleanName(s) { return s.replace(BULLET, '').replace(/[\s.…:_·]+$/, '').replace(/\s+/g, ' ').trim(); }
+function cleanName(s) { return s.replace(BULLET, '').replace(/^\d{1,2}\s+(?=[A-Za-z]{2})/, '').replace(/[\s.…:_·]+$/, '').replace(/\s+/g, ' ').trim(); }
 function okName(n) { return n.length >= 2 && n.length <= 70 && /[A-Za-z]/.test(n) && words(n) <= 10 && !/[.!?]$/.test(n) && !/^(NOTE|CAUTION|WARNING|REMARK|REF|SEE|IF|WHEN|THE|THIS|IN|ON|AT)\b/i.test(n); }
 function okState(st) { st = st.trim(); return st.length >= 1 && st.length <= 40 && words(st) <= 7 && (STATE.test(st) || upperish(st) || /^[\d.,\/°%\-+ ]+[A-Za-z%°]{0,6}$/.test(st)) && !/[.!?]$/.test(st.replace(/\.{2,}$/, '')); }
 function pair(segs) { // segments of one item (left to right) → { n, st, r }
   segs = segs.slice(); let r = null;
   for (let i = segs.length - 1; i >= 0; i--) if (ROLE_RX.test(segs[i].s.trim())) { r = r || roleOf(segs[i].s); segs.splice(i, 1); }
+  if (segs.length > 1 && labelNum(segs[0].s) && /[A-Za-z]/.test(segs[1].s)) segs.shift(); // "1   BAT 1+2 ..... ON": the legend number of a figure
   if (!segs.length) return null; const t = segs.map(s => s.s).join('   ');
   if (header(segs)) return null;
   if (segs.every(x => /^(ITEM|ITEMS|ACTION|ACTIONS|PILOT|CREW|CREW MEMBER|BY|ROLE|RESPONSE|CHALLENGE|STATUS|POSITION|STATE|CONTROL|STEP|NO\.?|#|REMARKS?|REF(ERENCE)?)$/i.test(x.s.trim()))) return null;
@@ -97,7 +98,7 @@ function find(doc, opt) { opt = opt || {}; const P = doc.pages || [];
     return last !== top && last.i > top.i && !roleInTitle(last.t) && !phaseOf(last.t) ? top.t + ' – ' + last.t : top.t; };
   L.forEach((l, i) => {
     const R = roleHead(l); if (R) { if (R.length === 1) { role = R[0].r; cols = null; } else cols = R; gap = 0; return; }
-    const its = items(l);
+    const its = l.h >= body * 1.25 ? [] : items(l);
     if (its.length) { if (!B) { const t = titleFor(i); B = { title: t, page: l.p, steps: [], role0: roleInTitle(t) }; }
       its.forEach(it => { let r = it.r; if (!r && cols) { let d = Infinity; cols.forEach(c => { const e = Math.abs(c.x - it.col); if (e < d) { d = e; r = c.r; } }); }
         if (!r) r = role || B.role0 || null; B.steps.push({ r, t: it.st ? it.n + ' – ' + it.st : it.n, k: it.call || /\bchecklist\b/i.test(it.n) ? 'call' : 'act' }); });
@@ -157,16 +158,159 @@ const ACS = [['b38m', /\b737[- ]?(MAX|8 ?MAX|MAX ?8)\b|\b7M8\b/gi], ['a359', /\b
 function guessAc(doc) { const t = (doc.pages || []).map(p => p.items.map(i => i.s).join(' ')).join(' '); let best = '', bn = 0;
   ACS.forEach(([id, rx]) => { const n = (t.match(rx) || []).length; if (n > bn) { bn = n; best = id; } }); if (best === 'b738' && (t.match(ACS[0][1]) || []).length > 2) best = 'b38m'; return bn >= 2 ? best : ''; }
 
+/* ---------- flows drawn as figures: numbered callouts (1, 2, 3 …) over a cockpit picture or drawing ---------- */
+const CIRC = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳', CIRC2 = '❶❷❸❹❺❻❼❽❾❿⓫⓬⓭⓮⓯⓰⓱⓲⓳⓴', CIRC3 = '➀➁➂➃➄➅➆➇➈➉', CIRC4 = '➊➋➌➍➎➏➐➑➒➓';
+function labelNum(s) { s = String(s || '').trim(); if (s.length === 1) { for (const C of [CIRC, CIRC2, CIRC3, CIRC4]) { const i = C.indexOf(s); if (i >= 0) return i + 1; } }
+  const m = /^[(\[]?(\d{1,2})[)\].]?$/.exec(s); return m && +m[1] >= 1 && +m[1] <= 60 ? +m[1] : 0; }
+const inBox = (x, y, B, pad) => x >= B.x - pad && x <= B.x + B.w + pad && y >= B.y - pad && y <= B.y + B.h + pad;
+const union = (A, B) => { if (!A) return Object.assign({}, B); const x = Math.min(A.x, B.x), y = Math.min(A.y, B.y); return { x, y, w: Math.max(A.x + A.w, B.x + B.w) - x, h: Math.max(A.y + A.h, B.y + B.h) - y }; };
+/* the callout numbers of one page: a lone number (nothing written right after it), not in the running head or foot.
+   A legend line ("1  BAT 1+2 ...... ON") has text after its number, so it is not a callout. */
+function callouts(pg) { const W = pg.w || 600, H = pg.h || 800, it = pg.items, out = [];
+  it.forEach(i => { const n = labelNum(i.s); if (!n) return; const h = i.h || 8, cx = i.x + (i.w || h * 0.5) / 2, cy = i.y + (i.ocr ? (i.h / 2) : h * 0.5);
+    if (!(pg.imgs || []).some(B => inBox(cx, cy, B, 2)) && (cy < H * 0.06 || cy > H * 0.94)) return;
+    const after = it.some(j => j !== i && !labelNum(j.s) && /[A-Za-z]/.test(j.s) && Math.abs(j.y - i.y) < h * 0.6 && j.x >= i.x + (i.w || 0) - 1 && j.x <= i.x + (i.w || 0) + h * 2.2);
+    if (!after) out.push({ n, x: cx, y: cy, h, r: i.ocr ? h / 2 : h * 0.9, src: i.ocr ? 'ocr' : 'text' }); });
+  return out; }
+/* 1..N with most of the numbers there; a number found twice keeps the one nearest the others */
+function sequence(L) { const by = new Map(); L.forEach(c => { if (!by.has(c.n)) by.set(c.n, []); by.get(c.n).push(c); });
+  if (!by.has(1)) return null; let N = 0; for (let n = 1; n <= 60; n++) { if (by.has(n)) N = n; else if ([...by.keys()].filter(k => k > n).length === 0) break; }
+  let have = 0; for (let n = 1; n <= N; n++) if (by.has(n)) have++; if (N < 3 || have < Math.max(3, N * 0.75)) return null;
+  const all = [].concat(...[...by.values()]), mx = all.reduce((a, c) => a + c.x, 0) / all.length, my = all.reduce((a, c) => a + c.y, 0) / all.length, pts = [];
+  for (let n = 1; n <= N; n++) { const C = by.get(n); if (!C) { pts.push({ n, x: null, y: null }); continue; } C.sort((a, b) => Math.hypot(a.x - mx, a.y - my) - Math.hypot(b.x - mx, b.y - my)); pts.push({ n, x: C[0].x, y: C[0].y, r: C[0].r }); }
+  return pts; }
+/* the legend of a figure: lines that start with a callout number, on the same page or the next */
+function legend(doc, p, next) { const out = {}; (next ? [p, p + 1] : [p]).forEach(q => { const pg = doc.pages[q - 1]; if (!pg) return;
+    lines(pg, q).forEach(l => { const m = /^[(\[]?(\d{1,2})[)\].]?\s+(.+)$/.exec(l.text) || (l.segs.length > 1 && labelNum(l.segs[0].s) ? [0, labelNum(l.segs[0].s), l.segs.slice(1).map(x => x.s).join('   ')] : null);
+      if (!m || out[+m[1]]) return; const segs = [{ x: 0, x2: 0, s: m[2] }], it = pair(l.segs.length > 1 && labelNum(l.segs[0].s) ? l.segs.slice(1) : segs) || pair(segs);
+      const t = it ? (it.st ? it.n + ' – ' + it.st : it.n) : cleanName(m[2]); if (t && t.length <= 120 && /[A-Za-z]/.test(t) && words(t) <= 14) out[+m[1]] = { t, r: it && it.r || roleInTitle(m[2]) }; }); });
+  return out; }
+/* doc → figures: { page, box (page units), pts [{ n, x, y }], legend, src } */
+function figures(doc) { const out = []; (doc.pages || []).forEach((pg, i) => { const p = i + 1, C = callouts(pg); if (C.length < 3) return; const W = pg.w || 600, H = pg.h || 800, used = new Set();
+    // callouts inside a picture belong to that picture
+    (pg.imgs || []).filter(B => B.w * B.h > W * H * 0.04).forEach(B => { const mine = C.filter(c => !used.has(c) && inBox(c.x, c.y, B, 3)), S = sequence(mine); if (!S) return; mine.forEach(c => used.add(c));
+      out.push({ page: p, box: B, pts: S, src: mine.some(c => c.src === 'ocr') ? 'ocr' : 'text' }); });
+    // callouts over a drawing (vector line art): the drawing's paths around them make the box
+    const rest = C.filter(c => !used.has(c)), S = sequence(rest); if (!S) return;
+    const xs = rest.map(c => c.x), ys = rest.map(c => c.y), col = xs.filter(x => Math.abs(x - xs[0]) < 4).length >= xs.length * 0.7; if (col) return; // a numbered column is a list, not a figure
+    let U = { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
+    const E = { x: U.x - W * 0.08, y: U.y - H * 0.06, w: U.w + W * 0.16, h: U.h + H * 0.12 };
+    (pg.paths || []).forEach(P => { if (P.w * P.h < W * H * 0.6 && P.w < W * 0.95 && inBox(P.x + P.w / 2, P.y + P.h / 2, E, 0)) U = union(U, P); });
+    const pad = Math.max(W, H) * 0.015, x0 = Math.max(0, U.x - pad), y0 = Math.max(0, U.y - pad); U = { x: x0, y: y0, w: Math.min(W, U.x + U.w + pad) - x0, h: Math.min(H, U.y + U.h + pad) - y0 };
+    out.push({ page: p, box: U, pts: S, src: 'text' }); });
+  const fp = new Set(out.map(f => f.page)); out.forEach(f => { f.legend = legend(doc, f.page, !fp.has(f.page + 1)); }); return out; }
+/* text flows + figures → one list: a flow written next to its figure gets the figure (its steps go onto the callouts in order);
+   a figure with no flow beside it becomes a flow of its own, named from its legend or numbered */
+function link(flows, figs, doc, opt) { opt = opt || {}; const out = flows.slice(); let L = [];
+  (doc.pages || []).forEach((pg, i) => { L = L.concat(lines(pg, i + 1)); }); L = dropRunning(L, (doc.pages || []).length);
+  const figPages = new Set(figs.map(g => g.page)), fits = (f, N) => { const a = f.steps.filter(s => s.k === 'act').length; return a >= N * 0.6 && a <= N * 1.5; };
+  const pick = new Map(); figs.forEach(g => { const f = out.find(f => !f.fig && ![...pick.values()].includes(f) && f.page === g.page && fits(f, g.pts.length)); if (f) pick.set(g, f); }); // same page first
+  figs.forEach(g => { if (pick.has(g)) return; const f = out.filter(f => !f.fig && ![...pick.values()].includes(f) && Math.abs(f.page - g.page) === 1 && !figPages.has(f.page) && fits(f, g.pts.length)).sort((a, b) => b.page - a.page)[0]; if (f) pick.set(g, f); });
+  figs.forEach(g => { const N = g.pts.length, near = pick.get(g);
+    const lg = g.legend || {}, nl = Object.keys(lg).length;
+    if (near) { near.fig = g; const acts = near.steps.filter(s => s.k === 'act'); acts.forEach((s, i) => { s.n = i + 1; });
+      if (nl >= N * 0.6) acts.forEach(s => { const k = Object.keys(lg).find(n => norm(lg[n].t) === norm(s.t)); if (k) s.n = +k; }); return; }
+    // the title: the closest heading above the figure on its page, else the page's first heading
+    const above = L.filter(l => l.p === g.page && l.y < g.box.y + 4 && heading(l, 9)).pop() || L.filter(l => l.p === g.page && heading(l, 9))[0];
+    const name = cleanTitle(above ? above.text.replace(/\s{2,}/g, ' ') : '') || ('Figure, page ' + g.page);
+    const steps = g.pts.map(pt => { const e = lg[pt.n]; return { r: e && e.r && e.r !== '*' ? e.r : null, t: e ? e.t : 'Step ' + pt.n, k: e && /\bchecklist\b/i.test(e.t) ? 'call' : 'act', n: pt.n, named: !!e }; });
+    const used = new Set(steps.map(s => s.r).filter(Boolean)), rs = [...used].some(r => /^CM/.test(r)) ? 'cm' : used.size ? 'pfpm' : (opt.crew === 1 ? 'one' : 'pfpm'), roles = { pfpm: ['PF', 'PM'], cm: ['CM1', 'CM2'], one: ['P'] }[rs];
+    steps.forEach(s => { s.r = rs === 'one' ? 'P' : roles.includes(s.r) ? s.r : roles[0]; });
+    out.push({ name: name.slice(0, 80), phase: phaseOf(name), rs, roles, steps, page: g.page, fig: g, unnamed: steps.filter(s => !s.named).length }); });
+  return out.sort((a, b) => a.page - b.page); }
+/* a step's spot on the figure, in the flow's own coordinates (the picture is 1000 wide) */
+function figSpot(g, n) { const pt = g.pts.find(x => x.n === n); if (!pt || pt.x == null) return null; return { x: Math.round((pt.x - g.box.x) / g.box.w * 1000), y: Math.round((pt.y - g.box.y) / g.box.w * 1000) }; }
+
 /* ---------- reading the PDF (browser) ---------- */
-async function read(file, progress) { const lib = await import('./vendor/pdfjs/pdf.min.mjs?v=4.10.38'); lib.GlobalWorkerOptions.workerSrc = 'vendor/pdfjs/pdf.worker.min.mjs?v=4.10.38';
-  const pdf = await lib.getDocument({ data: await file.arrayBuffer(), isEvalSupported: false }).promise, pages = []; let chars = 0;
+/* text of every page, plus where pictures and drawings sit (to find figures); the pdf stays open for rendering figures */
+async function lib() { const L = await import('./vendor/pdfjs/pdf.min.mjs?v=4.10.38'); L.GlobalWorkerOptions.workerSrc = 'vendor/pdfjs/pdf.worker.min.mjs?v=4.10.38'; return L; }
+function boxes(ops, OPS, vt) { const imgs = [], paths = []; let m = [1, 0, 0, 1, 0, 0]; const st = [];
+  const mul = (a, b) => [a[0] * b[0] + a[2] * b[1], a[1] * b[0] + a[3] * b[1], a[0] * b[2] + a[2] * b[3], a[1] * b[2] + a[3] * b[3], a[0] * b[4] + a[2] * b[5] + a[4], a[1] * b[4] + a[3] * b[5] + a[5]];
+  const box = (M, x0, y0, x1, y1) => { const T = mul(vt, M), P = [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([x, y]) => [T[0] * x + T[2] * y + T[4], T[1] * x + T[3] * y + T[5]]);
+    const xs = P.map(q => q[0]), ys = P.map(q => q[1]); return { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) }; };
+  for (let i = 0; i < ops.fnArray.length; i++) { const f = ops.fnArray[i], a = ops.argsArray[i];
+    if (f === OPS.save) st.push(m); else if (f === OPS.restore) m = st.pop() || [1, 0, 0, 1, 0, 0]; else if (f === OPS.transform) m = mul(m, a);
+    else if (f === OPS.paintFormXObjectBegin) { st.push(m); if (a && a[0]) m = mul(m, a[0]); } else if (f === OPS.paintFormXObjectEnd) m = st.pop() || m;
+    else if (f === OPS.paintImageXObject || f === OPS.paintInlineImageXObject || f === OPS.paintImageMaskXObject || f === OPS.paintImageXObjectRepeat) imgs.push(box(m, 0, 0, 1, 1));
+    else if (f === OPS.constructPath && a && a[2] && a[2].length >= 4 && paths.length < 4000) { const b = box(m, a[2][0], a[2][1], a[2][2], a[2][3]); if (b.w > 1 || b.h > 1) paths.push(b); } }
+  // overlapping picture tiles (a cockpit photo in strips) are one picture
+  const big = []; imgs.filter(b => b.w > 20 && b.h > 20).forEach(b => { const o = big.find(c => inBox(b.x + b.w / 2, b.y + b.h / 2, { x: c.x - 4, y: c.y - 4, w: c.w + 8, h: c.h + 8 }, 0) || (b.x <= c.x + c.w + 4 && c.x <= b.x + b.w + 4 && b.y <= c.y + c.h + 4 && c.y <= b.y + b.h + 4));
+    if (o) Object.assign(o, union(o, b)); else big.push(Object.assign({}, b)); });
+  return { imgs: big, paths }; }
+async function read(file, progress) { const L = await lib();
+  const pdf = await L.getDocument({ data: await file.arrayBuffer(), isEvalSupported: false }).promise, pages = []; let chars = 0;
   for (let n = 1; n <= pdf.numPages; n++) { const pg = await pdf.getPage(n), v = pg.getViewport({ scale: 1 }), tc = await pg.getTextContent(), items = [];
     tc.items.forEach(i => { if (!i.str || !i.str.trim()) return; const tr = i.transform, h = Math.abs(i.height || Math.hypot(tr[2], tr[3])) || 8;
       if (Math.abs(tr[1]) > Math.abs(tr[0]) * 0.3) return; // rotated text (margins, stamps)
       const p = v.convertToViewportPoint(tr[4], tr[5]); items.push({ s: i.str, x: p[0], y: p[1] - h * 0.8, w: Math.abs(i.width) || i.str.length * h * 0.5, h }); chars += i.str.length; });
-    pages.push({ w: v.width, h: v.height, items }); pg.cleanup(); if (progress) progress(n, pdf.numPages); }
-  pdf.destroy(); return { pages, chars, name: file.name || 'manual.pdf' }; }
+    let bx = { imgs: [], paths: [] }; try { bx = boxes(await pg.getOperatorList(), L.OPS, v.transform); } catch (e) {}
+    pages.push({ w: v.width, h: v.height, items, imgs: bx.imgs, paths: bx.paths }); pg.cleanup(); if (progress) progress(n, pdf.numPages); }
+  return { pages, chars, name: file.name || 'manual.pdf', pdf }; }
+/* a figure as a picture: the page drawn sharp and cut to the figure */
+async function render(doc, p, B, maxPx) { const pg = await doc.pdf.getPage(p), s = Math.min(4, (maxPx || 2000) / Math.max(B.w, B.h)), v = pg.getViewport({ scale: s }), c = document.createElement('canvas');
+  c.width = Math.round(B.w * s); c.height = Math.round(B.h * s); const cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height);
+  await pg.render({ canvasContext: cx, viewport: v, transform: [1, 0, 0, 1, -B.x * s, -B.y * s] }).promise; pg.cleanup(); return { canvas: c, s }; }
+/* pictures whose numbers are part of the picture: read the digits on this device (tesseract.js, loaded only when needed) */
+let TW = null;
+async function ocrWorker() { if (TW) return TW; if (!G.Tesseract) await new Promise((ok, ko) => { const sc = document.createElement('script'); sc.src = 'vendor/tesseract/tesseract.min.js?v=5.1.1'; sc.onload = ok; sc.onerror = () => ko(new Error('OCR not available')); document.head.appendChild(sc); });
+  const base = new URL('vendor/tesseract/', location.href).href;
+  TW = await G.Tesseract.createWorker('eng', 1, { workerPath: base + 'worker.min.js', corePath: base, langPath: base, gzip: false, cacheMethod: 'none' });
+  await TW.setParameters({ tessedit_char_whitelist: '0123456789', tessedit_pageseg_mode: '11' }); return TW; }
+/* which pages to look at: a big picture, no callouts found in the text, and a flow-like word on the page or the one before */
+function ocrPages(doc, figs, max) { const has = new Set(figs.map(f => f.page)), C = [];
+  (doc.pages || []).forEach((pg, i) => { const p = i + 1; if (has.has(p)) return; const W = pg.w || 600, H = pg.h || 800, big = (pg.imgs || []).filter(B => B.w * B.h > W * H * 0.08); if (!big.length) return;
+    const txt = pg.items.map(x => x.s).join(' ') + ' ' + ((doc.pages[i - 1] || { items: [] }).items.map(x => x.s).join(' ')), sc = (FLOWWORD.test(txt) ? 2 : 0) + (phaseOf(txt) ? 2 : 0) + (/\b(SCAN|PANEL|OVERHEAD|PEDESTAL|COCKPIT|FLIGHT DECK)\b/i.test(txt) ? 1 : 0);
+    big.forEach(B => C.push({ p, B, sc })); });
+  return C.sort((a, b) => b.sc - a.sc || a.p - b.p).slice(0, max || 60).sort((a, b) => a.p - b.p); }
+/* round callout markers in a picture: a flat disc (any colour), about 1–7 % of the picture across, with something
+   of another colour inside it (the number). Returns each marker with a clean black-on-white picture of what is inside. */
+function discs(cv) { const W = cv.width, H = cv.height, d = cv.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, W, H).data, lab = new Int32Array(W * H), st = new Int32Array(W * H), out = [];
+  const M = Math.max(W, H), dmin = Math.max(10, Math.round(M * 0.009)), dmax = Math.round(M * 0.07), T2 = 48 * 48; let id = 0;
+  for (let i0 = 0; i0 < W * H; i0++) { if (lab[i0]) continue; id++; const r0 = d[4 * i0], g0 = d[4 * i0 + 1], b0 = d[4 * i0 + 2]; let sp = 0, n = 0, x0 = W, x1 = 0, y0 = H, y1 = 0; st[sp++] = i0; lab[i0] = id;
+    while (sp) { const j = st[--sp], jx = j % W, jy = (j - jx) / W; n++; if (jx < x0) x0 = jx; if (jx > x1) x1 = jx; if (jy < y0) y0 = jy; if (jy > y1) y1 = jy;
+      for (let q = 0; q < 4; q++) { const kx = q === 0 ? jx - 1 : q === 1 ? jx + 1 : jx, ky = q === 2 ? jy - 1 : q === 3 ? jy + 1 : jy; if (kx < 0 || ky < 0 || kx >= W || ky >= H) continue; const k = ky * W + kx; if (lab[k]) continue;
+        const dr = d[4 * k] - r0, dg = d[4 * k + 1] - g0, db = d[4 * k + 2] - b0; if (dr * dr + dg * dg + db * db < T2) { lab[k] = id; st[sp++] = k; } } }
+    const w = x1 - x0 + 1, h = y1 - y0 + 1; if (w < dmin || h < dmin || w > dmax || h > dmax || w / h < 0.78 || w / h > 1.28) continue;
+    const fill = n / (w * h); if (fill < 0.42 || fill > 0.84) continue;
+    // inside: pixels that are not the disc, within the inner part of the circle, must be there (the digit) and stand out
+    const cx = x0 + w / 2, cy = y0 + h / 2, R = Math.min(w, h) / 2; let hole = 0, inner = 0, con = 0;
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const e = ((x - cx) ** 2 + (y - cy) ** 2) / (R * R); if (e > 0.5) continue; inner++; const k = y * W + x;
+      if (lab[k] !== id) { hole++; con += Math.abs(d[4 * k] - r0) + Math.abs(d[4 * k + 1] - g0) + Math.abs(d[4 * k + 2] - b0); } }
+    if (!inner || hole / inner < 0.05 || hole / inner > 0.55 || con / Math.max(1, hole) < 120) continue;
+    const S = 96 / (2 * R), c = document.createElement('canvas'); c.width = c.height = 120; const g = c.getContext('2d'), im = g.createImageData(120, 120);
+    for (let y = 0; y < 120; y++) for (let x = 0; x < 120; x++) { const sx = Math.round(cx + (x - 60) / S), sy = Math.round(cy + (y - 60) / S), e = ((sx - cx) ** 2 + (sy - cy) ** 2) / (R * R), k = sy * W + sx, o = 4 * (y * 120 + x);
+      const ink = e <= 0.8 && sx >= 0 && sy >= 0 && sx < W && sy < H && lab[k] !== id && (Math.abs(d[4 * k] - r0) + Math.abs(d[4 * k + 1] - g0) + Math.abs(d[4 * k + 2] - b0)) > 90; /* the inside of a 6, 8, 9 or 0 has the disc's colour */ im.data[o] = im.data[o + 1] = im.data[o + 2] = ink ? 0 : 255; im.data[o + 3] = 255; }
+    g.putImageData(im, 0, 0); out.push({ x: cx, y: cy, r: R, c, col: [r0, g0, b0] }); if (out.length >= 160) break; }
+  return out; }
+/* the number in a marker: only markers whose ink looks like one or two digits (not a dial or a knob), each read on its own */
+function glyph(c) { const g = c.getContext('2d', { willReadFrequently: true }), d = g.getImageData(0, 0, 120, 120).data; let x0 = 120, x1 = -1, y0 = 120, y1 = -1, n = 0;
+  for (let y = 0; y < 120; y++) for (let x = 0; x < 120; x++) if (!d[4 * (y * 120 + x)]) { n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  if (x1 < 0) return null; const w = x1 - x0 + 1, h = y1 - y0 + 1, f = n / (w * h);
+  if (h < 96 * 0.28 || h > 96 * 0.8 || w / h < 0.2 || w / h > 1.7 || f < 0.12 || f > 0.75 || x0 < 14 || x1 > 105 || y0 < 14 || y1 > 105) return null; // ink touching the ring is not a number
+  const k = 64 / h, o = document.createElement('canvas'); o.width = Math.round(w * k) + 48; o.height = 112; const q = o.getContext('2d'); q.fillStyle = '#fff'; q.fillRect(0, 0, o.width, o.height);
+  q.imageSmoothingEnabled = true; q.drawImage(c, x0, y0, w, h, 24, 24, w * k, 64); return o; }
+async function readDiscs(w, D) { const out = [];
+  for (const o of D) { const gl = glyph(o.c); if (!gl) continue; let best = null;
+    for (const psm of ['10', '8', '13']) { await w.setParameters({ tessedit_pageseg_mode: psm }); const r = await w.recognize(gl), t = (r.data.text || '').replace(/\s+/g, '');
+      if (/^\d{1,2}$/.test(t) && r.data.confidence >= 45) { best = +t; break; } }
+    if (best) out.push(Object.assign({}, o, { n: best })); }
+  return out; }
+async function ocr(doc, figs, progress, stop) { const C = ocrPages(doc, figs); if (!C.length) return 0; const w = await ocrWorker(); let n = 0;
+  for (let i = 0; i < C.length; i++) { if (stop && stop()) break; const { p, B } = C[i]; if (progress) progress(i + 1, C.length);
+    const { canvas, s } = await render(doc, p, B, 1400), D = discs(canvas), R0 = await readDiscs(w, D), pg = doc.pages[p - 1];
+    // a figure's callouts look alike (same size and colour): keep the largest family, so a stray digit on a panel does not count
+    const like = (a, b) => Math.abs(a.r - b.r) < 0.25 * Math.max(a.r, b.r) && Math.abs(a.col[0] - b.col[0]) + Math.abs(a.col[1] - b.col[1]) + Math.abs(a.col[2] - b.col[2]) < 90;
+    let R = []; R0.forEach(a => { const fam = R0.filter(b => like(a, b)); if (fam.length > R.length) R = fam; });
+    R.forEach(o => { const hh = 2 * o.r / s; pg.items.push({ s: String(o.n), x: B.x + (o.x - o.r) / s, y: B.y + (o.y - o.r) / s, w: hh, h: hh, ocr: true }); n++; }); }
+  return n; }
+/* the manual's own numbers would give the answer away when practising: each callout is covered with the colour around it */
+function hide(cv, s, B, pts) { const g = cv.getContext('2d'), W = cv.width, H = cv.height, all = g.getImageData(0, 0, W, H).data;
+  pts.forEach(pt => { if (pt.x == null) return; const cx = (pt.x - B.x) * s, cy = (pt.y - B.y) * s, R = Math.max(6, (pt.r || 6) * s * 1.35); const px = [];
+    for (let a = 0; a < 24; a++) { const x = Math.round(cx + Math.cos(a / 24 * 2 * Math.PI) * R * 1.25), y = Math.round(cy + Math.sin(a / 24 * 2 * Math.PI) * R * 1.25); if (x < 0 || y < 0 || x >= W || y >= H) continue; const o = 4 * (y * W + x); px.push([all[o], all[o + 1], all[o + 2]]); }
+    if (!px.length) return; const med = k => px.map(q => q[k]).sort((a, b) => a - b)[px.length >> 1], col = `rgb(${med(0)},${med(1)},${med(2)})`;
+    const gr = g.createRadialGradient(cx, cy, R * 0.7, cx, cy, R * 1.15); gr.addColorStop(0, col); gr.addColorStop(1, col.replace('rgb', 'rgba').replace(')', ',0)'));
+    g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, R * 1.15, 0, 2 * Math.PI); g.fill(); }); }
 
-const API = { read, find, place, match, guessAc, norm, phaseOf, lines, items, roleHead };
+const API = { read, find, place, match, guessAc, norm, phaseOf, lines, items, roleHead, figures, link, figSpot, callouts, render, ocr, ocrPages, boxes, hide, discs, glyph };
 if (typeof module === 'object' && module.exports) module.exports = API; else G.BBFLOWPDF = API;
 })(typeof window !== 'undefined' ? window : globalThis);
