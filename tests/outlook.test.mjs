@@ -63,3 +63,13 @@ test('"ENTO mandag kl 10" and friends', () => {
   /* summer time: 10 local in July is 08Z */
   assert.equal(new Date(OUT.parseWhen('15.07.2027 10', NOW, TZ).ms).toISOString().slice(0, 16), '2027-07-15T08:00');
 });
+
+test('the area: 17 points around the aerodrome from one call', async () => {
+  const { handleArea } = await import('../functions/api/outlook-area.js');
+  const r = await handleArea(new Request('https://nordap.eu/api/outlook-area?lat=59.1867&lon=10.2586&el=286&t=2026-11-23T09:00Z&r=50'), {}, { fetch: mockFetch('2026-11-23T09:00:00.000Z'), now: () => NOW });
+  assert.equal(r.status, 200); const j = await r.json();
+  assert.equal(j.model, 'ICON (DWD)'); const pts = j.hours[j.tIdx].pts;
+  assert.equal(pts.length, 17); assert.equal(pts[0].d, 0); assert.equal(pts[16].d, 50); assert.equal(pts[16].brg, 315);
+  assert.ok(pts.every(p => p && p.sera));
+  assert.ok(Math.abs(pts[9].lat - (59.1867 + 50 / 60)) < 1e-3, 'north point 50 NM away');
+});

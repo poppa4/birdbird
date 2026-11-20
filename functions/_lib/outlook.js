@@ -344,3 +344,46 @@ export async function buildOutlook(p, deps) {
   if (st && st.metar) metar = st.metar;
   return { ok: true, icao: icao || null, lat, lon, elevFt, t: hours[tIdx], leadH, generated: new Date(now).toISOString(), hours: out, tIdx, members, sources, taf, metar };
 }
+
+/* ---------- the area around the aerodrome ---------- */
+/* The same analysis at 17 points around the aerodrome (the centre, then 8 bearings at half the radius and at the radius),
+   from one high-resolution model in one call: ICON (DWD; ICON-D2 2 km, ICON-EU 7 km) up to 7 days, ECMWF beyond.
+   Each point uses its own ground height (Open-Meteo's terrain), so cloud base is above the ground there. */
+export function areaPoints(lat, lon, rNm) {
+  const pts = [{ lat, lon, brg: null, d: 0 }];
+  for (const f of [0.5, 1]) for (let b = 0; b < 360; b += 45) {
+    const d = rNm * f, a = b * Math.PI / 180;
+    pts.push({ lat: Math.round((lat + d / 60 * Math.cos(a)) * 1e4) / 1e4, lon: Math.round((lon + d / 60 * Math.sin(a) / Math.cos(lat * Math.PI / 180)) * 1e4) / 1e4, brg: b, d });
+  }
+  return pts;
+}
+export async function buildArea(p, deps) {
+  const fetchFn = deps.fetch, now = deps.now ? deps.now() : Date.now();
+  const { lat, lon, t, rNm } = p; const H = 36e5, T = Date.parse(t);
+  const pts = areaPoints(lat, lon, rNm);
+  const hours = []; for (let k = -SPAN; k <= SPAN; k++) hours.push(new Date(T + k * H).toISOString().slice(0, 13) + ':00Z');
+  const lead = (T - now) / H;
+  const models = lead <= 7 * 24 ? ['icon_seamless', 'ecmwf_ifs025', 'ecmwf_ifs'] : ['ecmwf_ifs025', 'ecmwf_ifs'];
+  let arr = null, used = null, note = null;
+  outer: for (const om of models) for (const vars of VAR_TIERS) {
+    const q = new URLSearchParams({ latitude: pts.map(x => x.lat.toFixed(4)).join(','), longitude: pts.map(x => x.lon.toFixed(4)).join(','), hourly: vars.join(','), models: om,
+      timezone: 'GMT', wind_speed_unit: 'kn', start_hour: isoHour(T - SPAN * H), end_hour: isoHour(T + SPAN * H) });
+    try {
+      const { status, j } = await getJ(fetchFn, OM + '?' + q.toString(), 1800, 12000);
+      if (status === 200 && j) { arr = Array.isArray(j) ? j : [j]; used = om; break outer; }
+      note = (j && j.reason) || 'HTTP ' + status; if (status !== 400) break outer;
+    } catch (e) { note = 'network'; break outer; }
+  }
+  if (!arr || arr.length !== pts.length) return { ok: false, error: 'upstream', message: 'The model for the area could not be read right now.', note };
+  const name = { icon_seamless: 'ICON (DWD)', ecmwf_ifs025: 'ECMWF IFS', ecmwf_ifs: 'ECMWF IFS' }[used];
+  const out = hours.map(h => ({ t: h, pts: [] }));
+  arr.forEach((j, pi) => {
+    const elevFt = (num(j.elevation) ?? 0) * FT, times = (j.hourly && j.hourly.time || []).map(x => x.slice(0, 13));
+    hours.forEach((h, hi) => { const i = times.indexOf(h.slice(0, 13)); if (i < 0) return; const x = omMember(j, i, elevFt);
+      if (x.t2 == null && x.wind.kt == null) { out[hi].pts.push(null); return; }
+      const c = consensus([{ id: 'm', x }], elevFt, lead);
+      out[hi].pts.push({ ...pts[pi], el: Math.round(elevFt), sera: c.sera, lowest: c.lowest, lowestAmt: c.lowestAmt, ceil: c.ceil, vis: c.vis, fog: c.fog,
+        wind: c.wind, precip: c.precip, ptype: c.ptype, cb: c.cb, cape: c.cape, frz: c.frz, t2: c.t2, cov: c.cov && c.cov.total, icing: c.icing, turb: c.turb }); });
+  });
+  return { ok: true, model: name, rNm, t: hours[SPAN], tIdx: SPAN, hours: out, generated: new Date(now).toISOString() };
+}

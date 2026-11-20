@@ -16,7 +16,8 @@ export function omJson(model, start, n, opts={}){
 }
 export function metJson(start){ const ts=[]; for(let i=-6;i<12;i++){ ts.push({time:new Date(Date.parse(start)+i*36e5).toISOString().replace('.000',''),data:{instant:{details:{air_temperature:4.2,dew_point_temperature:3.1,relative_humidity:93,cloud_area_fraction:100,cloud_area_fraction_low:90,cloud_area_fraction_medium:60,cloud_area_fraction_high:5,fog_area_fraction:0,wind_speed:6.5,wind_speed_of_gust:12,wind_from_direction:215}},next_1_hours:{summary:{symbol_code:'lightrain'},details:{precipitation_amount:0.5,probability_of_thunder:0}}}}); } return {properties:{timeseries:ts}}; }
 export function mockFetch(T){ return async (url)=>{ const u=new URL(url);
-  if(u.hostname==='api.open-meteo.com'){ const m=u.searchParams.get('models'); if(m==='ecmwf_ifs025') return new Response(JSON.stringify({error:true,reason:'Invalid model'}),{status:400});
+  if(u.hostname==='api.open-meteo.com'){ const m=u.searchParams.get('models'); const lats=u.searchParams.get('latitude').split(',');
+    if(lats.length>1) return new Response(JSON.stringify(lats.map((_,i)=>({...omJson(m,u.searchParams.get('start_hour')+'Z',13,{drier:i%3===0,vis:i===5?2000:undefined}),elevation:20+i*15}))),{status:200}); if(m==='ecmwf_ifs025') return new Response(JSON.stringify({error:true,reason:'Invalid model'}),{status:400});
     if(m==='dmi_seamless') return new Response(JSON.stringify(omJson(m,u.searchParams.get('start_hour')+'Z',13,{nocc:true})),{status:200});
     return new Response(JSON.stringify(omJson(m,u.searchParams.get('start_hour')+'Z',13,{drier:m==='gfs_seamless'})),{status:200}); }
   if(u.hostname==='api.met.no') return new Response(JSON.stringify(metJson(T)),{status:200});

@@ -77,6 +77,16 @@ details.olhow summary{cursor:pointer;color:var(--ink);font-weight:600}
 details.olhow p{max-width:80ch;margin:8px 0 0}
 .olgrid{display:flex;flex-direction:column;gap:12px}
 /*hero*/
+.olarea{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+#amap{width:100%;height:auto;display:block;min-width:420px;border-radius:10px;background:#dfe9ef}
+.olasum{display:flex;flex-direction:column;gap:8px;font-size:13.5px}
+.olasum div{background:#fff;border:1px solid var(--rule);border-radius:8px;padding:8px 12px}
+.olasum span{display:block;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+.olasum b{font-family:var(--f-display);font-stretch:88%;font-size:19px}
+.olasum small{display:block;color:var(--ink-2);font-family:var(--f-mono);font-size:11.5px}
+.olasum .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:-4px;vertical-align:0}.olasum .cnt{display:flex;gap:10px;flex-wrap:wrap;font-family:var(--f-mono);font-size:12.5px}
+@media (max-width:860px){.olarea{grid-template-columns:1fr}#amap{min-width:0}.olasum{display:grid;grid-template-columns:1fr 1fr}.olasum>div:first-child{grid-column:1/-1}}
+
 .olmin{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;font-size:13.5px;background:#fff;border:1px solid var(--rule);border-radius:8px;padding:9px 12px}
 .olmin input{width:84px;font-family:var(--f-mono);font-size:15px;padding:4px 8px;border:1px solid var(--rule);border-radius:3px}
 .olmin small{flex-basis:100%;color:var(--ink-2);font-size:12px}
@@ -139,9 +149,11 @@ details.olhow p{max-width:80ch;margin:8px 0 0}
     <div id="out" class="olgrid"></div>
     <div id="more" class="olgrid" hidden>
       <div class="oltabs" role="tablist" id="tabs">
-        <button role="tab" data-t="prof" class="on">Cloud profile</button><button role="tab" data-t="aloft">Winds aloft</button><button role="tab" data-t="rwy">Runways</button><button role="tab" data-t="alt">Compare aerodromes</button><button role="tab" data-t="mod">Models</button>
+        <button role="tab" data-t="area" class="on">Around the aerodrome</button><button role="tab" data-t="prof">Cloud profile</button><button role="tab" data-t="aloft">Winds aloft</button><button role="tab" data-t="rwy">Runways</button><button role="tab" data-t="alt">Compare aerodromes</button><button role="tab" data-t="mod">Models</button>
       </div>
-      <div class="olpane" id="p-prof"><div class="tw"><svg id="prof" viewBox="0 0 740 340" role="img" aria-label="Cloud layers and freezing level by weather model"></svg></div>
+      <div class="olpane" id="p-area"><div class="olalt"><label for="rad">Radius</label><select id="rad"><option value="10">10 NM</option><option value="25">25 NM</option><option value="50">50 NM</option><option value="100">100 NM</option><option value="150">150 NM</option></select><span id="areast" class="note"></span></div>
+        <div class="olarea"><div class="tw"><svg id="amap" viewBox="0 0 640 460" role="img" aria-label="Weather around the aerodrome"></svg></div><div id="asum" class="olasum"></div></div></div>
+      <div class="olpane" id="p-prof" hidden><div class="tw"><svg id="prof" viewBox="0 0 740 340" role="img" aria-label="Cloud layers and freezing level by weather model"></svg></div>
         <div class="lg"><span><i style="background:#62798a;opacity:.85"></i>OVC</span><span><i style="background:#62798a;opacity:.62"></i>BKN</span><span><i style="background:#62798a;opacity:.38"></i>SCT</span><span><i style="background:#62798a;opacity:.18"></i>FEW</span><span><i style="background:repeating-linear-gradient(135deg,#c2185b 0 2px,transparent 2px 5px)"></i>Icing likely</span><span><i style="background:none;border-top:2px dashed #1f6fb5;height:0;margin-bottom:3px"></i>Freezing level (0 °C)</span><span>Heights above the aerodrome</span></div></div>
       <div class="olpane tw" id="p-aloft" hidden><table class="otab" id="aloft"></table></div>
       <div class="olpane tw" id="p-rwy" hidden><table class="otab" id="rwy"></table></div>
@@ -169,7 +181,7 @@ const {L,el}=LAB;
 LAB.add({},{
  'NORDAP · Flight planning':'NORDAP · Flyplanlegging','Forecast outlook':'Værutsikter',
  'Cloud base, ceiling, wind, freezing level and icing at any aerodrome, hour by hour up to 14 days ahead, from several weather models. A model estimate, not an official forecast.':'Skybase, ceiling, vind, frysenivå og ising på enhver flyplass, time for time opptil 14 dager fram, fra flere værmodeller. Et modellestimat, ikke en offisiell prognose.',
- 'Date':'Dato','Local time':'Lokal tid','Cloud profile':'Skyprofil','Winds aloft':'Vind i høyden','Runways':'Baner','Models':'Modeller','Compare aerodromes':'Sammenlign flyplasser','Alternates or other aerodromes':'Alternativer eller andre flyplasser',
+ 'Date':'Dato','Local time':'Lokal tid','Cloud profile':'Skyprofil','Around the aerodrome':'Rundt flyplassen','Radius':'Radius','Winds aloft':'Vind i høyden','Runways':'Baner','Models':'Modeller','Compare aerodromes':'Sammenlign flyplasser','Alternates or other aerodromes':'Alternativer eller andre flyplasser',
  'Icing likely':'Ising sannsynlig','Freezing level (0 °C)':'Frysenivå (0 °C)','Heights above the aerodrome':'Høyder over flyplassen','How it is worked out':'Slik regnes det ut',
  "For the aerodrome's position NORDAP reads several independent weather models: MET Norway's forecast (MEPS, 2.5 km, over the Nordic countries; ECMWF beyond), ECMWF IFS, DWD ICON, the UK Met Office model, DMI HARMONIE-AROME (2 km, Northern Europe, about 2½ days ahead) and NOAA GFS. Each model's vertical profile (height, temperature and humidity at pressure levels from the ground up to about FL300) shows where the air is saturated: that is where the cloud layers are, with base, top and amount. GFS gives its own cloud base and top. Where a model gives no profile, the cumulus base is estimated from the temperature–dew point spread (about 400 ft per °C).":'For flyplassens posisjon leser NORDAP flere uavhengige værmodeller: MET Norways prognose (MEPS, 2,5 km, over Norden; ECMWF utenfor), ECMWF IFS, DWD ICON, UK Met Office-modellen, DMI HARMONIE-AROME (2 km, Nord-Europa, rundt 2½ døgn fram) og NOAA GFS. Hver modells vertikalprofil (høyde, temperatur og fuktighet på trykkflater fra bakken opp til rundt FL300) viser hvor lufta er mettet: der ligger skylagene, med base, topp og mengde. GFS gir sin egen skybase og -topp. Der en modell ikke har profil, anslås cumulus-basen fra spredningen mellom temperatur og duggpunkt (rundt 400 ft per °C).',
  'The estimate takes the median of the models for ceiling, cloud base, visibility, wind and freezing level, and draws the layers of the model closest to that median. Icing is flagged in cloud between 0 °C and −20 °C; showers and CB from convective energy (CAPE) and MET Norway\'s thunder probability. The status follows the SERA minima in a control zone (VFR: visibility 5 km and ceiling 1 500 ft; special VFR: 1 500 m and 600 ft). Confidence falls with lead time and with disagreement between the models.':'Estimatet tar medianen av modellene for ceiling, skybase, sikt, vind og frysenivå, og tegner lagene til modellen som ligger nærmest medianen. Ising markeres i sky mellom 0 °C og −20 °C; byger og CB ut fra konvektiv energi (CAPE) og MET Norways tordensannsynlighet. Statusen følger SERA-minimaene i kontrollsone (VFR: sikt 5 km og ceiling 1 500 ft; spesiell VFR: 1 500 m og 600 ft). Sikkerheten synker med hvor langt fram det er og med uenighet mellom modellene.',
@@ -189,8 +201,8 @@ let icao=(q.get('icao')||'').toUpperCase(); try{ if(!icao) icao=localStorage.get
 inp.value=icao;
 let T=q.get('t')?Date.parse(q.get('t')):NaN;
 if(!isFinite(T)) T=Math.ceil(Date.now()/36e5+1)*36e5;
-let seq=0, data=null, HI=6, TAB='prof';
-try{ TAB=localStorage.getItem('bb-ol-tab')||'prof'; }catch(e){}
+let seq=0, data=null, HI=6, TAB='area';
+try{ TAB=localStorage.getItem('bb-ol-tab')||'area'; }catch(e){} if(!['area','prof','aloft','rwy','alt','mod'].includes(TAB)) TAB='area';
 const tzNow=()=>SUN.tzOf(icao);
 function setInputs(ms){ const tz=tzNow(), p=OUT.localParts(ms==null?T:ms,tz); dIn.value=p.y+'-'+pad(p.mo+1)+'-'+pad(p.d); hIn.value=p.h; }
 function fmtWhen(ms,tz){ const loc=LAB.lang==='no'?'nb-NO':'en-GB'; return new Intl.DateTimeFormat(loc,{weekday:'long',day:'numeric',month:'short',timeZone:tz||'UTC'}).format(new Date(ms))+' '+SUN.hm(new Date(ms),tz)+(tz?' '+L({en:'local',no:'lokal'}):'Z'); }
@@ -209,12 +221,7 @@ function go(){
 function tile(lab,val,sub,cls){ return `<div class="${cls||''}"><span>${lab}</span><b>${val}</b><small>${sub||'&nbsp;'}</small></div>`; }
 const clsOf=c=>!c?'na':c.sera==='vfr'&&c.near?'near':(c.sera||'na');
 /* ---------- hazards, per hour: 0 none, 1 possible, 2 likely ---------- */
-const HZ=[['status',{en:'Status',no:'Status'}],['min',{en:'My minima',no:'Mine minima'}],['fog',{en:'Fog',no:'Tåke'}],['winter',{en:'Winter',no:'Vinter'}],['ts',{en:'Thunderstorm',no:'Torden'}],['ice',{en:'Icing',no:'Ising'}],['wind',{en:'Wind',no:'Vind'}]];
-/* the pilot's own minima (ceiling ft above the aerodrome, visibility m): how many models are below them that hour */
-let MIN={ceil:1500,vis:5000}; try{ const m=JSON.parse(localStorage.getItem('bb-ol-min')||'null'); if(m&&isFinite(m.ceil)&&isFinite(m.vis)) MIN=m; }catch(e){}
-function minCount(hr){ const ms=(hr&&hr.members)||[], c=hr&&hr.cons; if(!c||!ms.length) return null;
-  const below=ms.filter(m=>{ const ce=m.ceil==null?Infinity:m.ceil, v=m.vis!=null?m.vis:c.vis; return ce<MIN.ceil||(v!=null&&v<MIN.vis); }).length; return {below,n:ms.length}; }
-function minLv(hr){ const r=minCount(hr), c=hr&&hr.cons; if(!r||!c) return 0; const medBelow=(c.ceil!=null&&c.ceil<MIN.ceil)||(c.vis!=null&&c.vis<MIN.vis); return medBelow||r.below/r.n>=0.5?2:r.below?1:0; }
+const HZ=[['status',{en:'Status',no:'Status'}],['fog',{en:'Fog',no:'Tåke'}],['winter',{en:'Winter',no:'Vinter'}],['ts',{en:'Thunderstorm',no:'Torden'}],['ice',{en:'Icing',no:'Ising'}],['wind',{en:'Wind',no:'Vind'}]];
 function hz(c){ if(!c) return null; const g=c.wind&&c.wind.gust||0, k=c.wind&&c.wind.kt||0, pt=c.ptype||'', pr=c.precip||0;
   return { fog: c.fog==='likely'||(c.vis!=null&&c.vis<1500)?2:c.fog==='possible'||(c.vis!=null&&c.vis<5000)?1:0,
     winter: /fzra/.test(pt)||(/snow/.test(pt)&&pr>=0.5)?2:/snow|sleet/.test(pt)||(c.t2!=null&&c.t2<=0)?1:0,
@@ -253,10 +260,10 @@ function draw(){
   if(!j.ok) return msg(esc(j.message||L({en:'The weather models could not be read right now. Try again in a minute.',no:'Værmodellene kunne ikke leses akkurat nå. Prøv igjen om et minutt.'})));
   const hr=j.hours[HI], c=hr.cons; const tms=Date.parse(hr.t);
   /* the time bar: weather symbol, the layer chosen (status or a hazard), cloud base and wind, hour by hour */
-  let tl=`<div class="oltl" role="tablist" aria-label="${L({en:'Hour',no:'Time'})}">`+j.hours.map((h,i)=>{ const cc=h.cons, z=hz(cc), ms=Date.parse(h.t); if(z) z.min=minLv(h);
+  let tl=`<div class="oltl" role="tablist" aria-label="${L({en:'Hour',no:'Time'})}">`+j.hours.map((h,i)=>{ const cc=h.cons, z=hz(cc), ms=Date.parse(h.t);
     const bar=!cc?'na':LAYER==='status'?clsOf(cc):LVC[z[LAYER]];
     return `<button role="tab" data-i="${i}" class="${i===HI?'on':''} ${i===j.tIdx?'ask':''}" aria-selected="${i===HI}"><span class="th">${SUN.hm(new Date(ms),tz).slice(0,2)}<span class="mm">${SUN.hm(new Date(ms),tz).slice(2)}</span></span>${icon(wxIcon(cc,ms,ap,tz),'wx')}<b class="${bar}"></b><small>${cc&&cc.lowest!=null?sp(cc.lowest):'—'}</small><small class="wd">${cc&&cc.wind&&cc.wind.kt!=null?cc.wind.kt+(cc.wind.gust?'G'+cc.wind.gust:''):''}</small></button>`; }).join('')+`</div>`;
-  const layers=`<div class="ollay" role="radiogroup" aria-label="${L({en:'Show on the time bar',no:'Vis på tidslinjen'})}">`+HZ.map(([k,nm])=>{ const lv=k==='status'?null:k==='min'?(c?minLv(hr):null):(hz(c)||{})[k]; return `<button role="radio" aria-checked="${LAYER===k}" data-l="${k}" class="${LAYER===k?'on':''} ${lv!=null?LVC[lv]:''}">${icon(k)}<span>${L(nm)}</span>${lv!=null?`<em>${lv===2?L({en:'likely',no:'sannsynlig'}):lv===1?L({en:'possible',no:'mulig'}):'–'}</em>`:''}</button>`; }).join('')+`</div>`;
+  const layers=`<div class="ollay" role="radiogroup" aria-label="${L({en:'Show on the time bar',no:'Vis på tidslinjen'})}">`+HZ.map(([k,nm])=>{ const lv=k==='status'?null:(hz(c)||{})[k]; return `<button role="radio" aria-checked="${LAYER===k}" data-l="${k}" class="${LAYER===k?'on':''} ${lv!=null?LVC[lv]:''}">${icon(k)}<span>${L(nm)}</span>${lv!=null?`<em>${lv===2?L({en:'likely',no:'sannsynlig'}):lv===1?L({en:'possible',no:'mulig'}):'–'}</em>`:''}</button>`; }).join('')+`</div>`;
   if(!c){ el('out').innerHTML=layers+tl+`<p class="olwait">${L({en:'No model covers this hour.',no:'Ingen modell dekker denne timen.'})}</p>`; bindTl(); el('more').hidden=true; return; }
   const w=OUT.words(c,L,{elevFt:ap.el}), lead=Math.round((tms-Date.now())/36e5), Z=hz(c);
   const ahead=lead<=1?L({en:'within the hour',no:'innen en time'}):lead<48?lead+' h '+L({en:'ahead',no:'fram'}):Math.round(lead/24)+' '+L({en:'days ahead',no:'døgn fram'});
@@ -273,9 +280,7 @@ function draw(){
       </div></div>
     <svg class="hcol" viewBox="0 0 120 200" aria-hidden="true">${miniCol(c,ap)}</svg>
   </div>`;
-  const mc=minCount(hr);
-  const minRow=LAYER==='min'?`<div class="olmin"><label>${L({en:'Ceiling at least',no:'Ceiling minst'})} <input id="mceil" type="number" inputmode="numeric" min="0" max="5000" step="50" value="${MIN.ceil}"> ft</label><label>${L({en:'Visibility at least',no:'Sikt minst'})} <input id="mvis" type="number" inputmode="numeric" min="0" max="10000" step="50" value="${MIN.vis}"> m</label><span>${mc?`<b>${mc.n-mc.below}/${mc.n}</b> ${L({en:'models at or above your minima at',no:'modeller på eller over minimaene dine kl.'})} ${SUN.hm(new Date(tms),tz)}`:''}</span><small>${L({en:'Your own or your operator\'s minima, e.g. the approach DA/MDA and RVR, or planning minima for an alternate. Saved on this device.',no:'Dine egne eller operatørens minima, f.eks. DA/MDA og RVR for innflygingen, eller planleggingsminima for en alternativ. Lagres på denne enheten.'})}</small></div>`:'';
-  h+=layers+minRow+tl;
+  h+=layers+tl;
   h+=`<div class="oltiles">`+
     tile(L({en:'Freezing level',no:'Frysenivå'}),c.frz==null?'—':c.frz<=ap.el?L({en:'Ground',no:'Bakken'}):sp(c.frz)+' ft',c.icing?L({en:'icing ',no:'ising '})+sp(c.icing.from)+'–'+sp(c.icing.to):L({en:'altitude',no:'høyde o.h.'}))+
     tile(L({en:'Temp / dew point',no:'Temp / duggpunkt'}),c.t2==null?'—':`${c.t2}° / ${c.td??'—'}°`,c.t2!=null&&c.td!=null?L({en:'spread ',no:'spredning '})+(c.t2-c.td)+' °C':'')+
@@ -287,9 +292,58 @@ function draw(){
   else { const of=OFFICIAL[icao.slice(0,2)]; h+=`<div class="oltaf no">${lead>168?`<b>${L({en:'More than 7 days ahead: a trend, not cloud heights to plan with.',no:'Mer enn 7 dager fram: en trend, ikke skyhøyder å planlegge etter.'})}</b> `:''}${L({en:'Model estimate only. Before flight: the TAF and the official briefing',no:'Bare modellestimat. Før flyging: TAF og offisiell briefing'})}${of?` (<a href="${of[1]}" target="_blank" rel="noopener">${of[0]}</a>)`:''}.</div>`; }
   el('out').innerHTML=h; bindTl();
   el('more').hidden=false;
-  try{ runways(j,ap); }catch(e){} compare(j,ap,tz); profile(j,ap); aloft(j,ap); models(j,ap); sources(j);
+  try{ runways(j,ap); }catch(e){} area(j,ap,tz); compare(j,ap,tz); profile(j,ap); aloft(j,ap); models(j,ap); sources(j);
   if(!el('rwy').innerHTML) el('rwy').innerHTML=`<tr><td>${L({en:'No runway data for this aerodrome.',no:'Ingen banedata for denne flyplassen.'})}</td></tr>`;
   showTab();
+}
+/* ---------- around the aerodrome: 17 points within the radius, one model ---------- */
+let RAD=50; try{ RAD=+localStorage.getItem('bb-ol-rad')||50; }catch(e){} 
+const AREA={}; let COAST=null, coastP=null;
+const loadCoast=()=>coastP||(coastP=fetch('data/map-eu.json').then(r=>r.json()).then(d=>{ COAST=(d.coast||[]).map(a=>{ const p=[]; for(let i=0;i<a.length;i+=2) p.push([a[i]/100,a[i+1]/100]); return p; }); }).catch(()=>{ COAST=[]; }));
+const CMP=['N','NE','E','SE','S','SW','W','NW'];
+function area(j,ap,tz){
+  el('rad').value=String(RAD);
+  if(!COAST){ loadCoast().then(()=>{ if(data===j) draw(); }); }
+  const k=icao+'|'+j.t+'|'+RAD, got=AREA[k];
+  if(!got){ AREA[k]={busy:1}; fetch(`/api/outlook-area?lat=${ap.lat}&lon=${ap.lon}&el=${ap.el}&t=${j.t}&r=${RAD}`,{headers:{accept:'application/json'}}).then(r=>r.json()).catch(()=>({ok:false})).then(r=>{ AREA[k]={r}; if(data===j) draw(); }); }
+  const r=got&&got.r, hh=r&&r.ok?r.hours.find(x=>x.t===j.hours[HI].t):null;
+  el('areast').textContent=!got||got.busy?L({en:'Reading the model…',no:'Leser modellen …'}):r&&r.ok?L({en:'Model: ',no:'Modell: '})+r.model+L({en:' · 17 points',no:' · 17 punkter'}):(r&&r.message)||L({en:'The area could not be read right now.',no:'Området kunne ikke leses akkurat nå.'});
+  /* map: local projection in NM, north up */
+  const W=innerWidth<600?380:640,Hh=innerWidth<600?400:460, R=RAD*1.18, sc=Math.min(W,Hh)/2/R, cx=W/2, cy=Hh/2, cl=Math.cos(ap.lat*Math.PI/180);
+  const X=lo=>cx+(lo-ap.lon)*60*cl*sc, Y=la=>cy-(la-ap.lat)*60*sc;
+  let s='';
+  if(COAST){ const bx=[ap.lon-R/60/cl*1.6,ap.lon+R/60/cl*1.6], by=[ap.lat-R/60*1.3,ap.lat+R/60*1.3];
+    s+=`<g fill="none" stroke="#8aa3b3" stroke-width="1.1">`; for(const line of COAST){ let d='', pen=false; for(const [lo,la] of line){ if(lo<bx[0]||lo>bx[1]||la<by[0]||la>by[1]){ pen=false; continue; } d+=(pen?'L':'M')+X(lo).toFixed(1)+' '+Y(la).toFixed(1); pen=true; } if(d) s+=`<path d="${d}"/>`; } s+='</g>'; }
+  [0.5,1].forEach(f=>{ s+=`<circle cx="${cx}" cy="${cy}" r="${RAD*f*sc}" fill="none" stroke="#5f7a8c" stroke-opacity=".45" stroke-dasharray="4 4"/><text x="${cx+RAD*f*sc*0.38+4}" y="${cy-RAD*f*sc*0.925-4}" font-size="11" font-family="var(--f-mono)" fill="#47606f">${Math.round(RAD*f)} NM</text>`; });
+  s+=`<text x="${W-18}" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#24323d">N</text><path d="M${W-18} 30 l-5 12 l5 -4 l5 4z" fill="#24323d"/>`;
+  const col={vfr:'#1e8e3e',svfr:'#c2410c',ifr:'#d93025'}, lvc=['#5c8a68','#d39400','#d93025'];
+  const pts=(hh&&hh.pts||[]).filter(Boolean);
+  pts.slice().sort((a,b)=>b.d-a.d).forEach(p=>{ const x=X(p.lon), y=Y(p.lat), z=hz(p);
+    const f=LAYER==='status'?(col[p.sera]||'#7d8f9b'):lvc[z?z[LAYER]:0];
+    const lab=p.lowest==null?'—':p.lowest<=100?'SFC':p.lowest>=10000?Math.round(p.lowest/1000)+'k':sp(p.lowest);
+    const sym=p.cb?'⚡':p.fog?'≡':/snow/.test(p.ptype||'')?'✱':p.ptype?'∴':'';
+    s+=`<g><title>${p.d?`${Math.round(p.d)} NM ${CMP[Math.round(p.brg/45)%8]}`:icao}: ${L(OUT.STATUS[p.sera]||{en:'',no:''})} · ${L({en:'cloud base ',no:'skybase '})}${p.lowest==null?'—':sp(p.lowest)+' ft'} · ${OUT.visTxt(p.vis)} · ${wnd(p.wind)}</title>
+      <rect x="${x-26}" y="${y-15}" width="52" height="30" rx="7" fill="${f}" stroke="${p.d?'#fff':'#c2185b'}" stroke-width="${p.d?1.6:3}"/>
+      <text x="${x}" y="${y-2}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" font-family="var(--f-mono)">${lab}</text>
+      <text x="${x}" y="${y+10}" text-anchor="middle" font-size="9.5" fill="#fff" font-family="var(--f-mono)">${sym?sym+' ':''}${p.vis!=null&&p.vis<10000?OUT.visTxt(p.vis):p.wind&&p.wind.kt!=null?p.wind.kt+'kt':''}</text></g>`; });
+  s+=`<text x="${cx}" y="${cy+30}" text-anchor="middle" font-size="11" font-weight="700" fill="#c2185b" font-family="var(--f-mono)">${icao}</text>`;
+  if(!pts.length) s+=`<text x="${cx}" y="${cy+40}" text-anchor="middle" font-size="13" fill="#47606f">${esc(el('areast').textContent)}</text>`;
+  el('amap').setAttribute('viewBox',`0 0 ${W} ${Hh}`); el('amap').innerHTML=s;
+  /* summary: worst within the radius */
+  if(!pts.length){ el('asum').innerHTML=''; return; }
+  const where=p=>p.d?`${Math.round(p.d)} NM ${CMP[Math.round(p.brg/45)%8]}`:L({en:'at the aerodrome',no:'på flyplassen'});
+  const minBy=f=>pts.filter(p=>f(p)!=null).sort((a,b)=>f(a)-f(b))[0];
+  const lb=minBy(p=>p.lowest), lv=minBy(p=>p.vis), mg=pts.filter(p=>p.wind&&p.wind.kt!=null).sort((a,b)=>(b.wind.gust||b.wind.kt)-(a.wind.gust||a.wind.kt))[0];
+  const n={vfr:0,svfr:0,ifr:0}; pts.forEach(p=>{ if(n[p.sera]!=null) n[p.sera]++; });
+  const cb=pts.filter(p=>p.cb), pr=pts.filter(p=>p.ptype), fz=pts.filter(p=>p.frz!=null).map(p=>p.frz);
+  const box=(t,v,sub)=>`<div><span>${t}</span><b>${v}</b>${sub?`<small>${sub}</small>`:''}</div>`;
+  el('asum').innerHTML=
+    `<div><span>${L({en:'Within ',no:'Innenfor '})}${RAD} NM</span><div class="cnt"><span class="dot vfr"></span>VFR ${n.vfr}<span class="dot svfr"></span>SVFR ${n.svfr}<span class="dot ifr"></span>IFR ${n.ifr}</div></div>`+
+    box(L({en:'Lowest cloud base',no:'Laveste skybase'}),lb&&lb.lowest!=null?(lb.lowest<=100?L({en:'On the ground',no:'Helt ned'}):sp(lb.lowest)+' ft'):L({en:'No cloud',no:'Ingen sky'}),lb&&lb.lowest!=null?where(lb)+' · '+L({en:'above ground there',no:'over bakken der'}):'')+
+    box(L({en:'Lowest visibility',no:'Laveste sikt'}),lv?OUT.visTxt(lv.vis):'—',lv?where(lv):'')+
+    box(L({en:'Strongest wind',no:'Sterkest vind'}),mg?wnd(mg.wind):'—',mg?where(mg):'')+
+    box(L({en:'Precipitation / CB',no:'Nedbør / CB'}),`${pr.length}/${pts.length} ${L({en:'points',no:'punkter'})}`,cb.length?'⚡ CB '+L({en:'possible at ',no:'mulig ved '})+cb.length+L({en:' points',no:' punkter'}):L({en:'no CB',no:'ingen CB'}))+
+    box(L({en:'Freezing level',no:'Frysenivå'}),fz.length?sp(Math.min(...fz))+'–'+sp(Math.max(...fz))+' ft':'—','');
 }
 /* other aerodromes at the same hour: destination plus alternates side by side */
 let ALTS=''; try{ ALTS=localStorage.getItem('bb-ol-alts')||''; }catch(e){}
@@ -297,15 +351,15 @@ const ALTJ={};
 function compare(j,ap,tz){
   const inpA=el('alts'); if(document.activeElement!==inpA) inpA.value=ALTS;
   const ids=[...new Set(ALTS.toUpperCase().split(/[\s,;]+/).filter(x=>/^[A-Z0-9]{4}$/.test(x)&&x!==icao))].slice(0,5);
-  const hrT=j.hours[HI].t, row=(id,c,name,note)=>{ const st=c?esc(L(OUT.STATUS[c.sera]||{en:'—',no:'—'})):''; return `<tr><td class="m"><b>${esc(id)}</b> <small>${esc(name||'')}</small></td><td>${c?`<span class="dot ${c.sera||'na'}"></span>${st}`:esc(note||'—')}</td><td class="m">${c?(c.lowest==null?L({en:'none',no:'ingen'}):(c.lowestAmt||'')+' '+sp(c.lowest)):''}</td><td class="m">${c?(c.ceil==null?L({en:'none',no:'ingen'}):sp(c.ceil)):''}</td><td class="m">${c?OUT.visTxt(c.vis):''}</td><td class="m">${c?esc(wnd(c.wind)):''}</td><td class="m">${c&&c.frz!=null?sp(c.frz):''}</td><td>${c?(()=>{ const b=(c.ceil!=null&&c.ceil<MIN.ceil)||(c.vis!=null&&c.vis<MIN.vis); return `<span class="dot ${b?'ifr':'vfr'}"></span>${b?L({en:'below',no:'under'}):L({en:'at or above',no:'på eller over'})}`; })():''}</td></tr>`; };
-  let t=`<tr><th>${L({en:'Aerodrome',no:'Flyplass'})}</th><th>${L({en:'Status',no:'Status'})}</th><th>${L({en:'Cloud base',no:'Skybase'})}</th><th>Ceiling</th><th>${L({en:'Visibility',no:'Sikt'})}</th><th>${L({en:'Wind',no:'Vind'})}</th><th>${L({en:'Freezing level',no:'Frysenivå'})}</th><th>${L({en:'Your minima',no:'Dine minima'})} (${sp(MIN.ceil)} ft / ${sp(MIN.vis)} m)</th></tr>`;
+  const hrT=j.hours[HI].t, row=(id,c,name,note)=>{ const st=c?esc(L(OUT.STATUS[c.sera]||{en:'—',no:'—'})):''; return `<tr><td class="m"><b>${esc(id)}</b> <small>${esc(name||'')}</small></td><td>${c?`<span class="dot ${c.sera||'na'}"></span>${st}`:esc(note||'—')}</td><td class="m">${c?(c.lowest==null?L({en:'none',no:'ingen'}):(c.lowestAmt||'')+' '+sp(c.lowest)):''}</td><td class="m">${c?(c.ceil==null?L({en:'none',no:'ingen'}):sp(c.ceil)):''}</td><td class="m">${c?OUT.visTxt(c.vis):''}</td><td class="m">${c?esc(wnd(c.wind)):''}</td><td class="m">${c&&c.frz!=null?sp(c.frz):''}</td></tr>`; };
+  let t=`<tr><th>${L({en:'Aerodrome',no:'Flyplass'})}</th><th>${L({en:'Status',no:'Status'})}</th><th>${L({en:'Cloud base',no:'Skybase'})}</th><th>Ceiling</th><th>${L({en:'Visibility',no:'Sikt'})}</th><th>${L({en:'Wind',no:'Vind'})}</th><th>${L({en:'Freezing level',no:'Frysenivå'})}</th></tr>`;
   t+=row(icao,j.hours[HI].cons,ap.n);
   ids.forEach(id=>{ const a=AP[id]; if(!a){ t+=row(id,null,'',L({en:'unknown ICAO code',no:'ukjent ICAO-kode'})); return; }
     const k=id+'|'+j.t, got=ALTJ[k];
     if(!got){ ALTJ[k]={busy:1}; OUT.get(a,id,Date.parse(j.t)).then(r=>{ ALTJ[k]={r}; if(data===j) draw(); }); }
     const r=got&&got.r, hh=r&&r.ok?r.hours.find(x=>x.t===hrT):null;
     t+=row(id,hh&&hh.cons,a.n,!got||got.busy?L({en:'reading…',no:'leser …'}):r&&!r.ok?(r.message||''):''); });
-  if(!ids.length) t+=`<tr><td colspan="8" class="note">${L({en:'Type up to five ICAO codes above, e.g. your alternates, to see them at the same hour.',no:'Skriv opptil fem ICAO-koder over, f.eks. alternativene dine, for å se dem samme time.'})}</td></tr>`;
+  if(!ids.length) t+=`<tr><td colspan="7" class="note">${L({en:'Type up to five ICAO codes above, e.g. your alternates, to see them at the same hour.',no:'Skriv opptil fem ICAO-koder over, f.eks. alternativene dine, for å se dem samme time.'})}</td></tr>`;
   el('alt').innerHTML=t;
 }
 /* the hero's small sky column: layers, freezing level and the ground, up to 12 000 ft above the aerodrome */
@@ -316,9 +370,7 @@ function miniCol(c,ap){ const Ym=12000, Y=v=>8+184*(1-Math.min(Math.max(v,0),Ym)
   if(c.frz!=null&&c.frz-ap.el<Ym){ const fy=Y(c.frz-ap.el); s+=`<line x1="34" x2="116" y1="${fy}" y2="${fy}" stroke="#6cb6ff" stroke-width="1.6" stroke-dasharray="4 3"/><text x="114" y="${fy-3}" text-anchor="end" font-size="8.5" fill="#6cb6ff" font-family="var(--f-mono)">0°C</text>`; }
   if(c.lowest!=null&&c.lowest<Ym) s+=`<text x="40" y="${Math.min(190,Y(c.lowest)+11)}" font-size="10" font-weight="700" fill="#fff" font-family="var(--f-mono)">${sp(c.lowest)}</text>`;
   s+=`<rect x="34" y="192" width="82" height="3" fill="rgba(255,255,255,.5)"/>`; return s; }
-function bindTl(){ ['mceil','mvis'].forEach(id=>{ const e=el(id); if(!e) return;
-    e.addEventListener('input',()=>{ const v=+e.value; if(e.value!==''&&isFinite(v)){ MIN[id==='mceil'?'ceil':'vis']=Math.max(0,v); try{ localStorage.setItem('bb-ol-min',JSON.stringify(MIN)); }catch(x){} } });
-    e.addEventListener('change',()=>{ const f=document.activeElement&&document.activeElement.id; draw(); if(f&&el(f)) el(f).focus(); }); }); el('out').querySelectorAll('.ollay button').forEach(b=>b.addEventListener('click',()=>{ LAYER=b.dataset.l; try{ localStorage.setItem('bb-ol-layer',LAYER); }catch(e){} draw(); })); el('out').querySelectorAll('.oltl button').forEach(b=>b.addEventListener('click',()=>{ HI=+b.dataset.i; draw(); const nb=el('out').querySelector('.oltl button.on'); if(nb) nb.focus(); })); }
+function bindTl(){ el('out').querySelectorAll('.ollay button').forEach(b=>b.addEventListener('click',()=>{ LAYER=b.dataset.l; try{ localStorage.setItem('bb-ol-layer',LAYER); }catch(e){} draw(); })); el('out').querySelectorAll('.oltl button').forEach(b=>b.addEventListener('click',()=>{ HI=+b.dataset.i; draw(); const nb=el('out').querySelector('.oltl button.on'); if(nb) nb.focus(); })); }
 document.addEventListener('keydown',e=>{ if(!data||!data.ok||/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return; if(e.key==='ArrowRight'&&HI<data.hours.length-1){ HI++; draw(); } else if(e.key==='ArrowLeft'&&HI>0){ HI--; draw(); } });
 function showTab(){ el('tabs').querySelectorAll('button').forEach(b=>{ const on=b.dataset.t===TAB; b.classList.toggle('on',on); b.setAttribute('aria-selected',String(on)); el('p-'+b.dataset.t).hidden=!on; }); }
 el('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; TAB=b.dataset.t; try{ localStorage.setItem('bb-ol-tab',TAB); }catch(e){} showTab(); });
@@ -396,6 +448,7 @@ function sources(j){
 function fromInputs(){ const tz=tzNow(); if(!dIn.value) return; const [y,m,d]=dIn.value.split('-').map(Number); T=OUT.zoned(y,m-1,d,+hIn.value,0,tz); go(); }
 function setIcao(v){ v=String(v||'').trim().toUpperCase(); if(!/^[A-Z0-9]{4}$/.test(v)) return; const tz0=tzNow(), p=OUT.localParts(T,tz0); icao=v; T=OUT.zoned(p.y,p.mo,p.d,p.h,0,tzNow()); go(); }
 inp.addEventListener('input',()=>{ if(inp.value.trim().length===4) setIcao(inp.value); });
+el('rad').addEventListener('change',()=>{ RAD=+el('rad').value; try{ localStorage.setItem('bb-ol-rad',RAD); }catch(e){} draw(); });
 el('alts').addEventListener('change',()=>{ ALTS=el('alts').value.toUpperCase(); try{ localStorage.setItem('bb-ol-alts',ALTS); }catch(e){} draw(); });
 dIn.addEventListener('change',fromInputs); hIn.addEventListener('change',fromInputs);
 LAB.start('outlook');
