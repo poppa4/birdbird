@@ -64,7 +64,7 @@
 </style>
 </head>
 <body data-title="Weather">
-<script src="site.js?v=120"></script>
+<script src="site.js?v=121"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -291,7 +291,11 @@ function paintNow(){ if(!NOW) return; const {id,s,ago}=NOW, ap=APW&&APW[id];
   const Lf=o=>L(o);
   const rep=(k,lab,r)=>r?`<button type="button" class="rep" data-k="${k}"><span><b>${lab}</b>${k==='M'?ago(r.obsTime):''}${k==='M'&&window.ICB?ICB.badge(r.raw,Lf)+(ICB.ifrBadge?ICB.ifrBadge(r.raw,Lf):''):''}<em>${LL('Decode →','Dekod →')}</em></span><code>${wesc(r.raw)}</code></button>`:'';
   let h=`<div style="font-size:14px"><b>${wesc(id)}</b>${ap?' · '+wesc(ap.n):''}</div>`+rep('M','METAR',s.metar)+rep('T','TAF',s.taf);
-  if(ap&&window.ICB){ ICB.ensure(id,ap,()=>{ if(NOW&&NOW.id===id) paintNow(); }); h+=`<div class="icbw">${ICB.html(id,s.metar?s.metar.raw:'',Lf,ap)}</div>`; }
+  if(ap&&window.ICB){ ICB.ensure(id,ap,()=>{ if(NOW&&NOW.id===id) paintNow(); }); let mid=''; if(window.SUN){ try{ const tz=SUN.tzOf(id), D=SUN.day(SUN.localDate(new Date(),tz),ap.lat,ap.lon), t=d=>SUN.hm(d,tz);
+      const tx= D.civil[0]&&D.civil[1] ? `${LL('Civil twilight from','Sivilt tussmørke fra')} ${t(D.civil[0])} · ${LL('sunrise','soloppgang')} ${t(D.rise)} · ${LL('sunset','solnedgang')} ${t(D.set)} · ${LL('night (EASA) from','natt (EASA) fra')} <b>${t(D.civil[1])}</b>`
+        : D.allDayLight&&D.allDayLight.civil ? LL('No night today: civil twilight or sun all night','Ingen natt i dag: sivilt tussmørke eller sol hele natta') : LL('Night all day (polar night)','Natt hele døgnet (mørketid)');
+      mid=`<span class="icb-l">${tx} <small>(${tz?LL('local time ','lokal tid ')+SUN.offset(D.noon,tz):'UTC'})</small></span>`; }catch(e){} }
+    h+=`<div class="icbw">${ICB.html(id,s.metar?s.metar.raw:'',Lf,ap,{mid})}</div>`; }
   const ns=window.ICB?ICB.notam(id):null;
   h+=`<div class="lnk"><a class="fc" href="outlook.html?icao=${id}">${LL('Forecast, up to 14 days →','Varsel, opptil 14 dager →')}</a>${ns?`<a href="${ns.url}" target="_blank" rel="noopener">NOTAM ↗</a>`:''}<a href="/api/aip?icao=${id}&go=1" target="_blank" rel="noopener">AIP ↗</a><a href="sun.html?icao=${id}">${LL('Sun and twilight','Sol og tussmørke')}</a></div>`;
   el('liveOut').innerHTML=h; }
@@ -303,7 +307,7 @@ function mode(){ const h=location.hash.slice(1), dec=DEC.includes(h);
   const note=document.querySelector('.page > p.note:last-of-type'); if(note) note.hidden=!dec; }
 document.querySelector('.wxtabs a[data-w="now"]').addEventListener('click',e=>{ e.preventDefault(); history.pushState(null,'',location.pathname+location.search); mode(); scrollTo(0,0); });
 addEventListener('hashchange',mode); mode();
-Promise.all([ldS('icaobrief.js?v=8'),loadApW()]).then(paintNow);
+Promise.all([ldS('icaobrief.js?v=9'),ldS('sun.js?v=1'),loadApW()]).then(paintNow);
 // ?ids=ENGM (from the search bar or a link) fetches it straight away; otherwise the last code you looked up is filled in
 { const q=new URLSearchParams(location.search), id=(q.get('ids')||q.get('icao')||'').split(',')[0].trim().toUpperCase(); let last=''; try{ last=localStorage.getItem('bb-ol-icao')||localStorage.getItem('bb-wxid')||''; }catch(e){}
   if(/^[A-Z]{4}$/.test(id)){ el('liveId').value=id; setTimeout(()=>live(q.get('k')==='T'?'T':'M'),0); } else if(/^[A-Z]{4}$/.test(last)){ el('liveId').value=last; if(!DEC.includes(location.hash.slice(1))) setTimeout(()=>live('M'),0); } }

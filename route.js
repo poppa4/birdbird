@@ -262,7 +262,7 @@ const FQ={};
 const FQN={TWR:'Tower',APP:'Approach',GND:'Ground',ATIS:'ATIS',AFIS:'AFIS',CTAF:'CTAF',UNIC:'UNICOM',CLD:'Clearance',DEP:'Departure',ARR:'Arrival',INFO:'Information',RDO:'Radio',FIS:'FIS',DIR:'Director',RMP:'Apron',APRON:'Apron',PMSV:'PMSV',MISC:'Other',A_G:'Air/ground'};
 /* "Now at the aerodrome": the same row as the search bar (icaobrief.js): SIGMETs over the aerodrome, the forecast freezing level
    and a radar picture, plus a link to the official NOTAM source (paste the NOTAMs in the NOTAM box to see them on the map) */
-let icbP=null; const icbLoad=()=>icbP||(icbP=new Promise(ok=>{ if(window.ICB) return ok(); const sc=document.createElement('script'); sc.src='icaobrief.js?v=8'; sc.onload=ok; sc.onerror=()=>{ icbP=null; ok(); }; document.head.appendChild(sc); }));
+let icbP=null; const icbLoad=()=>icbP||(icbP=new Promise(ok=>{ if(window.ICB) return ok(); const sc=document.createElement('script'); sc.src='icaobrief.js?v=9'; sc.onload=ok; sc.onerror=()=>{ icbP=null; ok(); }; document.head.appendChild(sc); }));
 function icbFill(id,ap){ const box=()=>{ const b=document.querySelector('#side .micb'); return b&&b.dataset.id===id?b:null; };
   const draw=()=>{ const b=box(); if(!b||!window.ICB) return; const ns=ICB.notam(id);
     b.innerHTML=ICB.html(id,undefined,L,ap)+`<p class="src micb-n"><a href="${esc(ns.url)}" target="_blank" rel="noopener">NOTAM · ${esc(ns.name)} ↗</a>${ns.direct?'':' '+L({en:'(type '+id+')',no:'(skriv '+id+')'})}<br>${L({en:'Paste them in the NOTAM box (terrain profile → Advanced) to see them on the map.',no:'Lim dem inn i NOTAM-feltet (terrengprofil → Avansert) for å se dem på kartet.'})}</p>`; };
