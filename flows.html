@@ -119,6 +119,14 @@ dialog.fl{width:min(640px,96vw);max-height:90vh;overflow:auto}dialog.fl .flf{dis
 dialog.fd .frq{margin:-6px 0 12px;font-size:13px}dialog.fd .frq button{font:inherit;font-weight:600;background:none;border:0;border-bottom:1px solid currentColor;padding:4px 0 1px;color:var(--accent,#0B5CAD);cursor:pointer}
 dialog.fd .acts{display:flex;gap:8px;justify-content:flex-end}
 .fnext{border:2px solid var(--c,#3CCB7F);border-radius:10px;padding:10px 12px;margin:0 0 10px;background:#fff}.fnext small{display:block;font-size:12px;color:var(--muted,#5b6570);margin:0 0 2px}.fnext b{display:block;font-size:16px;margin:0 0 8px}.fnext .frow{margin:0}
+.fwarn{background:#FFF4E0;border:1px solid #F0C36D;color:#6B4A00;border-radius:8px;padding:8px 10px;margin:0 0 10px;font-size:13px;line-height:1.45}.fwarn ul{margin:6px 0 0;padding-left:18px}.fok{color:#1E8E4E;font-weight:600;font-size:13px;margin:0 0 8px}
+.fsrc{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin:0 0 12px}.fsrc span{font-size:13px;color:#6B4A00;flex:1 1 200px}.fsrc.warn{background:#FFF4E0;border:1px solid #F0C36D;border-radius:8px;padding:8px 10px}.fmi .fmw{color:#9A5B00;font-weight:600}
+dialog.fd.fdpg{width:min(1180px,98vw);max-width:min(1180px,calc(100vw - 12px));max-height:calc(100dvh - 24px);overflow:auto;padding:16px}.dpgh{display:flex;justify-content:space-between;align-items:center;gap:10px}.dpgh h3{margin:0}
+.dpgc{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}.dpgc.rv{margin:10px 0 0 26px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.dpgp{max-height:calc(100dvh - 190px);overflow:auto;border:1px solid var(--rule);border-radius:8px;background:#E9ECEF;padding:8px;position:sticky;top:0}.dpgc.rv .dpgp{max-height:520px}
+.dpgp figure{margin:0 0 8px}.dpgp img{display:block;width:100%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.15)}.dpgp figcaption{font-size:11px;color:var(--muted,#5b6570);margin:3px 0 0}
+.dpgs{font-size:13px}.dpgl{margin:0 0 10px;padding-left:22px;line-height:1.5}.dpgl li.unp{color:#9A5B00}.dpgl i{font-style:normal;display:inline-block;width:20px}.dpgl a,.fwarn a,.dpgcut a{color:var(--accent,#0B5CAD);font-size:12px;white-space:nowrap}.dpgcut{padding-left:18px;margin:0 0 10px;color:var(--muted,#5b6570)}.dpgkey{font-size:12px}
+@media (max-width:760px){.dpgc,.dpgc.rv{grid-template-columns:1fr;margin-left:0}.dpgp{position:static;max-height:60vh}}
 dialog.fd.wide{width:min(760px,96vw);max-width:min(760px,calc(100vw - 16px))}dialog#dman .fex{font-size:13px;color:var(--muted,#5b6570);margin:0 0 12px}
 .fmprog{font-size:14px;margin:0 0 10px}.fmbar{height:6px;border-radius:3px;background:var(--rule,#e3e6ea);overflow:hidden;margin:0 0 14px}.fmbar i{display:block;height:100%;width:0;background:var(--accent,#0B5CAD);transition:width .15s}
 .fmtool{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px;font-size:13px}.fmtool span{flex:1 1 220px;color:var(--muted,#5b6570)}
@@ -241,8 +249,8 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
 
 <script src="lab.js?v=58"></script>
 <script src="flowsac.js?v=30"></script>
-<script src="flowscore.js?v=22"></script>
-<script src="flowpdf.js?v=16"></script>
+<script src="flowscore.js?v=23"></script>
+<script src="flowpdf.js?v=17"></script>
 <script>
 LAB.add({},{
  'Flow trainer':'Flow-trener','Trainer':'Trener','How it works':'Slik virker det',
@@ -260,7 +268,7 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=44"></script>
+<script src="flows.js?v=45"></script>
 <script src="flowlib.js?v=5"></script>
 <script src="reqplane.js?v=3"></script>
 </body>

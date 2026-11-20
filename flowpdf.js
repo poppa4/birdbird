@@ -46,10 +46,11 @@ function dropRunning(L, pages) { if (pages < 4) return L; const key = l => l.tex
 const upperish = s => { const a = s.replace(/[^A-Za-z]/g, ''); return a.length > 0 && a.replace(/[^A-Z]/g, '').length / a.length >= 0.6; };
 const words = s => s.trim().split(/\s+/).length;
 const BULLET = /^(\(?\d{1,3}[.)]|\(?[a-zA-Z][.)](?=\s)|[-–•*·▪►>✓☐□■◦○]|\[\s?\])\s*/;
-function cleanName(s) { return s.replace(/\[(ALL|VAR|[A-Z]{1,4}\d*)\]\s*/g, '').replace(/^[^A-Za-z0-9(\["“]+/, '').replace(BULLET, '').replace(/^[^A-Za-z0-9(\["“]+/, '').replace(BULLET, '').replace(/^\d{1,2}\s+(?=[A-Za-z]{2})/, '').replace(/[\s.…:_·]+$/, '').replace(/\s+/g, ' ').trim(); }
-function okName(n) { if (/^[\[(]/.test(n) || ASIDE.test(n) || /^QRH\b/i.test(n) || !/[A-Za-z]{2}/.test(n.replace(/\b(KT|FT|HPA|RPM)\b/gi, ''))) return false; return n.length >= 2 && n.length <= 70 && /[A-Za-z]/.test(n) && words(n) <= 10 && !/[.!?]$/.test(n) && !/^(NOTE|CAUTION|WARNING|REMARK|REF|SEE|IF|WHEN|THE|THIS|IN|ON|AT)\b/i.test(n); }
+function cleanName(s) { return s.replace(/\[(ALL|VAR|N\/A|[A-Z]{1,4}\d*)\]\s*/g, '').replace(/^[^A-Za-z0-9(\["“]+/, '').replace(BULLET, '').replace(/^[^A-Za-z0-9(\["“]+/, '').replace(BULLET, '').replace(/^\d{1,2}\s+(?=[A-Za-z]{2})/, '').replace(/[\s.…:_·]+$/, '').replace(/\s+/g, ' ').trim(); }
+function okName(n) { if (/^[\[(]/.test(n) || ASIDE.test(n) || /^QRH\b/i.test(n) || !/[A-Za-z]{2}|[A-Za-z]\d{2,}/.test(n)) return false; return n.length >= 2 && n.length <= 70 && /[A-Za-z]/.test(n) && words(n) <= 10 && !/[.!?]$/.test(n) && !/^(NOTE|CAUTION|WARNING|REMARK|REF|SEE|IF|WHEN|THE|THIS|IN|ON|AT)\b/i.test(n); }
 function okState(st) { st = st.trim(); if (/^[A-Z]{1,3}$/.test(st) && /^\d/.test(st)) return false; return st.length >= 1 && st.length <= 40 && words(st) <= 7 && (STATE.test(st) || upperish(st) || /^[\d.,\/°%\-+ ]+[A-Za-z%°]{0,6}$/.test(st)) && !/[.!?]$/.test(st.replace(/\.{2,}$/, '')); }
-function pair(segs) { // segments of one item (left to right) → { n, st, r }
+function pair(segs) { const o = pair0(segs); if (o) { const m = /^\W*(\d{1,2})[.)](?=\s|$)/.exec(segs.length ? segs[0].s : ''); if (m) o.num = +m[1]; } return o; }
+function pair0(segs) { // segments of one item (left to right) → { n, st, r }
   segs = segs.slice(); let r = null;
   for (let i = segs.length - 1; i >= 0; i--) if (ROLE_RX.test(segs[i].s.trim())) { r = r || roleOf(segs[i].s); segs.splice(i, 1); }
   if (segs.length > 1 && (labelNum(segs[0].s) || /^[(\[]?[A-Za-z][)\].]$/.test(segs[0].s.trim())) && /[A-Za-z]/.test(segs[1].s)) segs.shift(); // "1   BAT 1+2 ..... ON": the legend number of a figure
@@ -57,7 +58,7 @@ function pair(segs) { // segments of one item (left to right) → { n, st, r }
   if (header(segs)) return null;
   if (segs.every(x => /^(ITEM|ITEMS|ACTION|ACTIONS|PILOT|CREW|CREW MEMBER|BY|ROLE|RESPONSE|CHALLENGE|STATUS|POSITION|STATE|CONTROL|STEP|NO\.?|#|REMARKS?|REF(ERENCE)?)$/i.test(x.s.trim()))) return null;
   let m = /^(.+?)\s*(?:\.{2,}|(?:\.\s+){2,}\.?|…+|_{3,}|·{3,}|-{4,})\s*(.+)$/.exec(t); // BATTERY ........ ON
-  if (m && /[A-Za-z0-9]/.test(m[2])) { const n = cleanName(m[1]), st = m[2].replace(/^[.…\s]+/, '').replace(/^"|"$/g, '').replace(/[.,;]+$/, '').trim(); return okName(n) && st && st.length <= 40 && !/\[N\/A\]/i.test(m[1]) ? { n, st, r, lead: true } : null; }
+  if (m && /[A-Za-z0-9]/.test(m[2])) { const n = cleanName(m[1]), st = m[2].replace(/^[.…\s]+/, '').replace(/^"|"$/g, '').replace(/[.,;]+$/, '').trim(); return okName(n) && st && st.length <= 70 ? { n, st: st.length > 40 ? st.replace(/\s+until\b.*$/i, '').slice(0, 60) : st, r, lead: true, na: /\[N\/A\]/i.test(m[1]) } : null; }
   if (segs.length >= 2) { const st = segs[segs.length - 1].s, n = cleanName(segs.slice(0, -1).map(s => s.s).join(' ')); // BATTERY        ON (a table)
     if (okName(n) && okState(st) && (upperish(n) || STATE.test(st))) return { n, st, r }; return null; }
   m = /^(.+?\S)\s+[–—]\s+(\S.*)$/.exec(t) || /^(.+?\S)\s+-\s+(\S.*)$/.exec(t) || /^([A-Z0-9][A-Z0-9 &\/+().'-]{1,60}):\s+(\S.*)$/.exec(t); // BEACON – ON / BEACON: ON
@@ -107,11 +108,11 @@ function find(doc, opt) { opt = opt || {}; const P = doc.pages || [];
     const pg = P[l.p - 1] || {}, inPic = (pg.imgs || []).some(B => B.w * B.h > (pg.w || 600) * (pg.h || 800) * 0.03 && inBox(l.segs[0].x + 2, l.y + l.h / 2, B, 0));
     // struck-through text (an item that does not apply to this aircraft) is not a step: a thin line through the middle of the words
     const sg = l.segs[0], struck = (pg.paths || []).some(b => b.h < 3 && b.y >= l.y + l.h * 0.28 && b.y <= l.y + l.h * 0.74 && Math.min(b.x + b.w, sg.x2) - Math.max(b.x, sg.x) > (sg.x2 - sg.x) * 0.5);
-    const its = inPic || struck ? [] : items(l).filter(x => x.lead || l.h < body * 1.25); // big text is a heading, unless it has dot leaders; text on a picture is a label
-    if (its.length) { if (!B) { const t = titleFor(i); B = { title: t, page: l.p, steps: [], role0: roleInTitle(t) }; }
+    const its = inPic ? [] : items(l).filter(x => x.lead || l.h < body * 1.25).map(x => struck ? Object.assign(x, { cut: 'struck' }) : x.na ? Object.assign(x, { cut: 'na' }) : x); // big text is a heading, unless it has dot leaders; text on a picture is a label
+    if (its.length) { if (!B && its.every(x => x.cut)) { const last = out[out.length - 1]; if (last && last.page >= l.p - 1) its.forEach(it => last.steps.push({ r: null, t: it.st ? it.n + ' – ' + it.st : it.n, k: 'cut', cut: it.cut, num: it.num || 0, pg: l.p })); return; } if (!B) { const t = titleFor(i); B = { title: t, page: l.p, steps: [], role0: roleInTitle(t) }; }
       const first = /^\W*\(?(a|A|1)[.)](\s|$)/.test(l.segs[0].s), ab = above.replace(/^\s*\(?\d{1,2}[.)]?\s+/, '').replace(/\s*:$/, ''), part = first && /:$/.test(above) && ab.length >= 3 && ab.length <= 60 && !SENTENCE.test(ab) ? cleanTitle(ab) : '';
       its.forEach(it => { let r = it.r; if (!r && cols) { let d = Infinity; cols.forEach(c => { const e = Math.abs(c.x - it.col); if (e < d) { d = e; r = c.r; } }); }
-        if (!r) r = role || B.role0 || null; B.steps.push({ r, t: it.st ? it.n + ' – ' + it.st : it.n, k: it.call || /\bchecklist\b|\bC\/L\b/i.test(it.n) ? 'call' : 'act', lead: !!it.lead, sw: STATE.test(it.st || ''), part, pg: l.p }); });
+        if (!r) r = role || B.role0 || null; B.steps.push({ r, t: it.st ? it.n + ' – ' + it.st : it.n, k: it.call || /\bchecklist\b|\bC\/L\b/i.test(it.n) ? 'call' : 'act', lead: !!it.lead, sw: STATE.test(it.st || ''), part, pg: l.p, num: it.num || 0, cut: it.cut || '' }); if (it.cut) B.steps[B.steps.length - 1].k = 'cut'; });
       above = '';
       B.pageEnd = l.p; gap = 0; return; }
     above = l.text.replace(/\s{2,}/g, ' ').trim();
@@ -143,8 +144,13 @@ function find(doc, opt) { opt = opt || {}; const P = doc.pages || [];
     const rs = [...used].some(r => r === 'CM1' || r === 'CM2') && ![...used].some(r => r === 'PF' || r === 'PM') ? 'cm' : used.size ? 'pfpm' : (opt.crew === 1 ? 'one' : 'pfpm');
     const roles = { pfpm: ['PF', 'PM'], cm: ['CM1', 'CM2'], one: ['P'] }[rs], map = r => { if (rs === 'one') return 'P'; if (!r || r === '*') return roles[0];
       if (rs === 'pfpm') return r === 'CM1' ? 'PF' : r === 'CM2' ? 'PM' : r; return r === 'PF' ? 'CM1' : r === 'PM' ? 'CM2' : r; };
-    const steps = []; const seen = new Set(); f.steps.forEach(s => { const r = map(s.r), k = r + '|' + s.t.toUpperCase(); if (seen.has(k)) return; seen.add(k); steps.push({ r, t: s.t.replace(/\s+/g, ' ').trim().slice(0, 120), k: s.k }); });
-    return { page2: f.page2 || f.page, name: f.name.trim().slice(0, 80), phase: phaseOf(f.name), rs, roles, steps, page: f.page }; }); }
+    const steps = [], cut = [], miss = [], pages = new Set(); const seen = new Set(); let want = 0;
+    f.steps.forEach(s => { if (s.pg) pages.add(s.pg);
+      // the manual numbers its items: 1, 2, 3 … A number jumped over (and not struck out or N/A) may be an item that was not read
+      if (s.num) { if (s.num === 1) want = 1; if (want && s.num > want && s.num - want <= 3) for (let q = want; q < s.num; q++) miss.push({ num: q, after: (steps[steps.length - 1] || {}).t || '', pg: s.pg }); if (want) want = s.num + 1; }
+      if (s.k === 'cut') { cut.push({ t: s.t.replace(/\s+/g, ' ').trim().slice(0, 120), why: s.cut, pg: s.pg }); return; }
+      const r = map(s.r), k = r + '|' + s.t.toUpperCase(); if (seen.has(k)) return; seen.add(k); steps.push({ r, t: s.t.replace(/\s+/g, ' ').trim().slice(0, 120), k: s.k, pg: s.pg || 0 }); });
+    return { page2: f.page2 || f.page, name: f.name.trim().slice(0, 80), phase: phaseOf(f.name), rs, roles, steps, cut, miss, pages: [...pages].sort((a, b) => a - b), page: f.page }; }); }
 
 /* ---------- step names → NORDAP's named controls ---------- */
 const SYN = [[/\bBATT?(ERY|ERIES|S)?\b/g, 'BAT'], [/\bENGINES?\b/g, 'ENG'], [/\bFLIGHT\b/g, 'FLT'], [/\bCONTROLS\b/g, 'CONTROL'], [/\bGENERATORS?\b/g, 'GEN'], [/\bLIGHTS?\b|\bLTS\b/g, 'LT'], [/\bSELECTORS?\b/g, 'SEL'], [/\bSWITCH(ES)?\b|\bSW\b|\bP\/?B\b|\bPUSH ?BUTTONS?\b|\bBUTTONS?\b|\bKNOBS?\b/g, ''], [/\bLEVERS?\b/g, 'LVR'], [/\bTHRUST\b/g, 'THR'], [/\bRUDDER\b/g, 'RUD'], [/\bWEATHER\b/g, 'WX'], [/\bOXY(GEN)?\b/g, 'OXYGEN'], [/\bA-ICE\b/g, 'ANTI ICE'], [/\bBRAKES?\b/g, 'BRK'], [/\bSTATUS\b/g, 'STS'], [/\bCRUISE POWER\b|\bTAKE[- ]?OFF POWER\b|\bCLIMB POWER\b/g, 'POWER LVR'], [/\bGEAR WARNING\b.*\bTEST\b/g, 'GEAR TEST'], [/\bANTI[- ]?COLLISION( LIGHTS?)?\b|\bACL\b/g, 'STROBE'], [/\b(LONGITUDINAL|ELEVATOR) TRIM\b/g, 'PITCH TRIM'], [/\bDIRECTIONAL TRIM\b/g, 'RUD TRIM'], [/\bF-?PLN\b|\bFLIGHT PLAN\b/g, 'FPL'], [/\b(AND|THE|OF|FOR|TO)\b|&/g, ' '], [/\bHEATING\b|\bHEATERS?\b/g, 'HEAT'],

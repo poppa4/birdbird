@@ -71,10 +71,15 @@ function clean(o) { if (!o || typeof o !== 'object') return null; const f = newF
   const num = v => Number.isFinite(+v) ? Math.round(+v * 10) / 10 : null;
   f.steps = (Array.isArray(o.steps) ? o.steps : []).slice(0, 400).map(s => ({ id: String(s.id || uid()).slice(0, 24), r: f.roles.includes(s.r) ? s.r : f.roles[0], k: ['act', 'call', 'event'].includes(s.k) ? s.k : 'act',
     t: String(s.t || '').slice(0, 160), b: s.b ? String(s.b).slice(0, 6) : undefined, x: s.x == null ? null : num(s.x), y: s.y == null ? null : num(s.y), tg: s.tg ? String(s.tg).slice(0, 80) : undefined,
-    after: s.after ? String(s.after).slice(0, 24) : undefined, n: s.n ? String(s.n).slice(0, 400) : undefined }));
+    after: s.after ? String(s.after).slice(0, 24) : undefined, n: s.n ? String(s.n).slice(0, 400) : undefined, pg: s.pg > 0 && s.pg < 10000 ? Math.round(s.pg) : undefined }));
   // names the user has given to spots on their own picture: they work like the named controls of a NORDAP cockpit
   if (Array.isArray(o.marks)) f.marks = o.marks.slice(0, 600).map(m => ({ n: markName(m && m.n), x: num(m && m.x), y: num(m && m.y) })).filter((m, i, a) => m.n && m.x != null && m.y != null && a.findIndex(q => q.n.toLowerCase() === m.n.toLowerCase()) === i);
   if (PHASES.some(p => p[0] === o.phase)) f.phase = o.phase;
+  // where an imported flow came from: the manual's pages (pictures kept on this device), and what the reader left out or could not find
+  if (o.src && typeof o.src === 'object') { const S = o.src, I = v => Math.max(0, Math.min(9999, Math.round(+v || 0)));
+    f.src = { file: String(S.file || '').slice(0, 80), pages: (Array.isArray(S.pages) ? S.pages : []).slice(0, 12).map(q => ({ p: I(q && q.p), id: String((q && q.id) || '').slice(0, 40) })).filter(q => q.p),
+      miss: (Array.isArray(S.miss) ? S.miss : []).slice(0, 20).map(m => ({ num: I(m && m.num), pg: I(m && m.pg), after: String((m && m.after) || '').slice(0, 120) })),
+      cut: (Array.isArray(S.cut) ? S.cut : []).slice(0, 20).map(c => ({ t: String((c && c.t) || '').slice(0, 120), why: c && c.why === 'na' ? 'na' : 'struck', pg: I(c && c.pg) })) }; }
   f.notes = (Array.isArray(o.notes) ? o.notes : []).slice(0, 60).map(n => ({ id: String(n.id || uid()).slice(0, 24), x: num(n.x), y: num(n.y), t: String(n.t || '').slice(0, 400) })).filter(n => n.x != null && n.y != null);
   f.upd = +o.upd || Date.now(); return f; }
 /* share link: the flow (without the photo) as base64url JSON in the #hash */
