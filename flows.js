@@ -579,7 +579,7 @@ async function manRead(file) { const d = $('dman'), b = $('dmanb'); manClose(); 
   const g = MP.guessAc(doc), crew = g && A.get(g) ? A.get(g).crew : 2, found = MP.find(doc, { crew }); let figs = MP.figures(doc);
   // pictures with the numbers drawn into them: read the digits here on the device
   if (MP.ocrPages(doc, figs).length) { const sk = $('fmskip'); if (sk) sk.hidden = false;
-    try { await MP.ocr(doc, figs, (n, N) => prog(L({ en: 'Looking for numbered flows in the pictures:', no: 'Ser etter nummererte flows i bildene:' }), n, N), () => stop || !d.open); figs = MP.figures(doc); } catch (e) {} }
+    try { await MP.ocr(doc, figs, (n, N, st) => prog(st === 2 ? L({ en: 'Reading the numbers in the pictures:', no: 'Leser tallene i bildene:' }) : L({ en: 'Looking for numbered flows in the pictures:', no: 'Ser etter nummererte flows i bildene:' }), n, N), () => stop || !d.open); figs = MP.figures(doc); } catch (e) {} }
   if (!d.open) { try { doc.pdf.destroy(); } catch (e) {} return; }
   const all = MP.link(found, figs, doc, { crew });
   if (!all.length) { try { doc.pdf.destroy(); } catch (e) {} b.innerHTML = manMsg(L({ en: `No flows found in ${doc.pages.length} pages: no items with a position (“BATTERY ..... ON”) and no numbered figures. You can still paste a flow under “Paste SOP text”.`, no: `Fant ingen flows på ${doc.pages.length} sider: ingen punkter med posisjon («BATTERY ..... ON») og ingen nummererte figurer. Du kan fortsatt lime inn en flow under «Lim inn SOP-tekst».` })); return; }

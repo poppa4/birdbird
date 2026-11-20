@@ -272,34 +272,41 @@ function boxes(ops, OPS, vt) { const imgs = [], paths = []; let m = [1, 0, 0, 1,
   const big = []; imgs.filter(b => b.w > 20 && b.h > 20).forEach(b => { const o = big.find(c => inBox(b.x + b.w / 2, b.y + b.h / 2, { x: c.x - 4, y: c.y - 4, w: c.w + 8, h: c.h + 8 }, 0) || (b.x <= c.x + c.w + 4 && c.x <= b.x + b.w + 4 && b.y <= c.y + c.h + 4 && c.y <= b.y + b.h + 4));
     if (o) Object.assign(o, union(o, b)); else big.push(Object.assign({}, b)); });
   return { imgs: big, paths }; }
-async function read(file, progress) { const L = await lib();
-  const pdf = await L.getDocument({ data: await file.arrayBuffer(), isEvalSupported: false }).promise, pages = []; let chars = 0;
-  for (let n = 1; n <= pdf.numPages; n++) { const pg = await pdf.getPage(n), v = pg.getViewport({ scale: 1 }), tc = await pg.getTextContent(), items = [];
+async function read(file, progress) { const L = await lib(), buf = await file.arrayBuffer();
+  const pdf = await L.getDocument({ data: buf.slice(0), isEvalSupported: false }).promise, N = pdf.numPages, pages = new Array(N); let chars = 0, done = 0, next = 1;
+  // pdf.js reads in one background thread per document: a long manual is shared between up to three, so the cores work together
+  const k = N < 24 ? 1 : Math.max(1, Math.min(3, ((G.navigator && navigator.hardwareConcurrency) || 2) - 1)), docs = [pdf], extra = [];
+  for (let i = 1; i < k; i++) { try { const w = new L.PDFWorker(); extra.push(w); docs.push(await L.getDocument({ data: buf.slice(0), isEvalSupported: false, worker: w }).promise); } catch (e) { break; } }
+  const one = async (D, n) => { const pg = await D.getPage(n), v = pg.getViewport({ scale: 1 }), tc = await pg.getTextContent(), items = [];
     tc.items.forEach(i => { if (!i.str || !i.str.trim()) return; const tr = i.transform, h = Math.abs(i.height || Math.hypot(tr[2], tr[3])) || 8;
       if (Math.abs(tr[1]) > Math.abs(tr[0]) * 0.3) return; // rotated text (margins, stamps)
       const p = v.convertToViewportPoint(tr[4], tr[5]); items.push({ s: i.str, x: p[0], y: p[1] - h * 0.8, w: Math.abs(i.width) || i.str.length * h * 0.5, h }); chars += i.str.length; });
     let bx = { imgs: [], paths: [] }; try { bx = boxes(await pg.getOperatorList(), L.OPS, v.transform); } catch (e) {}
-    pages.push({ w: v.width, h: v.height, items, imgs: bx.imgs, paths: bx.paths }); pg.cleanup(); if (progress) progress(n, pdf.numPages); }
+    pages[n - 1] = { w: v.width, h: v.height, items, imgs: bx.imgs, paths: bx.paths }; pg.cleanup(); done++; if (progress) progress(done, N); };
+  await Promise.all(docs.map(async D => { while (next <= N) { const n = next++; await one(D, n); } }));
+  docs.slice(1).forEach(D => { try { D.destroy(); } catch (e) {} }); extra.forEach(w => { try { w.destroy(); } catch (e) {} });
   return { pages, chars, name: file.name || 'manual.pdf', pdf }; }
 /* a figure as a picture: the page drawn sharp and cut to the figure */
 async function render(doc, p, B, maxPx) { const pg = await doc.pdf.getPage(p), s = Math.min(4, (maxPx || 2000) / Math.max(B.w, B.h)), v = pg.getViewport({ scale: s }), c = document.createElement('canvas');
   c.width = Math.round(B.w * s); c.height = Math.round(B.h * s); const cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height);
   await pg.render({ canvasContext: cx, viewport: v, transform: [1, 0, 0, 1, -B.x * s, -B.y * s] }).promise; pg.cleanup(); return { canvas: c, s }; }
-/* pictures whose numbers are part of the picture: read the digits on this device (tesseract.js, loaded only when needed) */
-let TW = null;
-async function ocrWorker() { if (TW) return TW; if (!G.Tesseract) await new Promise((ok, ko) => { const sc = document.createElement('script'); sc.src = 'vendor/tesseract/tesseract.min.js?v=5.1.1'; sc.onload = ok; sc.onerror = () => ko(new Error('OCR not available')); document.head.appendChild(sc); });
-  const base = new URL('vendor/tesseract/', location.href).href;
-  TW = await G.Tesseract.createWorker('eng', 1, { workerPath: base + 'worker.min.js', corePath: base, langPath: base, gzip: false, cacheMethod: 'none' });
-  await TW.setParameters({ tessedit_char_whitelist: '0123456789', tessedit_pageseg_mode: '11' }); return TW; }
+/* pictures whose numbers are part of the picture: read the digits on this device (tesseract.js, loaded only when needed).
+   Several recognisers run at once (one per spare core); the marker search runs in a background thread. */
+let TS = null;
+async function ocrPool() { if (TS) return TS; if (!G.Tesseract) await new Promise((ok, ko) => { const sc = document.createElement('script'); sc.src = 'vendor/tesseract/tesseract.min.js?v=5.1.1'; sc.onload = ok; sc.onerror = () => ko(new Error('OCR not available')); document.head.appendChild(sc); });
+  const base = new URL('vendor/tesseract/', location.href).href, n = Math.max(1, Math.min(4, ((G.navigator && navigator.hardwareConcurrency) || 2) - 1)), S = G.Tesseract.createScheduler(), W = [];
+  await Promise.all(Array.from({ length: n }, async () => { const w = await G.Tesseract.createWorker('eng', 1, { workerPath: base + 'worker.min.js', corePath: base, langPath: base, gzip: false, cacheMethod: 'none' }); W.push(w); S.addWorker(w); }));
+  TS = { S, W, set: o => Promise.all(W.map(w => w.setParameters(o))) }; return TS; }
 /* which pages to look at: a big picture, no callouts found in the text, and a flow-like word on the page or the one before */
 function ocrPages(doc, figs, max) { const has = new Set(figs.map(f => f.page)), C = [];
   (doc.pages || []).forEach((pg, i) => { const p = i + 1; if (has.has(p)) return; const W = pg.w || 600, H = pg.h || 800, big = (pg.imgs || []).filter(B => B.w * B.h > W * H * 0.08); if (!big.length) return;
     const txt = pg.items.map(x => x.s).join(' ') + ' ' + ((doc.pages[i - 1] || { items: [] }).items.map(x => x.s).join(' ')), sc = (FLOWWORD.test(txt) ? 2 : 0) + (phaseOf(txt) ? 2 : 0) + (/\b(SCAN|PANEL|OVERHEAD|PEDESTAL|COCKPIT|FLIGHT DECK)\b/i.test(txt) ? 1 : 0);
     big.forEach(B => C.push({ p, B, sc })); });
   return C.sort((a, b) => b.sc - a.sc || a.p - b.p).slice(0, max || 60).sort((a, b) => a.p - b.p); }
-/* round callout markers in a picture: a flat disc (any colour), about 1–7 % of the picture across, with something
-   of another colour inside it (the number). Returns each marker with a clean black-on-white picture of what is inside. */
-function discs(cv) { const W = cv.width, H = cv.height, d = cv.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, W, H).data, lab = new Int32Array(W * H), st = new Int32Array(W * H), out = [];
+/* round callout markers in a picture: a flat disc (any colour), about 1–7 % of the picture across, with something of another
+   colour inside it that is shaped like one or two characters. Pure (no page objects), so it also runs in a worker.
+   Returns each marker with a black-on-white crop (1 = ink) of what is inside, and the box of that ink. */
+function discsCore(d, W, H) { const lab = new Int32Array(W * H), st = new Int32Array(W * H), out = [];
   const M = Math.max(W, H), dmin = Math.max(10, Math.round(M * 0.009)), dmax = Math.round(M * 0.07), T2 = 48 * 48; let id = 0;
   for (let i0 = 0; i0 < W * H; i0++) { if (lab[i0]) continue; id++; const r0 = d[4 * i0], g0 = d[4 * i0 + 1], b0 = d[4 * i0 + 2]; let sp = 0, n = 0, x0 = W, x1 = 0, y0 = H, y1 = 0; st[sp++] = i0; lab[i0] = id;
     while (sp) { const j = st[--sp], jx = j % W, jy = (j - jx) / W; n++; if (jx < x0) x0 = jx; if (jx > x1) x1 = jx; if (jy < y0) y0 = jy; if (jy > y1) y1 = jy;
@@ -307,38 +314,52 @@ function discs(cv) { const W = cv.width, H = cv.height, d = cv.getContext('2d', 
         const dr = d[4 * k] - r0, dg = d[4 * k + 1] - g0, db = d[4 * k + 2] - b0; if (dr * dr + dg * dg + db * db < T2) { lab[k] = id; st[sp++] = k; } } }
     const w = x1 - x0 + 1, h = y1 - y0 + 1; if (w < dmin || h < dmin || w > dmax || h > dmax || w / h < 0.78 || w / h > 1.28) continue;
     const fill = n / (w * h); if (fill < 0.42 || fill > 0.84) continue;
-    // inside: pixels that are not the disc, within the inner part of the circle, must be there (the digit) and stand out
+    // inside: pixels that are not the disc, within the inner part of the circle, must be there (the character) and stand out
     const cx = x0 + w / 2, cy = y0 + h / 2, R = Math.min(w, h) / 2; let hole = 0, inner = 0, con = 0;
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const e = ((x - cx) ** 2 + (y - cy) ** 2) / (R * R); if (e > 0.5) continue; inner++; const k = y * W + x;
       if (lab[k] !== id) { hole++; con += Math.abs(d[4 * k] - r0) + Math.abs(d[4 * k + 1] - g0) + Math.abs(d[4 * k + 2] - b0); } }
     if (!inner || hole / inner < 0.05 || hole / inner > 0.55 || con / Math.max(1, hole) < 120) continue;
-    const S = 96 / (2 * R), c = document.createElement('canvas'); c.width = c.height = 120; const g = c.getContext('2d'), im = g.createImageData(120, 120);
-    for (let y = 0; y < 120; y++) for (let x = 0; x < 120; x++) { const sx = Math.round(cx + (x - 60) / S), sy = Math.round(cy + (y - 60) / S), e = ((sx - cx) ** 2 + (sy - cy) ** 2) / (R * R), k = sy * W + sx, o = 4 * (y * 120 + x);
-      const ink = e <= 0.8 && sx >= 0 && sy >= 0 && sx < W && sy < H && lab[k] !== id && (Math.abs(d[4 * k] - r0) + Math.abs(d[4 * k + 1] - g0) + Math.abs(d[4 * k + 2] - b0)) > 90; /* the inside of a 6, 8, 9 or 0 has the disc's colour */ im.data[o] = im.data[o + 1] = im.data[o + 2] = ink ? 0 : 255; im.data[o + 3] = 255; }
-    g.putImageData(im, 0, 0); out.push({ x: cx, y: cy, r: R, c, col: [r0, g0, b0] }); if (out.length >= 160) break; }
+    const S = 96 / (2 * R), crop = new Uint8Array(120 * 120); let gx0 = 120, gx1 = -1, gy0 = 120, gy1 = -1, ni = 0;
+    for (let y = 0; y < 120; y++) for (let x = 0; x < 120; x++) { const sx = Math.round(cx + (x - 60) / S), sy = Math.round(cy + (y - 60) / S), e = ((sx - cx) ** 2 + (sy - cy) ** 2) / (R * R), k = sy * W + sx;
+      // the inside of a 6, 8, 9 or 0 has the disc's colour: ink is what differs from the disc
+      const ink = e <= 0.8 && sx >= 0 && sy >= 0 && sx < W && sy < H && lab[k] !== id && (Math.abs(d[4 * k] - r0) + Math.abs(d[4 * k + 1] - g0) + Math.abs(d[4 * k + 2] - b0)) > 90;
+      if (ink) { crop[y * 120 + x] = 1; ni++; if (x < gx0) gx0 = x; if (x > gx1) gx1 = x; if (y < gy0) gy0 = y; if (y > gy1) gy1 = y; } }
+    if (gx1 < 0) continue; const gw = gx1 - gx0 + 1, gh = gy1 - gy0 + 1, f = ni / (gw * gh);
+    // shaped like one or two characters, and clear of the ring (a dial or a knob is not)
+    if (gh < 96 * 0.28 || gh > 96 * 0.8 || gw / gh < 0.2 || gw / gh > 1.7 || f < 0.12 || f > 0.75 || gx0 < 14 || gx1 > 105 || gy0 < 14 || gy1 > 105) continue;
+    out.push({ x: cx, y: cy, r: R, col: [r0, g0, b0], crop, gb: [gx0, gy0, gw, gh] }); if (out.length >= 160) break; }
   return out; }
-/* the number in a marker: only markers whose ink looks like one or two digits (not a dial or a knob), each read on its own */
-function glyph(c) { const g = c.getContext('2d', { willReadFrequently: true }), d = g.getImageData(0, 0, 120, 120).data; let x0 = 120, x1 = -1, y0 = 120, y1 = -1, n = 0;
-  for (let y = 0; y < 120; y++) for (let x = 0; x < 120; x++) if (!d[4 * (y * 120 + x)]) { n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
-  if (x1 < 0) return null; const w = x1 - x0 + 1, h = y1 - y0 + 1, f = n / (w * h);
-  if (h < 96 * 0.28 || h > 96 * 0.8 || w / h < 0.2 || w / h > 1.7 || f < 0.12 || f > 0.75 || x0 < 14 || x1 > 105 || y0 < 14 || y1 > 105) return null; // ink touching the ring is not a number
-  const k = 64 / h, o = document.createElement('canvas'); o.width = Math.round(w * k) + 48; o.height = 112; const q = o.getContext('2d'); q.fillStyle = '#fff'; q.fillRect(0, 0, o.width, o.height);
-  q.imageSmoothingEnabled = true; q.drawImage(c, x0, y0, w, h, 24, 24, w * k, 64); return o; }
-async function readDiscs(w, D) { const out = [];
-  for (const o of D) { const gl = glyph(o.c); if (!gl) continue; let best = null;
-    for (const psm of ['10', '8', '13']) { await w.setParameters({ tessedit_pageseg_mode: psm }); const r = await w.recognize(gl), t = (r.data.text || '').replace(/\s+/g, '');
-      if (/^\d{1,2}$/.test(t) && r.data.confidence >= 45) { best = t; break; } }
-    if (!best) { await w.setParameters({ tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', tessedit_pageseg_mode: '10' }); const r = await w.recognize(gl), t = (r.data.text || '').replace(/\s+/g, '');
-      if (/^[A-Za-z]$/.test(t) && r.data.confidence >= 60) best = t; await w.setParameters({ tessedit_char_whitelist: '0123456789' }); }
-    if (best) out.push(Object.assign({}, o, { n: best })); }
-  return out; }
-async function ocr(doc, figs, progress, stop) { const C = ocrPages(doc, figs); if (!C.length) return 0; const w = await ocrWorker(); let n = 0;
-  for (let i = 0; i < C.length; i++) { if (stop && stop()) break; const { p, B } = C[i]; if (progress) progress(i + 1, C.length);
-    const { canvas, s } = await render(doc, p, B, 1400), D = discs(canvas), R0 = await readDiscs(w, D), pg = doc.pages[p - 1];
-    // a figure's callouts look alike (same size and colour): keep the largest family, so a stray digit on a panel does not count
-    const like = (a, b) => Math.abs(a.r - b.r) < 0.25 * Math.max(a.r, b.r) && Math.abs(a.col[0] - b.col[0]) + Math.abs(a.col[1] - b.col[1]) + Math.abs(a.col[2] - b.col[2]) < 90;
-    let R = []; R0.forEach(a => { const fam = R0.filter(b => like(a, b)); if (fam.length > R.length) R = fam; });
-    R.forEach(o => { const hh = 2 * o.r / s; pg.items.push({ s: String(o.n), x: B.x + (o.x - o.r) / s, y: B.y + (o.y - o.r) / s, w: hh, h: hh, ocr: true }); n++; }); }
+let DW = null, DQ = 0; const DP = new Map();
+function discsAsync(img) { if (DW === null) { try { DW = new Worker(URL.createObjectURL(new Blob(['const discsCore = ' + discsCore.toString() + ';\nonmessage = e => { const r = discsCore(e.data.d, e.data.W, e.data.H); postMessage({ id: e.data.id, r }, r.map(x => x.crop.buffer)); };'], { type: 'text/javascript' })));
+      DW.onmessage = e => { const f = DP.get(e.data.id); DP.delete(e.data.id); if (f) f(e.data.r); }; DW.onerror = () => { DW = false; }; } catch (e) { DW = false; } }
+  if (!DW) return Promise.resolve(discsCore(img.data, img.width, img.height));
+  const id = ++DQ; return new Promise(ok => { DP.set(id, ok); DW.postMessage({ id, d: img.data, W: img.width, H: img.height }, [img.data.buffer]); }); }
+/* the character of a marker, drawn big and clean for the recogniser */
+function glyphCanvas(o) { const [x0, y0, w, h] = o.gb, k = 64 / h, c = document.createElement('canvas'); c.width = Math.round(w * k) + 48; c.height = 112;
+  const g = c.getContext('2d'), im = g.createImageData(c.width, c.height);
+  for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) { const sx = Math.floor(x0 + (x - 24) / k), sy = Math.floor(y0 + (y - 24) / k), o2 = 4 * (y * c.width + x), ink = sx >= x0 && sy >= y0 && sx < x0 + w && sy < y0 + h && o.crop[sy * 120 + sx];
+    im.data[o2] = im.data[o2 + 1] = im.data[o2 + 2] = ink ? 0 : 255; im.data[o2 + 3] = 255; }
+  g.putImageData(im, 0, 0); return c; }
+/* a figure's callouts look alike (same size and colour): the largest family, so a stray digit on a panel does not count */
+const like = (a, b) => Math.abs(a.r - b.r) < 0.25 * Math.max(a.r, b.r) && Math.abs(a.col[0] - b.col[0]) + Math.abs(a.col[1] - b.col[1]) + Math.abs(a.col[2] - b.col[2]) < 90;
+const family = D => { let F = []; D.forEach(a => { const f = D.filter(b => like(a, b)); if (f.length > F.length) F = f; }); return F; };
+async function ocr(doc, figs, progress, stop) { const C = ocrPages(doc, figs); if (!C.length) return 0; const pool = ocrPool(); let n = 0;
+  // 1) draw each picture and find its markers; the next page is drawn while the markers of this one are searched
+  const jobs = []; let pend = null;
+  for (let i = 0; i < C.length; i++) { if (stop && stop()) break; const { p, B } = C[i]; if (progress) progress(i + 1, C.length, 1);
+    const { canvas, s } = await render(doc, p, B, 1100), img = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height); canvas.width = canvas.height = 0;
+    const job = { p, B, s, D: null }; jobs.push(job); const w = discsAsync(img).then(D => { job.D = family(D); }); if (pend) await pend; pend = w; }
+  if (pend) await pend;
+  // 2) only pictures with at least three markers that look alike can hold a numbered flow
+  const todo = jobs.filter(j => j.D && j.D.length >= 3); if (!todo.length || (stop && stop())) return 0;
+  const { S, set } = await pool, all = [].concat(...todo.map(j => j.D.map(o => ({ j, o, c: glyphCanvas(o), t: null })))); let k = 0;
+  // 3) read every character, several at once: digits first, then other ways of reading the ones not yet read, then letters
+  const pass = async (o, ok) => { await set(o); await Promise.all(all.filter(x => x.t == null).map(async x => { if (stop && stop()) return; const r = await S.addJob('recognize', x.c), t = (r.data.text || '').replace(/\s+/g, ''); if (ok(t, r.data.confidence)) x.t = t; if (progress) progress(++k, all.length, 2); })); };
+  await pass({ tessedit_char_whitelist: '0123456789', tessedit_pageseg_mode: '10' }, (t, c) => /^\d{1,2}$/.test(t) && c >= 45); k = 0;
+  if (all.some(x => x.t == null)) await pass({ tessedit_pageseg_mode: '8' }, (t, c) => /^\d{1,2}$/.test(t) && c >= 45); k = 0;
+  if (all.some(x => x.t == null)) await pass({ tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', tessedit_pageseg_mode: '10' }, (t, c) => /^[A-Za-z]$/.test(t) && c >= 60);
+  todo.forEach(j => { const R = all.filter(x => x.j === j && x.t != null), pg = doc.pages[j.p - 1];
+    R.forEach(({ o, t }) => { const hh = 2 * o.r / j.s; pg.items.push({ s: t, x: j.B.x + (o.x - o.r) / j.s, y: j.B.y + (o.y - o.r) / j.s, w: hh, h: hh, ocr: true }); n++; }); });
   return n; }
 /* the manual's own numbers would give the answer away when practising: each callout is covered with the colour around it */
 function hide(cv, s, B, pts) { const g = cv.getContext('2d'), W = cv.width, H = cv.height, all = g.getImageData(0, 0, W, H).data;
@@ -348,6 +369,6 @@ function hide(cv, s, B, pts) { const g = cv.getContext('2d'), W = cv.width, H = 
     const gr = g.createRadialGradient(cx, cy, R * 0.7, cx, cy, R * 1.15); gr.addColorStop(0, col); gr.addColorStop(1, col.replace('rgb', 'rgba').replace(')', ',0)'));
     g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, R * 1.15, 0, 2 * Math.PI); g.fill(); }); }
 
-const API = { read, find, place, match, guessAc, norm, phaseOf, lines, items, roleHead, figures, link, figSpot, callouts, render, ocr, ocrPages, boxes, hide, discs, glyph };
+const API = { read, find, place, match, guessAc, norm, phaseOf, lines, items, roleHead, figures, link, figSpot, callouts, render, ocr, ocrPages, boxes, hide, discsCore, glyphCanvas };
 if (typeof module === 'object' && module.exports) module.exports = API; else G.BBFLOWPDF = API;
 })(typeof window !== 'undefined' ? window : globalThis);
