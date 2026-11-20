@@ -735,6 +735,11 @@ html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-d-no.webp)}
     </div>
   </section>
 
+  <!-- 4. Weather forecast at an aerodrome (front-wx.js) -->
+  <section class="fp-sec" id="fpWx" aria-labelledby="h-wx">
+    <div class="fp-wrap"><div class="fwx" id="fwx"></div></div>
+  </section>
+
   <!-- 5. About and contact -->
   <div class="fx-band fp-band">
     <div class="fp-wrap fx-grid fx-solo">
@@ -756,6 +761,7 @@ html[lang=nb] .ff::before{background-image:url(img/front/foil-poster-d-no.webp)}
 <script src="reqplane.js?v=3" defer></script>
 <script src="front-flow.js?v=1" defer></script>
 <script src="front-fi.js?v=18" defer></script>
+<script src="front-wx.js?v=1" defer></script>
 <script>
 (function(){
 'use strict';
