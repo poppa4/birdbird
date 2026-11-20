@@ -249,7 +249,7 @@
   later(mstat); new MutationObserver(mstat).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
   /* accounts and sync (account.js): header state, passkey sign-in, sync of progress and briefing packs. My page and My workspace
      draw from the account state, so they fetch it at once; every other page fetches it after its own scripts. */
-  if(!/[?&]embed=1/.test(location.search)){ const acc=()=>{ if(!document.querySelector('script[src^="account.js"]')){ const aj=document.createElement('script'); aj.src='account.js?v=8'; document.head.appendChild(aj); } };
+  if(!/[?&]embed=1/.test(location.search)){ const acc=()=>{ if(!document.querySelector('script[src^="account.js"]')){ const aj=document.createElement('script'); aj.src='account.js?v=9'; document.head.appendChild(aj); } };
     if(page==='profile.html'||page==='workspace.html') acc(); else later(acc); }
   const EMBED=/[?&]embed=1/.test(location.search);
   if(EMBED){ const st=document.createElement('style'); st.textContent='.labnav,.site,.sitefoot,.nsearch,.trnav,.fab{display:none!important} .page{padding-top:6px} .lhead{margin-top:6px}'; document.head.appendChild(st); document.documentElement.classList.add('embed'); }

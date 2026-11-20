@@ -93,7 +93,7 @@ function cleanTitle(t) { return titleCase(String(t || '').replace(/^\s*QRH\s+[A-
 function find(doc, opt) { opt = opt || {}; const P = doc.pages || [];
   let L = []; P.forEach((pg, i) => { L = L.concat(lines(pg, i + 1)); }); L = dropRunning(L, P.length);
   const hs = L.map(l => l.h).sort((a, b) => a - b), body = hs.length ? hs[Math.floor(hs.length / 2)] : 9;
-  const out = []; let B = null, gap = 0, role = null, cols = null, heads = [];
+  const out = []; let B = null, gap = 0, role = null, cols = null, heads = [], above = '';
   const close = () => { if (B && B.steps.length) out.push(B); B = null; gap = 0; }; // short pieces are kept: they may join the rest of their procedure
   const SEC = /^\s*[A-Z]{0,4}\d{1,3}(\.\d{1,3})+\.?\s*[\[A-Za-z]/; // "F02.1.5. BEFORE STARTING ENGINE", "2.3 TAXI"
   const titleFor = i => { const isSec = h => SEC.test(h.t) && !(L[h.i + 1] && SEC.test(L[h.i + 1].text)) && !(L[h.i - 1] && SEC.test(L[h.i - 1].text)), sec = heads.filter(h => h.p >= L[i].p - 8 && isSec(h)).pop(), near = heads.filter(h => i - h.i <= 45 && h.p >= L[i].p - 1 && !/^QRH\b/i.test(h.t));
@@ -109,9 +109,12 @@ function find(doc, opt) { opt = opt || {}; const P = doc.pages || [];
     const sg = l.segs[0], struck = (pg.paths || []).some(b => b.h < 3 && b.y >= l.y + l.h * 0.28 && b.y <= l.y + l.h * 0.74 && Math.min(b.x + b.w, sg.x2) - Math.max(b.x, sg.x) > (sg.x2 - sg.x) * 0.5);
     const its = inPic || struck ? [] : items(l).filter(x => x.lead || l.h < body * 1.25); // big text is a heading, unless it has dot leaders; text on a picture is a label
     if (its.length) { if (!B) { const t = titleFor(i); B = { title: t, page: l.p, steps: [], role0: roleInTitle(t) }; }
+      const first = /^\W*\(?(a|A|1)[.)](\s|$)/.test(l.segs[0].s), ab = above.replace(/^\s*\(?\d{1,2}[.)]?\s+/, '').replace(/\s*:$/, ''), part = first && /:$/.test(above) && ab.length >= 3 && ab.length <= 60 && !SENTENCE.test(ab) ? cleanTitle(ab) : '';
       its.forEach(it => { let r = it.r; if (!r && cols) { let d = Infinity; cols.forEach(c => { const e = Math.abs(c.x - it.col); if (e < d) { d = e; r = c.r; } }); }
-        if (!r) r = role || B.role0 || null; B.steps.push({ r, t: it.st ? it.n + ' – ' + it.st : it.n, k: it.call || /\bchecklist\b|\bC\/L\b/i.test(it.n) ? 'call' : 'act', lead: !!it.lead, sw: STATE.test(it.st || '') }); });
+        if (!r) r = role || B.role0 || null; B.steps.push({ r, t: it.st ? it.n + ' – ' + it.st : it.n, k: it.call || /\bchecklist\b|\bC\/L\b/i.test(it.n) ? 'call' : 'act', lead: !!it.lead, sw: STATE.test(it.st || ''), part, pg: l.p }); });
+      above = '';
       B.pageEnd = l.p; gap = 0; return; }
+    above = l.text.replace(/\s{2,}/g, ' ').trim();
     if (heading(l, body)) { const t = l.text.replace(/\s{2,}/g, ' ').trim();
       if (B && (phaseOf(t) || FLOWWORD.test(t) || l.h >= body * 1.3 || roleInTitle(t))) { close(); role = null; cols = null; }
       else if (B) { gap++; if (gap > 4) close(); }
@@ -129,6 +132,12 @@ function find(doc, opt) { opt = opt || {}; const P = doc.pages || [];
   let flows = []; out.filter(b => !table(b)).forEach(b => { const name = cleanTitle(b.title) || '', k = key(b.title);
     const same = k && flows.slice().reverse().find(f => f.key === k && (f.page2 || f.page) >= b.page - 20); if (same) { same.steps = same.steps.concat(b.steps); same.page2 = Math.max(same.page2 || same.page, b.pageEnd || b.page); return; }
     flows.push({ key: k, name: name || ('Flow, page ' + b.page), page: b.page, page2: b.pageEnd || b.page, steps: b.steps.slice() }); });
+  // a long procedure whose items start again at a) or 1. under named parts ("3. Left Wing:") is one flow per part
+  flows = [].concat(...flows.map(f => { if (f.steps.length <= 40) return [f]; const parts = []; f.steps.forEach(s => { if (s.part && (!parts.length || parts[parts.length - 1].name !== s.part)) parts.push({ name: s.part, steps: [] }); if (!parts.length) parts.push({ name: '', steps: [] }); parts[parts.length - 1].steps.push(s); });
+    if (parts.filter(q => q.name).length < 2) return [f];
+    for (let i = 0; i < parts.length - 1;) { if (parts[i].steps.length < 3) { const n = parts[i + 1]; n.name = [parts[i].name, n.name].filter(Boolean).join(', '); n.steps = parts[i].steps.concat(n.steps); parts.splice(i, 1); } else i++; } // a part of one or two items joins the next
+    if (parts.length > 1 && parts[parts.length - 1].steps.length < 3) { const l = parts.pop(), q = parts[parts.length - 1]; q.steps = q.steps.concat(l.steps); }
+    return parts.map(q => ({ key: f.key + '|' + q.name, name: q.name ? f.name + ' – ' + q.name : f.name, page: q.steps[0].pg || f.page, page2: q.steps[q.steps.length - 1].pg || f.page, steps: q.steps })); }));
   flows = flows.filter(f => f.steps.filter(s => s.k === 'act').length >= (opt.min || 3) && real(f) && !(f.steps.filter(s => /^[\d.,\/°%\-+ ]+[A-Za-z%°]{0,6}$/.test((s.t.split(' – ')[1] || '').trim())).length > f.steps.length * 0.6)); // a table of figures is not a flow
   return flows.map(f => { const used = new Set(f.steps.map(s => s.r).filter(r => r && r !== '*'));
     const rs = [...used].some(r => r === 'CM1' || r === 'CM2') && ![...used].some(r => r === 'PF' || r === 'PM') ? 'cm' : used.size ? 'pfpm' : (opt.crew === 1 ? 'one' : 'pfpm');

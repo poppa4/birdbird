@@ -20,7 +20,7 @@
   /* ---------- which keys belong to which namespace ---------- */
   const NAMES = ['progress', 'packs', 'routes', 'settings'];
   const SETTINGS = ['bb-debrief-auto', 'bb-ownck', 'vlab-lang', 'vlab-reg', 'bb-b200-deck', 'naeroson-prep-view', 'naeroson-route-mode', 'bb-rx-v3', 'bb-rx-simspd'];
-  const PROGRESS = ['naeroson-prog', 'bb-track', 'naeroson-store-fises', 'naeroson-brief-hist', 'naeroson-g2g', 'bb-debrief', 'bb-flows', 'bb-flows-best', 'bb-flows-rev', 'bb-flows-stats', 'bb-flows-hist', 'bb-flows-del'];  // bb-flows*: the flow trainer (flows.js); cockpit photos stay on the device
+  const PROGRESS = ['naeroson-prog', 'bb-track', 'naeroson-store-fises', 'naeroson-brief-hist', 'naeroson-g2g', 'bb-debrief', 'bb-flows', 'bb-flows-best', 'bb-flows-rev', 'bb-flows-stats', 'bb-flows-hist', 'bb-flows-del', 'bb-flows-learn'];  // bb-flows*: the flow trainer (flows.js); cockpit photos stay on the device
   const PACKS = ['naeroson-store-prep', 'naeroson-store-aircraft', 'naeroson-store-fiac', 'aeroson-fpl', 'aeroson-nav'];
   const ROUTES = ['naeroson-store-route', 'naeroson-store-fixes', 'naeroson-store-mapview', 'naeroson-store-mapnote'];
   function nsOf(k) {
@@ -247,6 +247,7 @@
     if (k === 'bb-b200-stats') { const o = Object.assign({}, B1); for (const id in A1) { if (!o[id] || ((A1[id] && A1[id].t) || 0) >= ((o[id] && o[id].t) || 0)) o[id] = A1[id]; } return JSON.stringify(o); }
     if (k === 'bb-b200-leitner') return JSON.stringify(Object.assign({}, B1, A1));
     if (k === 'bb-flows' && Array.isArray(A1) && Array.isArray(B1)) { const m = new Map(); B1.concat(A1).forEach(f => { if (!f || !f.id) return; const o = m.get(f.id); if (!o || (+f.upd || 0) >= (+o.upd || 0)) m.set(f.id, f); }); return JSON.stringify([...m.values()].sort((x, y) => (+y.upd || 0) - (+x.upd || 0))); }   // per flow: the newest edit wins; deletions are in bb-flows-del
+    if (k === 'bb-flows-learn' && !Array.isArray(A1) && !Array.isArray(B1)) { const o = Object.assign({}, B1); for (const ac in A1) o[ac] = Object.assign({}, B1[ac], A1[ac]); return JSON.stringify(o); }   // what the flow trainer was taught, per cockpit: both devices' knowledge is kept
     if (/^bb-flows-(best|rev|stats|hist|del)$/.test(k) && !Array.isArray(A1) && !Array.isArray(B1)) return JSON.stringify(Object.assign({}, B1, A1));
     if (k === 'bb-debrief' && Array.isArray(A1) && Array.isArray(B1)) { const seen = new Set(); return JSON.stringify(B1.concat(A1).filter(x => { const id = x && x.id; if (!id || seen.has(id)) return false; seen.add(id); return true; }).sort((x, y) => (x.at || 0) - (y.at || 0)).slice(-30)); }
     if (k === 'naeroson-brief-hist' && Array.isArray(A1) && Array.isArray(B1)) { const seen = new Set(); return JSON.stringify(B1.concat(A1).filter(x => { const id = x && (x.k + ':' + x.t); if (seen.has(id)) return false; seen.add(id); return true; }).sort((x, y) => (x.t || 0) - (y.t || 0)).slice(-40)); }
