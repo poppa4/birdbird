@@ -64,6 +64,16 @@ body.depth-short .gn-vp:not([data-ph=approach]):not([data-ph=missed]) .gn-hsi{wi
   #gnProf{min-height:0;aspect-ratio:3/1}
   .gn-hsi{width:min(200px,62%);margin:0 auto}
 }
+/* start view (Satellites tab): the sky plot alone, large, with the readout beside it */
+.gn-vp[data-v=sky] .gn-main{display:none}
+.gn-vp[data-v=sky] #gnLeg{display:none}
+.gn-vp[data-v=sky] .gn-body{grid-template-columns:minmax(0,1fr);justify-items:center;padding:8px 16px 16px}
+.gn-vp[data-v=sky] .gn-skyc{display:grid;grid-template-columns:minmax(0,440px) minmax(230px,300px);gap:10px 22px;align-items:center;width:100%;max-width:780px}
+.gn-vp[data-v=sky] .gn-skyc .gn-h{grid-column:1/-1}
+.gn-vp[data-v=sky] .gn-ro{font-size:14px;padding:10px 14px}.gn-vp[data-v=sky] .gn-ro .r>b{font-size:13.5px}
+.gn-sky2{grid-column:1/-1;margin:2px 0 0;font-size:13px;line-height:1.5;color:#AEB8C1;max-width:70ch}
+.gn-sky2[hidden]{display:none}
+@media (max-width:640px){.gn-vp[data-v=sky] .gn-skyc{grid-template-columns:minmax(0,1fr)}.gn-vp[data-v=sky] .gn-body{padding:6px 8px 10px}}
 /* Try it: one task at a time (storms.html) */
 .tstep{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:14px 16px;max-width:860px}
 .tstep .th{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
@@ -236,6 +246,7 @@ body.depth-instructor .og-pill{font-size:15px}body.depth-instructor .og-card>b{f
             <p class="gn-h" id="skyH">Sky above you</p>
             <canvas id="gnSky" tabindex="0" aria-label="Sky plot: the satellites seen from the aircraft. The centre is overhead, the edge the horizon. Drag a satellite to move it."></canvas>
             <div class="gn-ro" id="gnRo" aria-live="polite"></div>
+            <p class="gn-sky2" id="skyHint2"></p>
           </div>
           <div class="gn-main">
             <div class="gn-mapw" id="gnMapW"><canvas id="gnMap" tabindex="0" aria-label="Plan view of the route and the approach. Drag sideways to move the aircraft off track; arrow keys move it along and across the route."></canvas><div class="vchip" id="gnChip" aria-live="off"></div></div>
@@ -300,7 +311,7 @@ body.depth-instructor .og-pill{font-size:15px}body.depth-instructor .og-card>b{f
 <script src="navmap.js?v=2"></script>
 <script src="three.min.js?v=128"></script>
 <script src="gnssglobe.js?v=1"></script>
-<script src="gnsslab.js?v=10"></script>
+<script src="gnsslab.js?v=11"></script>
 <script src="corepic.js?v=13"></script>
 <script src="pic-gnss.js?v=3"></script>
 </body>
