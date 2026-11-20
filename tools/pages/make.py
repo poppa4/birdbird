@@ -54,7 +54,7 @@ TOOLS = [
    [('Type-rating training, limits or procedures. Verify everything in your AFM or POH.', 'Typerating-trening, grenser eller prosedyrer. Kontroller alt i din AFM eller POH.')]]),
  ('flows', ('Flow trainer and its cockpits', 'Flow-treneren og cockpitene'), ['ex'], 'flows.html', [
    [('Fourteen cockpits: NORDAP cockpits with every control named, real flight-deck photos under free licences, or your own picture.', 'Fjorten cockpiter: NORDAP-cockpiter med alle kontroller navngitt, ekte cockpitbilder under frie lisenser, eller ditt eget bilde.'),
-    ('Ready-made flows written from public handbooks and checklists. Each one names its source.', 'Ferdige flows skrevet ut fra offentlige håndbøker og sjekklister. Hver av dem oppgir kilden.')],
+    ('Ready-made flows for all NORDAP cockpits, written from the manufacturer’s procedures in public sources. Each one names its source.', 'Ferdige flows for alle NORDAP-cockpitene, skrevet ut fra produsentens prosedyrer i åpne kilder. Hver av dem oppgir kilden.')],
    [('Drawing your own flow, one layer per pilot, playback, practice from memory and a practice log.', 'Tegne din egen flow, ett lag per pilot, avspilling, øving fra hukommelsen og øvingslogg.'),
     ('A button to report a wrong or missing control name.', 'En knapp for å melde feil eller manglende kontrollnavn.')],
    [('A control is named after the label on the picture you see.', 'En kontroll har navn etter merkingen på bildet du ser.'),
