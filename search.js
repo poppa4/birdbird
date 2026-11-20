@@ -254,6 +254,7 @@ const css=`.nsearch .res{position:absolute;left:var(--gl);right:var(--gr);max-wi
 .nsearch .it b{font-weight:600}.nsearch .it small{color:var(--ink-2);font-size:13px}
 .nsearch .calc{background:var(--wash)}.nsearch .wx code{display:block;font-family:var(--f-mono);font-size:12.5px;line-height:1.4;white-space:pre-wrap;margin:3px 0 0;color:var(--ink)}.nsearch .wx .ag{color:var(--ink-2);font-weight:400}.nsearch .calc .v{font-family:var(--f-mono);font-size:14.5px}
 .nsearch .ai{padding:12px 14px;font-size:14.5px;line-height:1.5;color:var(--ink);border-top:1px solid var(--rule-2)}
+.nsearch .ai{max-height:min(70vh,640px);overflow:auto}.nsearch .ai .aq{color:var(--ink-2);font-size:13.5px;margin-bottom:6px}.nsearch .ai .aa p{margin:0 0 8px}.nsearch .ai .aa ul{margin:0 0 8px;padding-left:20px}.nsearch .ai .gk{font-size:11px;color:var(--ink-3);border:1px solid var(--rule);border-radius:3px;padding:0 4px;margin-left:3px;white-space:nowrap}.nsearch .ai .er{color:var(--warning)}.nsearch .ai .ft{font-size:12px;color:var(--ink-3);margin:8px 0 0;background:none;padding:0}
 .nsearch .ai .lk{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}.nsearch .ai .lk a{font-size:13.5px;border:1px solid var(--rule);border-radius:var(--radius);padding:3px 10px;text-decoration:none;color:var(--accent)}
 .nsearch .sm{font-size:12px;color:var(--ink-3)}
 .nsearch .ol>span{min-width:0}.nsearch .ol .ln{display:block;font-size:13.5px;line-height:1.45;color:var(--ink);margin-top:2px}.nsearch .ol .ln.mu{color:var(--ink-2);font-size:12px}
@@ -349,15 +350,35 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
     res.innerHTML=h+`<div class="aiw"></div>`; res.hidden=false; sel=0; mark(); }
   function mark(){ res.querySelectorAll('.it').forEach(e=>{ const on=+e.dataset.i===sel; e.classList.toggle('on',on); e.id='nsres-'+e.dataset.i; e.setAttribute('role','option'); e.setAttribute('aria-selected',String(on)); if(on) inp.setAttribute('aria-activedescendant',e.id); }); }
   function go(i){ const it=items[i]; if(!it) return; if(it.ai) return ask(); if(it.ext){ window.open(it.u,'_blank','noopener'); return; } if(it.u) location.href=it.u; }
-  inp.addEventListener('input',draw); inp.addEventListener('focus',()=>{ if(inp.value.trim()) draw(); });
+  inp.addEventListener('input',draw); inp.addEventListener('focus',()=>{ const t=turns[turns.length-1]; if(t&&t.q===inp.value.trim()) aiPaint(); else if(inp.value.trim()) draw(); });
   inp.addEventListener('keydown',e=>{ if(e.key==='ArrowDown'){ e.preventDefault(); sel=Math.min(items.length-1,sel+1); mark(); } else if(e.key==='ArrowUp'){ e.preventDefault(); sel=Math.max(0,sel-1); mark(); }
     else if(e.key==='Enter'){ e.preventDefault(); const q=inp.value.trim(); if(!q) return; if(items[0]&&items[0].ol) return go(sel); if(/\?$/.test(q)||/^(hva|hvorfor|hvordan|når|what|why|how|when|can|kan|is|er) /i.test(q)) return ask(); go(sel); } else if(e.key==='Escape'){ res.hidden=true; inp.blur(); } });
   res.addEventListener('click',e=>{ const it=e.target.closest('.it'); if(!it) return; const i=+it.dataset.i; if(items[i]&&items[i].ai){ e.preventDefault(); ask(); } else if(it.tagName!=='A'&&items[i]&&items[i].u){ location.href=items[i].u; } });
   document.addEventListener('pointerdown',e=>{ if(!box.contains(e.target)) res.hidden=true; });
   document.addEventListener('keydown',e=>{ if(e.key==='/'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); inp.focus(); } });
-  function ask(){ const q=inp.value.trim(); if(!q) return; res.hidden=true;
-    if(window.FI_ASK&&/fi\.html$/.test(location.pathname)){ inp.value=''; window.FI_ASK(q); return; }
-    location.href='fi.html?q='+encodeURIComponent(q.slice(0,600))+'#aircraft'; }
+  /* Flight Intelligence answers right here in the box (fiq.js: the same prompt as the front-page box, /api/atc);
+     on fi.html the question goes into the page's own conversation */
+  const ld=src=>new Promise((ok,ko)=>{ if(document.querySelector(`script[src="${src}"]`)) return ok(); const sc=document.createElement('script'); sc.src=src; sc.onload=ok; sc.onerror=ko; document.head.appendChild(sc); });
+  let fiP=null; const loadFi=()=>fiP||(fiP=Promise.all([window.NAI?0:ld('ai.js?v=8'),window.EASA?0:ld('easa.js?v=8'),window.THEORY?0:ld('theory.js?v=6'),window.FIQ?0:ld('fiq.js?v=1')]).catch(()=>{}));
+  const turns=[]; let aiBusy=false;
+  function aiPaint(){ const t=turns[turns.length-1]; if(!t) return; items=[{u:'fi.html?q='+encodeURIComponent(t.q.slice(0,600))}];
+    const body=t.err?`<p class="er">${esc(t.err)}</p>`:t.a==null?`<p class="ft">${L({en:'Flight Intelligence is thinking…',no:'Flight Intelligence tenker …'})}</p>`:FIQ.md(t.a,t.list,t.th,L({en:'general knowledge',no:'generell kunnskap'}));
+    res.innerHTML=`<div class="ai" aria-live="polite"><div class="aq"><b>${esc(t.q)}</b></div><div class="aa">${body}</div>${t.a!=null||t.err?`<div class="lk"><a href="fi.html?q=${encodeURIComponent(t.q.slice(0,600))}">${L({en:'Continue in Flight Intelligence →',no:'Fortsett i Flight Intelligence →'})}</a><a href="fi.html#docs">${L({en:'Answer from my own AFM and SOP →',no:'Svar fra min egen AFM og SOP →'})}</a></div><p class="ft">${L({en:'Ask a follow-up in the search box. AI can be wrong: check rules in the current EASA texts.',no:'Still oppfølgingsspørsmål i søkefeltet. KI kan ta feil: sjekk regler i gjeldende EASA-tekster.'})}</p>`:''}</div>`;
+    res.hidden=false; sel=0; }
+  async function ask(){ const q=inp.value.trim(); if(!q) return;
+    if(window.FI_ASK&&/fi\.html$/.test(location.pathname)){ res.hidden=true; inp.value=''; window.FI_ASK(q); return; }
+    if(aiBusy) return; aiBusy=true;
+    const t={q:q.slice(0,1500),a:null,list:[],th:[]}; turns.push(t); if(turns.length>6) turns.shift(); aiPaint();
+    try{ await loadFi();
+      if(!window.FIQ||!window.NAI||!(await NAI.ready)) t.err=L({en:'Flight Intelligence is not available right now.',no:'Flight Intelligence er ikke tilgjengelig akkurat nå.'});
+      else { const pt=turns.slice(0,-1).reverse().find(x=>x.a), ctx=pt&&q.length<160?q+' '+pt.q:q;
+        const own=EASA.isRules(q)?EASA.search(q,4):[], more=ctx!==q&&EASA.isRules(ctx)?EASA.search(ctx,4):[];
+        t.list=[...own,...more.filter(x=>!own.includes(x))].slice(0,5); t.th=window.THEORY?THEORY.search(ctx,3):[];
+        t.a=String(await NAI.text(FIQ.prompt(q,t.list,false,t.th,turns,'search bar'),{tier:'default'})||'').split(/\n-{3,}\s*\n?/)[0];
+        if(!t.a.trim()){ t.a=null; t.err=NAI.errText({code:'other'}); } } }
+    catch(e){ t.err=window.NAI?NAI.errText(e):L({en:'Flight Intelligence is not available right now.',no:'Flight Intelligence er ikke tilgjengelig akkurat nå.'}); }
+    aiBusy=false; if(turns[turns.length-1]===t&&inp.value.trim()===q) aiPaint(); }
+  inp.addEventListener('focus',()=>{ if(location.protocol.startsWith('http')) loadFi(); },{once:true});
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
 window.NSEARCH={calc,score};
