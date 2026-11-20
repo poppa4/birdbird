@@ -26,6 +26,7 @@ const IDX=[
  P('propeller.html#single','Asymmetric thrust','Asymmetrisk skyv','asymmetric thrust asymmetrisk skyv','Engine failure and minimum control speeds','Motorstans og minste kontrollfarter'),
  P('propeller.html#lt','Critical engine on a light twin','Kritisk motor på lett tomotors','critical engine kritisk motor p-factor p-faktor past vmca light twin lett tomotors','Engine failure and minimum control speeds','Motorstans og minste kontrollfarter'),
  P('propeller.html#pwing','Propeller as a wing','Propellen som vinge','propeller blade angle bladvinkel constant speed konstant turtall feather fløying fjæring windmilling vindmølling','Engine failure and minimum control speeds','Motorstans og minste kontrollfarter'),
+P('outlook.html','Forecast outlook','Værutsikter','forecast prognose outlook værutsikter weather vær været cloud base skybase ceiling skydekke tops topper freezing level frysenivå icing ising tomorrow i morgen monday mandag models modeller ecmwf icon harmonie gfs met norway','Cloud base, ceiling, wind and icing up to 7 days ahead','Skybase, ceiling, vind og ising opptil 7 dager fram'),
 P('sun.html','Sun and twilight','Sol og tussmørke','sunrise sunset soloppgang solnedgang civil twilight sivilt tussmørke nautical astronomical night natt easa daylight dagslys mørketid midnattssol polar night midnight sun','Flight planning','Flyplanlegging'),
 P('forces.html','Forces in flight','Krefter i flyging','four forces fire krefter lift weight thrust drag løft vekt skyvekraft motstand climb stigning glide glid turn sving load factor lastfaktor vx vy rate one','Aerodynamics','Aerodynamikk'),
 P('propeller.html#a320','Failure after V1','Motorstans etter V1','failure after v1 motorstans etter v1','Engine failure and minimum control speeds','Motorstans og minste kontrollfarter'),
@@ -254,7 +255,10 @@ const css=`.nsearch .res{position:absolute;left:var(--gl);right:var(--gr);max-wi
 .nsearch .calc{background:var(--wash)}.nsearch .wx code{display:block;font-family:var(--f-mono);font-size:12.5px;line-height:1.4;white-space:pre-wrap;margin:3px 0 0;color:var(--ink)}.nsearch .wx .ag{color:var(--ink-2);font-weight:400}.nsearch .calc .v{font-family:var(--f-mono);font-size:14.5px}
 .nsearch .ai{padding:12px 14px;font-size:14.5px;line-height:1.5;color:var(--ink);border-top:1px solid var(--rule-2)}
 .nsearch .ai .lk{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}.nsearch .ai .lk a{font-size:13.5px;border:1px solid var(--rule);border-radius:var(--radius);padding:3px 10px;text-decoration:none;color:var(--accent)}
-.nsearch .sm{font-size:12px;color:var(--ink-3)}`;
+.nsearch .sm{font-size:12px;color:var(--ink-3)}
+.nsearch .ol>span{min-width:0}.nsearch .ol .ln{display:block;font-size:13.5px;line-height:1.45;color:var(--ink);margin-top:2px}.nsearch .ol .ln.mu{color:var(--ink-2);font-size:12px}
+.nsearch .olb{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:3px;font:600 11.5px/1.6 var(--f-mono,ui-monospace,monospace);color:#fff;vertical-align:1px}
+.nsearch .olb.vfr{background:#1e8e3e}.nsearch .olb.near{background:#b77800}.nsearch .olb.svfr{background:#c2410c}.nsearch .olb.ifr{background:#d93025}`;
 const ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>';
 const EX={en:['crosswind 270/15 rwy 24','ENTO','alternates NCO','3° 120 kt','holding entry','elev 1500 qnh 1003 t 25','what is an occlusion?'],no:['sidevind 270/15 bane 24','ENTO','alternativer NCO','3° 120 kt','holding entry','elev 1500 qnh 1003 t 25','hva er en okklusjon?']};
 /* NOTAM: the official source per state lives in icaobrief.js (ICB.notam), shared with Route Explorer */
@@ -265,6 +269,7 @@ const loadAp=()=>apP||(apP=fetch('data/nav-eu.json').then(r=>r.json()).then(d=>{
 /* sun and twilight (sun.js, computed here) for the aerodrome; loaded the first time an ICAO code is typed */
 /* "now at the aerodrome" (icaobrief.js): SERA status from the METAR, SIGMETs, freezing level and a radar picture */
 let icbP=null; const loadIcb=()=>icbP||(icbP=new Promise(ok=>{ if(window.ICB) return ok(); const sc=document.createElement('script'); sc.src='icaobrief.js?v=7'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
+let olP=null; const loadOl=()=>olP||(olP=new Promise(ok=>{ if(window.OUT) return ok(); const sc=document.createElement('script'); sc.src='outlook.js?v=1'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
 let sunP=null; const loadSun=()=>sunP||(sunP=new Promise(ok=>{ if(window.SUN) return ok(); const sc=document.createElement('script'); sc.src='sun.js?v=1'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); }));
 function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.dataset.w) return; const head=document.querySelector('header.site'); if(!head){ setTimeout(mount,50); return; }
   const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
@@ -295,10 +300,37 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
       need.forEach(id=>{ const st=j.stations&&j.stations[id]||{}; WXC[id]={at:Date.now(),m:st.metar&&st.metar.raw||'',mt:st.metar&&st.metar.obsTime,t:st.taf&&st.taf.raw||'',n:st.name||''}; }); }
     catch(e){ need.forEach(id=>WXC[id]={at:Date.now(),err:1}); }
     if(!res.hidden) draw(); }
+  /* forecast outlook: an aerodrome and a time ("ENTO mandag kl 10", "ENGM tomorrow 14z") answers here from /api/outlook (outlook.js) */
+  const OLHINT=/\d|vær|weather|forecast|prognose|morgen|morra|tomorrow|today|i ?dag|mandag|tirsdag|onsdag|torsdag|fredag|lørdag|søndag|monday|tuesday|wednesday|thursday|friday|saturday|sunday/i;
+  const OLC={};
+  function olGet(q){ if(q.length<6||!OLHINT.test(q)||!/^https?:/.test(location.protocol)) return null;
+    if(!window.OUT||!window.SUN||!APN){ Promise.all([loadOl(),loadSun(),loadAp()]).then(()=>{ if(inp.value.trim()===q&&!res.hidden) draw(); }); return null; }
+    const r=OUT.query(q,c=>!!APN[c],Date.now(),SUN.tzOf); if(!r) return null;
+    let ic=r.icao, last=false; if(!ic){ if(!r.intent) return null; try{ ic=localStorage.getItem('bb-ol-icao')||localStorage.getItem('bb-sun-icao'); }catch(e){} last=true; }
+    if(!ic||!APN[ic]) return {hint:1};
+    const tz=SUN.tzOf(ic), w=r.icao?r.when:OUT.parseWhen(q,Date.now(),tz); if(!w) return null;
+    return {ic,ap:APN[ic],ms:w.ms,tz,last}; }
+  function olRow(o,i){ if(o.hint) return `<div class="it ol" data-i="${i}"><span><b>${L({en:'Forecast outlook',no:'Værutsikter'})}</b><span class="ln mu">${L({en:"Add the aerodrome's ICAO code, e.g. “ENTO monday 10”.",no:'Legg til ICAO-koden til flyplassen, f.eks. «ENTO mandag kl 10».'})}</span></span></div>`;
+    const t=new Date(o.ms).toISOString().slice(0,13)+':00Z', u=`outlook.html?icao=${o.ic}&t=${t}`, k=o.ic+'|'+t;
+    const loc=no()?'nb-NO':'en-GB', when=new Intl.DateTimeFormat(loc,{weekday:'short',day:'numeric',month:'short',timeZone:o.tz||'UTC'}).format(new Date(o.ms))+' '+SUN.hm(new Date(o.ms),o.tz)+(o.tz?' '+L({en:'local',no:'lokal'})+' ('+SUN.hm(new Date(o.ms),'UTC')+'Z)':'Z');
+    let body='', badge='';
+    const far=o.ms>Date.now()+7*864e5, past=o.ms<Date.now()-2*36e5;
+    if(far) body=`<span class="ln mu">${L({en:'More than 7 days ahead: too uncertain to estimate cloud heights.',no:'Mer enn 7 dager fram: for usikkert til å anslå skyhøyder.'})}</span>`;
+    else if(past) body=`<span class="ln mu">${L({en:'That hour has passed: see the METAR.',no:'Den timen er passert: se METAR-en.'})}</span>`;
+    else { const c=OLC[k];
+      if(!c){ OLC[k]={busy:1}; OUT.get(o.ap,o.ic,o.ms).then(j=>{ OLC[k]={j}; if(!res.hidden) draw(); }); }
+      if(!c||c.busy) body=`<span class="ln mu">${L({en:'Reading the weather models…',no:'Leser værmodellene …'})}</span>`;
+      else if(!c.j||!c.j.ok) body=`<span class="ln mu">${esc((c.j&&c.j.message)||L({en:'The weather models could not be read right now.',no:'Værmodellene kunne ikke leses akkurat nå.'}))}</span>`;
+      else { const cs=c.j.hours[c.j.tIdx].cons, wd=OUT.words(cs,L,{elevFt:o.ap.el});
+        badge=`<span class="olb ${cs.sera==='vfr'&&cs.near?'near':cs.sera}">${esc(wd.status)}</span>`;
+        body=wd.lines.slice(0,4).map(x=>`<span class="ln">${esc(x)}</span>`).join('')+`<span class="ln mu">${L({en:'Model estimate, not an official forecast',no:'Modellestimat, ikke en offisiell prognose'})} · ${L({en:'confidence',no:'sikkerhet'})} ${esc(wd.conf)}${c.j.taf&&c.j.taf.covers?' · '+L({en:'the TAF covers this hour: plan with the TAF',no:'TAF-en dekker denne timen: planlegg etter TAF-en'}):''}</span>`; } }
+    return `<a class="it ol" data-i="${i}" href="${u}"><span><b>${esc(o.ic)} · ${esc(when)}</b>${badge}${o.last?` <small>(${L({en:'last aerodrome',no:'sist brukte flyplass'})})</small>`:''}${body}</span><small>${L({en:'Full analysis',no:'Full analyse'})} →</small></a>`; }
   function draw(){ const q=inp.value.trim(); if(!q){ res.hidden=true; return; }
     const w=/^https?:/.test(location.protocol)?WXQ(q):null, wr=w?wxRow(w):'';
     if(w){ clearTimeout(wxT); wxT=setTimeout(()=>wxGet(w.ids),250); if(!window.ICB) loadIcb().then(()=>{ if(!res.hidden) draw(); }); }
-    const c=wr?null:calc(q), hits=score(q).filter(x=>!c&&!wr||x.s>=3); items=[]; let h='';
+    const ol=olGet(q);
+    const c=wr||ol?null:calc(q), hits=score(q).filter(x=>!c&&!wr&&!ol||x.s>=3); items=[]; let h='';
+    if(ol){ items.push(ol.hint?{hint:1}:{u:'outlook.html?icao='+ol.ic+'&t='+new Date(ol.ms).toISOString().slice(0,13)+':00Z',ol:1}); h+=olRow(ol,0); }
     if(wr){ items.push({u:'weather.html?ids='+w.ids.join(',')+(w.kind==='TAF'?'&k=T':'')}); h+=wr; }
     const ic=w&&w.forced?null:icaoOf(q); if(ic){ const ap=APN&&APN[ic], nm=ap&&ap.n; if(!APN) loadAp().then(()=>{ if(icaoOf(inp.value.trim())===ic) draw(); }); if(!window.SUN) loadSun().then(()=>{ if(icaoOf(inp.value.trim())===ic) draw(); });
       const again=()=>{ if(icaoOf(inp.value.trim())===ic&&!res.hidden) draw(); }; if(!window.ICB) loadIcb().then(again); else if(ap) ICB.ensure(ic,ap,again);
@@ -309,6 +341,7 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
         const body= D.civil[0]&&D.civil[1] ? `${L({en:'Civil twilight from',no:'Sivilt tussmørke fra'})} ${t(D.civil[0])} · ${L({en:'sunrise',no:'soloppgang'})} ${t(D.rise)} · ${L({en:'sunset',no:'solnedgang'})} ${t(D.set)} · ${L({en:'night (EASA) from',no:'natt (EASA) fra'})} <b>${t(D.civil[1])}</b>`
           : D.allDayLight.civil ? L({en:'No night today: civil twilight or sun all night',no:'Ingen natt i dag: sivilt tussmørke eller sol hele natta'}) : L({en:'Night all day (polar night)',no:'Natt hele døgnet (mørketid)'});
         h+=`<a class="it" data-i="${items.length-1}" href="${su}"><span><b>${L({en:'Sun and twilight today',no:'Sol og tussmørke i dag'})}</b> <small>${tz?L({en:'local time ',no:'lokal tid '})+SUN.offset(D.noon,tz):'UTC'}</small><br><small>${body}</small></span><small>sun</small></a>`; }
+      { const uo='outlook.html?icao='+ic; items.push({u:uo}); h+=`<a class="it" data-i="${items.length-1}" href="${uo}"><span><b>${L({en:'Forecast outlook',no:'Værutsikter'})}</b><br><small>${L({en:'Cloud base, ceiling, wind and icing for any hour up to 7 days ahead. Or type e.g. “'+ic+' tomorrow 10”',no:'Skybase, ceiling, vind og ising for en hvilken som helst time opptil 7 dager fram. Eller skriv f.eks. «'+ic+' i morgen kl 10»'})}</small></span><small>outlook</small></a>`; }
       if(ap&&window.ICB){ const wc=WXC[ic], met= wc&&!wc.busy&&!wc.err ? (wc.m||'') : wc&&wc.err ? '' : undefined; items.push({u:'weather.html?ids='+ic}); h+=`<a class="it icbrow" data-i="${items.length-1}" href="weather.html?ids=${ic}">${ICB.html(ic,met,L,ap)}</a>`; }}
     if(c){ items.push({u:c.u}); h+=`<div class="it calc" data-i="0"><span><b>${esc(c.h)}</b><br><span class="v">${esc(c.v)}</span></span>${c.u?`<small>${L({en:'Open the tool',no:'Åpne verktøyet'})} →</small>`:''}</div>`; }
     hits.forEach(({e})=>{ items.push({u:e.u}); h+=`<a class="it" data-i="${items.length-1}" href="${e.u}"><span><b>${esc(L(e.t))}</b><br><small>${esc(L(e.d))}</small></span><small>${e.u.split(/[?#]/)[0].replace('.html','')}</small></a>`; });
@@ -318,7 +351,7 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
   function go(i){ const it=items[i]; if(!it) return; if(it.ai) return ask(); if(it.ext){ window.open(it.u,'_blank','noopener'); return; } if(it.u) location.href=it.u; }
   inp.addEventListener('input',draw); inp.addEventListener('focus',()=>{ if(inp.value.trim()) draw(); });
   inp.addEventListener('keydown',e=>{ if(e.key==='ArrowDown'){ e.preventDefault(); sel=Math.min(items.length-1,sel+1); mark(); } else if(e.key==='ArrowUp'){ e.preventDefault(); sel=Math.max(0,sel-1); mark(); }
-    else if(e.key==='Enter'){ e.preventDefault(); const q=inp.value.trim(); if(!q) return; if(/\?$/.test(q)||/^(hva|hvorfor|hvordan|når|what|why|how|when|can|kan|is|er) /i.test(q)) return ask(); go(sel); } else if(e.key==='Escape'){ res.hidden=true; inp.blur(); } });
+    else if(e.key==='Enter'){ e.preventDefault(); const q=inp.value.trim(); if(!q) return; if(items[0]&&items[0].ol) return go(sel); if(/\?$/.test(q)||/^(hva|hvorfor|hvordan|når|what|why|how|when|can|kan|is|er) /i.test(q)) return ask(); go(sel); } else if(e.key==='Escape'){ res.hidden=true; inp.blur(); } });
   res.addEventListener('click',e=>{ const it=e.target.closest('.it'); if(!it) return; const i=+it.dataset.i; if(items[i]&&items[i].ai){ e.preventDefault(); ask(); } else if(it.tagName!=='A'&&items[i]&&items[i].u){ location.href=items[i].u; } });
   document.addEventListener('pointerdown',e=>{ if(!box.contains(e.target)) res.hidden=true; });
   document.addEventListener('keydown',e=>{ if(e.key==='/'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); inp.focus(); } });
