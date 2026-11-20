@@ -654,6 +654,23 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
   #trainer[data-run="1"] .steps,#trainer[data-run="1"] #helpK,#trainer[data-run="1"] #helpSeg,#trainer[data-run="1"] #setBtn,#trainer[data-run="1"] #keysBtn{display:none!important}
   #trainer[data-run="1"] .sbar{row-gap:6px}
 }
+/* two tracks on one page: the basics (anyone) and the refresher (pilots) */
+.modesw{display:flex;gap:6px;margin:14px 0 4px;flex-wrap:wrap}
+.modesw button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:1px;padding:9px 16px 10px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--sheet);min-width:210px}
+.modesw button b{font-size:15.5px;font-weight:650;color:var(--ink)}
+.modesw button span{font-size:13px;color:var(--ink-2)}
+.modesw button:hover{border-color:var(--ink-3)}
+.modesw button[aria-selected=true]{border-color:var(--ink);background:var(--ink)}
+.modesw button[aria-selected=true] b{color:#fff}.modesw button[aria-selected=true] span{color:#C9D2D8}
+.modesw button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+body.mode-refresh #pathSec,body.mode-refresh #heroFig,body.mode-refresh #promise{display:none}
+body:not(.mode-refresh) #chkSec{display:none}
+body.mode-refresh .ifr-head{grid-template-columns:minmax(0,1fr)}
+body.mode-refresh #chkSec{border-top:0;margin-top:12px;padding-top:0}
+.chk-skip{display:none!important}
+body.mode-refresh .chk-go{display:none}
+body.mode-refresh .chk .chk-box{grid-template-columns:minmax(0,1fr)}
+@media (max-width:560px){.modesw button{min-width:0;flex:1 1 140px;padding:8px 12px}}
 </style>
 </head>
 <body data-title="IFR trainer">
@@ -664,6 +681,7 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
     <div class="brand">
       <div class="eyebrow">NORDAP · Training</div>
       <h1>IFR trainer</h1>
+      <div class="modesw" id="modeSw" role="tablist" aria-label="Who is it for"></div>
       <p class="lead2" id="lead">Learn one instrument procedure at a time. An instructor on screen tells you the next step, and the replay shows your first mistake.</p>
       <ol class="promise" id="promise"></ol>
       <div class="hero-cta" id="heroCta"></div>
@@ -777,6 +795,6 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
 <script src="navgauges.js?v=5"></script>
 <script src="ifrcore.js?v=4"></script>
 <script src="glossary.js?v=4"></script>
-<script src="ifr.js?v=9"></script>
+<script src="ifr.js?v=11"></script>
 </body>
 </html>

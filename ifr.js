@@ -773,15 +773,19 @@ const difHTML=d=>`<span class="dif" aria-hidden="true"><i class="on"></i><i clas
 function progHTML(id){ const p=passed(id), bs=best(id); if(bs===null) return `<span class="pg none">${tx('Not flown yet','Ikke fløyet ennå')}</span>`;
   return `<span class="pg"><span class="pips" role="img" aria-label="${esc(tx(`${p} of 4 levels passed`,`${p} av 4 nivåer bestått`))}">${[1,2,3,4].map(k=>`<i class="${k<=p?'on':''}"></i>`).join('')}</span>${tx('Best','Beste')} ${bs}</span>`; }
 function renderHero(){ const L0=PROG.last&&I.ITEM[PROG.last.item]?PROG.last:null, rec=recommended(), n=CORE.indexOf(rec)+1;
-  el('lead').textContent=tx('Learn one instrument procedure at a time. An instructor on screen tells you the next step, and the replay shows your first mistake.','Lær én instrumentprosedyre om gangen. En instruktør på skjermen sier neste steg, og reprisen viser den første feilen din.');
+  if(MODE==='refresh'){ el('lead').textContent=tx('For pilots who want to stay sharp. Fly the procedures the way a check is flown, straight into the cockpit with no walk-through, and see exactly where you are rusty.','For piloter som vil holde seg skarpe. Fly prosedyrene slik en sjekk flys, rett inn i cockpit uten gjennomgang, og se nøyaktig hvor du er rusten.');
+    el('heroCta').innerHTML=`<button class="btn2 pri lg" type="button" id="rcGo">${tx('Start the refresher check','Start oppfriskningssjekken')}</button>`+(L0?`<button class="btn2 lg" type="button" id="rcCont"><span class="k">${tx('Continue','Fortsett')}</span>${esc(itemName(L0.item))}</button>`:'')+`<a class="btn2 q lg" href="#all" id="toAll">${tx('Practise one procedure','Øv på én prosedyre')}</a>`;
+    el('rcGo').onclick=startCheck; if(el('rcCont')) el('rcCont').onclick=()=>{ const l=PROG.last; openItem(l.item,{p:l.custom?l.p:null,custom:l.custom,lv:l.lv,area:l.area,seed:l.custom?l.seed:undefined,step:'fly'}); };
+    el('toAll').onclick=e=>{ e.preventDefault(); el('all').scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'}); };
+    return; }
+  el('lead').textContent=tx('Instrument flying means flying by the instruments alone, without looking outside. Learn it one small step at a time: an instructor on screen shows you what to do next, in plain words, and the replay shows where it went wrong.','Instrumentflyging betyr å fly bare etter instrumentene, uten å se ut. Lær det ett lite steg om gangen: en instruktør på skjermen viser deg hva du skal gjøre, med vanlige ord, og reprisen viser hvor det gikk galt.');
   el('promise').innerHTML=[[t2('Learn it','Lær den'),t2('A short animated walk-through in plain words.','En kort, animert gjennomgang med vanlige ord.')],[t2('Fly it','Fly den'),t2('The instructor tells you the next step, and why.','Instruktøren sier neste steg, og hvorfor.')],[t2('See it','Se den'),t2('Your first mistake, marked on the replay.','Den første feilen din, markert i reprisen.')]]
     .map(([a,b],i)=>`<li><i>${i+1}</i><b>${esc(L(a))}</b><span>${esc(L(b))}</span></li>`).join('');
   const first=!L0&&!Object.keys(PROG.ex).length;
   el('heroCta').innerHTML=(L0?`<button class="btn2 pri lg" type="button" data-go="continue"><span class="k">${tx('Continue','Fortsett')}</span>${esc(itemName(L0.item))}${L0.custom?` <small>${tx('(your setup)','(ditt oppsett)')}</small>`:''}</button>`:'')+
     ((!L0||L0.item!==rec)?`<button class="btn2 ${L0?'':'pri'} lg" type="button" data-go="${rec}"><span class="k">${first?tx('Start with step 1','Start med steg 1'):n>0?tx(`Next on the path: step ${n}`,`Neste på veien: steg ${n}`):tx('Next for you','Neste for deg')}</span>${esc(itemName(rec))}</button>`:'')+
-    `<button class="btn2 lg" type="button" id="toChk"><span class="k">${tx('Instrument rated?','Har du IR?')}</span>${tx('Refresher check','Oppfriskningssjekk')}</button><a class="btn2 q lg" href="#all" id="toAll">${tx(`All ${I.ITEMS.length} exercises`,`Alle ${I.ITEMS.length} øvelsene`)}</a>`;
+    `<a class="btn2 q lg" href="#all" id="toAll">${tx(`All ${I.ITEMS.length} exercises`,`Alle ${I.ITEMS.length} øvelsene`)}</a>`;
   el('heroCta').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ if(b.dataset.go==='continue'){ const l=PROG.last; openItem(l.item,{p:l.custom?l.p:null,custom:l.custom,lv:l.lv,area:l.area,seed:l.custom?l.seed:undefined,step:'fly'}); } else openItem(b.dataset.go,{}); });
-  el('toChk').onclick=()=>el('chkSec').scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'});
   el('toAll').onclick=e=>{ e.preventDefault(); el('all').scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'}); };
   el('figCap').innerHTML=`<b>${tx('The guided screen','Den veiledede skjermen')}</b><span>${tx('Here the instructor flies a holding entry. When you fly, the line at the top tells you what to do next.','Her flyr instruktøren en inngang til holding. Når du flyr selv, sier linjen øverst hva du skal gjøre nå.')}</span>`;
   heroText(true); }
@@ -829,11 +833,21 @@ function renderCat(){ const rec=recommended(), box=el('groups'), res=el('catList
   wireRows(box); }
 function wireRows(root){ root.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>openItem(b.dataset.start,{}));
   root.querySelectorAll('[data-setup]').forEach(b=>b.onclick=()=>{ bldSet(b.dataset.setup); openBld(); }); }
-function renderHome(){ renderHero(); renderCheck(); renderPath(); renderCat(); }
+/* ---------- two tracks: 'basics' for anyone new to instrument flying, 'refresh' for pilots ---------- */
+let MODE=(()=>{ const q=new URLSearchParams(location.search).get('m'); return q==='refresh'||q==='basics'? q : (PROG.mode==='refresh'?'refresh':'basics'); })();
+function setMode(m,user){ MODE=m; PROG.mode=m; if(user){ S.help= m==='refresh'? 'off' : 'guided'; PROG.help=S.help; } save(PK,PROG);
+  const u=new URL(location.href); u.searchParams.set('m',m); history.replaceState(null,'',u.pathname+u.search+u.hash);
+  document.body.classList.toggle('mode-refresh',m==='refresh'); if(!document.body.classList.contains('v-trainer')) renderHome(); }
+function renderModeSw(){ const b=el('modeSw'); if(!b) return;
+  b.innerHTML=[['basics',t2('Learn the basics','Lær det grunnleggende'),t2('New to instrument flying','Ny i instrumentflyging')],['refresh',t2('Refresher for pilots','Oppfriskning for piloter'),t2('You have flown IFR before','Du har flydd IFR før')]]
+    .map(([k,a,c])=>`<button type="button" role="tab" data-m="${k}" aria-selected="${MODE===k}"><b>${esc(L(a))}</b><span>${esc(L(c))}</span></button>`).join('');
+  b.querySelectorAll('[data-m]').forEach(x=>x.onclick=()=>{ if(x.dataset.m!==MODE) setMode(x.dataset.m,true); }); }
+document.body.classList.toggle('mode-refresh',MODE==='refresh');
+function renderHome(){ renderModeSw(); renderHero(); renderCheck(); renderPath(); renderCat(); }
 /* ---------- refresher check: for instrument-rated pilots. Six core procedures in a row, map hidden, wind, no help; one score at the end ---------- */
 const CHECK=['trackIn','intIn','holdEntry','hold','dme','ils'], CHK_LV=3;
 function renderCheck(){
-  el('chkH').textContent=tx('Instrument rated? Take the refresher check','Har du instrumentrettighet? Ta oppfriskningssjekken');
+  el('chkH').textContent=tx('What the refresher check covers','Hva oppfriskningssjekken dekker');
   el('chkSub').textContent=tx('Six core procedures in a row, flown the way a check is flown: map hidden, wind, no instructor. No walk-through first. Each is scored against the IR skill test limits (±100 ft, ±5°, half scale), and you get one result at the end showing what to brush up on. About 30 minutes.',
    'Seks kjerneprosedyrer etter hverandre, flydd slik en sjekk flys: skjult kart, vind, ingen instruktør. Ingen gjennomgang først. Hver blir vurdert mot grensene i IR-ferdighetsprøven (±100 ft, ±5°, halvt utslag), og du får ett resultat til slutt som viser hva du bør friske opp. Omtrent 30 minutter.');
   el('chkList').innerHTML=CHECK.map(id=>`<li>${esc(itemName(id))}</li>`).join('');
@@ -1001,12 +1015,12 @@ function drawCoast(m,g,Ar){ g.fillStyle='#16242e'; g.strokeStyle='rgba(150,182,2
 /* ---------- views: home and trainer ---------- */
 function openItem(id,o){ o=o||{}; const it=I.ITEM[id]; if(!it) return; closeBld(); glClose();
   S.item=id; S.ex=it.ex; S.p=Object.assign({},o.p||it.p); S.custom=!!o.custom;
-  S.lv=o.lv||clamp(passed(id)+1,1,4); S.area=o.area&&allowed(it.ex,o.area)?o.area:(allowed(it.ex,S.area)?S.area:'practice');
-  if(o.help) S.help=o.help; S.instWant=o.inst||null; S.inst=null;
+  S.lv=o.lv||clamp(Math.max(MODE==='refresh'?2:1,passed(id)+1),1,4); S.area=o.area&&allowed(it.ex,o.area)?o.area:(allowed(it.ex,S.area)?S.area:'practice');
+  if(o.help) S.help=o.help; else if(MODE==='refresh'&&S.help==='guided') S.help='off'; S.instWant=o.inst||null; S.inst=null;
   if(A().real) map.setRegion(S.area); else map.region=null;
   document.body.classList.add('v-trainer');
   setup(o.seed||Math.floor(Math.random()*9000)+1); if((location.hash||'').slice(1)!==id) history.pushState(null,'','#'+id);
-  S.uStep=0; go(o.step||(PROG.skipU?'fly':'understand')); requestAnimationFrame(()=>{ el('trainer').scrollIntoView({block:'start'}); sizeAll(); }); }
+  S.uStep=0; go(o.step||(MODE==='refresh'||PROG.skipU?'fly':'understand')); requestAnimationFrame(()=>{ el('trainer').scrollIntoView({block:'start'}); sizeAll(); }); }
 function showHome(push){ if(S.run){ S.run=false; S.started=false; } if(S.check){ const c=S.check; S.check=null; S.help=c.help0||S.help; PROG.help=S.help; save(PK,PROG); } document.body.classList.remove('v-trainer'); closePops();
   if(push&&location.hash) history.pushState(null,'',location.pathname+location.search); renderHome(); scrollTo(0,0); }
 function route(){ const h=decodeURIComponent((location.hash||'').slice(1)); if(I.ITEM[h]){ if(!(document.body.classList.contains('v-trainer')&&S.item===h)) openItem(h,{}); } else if(document.body.classList.contains('v-trainer')) showHome(false); }
