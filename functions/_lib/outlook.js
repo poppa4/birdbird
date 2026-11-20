@@ -327,14 +327,16 @@ export async function buildOutlook(p, deps) {
 
   const leadH = Math.round((T - now) / H);
   const out = hours.map((h, hi) => ({ t: h, cons: perHour[hi].length ? consensus(perHour[hi], elevFt, leadH + hi - tIdx) : null }));
-  /* the members for the hour asked for, short, for the model table */
-  const members = perHour[tIdx].map(m => { const s = summarise(m.x, elevFt); const x = m.x;
+  /* the members of each hour, short, for the profile and the model table */
+  const short = list => list.map(m => { const s = summarise(m.x, elevFt); const x = m.x;
     return { id: m.id, ceil: s.ceil == null ? null : r100(s.ceil), lowest: s.lowest == null ? null : r100(s.lowest), lowestAmt: s.lowestAmt, est: (x.layers[0] || {}).est || null,
       vis: x.vis == null ? null : Math.round(x.vis / 100) * 100, wind: { dir: x.wind.dir == null ? null : Math.round(x.wind.dir / 10) * 10 || 360, kt: x.wind.kt == null ? null : Math.round(x.wind.kt), gust: x.wind.gust == null ? null : Math.round(x.wind.gust) },
       frz: x.frz == null ? null : r100(x.frz), precip: x.precip == null ? null : Math.round(x.precip * 10) / 10, cape: x.cape == null ? null : Math.round(x.cape), thunder: x.thunder ?? null,
       t2: x.t2 == null ? null : Math.round(x.t2), td: x.td == null ? null : Math.round(x.td),
-      layers: x.layers.map(l => ({ base: Math.max(0, r100(l.base - elevFt)), top: Math.max(0, r100(l.top - elevFt)), amt: l.amt })), sera: sera(s.ceil, x.vis ?? (out[tIdx].cons && out[tIdx].cons.vis)), native: !!m.native };
+      layers: x.layers.map(l => ({ base: Math.max(0, r100(l.base - elevFt)), top: Math.max(0, r100(l.top - elevFt)), amt: l.amt })), sera: null, native: !!m.native };
   });
+  out.forEach((h, hi) => { h.members = short(perHour[hi]); h.members.forEach(m => { m.sera = sera(m.ceil, m.vis ?? (h.cons && h.cons.vis)); }); });
+  const members = out[tIdx].members;
   /* the official forecast, when it covers the hour */
   let taf = null, metar = null;
   const st = wx.status === 200 && wx.j && wx.j.stations && wx.j.stations[icao];

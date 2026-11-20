@@ -116,9 +116,9 @@ function words(c, L, o) {
   const ly = c.layers || [];
   if (!ly.length) lines.push(L({ en: 'No significant cloud below 20 000 ft.', no: 'Ingen vesentlige skyer under 20 000 ft.' }));
   else {
-    const a = ly[0], first = `${L(AMT[a.amt] || AMT.SCT)}`;
+    const a = ly[0], first = L(AMT[a.amt] || AMT.SCT);
     let t = a.base <= 100 ? L({ en: `Cloud on the ground (fog or very low stratus), tops about ${sp(a.top)} ft`, no: `Sky helt ned (tåke eller svært lav stratus), toppene rundt ${sp(a.top)} ft` })
-      : L({ en: `${first[0].toUpperCase() + first.slice(1)} from about ${sp(a.base)} ft, tops about ${sp(a.top)} ft`, no: `${first[0].toUpperCase() + first.slice(1)} fra rundt ${sp(a.base)} ft, toppene rundt ${sp(a.top)} ft` });
+      : L({ en: `Cloud base about ${sp(a.base)} ft (${first}), tops about ${sp(a.top)} ft`, no: `Skybase rundt ${sp(a.base)} ft (${first}), toppene rundt ${sp(a.top)} ft` });
     if (c.ceil != null && c.ceil > a.base + 200) t += L({ en: `; ceiling about ${sp(c.ceil)} ft`, no: `; skydekke (ceiling) rundt ${sp(c.ceil)} ft` });
     if (c.ceil == null) t += L({ en: '; no ceiling', no: '; ingen ceiling' });
     const more = ly.slice(1, 3).map(l => `${AMTS[l.amt] || ''} ${sp(l.base)}–${sp(l.top)} ft`);
