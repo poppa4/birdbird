@@ -51,15 +51,19 @@ const DEFAULTS = {
 };
 /* free engine (Workers AI): smaller caps so the daily 10,000 free Neurons are not exceeded (≈ 300k counted tokens on gpt-oss-120b) */
 const WORKERS_LIMITS = {
-  USER_DAILY_REQUESTS: 25,
-  USER_DAILY_TOKENS: 60000,
+  USER_DAILY_REQUESTS: 10,        // few users yet: 10 good answers each beat 25 rushed ones
+  USER_DAILY_TOKENS: 80000,       // room for high reasoning effort on all 10
   GLOBAL_DAILY_REQUESTS: 300,
   GLOBAL_DAILY_TOKENS: 300000,
-  MAX_OUTPUT_TOKENS: 4000,        // gpt-oss reasons before it answers (more for calculations); the reasoning counts here too
+  TIMEOUT_MS: 75000,              // high reasoning takes longer than the paid engine
+  MAX_OUTPUT_TOKENS: 6000,        // gpt-oss reasons (effort high) before it answers; the reasoning counts here too
   ANON_GLOBAL_DAILY_REQUESTS: 100 // a third of the free allocation for visitors without an account
 };
 const WORKERS_MODELS = ['@cf/openai/gpt-oss-120b', '@cf/zai-org/glm-4.7-flash']; // second one only if the first errors
-const WORKERS_SYSTEM = 'You are Flight Intelligence in NORDAP, a European (EASA) preparation platform for pilots. '
+const WORKERS_SYSTEM = 'Reasoning: high\n\n'
+  + 'You are Flight Intelligence in NORDAP, a European (EASA) preparation platform for pilots. '
+  + 'Before answering, work out what the pilot actually means (pilots use shorthand), which given entries answer it, and whether each entry really applies to their case (aircraft, licence, flight rules, Part-NCO/NCC/CAT, age, day or night). '
+  + 'Then check every number and condition in your draft against the entry it came from, word for word; drop or correct anything that does not match. Answer the question that was asked first, in one or two sentences, then the details. '
   + 'Follow the instructions in the user message exactly, including language, citation markers and output format. Use EASA/SERA terms and standards, never FAA ones. '
   + 'Hard rules, in this order: (1) Every regulation statement, regulatory number, limitation, speed, minimum, performance value or procedure step taken from a rule or a manual must come from the EASA entries [E1], [E2]… or the document excerpts [S1], [S2]… given in the message, and carry that marker. '
   + 'Theory entries [T1], [T2]… explain aviation theory; cite them for theory, but they are never a source for a rule, limit, minimum or procedure. '

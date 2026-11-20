@@ -171,7 +171,7 @@
     gk: t2('general knowledge', 'generell kunnskap') };
   const setPh = () => { if (inp) inp.placeholder = L(LT.ph); };
   const load = src => new Promise((ok, no) => { if (document.querySelector(`script[src="${src}"]`)) return ok(); const sc = document.createElement('script'); sc.src = src; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
-  function deps() { if (!loading) loading = Promise.all([window.NAI ? 0 : load('ai.js?v=8'), window.EASA ? 0 : load('easa.js?v=8'), window.THEORY ? 0 : load('theory.js?v=6'), window.FIQ ? 0 : load('fiq.js?v=1')]).catch(() => {}); return loading; }
+  function deps() { if (!loading) loading = Promise.all([window.NAI ? 0 : load('ai.js?v=8'), window.EASA ? 0 : load('easa.js?v=9'), window.THEORY ? 0 : load('theory.js?v=6'), window.FIQ ? 0 : load('fiq.js?v=1')]).catch(() => {}); return loading; }
 
   const md = (text, list, th) => FIQ.md(text, list, th, L(LT.gk));
   function fiUrl(q) { return 'fi.html?q=' + encodeURIComponent(String(q).slice(0, 1500)); }
