@@ -1016,7 +1016,7 @@ const STEPS=[['understand',t2('Understand','Forstå')],['think',t2('Think first'
 function setup(seed){ if(seed!==undefined) S.seed=seed;
   if(!allowed(S.ex,S.area)) S.area='practice';
   const ex=EXo(); S.X=I.setupX(S.ex,A(),S.lv,S.seed,S.p); pickInst();
-  S.sim=I.newSim(Object.assign({},S.X.ac,{wind:S.X.wind})); S.J=I.newJudge(); S.P={}; S.GP={}; S.gc=null; S.log=[]; S.run=false; S.started=false; S.paused=false; S.demo=false; S.mistake=false;
+  { const tr0=el('trainer'); if(tr0) tr0.dataset.run='0'; } S.sim=I.newSim(Object.assign({},S.X.ac,{wind:S.X.wind})); S.J=I.newJudge(); S.P={}; S.GP={}; S.gc=null; S.log=[]; S.run=false; S.started=false; S.paused=false; S.demo=false; S.mistake=false;
   S.watch={on:false,t:0}; S.peeks=0; S.res=null; S.moments={}; S.pause=null; S.hint=0; S.hintK=null; S.hintsUsed=0; S.showWhy=false; S.gTh=null; S.gIdx=0; S.tt=null; S.clrOpen=false;
   S.u={x:S.X.ac.x,y:S.X.ac.y,hdg:S.X.ac.hdg,alt:S.X.ac.alt,ias:S.X.ac.ias,gs:S.X.ac.ias,trk:S.X.ac.hdg,obs:S.X.obs};
   S.ideal=null; viewPts=null; fitView(); baseDirty=true; { const dt=el('doneT'); clearTimeout(dt._t); dt.hidden=true; } el('pausec').hidden=true;
@@ -1235,7 +1235,7 @@ function act(a){
     case 'nextlv': S.lv=Math.min(4,S.lv+1); setup(Math.floor(Math.random()*9000)+1); go('fly'); break;
     case 'nextex': { const n=nextItem(); if(n){ history.replaceState(null,'','#'+n); openItem(n,{}); } break; }
   } }
-function start(demo,mistake){ S.started=true; S.run=true; S.paused=false; S.demo=!!demo; S.mistake=mistake||false; closePops(); renderBrief(); renderTbar(); renderGuide(true); renderCtl(); renderQuiz(); }
+function start(demo,mistake){ el('trainer').dataset.run='1'; S.started=true; S.run=true; S.paused=false; S.demo=!!demo; S.mistake=mistake||false; closePops(); renderBrief(); renderTbar(); renderGuide(true); renderCtl(); renderQuiz(); }
 
 /* ---------- the guide: what to do now ----------
    The scripted pilot (ifrcore) flies alongside, unseen, on your real aircraft state. Its next command, compared with your
@@ -1258,7 +1258,7 @@ function action(){ const c=S.gc, s=S.sim, X=S.X, J=S.J, ex=S.ex; if(!c||!J) retu
     return {big:tx(`10° done: minutes = ${Math.round(S.watch.t)} s ÷ 10. Report it.`,`10° nådd: minutter = ${Math.round(S.watch.t)} s ÷ 10. Rapporter svaret.`),sm:'',sev:'warn'}; }
   /* course */
   const navT=X.nav&&A().ST[X.nav]?A().ST[X.nav].type:null;
-  if((navT==='VOR'||navT==='ILS')&&c.obs!=null&&Math.abs(diff(c.obs,X.obs))>2) return {big:tx(`Set the course to ${d3(c.obs)}`,`Still inn kurs ${d3(c.obs)}`),sm:tx('Turn the course knob (CRS), or use the , and . keys.','Vri kursknappen (CRS), eller bruk tastene , og .'),tgt:{crs:c.obs},sev:'info'};
+  if((navT==='VOR'||navT==='ILS')&&c.obs!=null&&Math.abs(diff(c.obs,X.obs))>2) return {big:tx(`Set the course to ${d3(c.obs)}`,`Still inn kurs ${d3(c.obs)}`),sm:tx('Turn the course knob (CRS). On a keyboard: the comma and full stop keys.','Vri kursknappen (CRS). På tastatur: komma- og punktumtastene.'),tgt:{crs:c.obs},sev:'info'};
   if(ex==='pass'){ const st=A().ST[X.task.st]; if(Math.hypot(s.x-st.x,s.y-st.y)<2.6&&!J.rep) return {big:tx('Hold the heading and watch the flag: press Station passage when it shows FROM','Hold headingen og følg med på flagget: trykk Stasjonspassering når det viser FROM'),sm:'',sev:'warn'}; }
   /* heading */
   let th=Math.round(c.hdg)||360; if(S.gTh===null||Math.abs(diff(th,S.gTh))>=3) S.gTh=th; th=S.gTh;
@@ -1567,7 +1567,7 @@ function tick(h){ const X=S.X, s=S.sim, ex=EXo(), Ar=A(); const act=S.pendingAct
   S.gc=c;
   I.step(s,h); keepInView(s.x,s.y);
   checkMoment(); }
-function finish(early){ S.run=false; S.started=false; const ex=EXo(); if(S.pause) resumePause();
+function finish(early){ el('trainer').dataset.run='0'; S.run=false; S.started=false; const ex=EXo(); if(S.pause) resumePause();
   if(early&&!S.J.done){ S.J.ev.push({code:'timeout',sev:'err',cat:'proc',p:{},t:S.sim.t,x:S.sim.x,y:S.sim.y}); }
   const g=I.grade(S.J,ex); S.res={g,demo:S.demo&&!S.mistake,first:g.first};
   if(S.check&&!S.demo&&CHECK[S.check.i]===S.item){ PROG.check.res[S.check.i]={total:g.total,pass:g.pass&&S.J.done,done:!!S.J.done}; save(PK,PROG); }

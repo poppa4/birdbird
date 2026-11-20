@@ -151,6 +151,101 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
 .srcs small{display:block;color:var(--ink-2);font-size:12.5px}
 .td{display:inline-block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--caution-ink);border:1px solid #EBD3A6;background:var(--caution-wash);border-radius:3px;padding:1px 6px;vertical-align:middle}
 @media (prefers-reduced-motion:reduce){.goal{transition:none}}
+
+/* ===== session: one radio deck + a flight strip (rebuilt Nov 2026) ===== */
+.rs{gap:12px}
+.rs-top{display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap}
+.rs-top h3{margin:0;font-family:var(--f-display);font-stretch:90%;font-weight:700;font-size:22px!important;line-height:1.2;color:var(--ink)}
+.rs-top .lnkb{order:-1}
+.rs-pips{list-style:none;margin:0 0 0 auto;padding:0;display:flex;gap:4px;align-items:center}
+.rs-pips li{width:18px;height:6px;border-radius:3px;background:var(--rule)}
+.rs-pips li.ok{background:#2E9E62}.rs-pips li.part{background:#D99A1E}.rs-pips li.bad{background:#D4513E}.rs-pips li.now{background:var(--ink);box-shadow:0 0 0 2px rgba(19,24,29,.15)}
+.rs-top .prog{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2)}
+.rs-top .scr{font-family:var(--f-mono);font-size:14px;font-weight:600;color:var(--ink)}
+.rs-top .scr:empty,.rs-top .prog:empty{display:none}
+.rs-deck{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:stretch}
+.rs .rs-main{display:flex;flex-direction:column;height:clamp(560px,calc(100vh - 150px),860px);padding:0;overflow:hidden;border-radius:10px;background:#10171d;border:1px solid #05090c;box-shadow:0 18px 40px -24px rgba(5,10,14,.7)}
+/* the radio faceplate: the one bold thing on the page */
+.rs-face{display:flex;align-items:center;gap:14px;padding:12px 16px;background:linear-gradient(180deg,#232b33,#171e24);border-bottom:1px solid #05090c;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.rs-com{font-family:var(--f-mono);font-size:11px;color:#8c98a3;letter-spacing:.04em;writing-mode:horizontal-tb}
+.rs-lcd{display:inline-flex;align-items:center;padding:4px 14px 5px;border-radius:5px;background:#020805;box-shadow:inset 0 2px 6px rgba(0,0,0,.8),0 0 0 1px #2b343c}
+.rs-lcd .act{font-family:var(--f-mono);font-size:30px;font-weight:500;line-height:1;color:#5BF08A;text-shadow:0 0 12px rgba(91,240,138,.45);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.rs-face .stn{font-family:var(--f-body);font-weight:600;font-size:15px;color:#E6EBEF;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rs-lamps{display:flex;gap:6px}
+.rs-lamps .tx{font-family:var(--f-mono);font-size:10.5px;color:#6b7782;border:1px solid #39434c;border-radius:3px;padding:2px 6px;background:#0f1418}
+.rs-lamps #rxi.rx{color:#062b13;background:#5BF08A;border-color:#5BF08A;box-shadow:0 0 10px rgba(91,240,138,.6)}
+.rs-lamps #txi.on{color:#fff;background:#E5533F;border-color:#E5533F;box-shadow:0 0 10px rgba(229,83,63,.6)}
+/* transcript */
+.rs .log{flex:1 1 auto;height:auto!important;min-height:0!important;max-height:none!important;overflow-y:auto;padding:18px 20px 12px;display:flex;flex-direction:column;gap:10px;background:transparent;border:0;scroll-behavior:smooth}
+.rs .log .msg{max-width:min(620px,86%);border-radius:10px;padding:9px 13px;font-size:15px;line-height:1.45}
+.rs .log .msg .who{display:block;font-family:var(--f-mono);font-size:10.5px;color:#8c98a3;margin-bottom:3px;letter-spacing:.03em}
+.rs .log .msg.atc{align-self:flex-start;background:#1a232b;border:1px solid #2b3742;color:#F1F4F6}
+.rs .log .msg.atc.corr{background:#2a1f0b;border-color:#77571a}
+.rs .log .msg.atc.atis{background:#0f2230;border-color:#21465f}
+.rs .log .msg.me{align-self:flex-end;background:#16283a;border:1px solid #2a4a69;color:#F1F4F6}
+.rs .log .msg.me.good{border-color:#2E8C58}.rs .log .msg.me.bad{border-color:#9A3A2D}.rs .log .msg.me.try{border-color:#8D6A1C}
+.rs .log .msg.sys{align-self:center;max-width:92%;background:none;border:0;color:#8c98a3;font-size:12.5px;text-align:center;padding:2px 8px}
+.rs .log .msg.sys b{color:#c9d2da}
+.rs .log .msg.sys.sit{display:none}
+.rs .log .msg.sys.model{border:1px dashed #3a4650;border-radius:8px;text-align:left;color:#b8c3cc;font-size:13px;padding:8px 12px}
+/* the result of a call, right under it */
+.rs .msg.me .fb{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.1)}
+.rs .msg .fbx .fbh{font-size:14px;margin:0 0 4px}
+.rs .msg .fbx .fbh.good{color:#6FDC9A}.rs .msg .fbx .fbh.bad{color:#FF9483}.rs .msg .fbx .fbh.try{color:#F2C055}
+.rs .msg .els{font-size:13px}
+.rs .msg .els li.ok{color:#79D9A0}.rs .msg .els li.wrong,.rs .msg .els li.miss{color:#FF9483}.rs .msg .els li.warn,.rs .msg .els li.opt{color:#F2C055}
+.rs .msg .fbx .model{margin-top:8px;font-size:13px;color:#c9d2da}.rs .msg .fbx .model b{display:block;font-size:11.5px;color:#8c98a3;font-weight:500;margin-bottom:2px}
+.rs .msg .fbx .model .mono{display:block;font-size:13px;color:#F1F4F6;background:rgba(0,0,0,.25);border-radius:5px;padding:6px 8px}
+.rs .msg .fbx .why{margin-top:8px;border-left:2px solid #7FCBE8;padding:1px 0 1px 10px;font-size:13px;color:#c9d2da}.rs .msg .fbx .why b{font-size:11.5px;color:#7FCBE8;font-weight:600}.rs .msg .fbx .why p{margin:2px 0 0}
+/* the dock: your turn + talk */
+.rs-dock{border-top:1px solid #05090c;background:#151d24;padding:12px 14px 10px;display:flex;flex-direction:column;gap:10px}
+.rs .rt-turn{background:none;border:0;padding:0;font-size:16px;line-height:1.4;color:#F1F4F6}
+.rs .rt-turn .tk b{font-family:var(--f-body);font-size:13px;font-weight:700;letter-spacing:0;text-transform:none;color:#5BF08A;margin-right:8px}
+.rs .rt-turn .tk b.need{color:#F2C055;font-family:var(--f-body);font-size:16px;text-transform:none;letter-spacing:0;margin:0}
+.rs .pttrow{gap:10px;align-items:stretch}
+.rs .bigptt{width:76px;height:76px}
+.rs .pttrow textarea{height:76px!important;font-size:16px;background:#0b1116;border:1px solid #33404b;border-radius:8px;color:#F1F4F6;padding:10px 12px}
+.rs .pttrow textarea:focus{outline:2px solid var(--focus-dark);outline-offset:0;border-color:transparent}
+.rs .pttrow .txcol .btn{height:35px;min-width:118px}
+.rs-aux{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center}
+.lnkd{all:unset;cursor:pointer;font-size:13px;color:#9fb0bd;text-decoration:underline;text-underline-offset:3px}
+.lnkd:hover{color:#fff}.lnkd:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
+.rs-aux .note{font-size:12.5px;color:#8c98a3}
+/* the flight strip */
+.rs-strip{display:flex;flex-direction:column;gap:0;background:var(--sheet);border:1px solid var(--rule);border-left:6px solid var(--accent);border-radius:6px;min-width:0;align-self:start;position:sticky;top:64px;max-height:calc(100vh - 80px);overflow:auto}
+.rs-sh{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:12px 14px 10px;border-bottom:1px solid var(--rule-2)}
+.rs-sh b{font-family:var(--f-mono);font-size:22px;font-weight:600;letter-spacing:.02em;color:var(--ink)}
+.rs-sh span{font-family:var(--f-mono);font-size:13px;color:var(--ink-2)}
+.rs-sit{padding:10px 14px;font-size:14px;line-height:1.5;color:var(--ink);border-bottom:1px solid var(--rule-2)}
+.rs-sit:empty{display:none}
+.rs-sit>b{display:none}.rs-sit p{margin:0}
+.rs-calls{padding:10px 14px}
+.rs-calls h4{margin:0 0 6px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.rs-calls ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+.rs-calls li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:6px;font-size:13px;line-height:1.35;color:var(--ink-3);padding:4px 0}
+.rs-calls li i{font-style:normal;font-family:var(--f-mono);font-size:12px;text-align:center}
+.rs-calls li.ok{color:var(--ink-2)}.rs-calls li.ok i{color:var(--ok)}
+.rs-calls li.part i{color:var(--caution)}.rs-calls li.bad i{color:var(--warning)}.rs-calls li.part,.rs-calls li.bad{color:var(--ink-2)}
+.rs-calls li.now{color:var(--ink);font-weight:600}.rs-calls li.now i{color:var(--accent)}
+.rs-how{padding:8px 14px 12px;border-top:1px solid var(--rule-2);font-size:13px;color:var(--ink-2)}
+.rs-how summary{cursor:pointer;font-weight:600;color:var(--ink-2)}
+.rs-how p{margin:6px 0 0;line-height:1.5}
+.rs .basis{margin:0}
+@media (max-width:980px){
+  .rs-deck{grid-template-columns:minmax(0,1fr)}
+  .rs-strip{position:static;max-height:none;order:-1;border-left-width:4px}
+  .rs-calls,.rs-how{display:none}
+  .rs .rs-main{height:calc(100svh - 120px);min-height:480px}
+  .rs-pips{margin-left:0;width:100%;order:5}
+  .rs-sit p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}.rs-sit.open p{display:block}
+}
+@media (max-width:560px){
+  .rs-face{gap:10px;padding:10px 12px}.rs-lcd .act{font-size:24px}.rs-com{display:none}
+  .rs .log{padding:12px 10px}.rs .log .msg{max-width:92%;font-size:14.5px}
+  .rs .pttrow{flex-wrap:wrap}.rs .bigptt{width:60px;height:60px}.rs .pttrow .inrow{flex:1 1 calc(100% - 72px)}.rs .pttrow textarea{height:60px!important}
+  .rs .pttrow .txcol{flex-direction:row;width:100%}.rs .pttrow .txcol .btn{flex:1}
+  .rs-sh b{font-size:18px}
+}
 </style>
 </head>
 <body data-title="Radio drills">
@@ -192,27 +287,41 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
       <p class="note"><span class="td">Training data</span> NORDAP, Skarvik and Tjernmo, their frequencies, procedures and traffic are fictional and not for navigation.</p>
     </div>
 
-    <div class="rt-wrap" id="v-sess" hidden>
-      <div class="sbar"><button class="lnkb" id="sessBack" type="button">← End session</button><h3 id="sessT"></h3><span class="prog" id="prog"></span><span class="scr" id="score"></span></div>
-      <p class="basis" id="sessBasis" hidden></p>
-      <div class="sgrid">
-        <div class="radio rt-radio">
-          <div class="rhead"><div class="freq"><span class="act" id="fq">———.———</span><span class="stn" id="stn"></span></div><div class="rbtns"><span class="tx" id="txi">TX</span><span class="tx" id="rxi">RX</span></div></div>
-          <div class="log" id="log" aria-live="polite" aria-label="Radio transcript"></div>
-          <div class="rt-turn" id="turn"></div>
-          <div class="pttrow">
-            <button class="bigptt" id="ptt" type="button" aria-label="Push to talk: hold to speak" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span class="pl">Hold to talk</span></button>
-            <div class="inrow"><textarea id="say" placeholder="Type your call, or hold the talk button (space bar) and speak…" aria-label="Your transmission"></textarea></div>
-            <div class="txcol"><button class="btn pri" id="btnTx" type="button">Transmit</button><button class="btn" id="btnAgain" type="button" title="Ask the controller to repeat">Say again</button></div>
+    <div class="rt-wrap rs" id="v-sess" hidden>
+      <div class="rs-top">
+        <button class="lnkb" id="sessBack" type="button">End session</button>
+        <h3 id="sessT"></h3>
+        <ol class="rs-pips" id="pips" aria-label="Calls in this session"></ol>
+        <span class="prog" id="prog"></span><span class="scr" id="score"></span>
+      </div>
+      <div class="rs-deck">
+        <div class="rs-main radio rt-radio">
+          <div class="rs-face">
+            <span class="rs-com">COM 1</span>
+            <span class="rs-lcd"><span class="act" id="fq">———.———</span></span>
+            <span class="stn" id="stn"></span>
+            <span class="rs-lamps"><span class="tx" id="rxi">RX</span><span class="tx" id="txi">TX</span></span>
           </div>
-          <div class="rbtns"><button class="btn" id="btnModel" type="button">Show a good call</button><button class="btn" id="btnSkip" type="button">Skip</button><button class="btn" id="btnUndo" type="button" hidden>Misheard? Undo</button><span class="note" id="micNote"></span></div>
+          <div class="log" id="log" aria-live="polite" aria-label="Radio transcript"></div>
+          <div class="rs-dock">
+            <div class="rt-turn" id="turn"></div>
+            <div class="pttrow">
+              <button class="bigptt" id="ptt" type="button" aria-label="Push to talk: hold to speak" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span class="pl">Hold to talk</span></button>
+              <div class="inrow"><textarea id="say" placeholder="Type your call, or hold the talk button (space bar) and speak…" aria-label="Your transmission"></textarea></div>
+              <div class="txcol"><button class="btn pri" id="btnTx" type="button">Transmit</button><button class="btn" id="btnAgain" type="button" title="Ask the controller to repeat">Say again</button></div>
+            </div>
+            <div class="rs-aux"><button class="lnkd" id="btnModel" type="button">Show a good call</button><button class="lnkd" id="btnSkip" type="button">Skip this call</button><button class="lnkd" id="btnUndo" type="button" hidden>Misheard? Undo</button><span class="note" id="micNote"></span></div>
+          </div>
         </div>
-        <aside class="rt-side">
-          <div class="card2" id="sitBox"></div>
-          <div class="card2"><b>Last call</b><div id="fbBox"></div></div>
-          <p class="note">Type or speak as on a real frequency. Numbers may be digits or words (“one two one decimal seven”), letters as phonetics. Order is free; the controller corrects you like real ATC. Say “say again” to hear it once more. <span class="kb">Enter</span> sends, <span class="kb">Space</span> (outside the text box) is push to talk.</p>
+        <aside class="rs-strip" aria-label="Flight strip">
+          <div class="rs-sh"><b id="stripCs">LN-NAE</b><span id="stripTy">DA42</span></div>
+          <div class="rs-sit" id="sitBox"></div>
+          <div class="rs-calls"><h4 id="callsH">Calls</h4><ol id="calls"></ol></div>
+          <div id="fbBox" hidden></div>
+          <details class="rs-how"><summary id="howS">How to talk to it</summary><p>Type or speak as on a real frequency. Numbers may be digits or words (“one two one decimal seven”), letters as phonetics. Order is free; the controller corrects you like real ATC. Say “say again” to hear it once more. <span class="kb">Enter</span> sends, <span class="kb">Space</span> (outside the text box) is push to talk.</p></details>
         </aside>
       </div>
+      <p class="basis" id="sessBasis" hidden></p>
     </div>
 
     <div class="rt-wrap" id="v-deb" hidden>
@@ -317,7 +426,7 @@ LAB.add({},{
  'Speech recognition accent':'Aksent for talegjenkjenning','English (UK)':'Engelsk (UK)','English (US)':'Engelsk (US)','English (Ireland)':'Engelsk (Irland)','English (India)':'Engelsk (India)',
  'Controller voice':'Flygelederstemme','Radio static and squelch':'Radiostøy og squelch','Send when I release the talk button':'Send når jeg slipper snakkeknappen','Test the controller voice':'Test flygelederstemmen',
  '← Back':'← Tilbake','Training data':'Treningsdata','NORDAP, Skarvik and Tjernmo, their frequencies, procedures and traffic are fictional and not for navigation.':'NORDAP, Skarvik og Tjernmo, frekvensene, prosedyrene og trafikken er oppdiktet og ikke for navigasjon.',
- '← End session':'← Avslutt økten','Hold to talk':'Hold for å snakke','Type your call, or hold the talk button (space bar) and speak…':'Skriv oppkallet, eller hold snakkeknappen (mellomrom) og snakk …',
+ '← End session':'← Avslutt økten','End session':'Avslutt økten','Calls':'Oppkall','How to talk to it':'Slik snakker du med den','Skip this call':'Hopp over dette oppkallet','Hold to talk':'Hold for å snakke','Type your call, or hold the talk button (space bar) and speak…':'Skriv oppkallet, eller hold snakkeknappen (mellomrom) og snakk …',
  'Transmit':'Send','Say again':'Say again','Show a good call':'Vis et godt oppkall','Skip':'Hopp over','Misheard? Undo':'Feilhørt? Angre','Last call':'Siste oppkall',
  'Type or speak as on a real frequency. Numbers may be digits or words (“one two one decimal seven”), letters as phonetics. Order is free; the controller corrects you like real ATC. Say “say again” to hear it once more.':'Skriv eller snakk som på en ekte frekvens. Tall kan være sifre eller ord («one two one decimal seven»), bokstaver fonetisk. Rekkefølgen er fri; flygelederen korrigerer deg som ekte ATC. Si «say again» for å høre det en gang til.',
  'sends,':'sender,','(outside the text box) is push to talk.':'(utenfor tekstfeltet) er push to talk.',
@@ -385,6 +494,6 @@ el('alpha').innerHTML=AL.map(a=>`<div><b>${a[0]}</b>${a[1]}<small>${a[2]}</small
 LAB.start('radio');
 })();
 </script>
-<script src="radiotrainer.js?v=6"></script>
+<script src="radiotrainer.js?v=8"></script>
 </body>
 </html>

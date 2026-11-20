@@ -135,10 +135,10 @@ function run(ev){ queue=queue.then(()=>play(ev)).then(()=>{ drawTurn(); }); retu
 async function play(ev){
   for(const e of ev){
     if(e.t==='tune'){ el('fq').textContent=e.unit.f; el('stn').textContent=e.unit.n; addMsg('sys','',`${L({en:'Tuned',no:'Stilt inn'})} <b>${esc(e.unit.n)}</b> ${esc(e.unit.f)}`); AU.click(); }
-    else if(e.t==='sit'){ addMsg('sys sit','',esc(L(e.text))); el('sitBox').innerHTML=`<b>${L({en:'Situation',no:'Situasjon'})}</b><p>${esc(L(e.text))}</p>`; }
+    else if(e.t==='sit'){ addMsg('sys sit','',esc(L(e.text))); el('sitBox').innerHTML=`<b>${L({en:'Situation',no:'Situasjon'})}</b><p>${esc(L(e.text))}</p>`; el('sitBox').classList.remove('open'); el('sitBox').onclick=()=>el('sitBox').classList.toggle('open'); }
     else if(e.t==='prompt'){ addMsg('sys prompt','',L(e.text)); }
     else if(e.t==='note'){ addMsg('sys','',esc(L(e.text))); }
-    else if(e.t==='model'){ addMsg('sys model','',`${e.fail?L({en:'Moving on. A good call:',no:'Vi går videre. Et godt oppkall:'}):L({en:'A good call:',no:'Et godt oppkall:'})} <span class="mono">${esc(e.text)}</span>`); }
+    else if(e.t==='model'){ if(e.fail&&document.querySelector('#log .fb.full')) addMsg('sys','',L({en:'Moving on to the next call.',no:'Vi går videre til neste oppkall.'})); else addMsg('sys model','',`${e.fail?L({en:'Moving on. A good call:',no:'Vi går videre. Et godt oppkall:'}):L({en:'A good call:',no:'Et godt oppkall:'})} <span class="mono">${esc(e.text)}</span>`); }
     else if(e.t==='atc'){ await atcMsg(e); }
     else if(e.t==='end'){ setTimeout(debrief,700); }
   }
@@ -154,8 +154,15 @@ async function atcMsg(e){
 function reveal(d,peek){ const t=d.querySelector('.tx'); if(!t) return; t.hidden=false; const h=d.querySelector('.hid'); if(h) h.remove(); const b=d.querySelector('.reveal'); if(b) b.remove(); d.classList.remove('hidden-tx'); if(peek&&ses) ses.peekAtc=true; }
 function revealAll(){ document.querySelectorAll('#log .msg.hidden-tx').forEach(d=>reveal(d,false)); }
 function addMsg(cls,who,html){ const log=el('log'); const d=document.createElement('div'); d.className='msg '+cls; d.innerHTML=(who?`<span class="who">${esc(who)}</span>`:'')+html; log.appendChild(d); log.scrollTop=log.scrollHeight; return d; }
+/* progress: one pip per call in the top bar, and the list of calls on the flight strip */
+function drawCalls(){ if(!ses) return; const st=ses.steps.map((s,i)=>{ const r=ses.results.find(x=>x.n===i); return r? (r.pass&&r.first?'ok':r.pass?'part':'bad') : i===ses.i&&!ses.done?'now':''; });
+  el('pips').innerHTML=st.map((c,i)=>`<li class="${c}" title="${esc(L(ses.steps[i].task)||'')}"></li>`).join('');
+  const sym={ok:'✓',part:'✓',bad:'✕',now:'›','':'·'};
+  el('calls').innerHTML=ses.steps.map((s,i)=>`<li class="${st[i]}"><i>${sym[st[i]]}</i><span>${esc(L(s.task)||'')}</span></li>`).join('');
+  const cur2=el('calls').querySelector('li.now'); if(cur2&&cur2.scrollIntoView&&el('calls').closest('.rs-strip').scrollHeight>el('calls').closest('.rs-strip').clientHeight) cur2.scrollIntoView({block:'nearest'});
+  el('stripCs').textContent=ses.V.c||P.callsign; el('stripTy').textContent=(ses.V.type||'')+(cur&&cur.group&&/^(vfr|ifr)$/.test(cur.group)?' · '+cur.group.toUpperCase():''); }
 function drawTurn(){
-  const s=ses&&ses.step; const box=el('turn');
+  const s=ses&&ses.step; const box=el('turn'); drawCalls();
   el('prog').textContent= ses&&!ses.done? `${L({en:'Call',no:'Oppkall'})} ${Math.min(ses.i+1,ses.steps.length)} / ${ses.steps.length}` : '';
   const sm=ses?ses.summary():null; el('score').textContent= sm&&sm.n? sm.score+' %' : '';
   if(!s||ses.done){ box.innerHTML=''; return; }
@@ -196,13 +203,15 @@ async function transmit(byVoice){
   const me=addMsg('me',ses.V.cs.full,esc(txt));
   if(r.kind==='sayagain'||r.kind==='standby'){ await run(r.ev); return; }
   const g=r.g, ok=r.kind==='pass';
-  const fb=document.createElement('div'); fb.className='fb'; fb.innerHTML=fbShort(g); me.appendChild(fb);
+  document.querySelectorAll('#log .fb.full').forEach(x=>{ x.innerHTML=x._short||''; x.classList.remove('full'); });
+  const fb=document.createElement('div'); fb.className='fb full'; fb._short=fbShort(g); me.appendChild(fb);
   me.classList.add(ok?'good':r.kind==='fail'?'bad':'try');
   const head= ok? (g.flags.length? L({en:'Accepted, with a note',no:'Godkjent, med en merknad'}) : L({en:'Correct',no:'Riktig'})) : r.kind==='retry'? L({en:'Not yet: the controller corrects you',no:'Ikke ennå: flygelederen korrigerer deg'}) : L({en:'Missed',no:'Bommet'});
   /* on a retry the answer is not shown yet: the controller has asked for the missing part, so the pilot gets one more go */
   need= r.kind==='retry'? g.res.filter(x=>x.st!=='ok'&&!x.opt).map(x=>L(x.label)) : null;
   const ask= need&&need.length? `<div class="model"><b>${L({en:'Reply with',no:'Svar med'})}</b><span>${esc(need.join(', '))}${L({en:', and your callsign. You do not need to repeat the rest.',no:', og kallesignalet ditt. Resten trenger du ikke gjenta.'})}</span></div>` : '';
-  el('fbBox').innerHTML=`<div class="fbh ${ok?'good':r.kind==='fail'?'bad':'try'}">${esc(head)}</div>${fbHtml(g,s,r.kind)}${r.kind==='retry'?ask:(!ok||g.flags.length?`<div class="model"><b>${L({en:'Correct call',no:'Riktig oppkall'})}</b><span class="mono">${esc(s.model)}</span></div>`:'')}${ok&&!g.flags.length?'':whyHtml(g,s)}`;
+  const full=`<div class="fbh ${ok?'good':r.kind==='fail'?'bad':'try'}">${esc(head)}</div>${ok&&!g.flags.length?fb._short:fbHtml(g,s,r.kind)}${r.kind==='retry'?ask:(!ok||g.flags.length?`<div class="model"><b>${L({en:'Correct call',no:'Riktig oppkall'})}</b><span class="mono">${esc(s.model)}</span></div>`:'')}${ok&&!g.flags.length?'':whyHtml(g,s)}`;
+  el('fbBox').innerHTML=full; fb.innerHTML=`<div class="fbx">${full}</div>`; el('log').scrollTop=el('log').scrollHeight;
   lastVoice= byVoice&&r.kind==='retry'? me : null;
   el('btnUndo').hidden=!lastVoice;
   await run(r.ev);

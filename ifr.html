@@ -649,6 +649,11 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
 @media (max-width:900px){.notes{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){.stage *,.done-toast{transition:none!important}}
 @media (pointer:coarse){.btn2{min-height:44px}.lk{display:inline-flex;align-items:center;min-height:44px}}
+/* phones: while flying, the header shrinks to the title, Map and the run controls, so the instrument gets the screen */
+@media (max-width:700px){
+  #trainer[data-run="1"] .steps,#trainer[data-run="1"] #helpK,#trainer[data-run="1"] #helpSeg,#trainer[data-run="1"] #setBtn,#trainer[data-run="1"] #keysBtn{display:none!important}
+  #trainer[data-run="1"] .sbar{row-gap:6px}
+}
 </style>
 </head>
 <body data-title="IFR trainer">
@@ -772,6 +777,6 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
 <script src="navgauges.js?v=5"></script>
 <script src="ifrcore.js?v=4"></script>
 <script src="glossary.js?v=4"></script>
-<script src="ifr.js?v=8"></script>
+<script src="ifr.js?v=9"></script>
 </body>
 </html>
