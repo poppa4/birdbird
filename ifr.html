@@ -665,12 +665,14 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
 .modesw button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 body.mode-refresh #pathSec,body.mode-refresh #heroFig,body.mode-refresh #promise{display:none}
 body:not(.mode-refresh) #chkSec{display:none}
-body.mode-refresh .ifr-head{grid-template-columns:minmax(0,1fr)}
 body.mode-refresh #chkSec{border-top:0;margin-top:12px;padding-top:0}
 .chk-skip{display:none!important}
 body.mode-refresh .chk-go{display:none}
 body.mode-refresh .chk .chk-box{grid-template-columns:minmax(0,1fr)}
 @media (max-width:560px){.modesw button{min-width:0;flex:1 1 140px;padding:8px 12px}}
+.hero-img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;border-radius:var(--radius-lg);box-shadow:0 26px 50px -30px rgba(11,18,23,.55)}
+.hero-fig .mini[hidden]{display:none}
+body.mode-refresh #heroFig{display:block!important}
 </style>
 </head>
 <body data-title="IFR trainer">
@@ -688,7 +690,8 @@ body.mode-refresh .chk .chk-box{grid-template-columns:minmax(0,1fr)}
       <span class="tag caution" id="disc">Training aid · not for navigation</span>
     </div>
     <figure class="hero-fig" id="heroFig">
-      <div class="mini" aria-hidden="true">
+      <img class="hero-img" src="img/training/ifr-hero-1600.webp" srcset="img/training/ifr-hero-900.webp 900w, img/training/ifr-hero-1600.webp 1600w" sizes="(max-width:900px) calc(100vw - 48px), 620px" width="1600" height="1000" alt="View from the cockpit just above a layer of cloud at dusk, the sun low on the horizon and the attitude display glowing on the panel." data-alt-no="Utsikt fra cockpit like over et skylag i skumringen, med solen lavt over horisonten og attitydeskjermen opplyst i panelet.">
+      <div class="mini" aria-hidden="true" hidden>
         <div class="mini-bar"><b id="miniName">Holding entry</b><span class="hidep" id="miniSteps">Understand · Think first · Fly · Debrief</span><span class="sp"></span><span class="on" id="miniLab">Guided</span></div>
         <div class="mini-clr" id="miniClr"></div>
         <div class="mini-guide"><span class="mk"><svg viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="big" id="miniBig"></span><span class="pill0" id="miniWhy">Why?</span></div>
@@ -795,6 +798,6 @@ body.mode-refresh .chk .chk-box{grid-template-columns:minmax(0,1fr)}
 <script src="navgauges.js?v=5"></script>
 <script src="ifrcore.js?v=4"></script>
 <script src="glossary.js?v=4"></script>
-<script src="ifr.js?v=11"></script>
+<script src="ifr.js?v=12"></script>
 </body>
 </html>

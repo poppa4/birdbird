@@ -773,6 +773,8 @@ const difHTML=d=>`<span class="dif" aria-hidden="true"><i class="on"></i><i clas
 function progHTML(id){ const p=passed(id), bs=best(id); if(bs===null) return `<span class="pg none">${tx('Not flown yet','Ikke fløyet ennå')}</span>`;
   return `<span class="pg"><span class="pips" role="img" aria-label="${esc(tx(`${p} of 4 levels passed`,`${p} av 4 nivåer bestått`))}">${[1,2,3,4].map(k=>`<i class="${k<=p?'on':''}"></i>`).join('')}</span>${tx('Best','Beste')} ${bs}</span>`; }
 function renderHero(){ const L0=PROG.last&&I.ITEM[PROG.last.item]?PROG.last:null, rec=recommended(), n=CORE.indexOf(rec)+1;
+  el('figCap').innerHTML=`<b>${tx('On top','Over skyene')}</b><span>${tx('Inside the cloud you see nothing outside. The instruments take you up through it, onto the right track and back down to the runway.','Inne i skyen ser du ingenting ute. Instrumentene tar deg opp gjennom den, inn på riktig kurs og ned igjen til rullebanen.')}</span>`;
+  { const im=document.querySelector('.hero-img'); if(im) im.alt=tx('View from the cockpit just above a layer of cloud at dusk, the sun low on the horizon and the attitude display glowing on the panel.','Utsikt fra cockpit like over et skylag i skumringen, med solen lavt over horisonten og attitydeskjermen opplyst i panelet.'); }
   if(MODE==='refresh'){ el('lead').textContent=tx('For pilots who want to stay sharp. Fly the procedures the way a check is flown, straight into the cockpit with no walk-through, and see exactly where you are rusty.','For piloter som vil holde seg skarpe. Fly prosedyrene slik en sjekk flys, rett inn i cockpit uten gjennomgang, og se nøyaktig hvor du er rusten.');
     el('heroCta').innerHTML=`<button class="btn2 pri lg" type="button" id="rcGo">${tx('Start the refresher check','Start oppfriskningssjekken')}</button>`+(L0?`<button class="btn2 lg" type="button" id="rcCont"><span class="k">${tx('Continue','Fortsett')}</span>${esc(itemName(L0.item))}</button>`:'')+`<a class="btn2 q lg" href="#all" id="toAll">${tx('Practise one procedure','Øv på én prosedyre')}</a>`;
     el('rcGo').onclick=startCheck; if(el('rcCont')) el('rcCont').onclick=()=>{ const l=PROG.last; openItem(l.item,{p:l.custom?l.p:null,custom:l.custom,lv:l.lv,area:l.area,seed:l.custom?l.seed:undefined,step:'fly'}); };
@@ -787,7 +789,6 @@ function renderHero(){ const L0=PROG.last&&I.ITEM[PROG.last.item]?PROG.last:null
     `<a class="btn2 q lg" href="#all" id="toAll">${tx(`All ${I.ITEMS.length} exercises`,`Alle ${I.ITEMS.length} øvelsene`)}</a>`;
   el('heroCta').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ if(b.dataset.go==='continue'){ const l=PROG.last; openItem(l.item,{p:l.custom?l.p:null,custom:l.custom,lv:l.lv,area:l.area,seed:l.custom?l.seed:undefined,step:'fly'}); } else openItem(b.dataset.go,{}); });
   el('toAll').onclick=e=>{ e.preventDefault(); el('all').scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'}); };
-  el('figCap').innerHTML=`<b>${tx('The guided screen','Den veiledede skjermen')}</b><span>${tx('Here the instructor flies a holding entry. When you fly, the line at the top tells you what to do next.','Her flyr instruktøren en inngang til holding. Når du flyr selv, sier linjen øverst hva du skal gjøre nå.')}</span>`;
   heroText(true); }
 function renderPath(){ const rec=recommended(), done=CORE.filter(id=>passed(id)).length;
   el('pathH').textContent=tx('Start here','Start her');
@@ -1833,7 +1834,7 @@ LAB.tx({n1:'Standardsvinger (høyst 25° krengning), stigning og sink til valgt 
   n3:'Bergen og Oslo bruker ekte posisjoner og frekvenser for navigasjonshjelpemidler (OurAirports), kun for trening. Prosedyrene som flys der er illustrasjoner, ikke publiserte kart. Øvingsområdet er fiktivt: Holmvik, Kvist, Fjell, Ravn, Holm og HV-waypointene finnes ikke. Bruk aldri treneren til navigasjon.'});
 LAB.onLang(()=>{ quizKey=''; guideKey=''; glClose(); HERO.cap=''; if(document.body.classList.contains('v-trainer')) renderAll(); else { renderHome(); if(el('bldDlg').open) renderBld(); } });
 S.seed=Math.floor(Math.random()*9000)+1; S.item='orient'; S.ex='orient'; S.p=Object.assign({},I.ITEM.orient.p); setup();
-renderHome(); heroInit();
+renderHome();
 /* deep link: ifr.html?ex=<item id> opens that exercise directly (same as ifr.html#<id>); unknown ids fall back to the start screen */
 { const qx=(location.search.match(/[?&]ex=([A-Za-z0-9_]+)/)||[])[1]; if(qx&&I.ITEM[qx]) history.replaceState(null,'',location.pathname+'#'+qx); }
 addEventListener('popstate',route); addEventListener('hashchange',route); route();
