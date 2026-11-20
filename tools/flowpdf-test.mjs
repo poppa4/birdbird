@@ -32,4 +32,8 @@ const fd = { pages: [fp] }, figs = P.figures(fd), L2 = P.link(P.find(fd), figs, 
 ok(figs.length === 1 && figs[0].pts.length === 4, 'one figure with four callouts');
 ok(L2.length === 1 && L2[0].fig && L2[0].name === 'Cockpit Preparation – Overhead Flow', 'the legend flow takes the figure: ' + L2.map(f => f.name).join(' | '));
 const sp = L2[0] && P.figSpot(L2[0].fig, 3); ok(sp && Math.abs(sp.x - Math.round((262.25 - 50) / 300 * 1000)) < 4, 'step 3 sits on callout 3');
+// checks and what the user teaches
+ok(P.isCheck('Passengers – instructed') && P.isCheck('FLAPS UP – 90 KIAS') && !P.isCheck('POWER lever – check IDLE') && !P.isCheck('BEACON – ON'), 'checks told from controls');
+ok(P.keyOf('Strobe lights (ACL) – ON') === P.keyOf('STROBE LIGHT – OFF'), 'one key for one control, whatever its position');
+ok(!m('Rudder – check free') && !m('Instruments – check') && !m('Circuit breakers – check all in'), 'a vague word is left for the pilot');
 console.log(bad ? bad + ' failed' : 'all good'); process.exit(bad ? 1 : 0);

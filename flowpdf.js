@@ -46,8 +46,8 @@ function dropRunning(L, pages) { if (pages < 4) return L; const key = l => l.tex
 const upperish = s => { const a = s.replace(/[^A-Za-z]/g, ''); return a.length > 0 && a.replace(/[^A-Z]/g, '').length / a.length >= 0.6; };
 const words = s => s.trim().split(/\s+/).length;
 const BULLET = /^(\(?\d{1,3}[.)]|\(?[a-zA-Z][.)](?=\s)|[-–•*·▪►>✓☐□■◦○]|\[\s?\])\s*/;
-function cleanName(s) { return s.replace(/\[(ALL|VAR|[A-Z]{1,4}\d*)\]\s*/g, '').replace(BULLET, '').replace(/^\d{1,2}\s+(?=[A-Za-z]{2})/, '').replace(/[\s.…:_·]+$/, '').replace(/\s+/g, ' ').trim(); }
-function okName(n) { if (ASIDE.test(n) || /^QRH\b/i.test(n) || !/[A-Za-z]{2}/.test(n.replace(/\b(KT|FT|HPA|RPM)\b/gi, ''))) return false; return n.length >= 2 && n.length <= 70 && /[A-Za-z]/.test(n) && words(n) <= 10 && !/[.!?]$/.test(n) && !/^(NOTE|CAUTION|WARNING|REMARK|REF|SEE|IF|WHEN|THE|THIS|IN|ON|AT)\b/i.test(n); }
+function cleanName(s) { return s.replace(/\[(ALL|VAR|[A-Z]{1,4}\d*)\]\s*/g, '').replace(/^[^A-Za-z0-9(\["“]+/, '').replace(BULLET, '').replace(/^[^A-Za-z0-9(\["“]+/, '').replace(BULLET, '').replace(/^\d{1,2}\s+(?=[A-Za-z]{2})/, '').replace(/[\s.…:_·]+$/, '').replace(/\s+/g, ' ').trim(); }
+function okName(n) { if (/^[\[(]/.test(n) || ASIDE.test(n) || /^QRH\b/i.test(n) || !/[A-Za-z]{2}/.test(n.replace(/\b(KT|FT|HPA|RPM)\b/gi, ''))) return false; return n.length >= 2 && n.length <= 70 && /[A-Za-z]/.test(n) && words(n) <= 10 && !/[.!?]$/.test(n) && !/^(NOTE|CAUTION|WARNING|REMARK|REF|SEE|IF|WHEN|THE|THIS|IN|ON|AT)\b/i.test(n); }
 function okState(st) { st = st.trim(); if (/^[A-Z]{1,3}$/.test(st) && /^\d/.test(st)) return false; return st.length >= 1 && st.length <= 40 && words(st) <= 7 && (STATE.test(st) || upperish(st) || /^[\d.,\/°%\-+ ]+[A-Za-z%°]{0,6}$/.test(st)) && !/[.!?]$/.test(st.replace(/\.{2,}$/, '')); }
 function pair(segs) { // segments of one item (left to right) → { n, st, r }
   segs = segs.slice(); let r = null;
@@ -138,7 +138,7 @@ function find(doc, opt) { opt = opt || {}; const P = doc.pages || [];
     return { page2: f.page2 || f.page, name: f.name.trim().slice(0, 80), phase: phaseOf(f.name), rs, roles, steps, page: f.page }; }); }
 
 /* ---------- step names → NORDAP's named controls ---------- */
-const SYN = [[/\bBATT?(ERY|ERIES|S)?\b/g, 'BAT'], [/\bENGINES?\b/g, 'ENG'], [/\bFLIGHT\b/g, 'FLT'], [/\bCONTROLS\b/g, 'CONTROL'], [/\bGENERATORS?\b/g, 'GEN'], [/\bLIGHTS?\b|\bLTS\b/g, 'LT'], [/\bSELECTORS?\b/g, 'SEL'], [/\bSWITCH(ES)?\b|\bSW\b|\bP\/?B\b|\bPUSH ?BUTTONS?\b|\bKNOBS?\b/g, ''], [/\bLEVERS?\b/g, 'LVR'], [/\bTHRUST\b/g, 'THR'], [/\bRUDDER\b/g, 'RUD'], [/\bWEATHER\b/g, 'WX'], [/\bOXY(GEN)?\b/g, 'OXYGEN'], [/\bA-ICE\b/g, 'ANTI ICE'], [/\bBRAKES?\b/g, 'BRK'], [/\bSTATUS\b/g, 'STS'], [/\bHEATING\b|\bHEATERS?\b/g, 'HEAT'],
+const SYN = [[/\bBATT?(ERY|ERIES|S)?\b/g, 'BAT'], [/\bENGINES?\b/g, 'ENG'], [/\bFLIGHT\b/g, 'FLT'], [/\bCONTROLS\b/g, 'CONTROL'], [/\bGENERATORS?\b/g, 'GEN'], [/\bLIGHTS?\b|\bLTS\b/g, 'LT'], [/\bSELECTORS?\b/g, 'SEL'], [/\bSWITCH(ES)?\b|\bSW\b|\bP\/?B\b|\bPUSH ?BUTTONS?\b|\bKNOBS?\b/g, ''], [/\bLEVERS?\b/g, 'LVR'], [/\bTHRUST\b/g, 'THR'], [/\bRUDDER\b/g, 'RUD'], [/\bWEATHER\b/g, 'WX'], [/\bOXY(GEN)?\b/g, 'OXYGEN'], [/\bA-ICE\b/g, 'ANTI ICE'], [/\bBRAKES?\b/g, 'BRK'], [/\bSTATUS\b/g, 'STS'], [/\bANTI[- ]?COLLISION( LIGHTS?)?\b|\bACL\b/g, 'STROBE'], [/\b(LONGITUDINAL|ELEVATOR) TRIM\b/g, 'PITCH TRIM'], [/\bDIRECTIONAL TRIM\b/g, 'RUD TRIM'], [/\bF-?PLN\b|\bFLIGHT PLAN\b/g, 'FPL'], [/\b(AND|THE|OF|FOR|TO)\b|&/g, ' '], [/\bHEATING\b|\bHEATERS?\b/g, 'HEAT'],
   [/\bPUMPS\b/g, 'PUMP'], [/\bVALVES?\b/g, 'VALVE'], [/\bAUX(ILIARY)? POWER UNIT\b/g, 'APU'], [/\bHYDRAULICS?\b/g, 'HYD'], [/\bELEC(T|TRIC|TRICAL|TRICS)?\b\.?/g, 'ELEC'], [/\bGEAR SEL(ECTOR)?\b/g, 'GEAR LVR'], [/\bREVERSIONARY( MODE)?\b/g, 'DISPLAY BACKUP'], [/\bCIRCUIT BREAKERS?\b|\bC\/B\b/g, 'CB'], [/\bPARK(ING)? (BRAKE|BRK)\b/g, 'PARK BRK'],
   [/\bANTI[- ]?ICE\b/g, 'ANTI ICE'], [/\bNO\.? ?(\d)\b/g, '$1'], [/\bNUMBER (\d)\b/g, '$1'], [/\bTRANSPONDER\b|\bXPDR\b|\bATC\b(?! ?(MSG|CLEARANCE|CLR|CLRNC))/g, 'XPDR'], [/\bWINDSHIELD|WINDOW\b/g, 'WINDOW'], [/\bSEAT ?BELTS?\b/g, 'SEAT BELTS'],
   [/\bNO SMOKING\b/g, 'NO SMOKING'], [/\bEMER(GENCY)?\b/g, 'EMER'], [/\bEXTERIOR\b|\bEXT\b/g, 'EXT'], [/\bLANDING\b|\bLDG\b/g, 'LAND'], [/\bTAXI\b/g, 'TAXI'], [/\bNAVIGATION\b/g, 'NAV'], [/\bSTROBES?\b/g, 'STROBE'], [/\bBEACONS?\b/g, 'BEACON'],
@@ -149,10 +149,10 @@ const stem = x => x.length > 3 && /[^S]S$/.test(x) ? x.slice(0, -1) : x;
 const toks = s => { const o = []; norm(s).split(' ').filter(Boolean).forEach(x => { o.push(stem(x)); }); const n = new Set(o).size; norm(s).split(' ').forEach(x => { if (x.includes('/')) x.split('/').filter(Boolean).forEach(y => o.push(stem(y))); }); o.n = n; return o; }; // ON/OFF also reads as ON and OFF
 /* "BAT 1 & 2", "FUEL PUMPS 1+2", "ENG 1/2 MASTER": the first of the pair is where the hand goes first */
 function firstOfPair(n) { return String(n).replace(/\b(\d)(?:\s*(?:&|\+|AND|,|\/)\s*\d\b)+/gi, '$1').replace(/\bALL\b/gi, ' ').replace(/\bBOTH\b/gi, ' '); }
-const GENERIC = /^(MASTER|SWITCHE|LT|PUMP|SEL|VALVE|ENG|GEN|BAT|ALL|MODE|TEST|LVR|ON|OFF|AUTO|SYS|IND|CHECK|SET|PANEL|1|2|3|4)$/;
+const GENERIC = /^(TRIM|RUD|INSTRUMENT|FUEL|PFD|MFD|CB|MASTER|SWITCHE|LT|PUMP|SEL|VALVE|ENG|GEN|BAT|ALL|MODE|TEST|LVR|ON|OFF|AUTO|SYS|IND|CHECK|SET|PANEL|1|2|3|4)$/;
 function score(A, B, st, nm) { if (!A.length || !B.length) return 0; const a = new Set(A), b = new Set(B);
   const nA = A.filter(x => /^\d$/.test(x)), nB = B.filter(x => /^\d$/.test(x)); if (nA.length && nB.length && !nA.some(x => b.has(x))) return 0; // BAT 1 is never BAT 2
-  if (nm && A.join(' ') === nm.join(' ') || !nm && A.join(' ') === B.join(' ')) return 1.1; // the very name
+  if (nm && A.join(' ') === nm.join(' ') || !nm && A.join(' ') === B.slice(0, B.n || B.length).join(' ')) return 2; // the very name
   const core = [...a].filter(x => !GENERIC.test(x)), key = core.length ? core : [...a]; // "IRS MODE SELECTORS": IRS is what counts
   let hit = 0; a.forEach(x => { if (b.has(x)) hit++; }); const pr = key.filter(x => b.has(x)).length / key.length, pa = hit / a.size, rc = Math.min(1, hit / (B.n || b.size));
   if (pr < 0.66 || pa < 0.3) return 0;
@@ -165,14 +165,17 @@ function match(name, targets) { const p0 = String(name || '').split(' – ')[0];
   const head = A.filter(x => !/^\d$/.test(x) && !/^(SEL|MODE|SYS|PANEL|CONTROL|UNIT|ALL)$/.test(x)).pop(); let best = null, bs = 0, second = 0; // "Fuel pumps" is a pump: the last word must be on the control
   const cb = A.includes('CB'); targets.forEach(t => { if (t.whole || (!cb && /^CB\b/.test(t.name))) return; const nm = toks(t.name), pn = t.panel ? toks(t.panel + ' ' + t.name) : null; if (head && !nm.includes(head) && !(pn && pn.includes(head))) return;
     const s = Math.max(score(A, nm, st), pn ? 0.97 * score(A, pn, st, nm) : 0); if (s > bs + 1e-9) { if (best && side(best) !== side(t)) second = bs; bs = s; best = t; } else if (s > second && best && side(best) !== side(t)) second = s; });
-  return bs >= 0.6 ? best : null; } // a tie between two controls ("MASTER": electric, avionic or engine?) is left for a tap
-function place(steps, targets) { let n = 0; steps.forEach(s => { if (s.k !== 'act') return; const t = match(s.t, targets); if (t) { s.tg = t.id; s.x = Math.round(t.x + t.w / 2); s.y = Math.round(t.y + t.h / 2); n++; } else { s.x = null; s.y = null; } }); return n; }
+  if (bs >= 0.6) return best;
+  const two = /^(.+?)\s+(?:and|&)\s+(.+)$/i.exec(parts[0]); // "Pitot and stall warn heating": the first of the two, with the shared last word
+  if (two && !name.__half) { const a = toks(two[1]).length === 1 ? two[1] + ' ' + two[2].trim().split(/\s+/).pop() : two[1], n2 = new String(a + (parts[1] ? ' – ' + parts[1] : '')); n2.__half = true; return match(n2, targets); }
+  return null; } // a tie between two controls ("MASTER": electric, avionic or engine?) is left for a tap
+function place(steps, targets, keep) { let n = 0; steps.forEach(s => { if (s.k !== 'act' || (keep && s.x != null)) return; const t = match(s.t, targets); if (t) { s.tg = t.id; s.x = Math.round(t.x + t.w / 2); s.y = Math.round(t.y + t.h / 2); n++; } else { s.x = null; s.y = null; } }); return n; }
 
 /* a step with no control to touch: a check, a call to someone, information to get ("Passengers – instructed", "ATIS – completed",
    "Fuel temperature – check"). Such a step is practised as a check (read it, tap Done) instead of waiting to be placed. */
-const NONCTL = /\b(PASSENGERS?|DOORS?|CANOPY|ATIS|AIRFIELD DATA|CLEARANCE|BRIEFING|DATA ?CARD|HARNESS(ES)?|SEAT BELTS? FASTENED|PEDALS|INSPECTION|ANNUNCIATIONS?|TEMPERATURE|DATA ?BASES?|CHOCKS|WALK ?AROUND|PAPERS|DOCUMENTS|LOAD ?SHEET|TECH(NICAL)? LOG|OPPOSITE ENGINE|IDLE RPM|PROPELLER|FLIGHT PLAN|NOTAMS?|WEATHER|FUEL (QUANTITY|ON BOARD|FIGURES)|CREW|CABIN CREW|GROUND CREW|ATC)\b/i;
+const NONCTL = /\b(PASSENGERS?|DOORS?|CANOPY|ATIS|AIRFIELD DATA|CLEARANCE|BRIEFING|DATA ?CARD|HARNESS(ES)?|SEAT BELTS? FASTENED|PEDALS|INSPECTION|ANNUNCIATIONS?|TEMPERATURE|DATA ?BASES?|CHOCKS|WALK ?AROUND|PAPERS|DOCUMENTS|LOAD ?SHEET|TECH(NICAL)? LOG|OPPOSITE ENGINE|IDLE RPM|ANNUN\w*|FAIL LIGHTS?|EQUIPMENT|CONSUMERS|INSTRUMENTS|DISPLAYS?|BUGS?|SPEEDS?|ALTITUDE|ROUTE|WAYPOINT|STABILI[SZ]ATION|RATIO|ANGLE|LOAD|RADIO AIDS|BAGGAGE|MINIMUMS?|IAS|PROPELLER|FLIGHT PLAN|NOTAMS?|WEATHER|FUEL (QUANTITY|ON BOARD|FIGURES)|CREW|CABIN CREW|GROUND CREW|ATC)\b/i;
 const POS = /^(ON|OFF|AUTO|ARM(ED)?|NORM(AL)?|OPEN|CLOSED?|SET|UP|DOWN|IDLE|START|STBY|STANDBY|TEST|IN|OUT|PULL|PUSH|ENGAGE|RESET|SELECT|NAV|ALIGN|BOTH|MAX|MIN|BRIGHT|DIM|RETRACT|EXTEND|STOW|CAGE|TO|GRD|FLT|CONT|LOW|HIGH|MED|RTO|CROSSFEED|L\/R|LH|RH|\d)/i;
-function isCheck(t) { const [n, st0] = String(t || '').split(' – '), st = (st0 || '').replace(/^(check(ed)?|verify|confirm)\s*/i, '').trim(); return NONCTL.test(n) || !POS.test(st); }
+function isCheck(t) { const [n, st0] = String(t || '').split(' – '), st = (st0 || '').replace(/^(check(ed)?|verify|confirm)\s*/i, '').trim(); return NONCTL.test(n) || !POS.test(st) || /^[\d.,]+\s*(KT|KIAS|FT|%|°|HPA|RPM)?\b/i.test(st) && !/^\d$/.test(st); } // a value to read is a check; a single digit can be a position (FLAPS – 1)
 /* which aircraft the manual is about: the type named most often */
 const ACS = [['b38m', /\b737[- ]?(MAX|8 ?MAX|MAX ?8)\b|\b7M8\b/gi], ['a359', /\bA350\b|\bA359\b/gi], ['b788', /\b787\b/g], ['e190', /\bE[- ]?1[79]0\b|\bE[- ]?JET\b|\bERJ[- ]?190\b|\bEMB[- ]?190\b/gi],
   ['b738', /\b737(-[6-9]00|NG)?\b|\bB73[6-9]\b/g], ['a320', /\bA3(19|20|21|18)\b|\bA32[01N]\b|\bA320 FAMILY\b/gi], ['atr72', /\bATR[- ]?(42|72)?\b/gi], ['b200s', /\bKING ?AIR\b|\bB200\b|\bBE20\b/gi],
@@ -374,6 +377,8 @@ function hide(cv, s, B, pts) { const g = cv.getContext('2d'), W = cv.width, H = 
     const gr = g.createRadialGradient(cx, cy, R * 0.7, cx, cy, R * 1.15); gr.addColorStop(0, col); gr.addColorStop(1, col.replace('rgb', 'rgba').replace(')', ',0)'));
     g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, R * 1.15, 0, 2 * Math.PI); g.fill(); }); }
 
-const API = { isCheck, read, find, place, match, guessAc, norm, phaseOf, lines, items, roleHead, figures, link, figSpot, callouts, render, ocr, ocrPages, boxes, hide, discsCore, glyphCanvas };
+/* the name of a step as a key: what the user has taught about it (where it is, or that it is a check) is kept under this */
+const keyOf = t => norm(String(t || '').split(' – ')[0].replace(/\([^)]*\)/g, ' '));
+const API = { keyOf, isCheck, read, find, place, match, guessAc, norm, phaseOf, lines, items, roleHead, figures, link, figSpot, callouts, render, ocr, ocrPages, boxes, hide, discsCore, glyphCanvas };
 if (typeof module === 'object' && module.exports) module.exports = API; else G.BBFLOWPDF = API;
 })(typeof window !== 'undefined' ? window : globalThis);
