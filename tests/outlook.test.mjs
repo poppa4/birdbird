@@ -40,7 +40,7 @@ test('the endpoint: stratus deck, IFR, icing above the freezing level, sources l
 
 test('the endpoint refuses what it cannot answer', async () => {
   const u = (q) => new URL('https://nordap.eu/api/outlook?' + q);
-  assert.equal(parseReq(u('lat=59&lon=10&el=0&t=2026-12-10T09:00Z'), NOW).err, 'too_far');
+  assert.equal(parseReq(u('lat=59&lon=10&el=0&t=2026-12-10T09:00Z'), NOW).err, 'too_far'); assert.equal(parseReq(u('lat=59&lon=10&el=0&t=2026-12-01T09:00Z'), NOW).err, undefined);
   assert.equal(parseReq(u('lat=59&lon=10&el=0&t=2026-11-19T09:00Z'), NOW).err, 'too_far');
   assert.equal(parseReq(u('lat=x&lon=10&t=2026-11-21T09:00Z'), NOW).err, 'bad_request');
   assert.equal(parseReq(u('lat=59&lon=10&el=286&t=2026-11-21T09:40'), NOW).t, '2026-11-21T10:00:00.000Z');

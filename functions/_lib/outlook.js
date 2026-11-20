@@ -225,7 +225,7 @@ export function consensus(members, elevFt, leadH, opts) {
   const spreadCeil = range(use.map(s => s.ceil));
   let conf = leadH <= 24 ? 2 : leadH <= 72 ? 1 : 0;
   if (agree != null && agree < 0.6) conf--; if (agree != null && agree >= 0.9 && leadH <= 72) conf = Math.max(conf, 1);
-  if (use.length < 2) conf = Math.min(conf, 0);
+  if (use.length < 2 || leadH > 168) conf = Math.min(conf, 0);
   conf = ['low', 'medium', 'high'][clamp(conf, 0, 2)];
   /* aloft: median height, temperature and humidity per pressure level, vector-mean wind */
   const aloft = [];
