@@ -6,7 +6,7 @@
 <link rel="canonical" href="https://nordap.eu/weather">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NORDAP">
-<meta property="og:title" content="METAR and TAF · NORDAP">
+<meta property="og:title" content="Weather · NORDAP">
 <meta property="og:description" content="Paste a weather report and read it line by line in plain language. See the ceiling, the crosswind on your runway and whether VFR is allowed in the control…">
 <meta property="og:url" content="https://nordap.eu/weather">
 <meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
@@ -14,10 +14,20 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>METAR and TAF · NORDAP</title>
+<title>Weather · NORDAP</title>
 <link rel="stylesheet" href="lab.css?v=15">
 <link rel="stylesheet" href="site.css?v=35">
 <style>
+.wxtabs{display:flex;gap:2px;margin:22px 0 0;border-bottom:1px solid var(--rule);overflow-x:auto}
+.wxtabs a{padding:10px 18px 9px;font-weight:600;font-size:15.5px;color:var(--ink-2);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.wxtabs a:hover{color:var(--ink)}.wxtabs a.on{color:var(--ink);border-bottom-color:var(--accent)}
+.wxtabs+.card{border-top:0;padding-top:28px}
+.nowx{display:flex;flex-direction:column;gap:12px}
+.nowx .rep{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--rule);border-radius:6px;padding:10px 12px;cursor:pointer;font:inherit;color:inherit}
+.nowx .rep:hover{border-color:var(--accent)}.nowx .rep>span{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)}.nowx .rep>span>b{color:var(--ink);font-size:14px}
+.nowx .rep code{display:block;font-family:var(--f-mono);font-size:13px;white-space:pre-wrap;margin-top:4px;color:var(--ink)}.nowx .rep em{font-style:normal;margin-left:auto;color:var(--accent);font-size:12.5px}
+.nowx .icbw{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:10px 12px}
+.nowx .lnk{display:flex;flex-wrap:wrap;gap:8px}.nowx .lnk a{border:1px solid var(--rule);border-radius:999px;padding:5px 12px;font-size:13.5px;text-decoration:none;color:var(--ink);background:#fff}.nowx .lnk a.fc{border-color:var(--accent);color:var(--accent);font-weight:600}
 .inbox{display:flex;flex-direction:column;gap:10px}
 .inbox textarea{width:100%;min-height:92px;font-family:var(--f-mono);font-size:16px;line-height:1.5;padding:12px 14px;border:1px solid var(--ink);border-radius:3px;background:#fff;color:var(--ink);resize:vertical;text-transform:uppercase}
 .ex{display:flex;flex-wrap:wrap;gap:6px}
@@ -53,24 +63,25 @@
 @media (pointer:coarse){.ex button{min-height:44px;padding-inline:12px}.ctl input[type=range]{min-height:44px}}
 </style>
 </head>
-<body data-title="METAR and TAF">
-<script src="site.js?v=115"></script>
+<body data-title="Weather">
+<script src="site.js?v=117"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
       <div class="eyebrow">NORDAP · Flight planning</div>
-      <h1>METAR and TAF</h1>
-      <p>Paste a weather report and read it line by line in plain language. See the ceiling, the crosswind on your runway and whether VFR is allowed in the control zone. Then practise on reports made for you.</p>
+      <h1>Weather</h1>
+      <p>The weather at an aerodrome now, the forecast for the days ahead, and METAR and TAF decoded line by line.</p>
     </div>
-    <div class="hright"><div class="status ok" id="stat">Decoded</div></div>
+    <div class="hright"><div class="status ok" id="stat" hidden>Decoded</div></div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#live">METAR/TAF now</a><a href="#decode">Decode</a><a href="#xwind">Crosswind</a><a href="#codes">Codes</a><a href="#quiz">Practise</a></nav>
+  <nav class="wxtabs" aria-label="Weather"><a href="weather.html" data-w="now" class="on">Now</a><a href="outlook.html" data-w="fc">Forecast</a><a href="weather.html#decode" data-w="dec">Decode and practise</a></nav>
+  <nav class="snav" id="wxsn" aria-label="Sections" hidden><a href="#decode">Decode</a><a href="#xwind">Crosswind</a><a href="#codes">Codes</a><a href="#quiz">Practise</a></nav>
 
   <section class="card livecard" id="live">
-    <h2>METAR and TAF now</h2>
-      <div class="live"><label for="liveId">ICAO code</label><input id="liveId" maxlength="4" inputmode="text" autocapitalize="characters" enterkeyhint="go" placeholder="ENGM" autocomplete="off" spellcheck="false" aria-label="ICAO code"><button class="btn sm" type="button" id="liveM">METAR</button><button class="btn sm" type="button" id="liveT">TAF</button><span id="liveSt" class="livest" role="status" aria-live="polite"></span></div>
-    <div class="liveout" id="liveOut"></div>
-    <p class="note">You can also type the code in the search bar at the top of every page. The report is decoded below.</p>
+    <h2>At the aerodrome now</h2>
+      <div class="live"><label for="liveId">ICAO code</label><input id="liveId" maxlength="4" inputmode="text" autocapitalize="characters" enterkeyhint="go" placeholder="ENGM" autocomplete="off" spellcheck="false" aria-label="ICAO code"><button class="btn sm" type="button" id="liveM">Show</button><span id="liveSt" class="livest" role="status" aria-live="polite"></span></div>
+    <div class="nowx" id="liveOut"></div>
+    <p class="note">The latest METAR and TAF, SIGMETs in force over the aerodrome, the freezing level and the radar. Tap a report to decode it line by line. For flight, the official briefing decides.</p>
   </section>
 
   <section class="card" id="decode">
@@ -80,7 +91,7 @@
 
       <textarea id="raw" spellcheck="false" aria-label="METAR or TAF"></textarea>
       <div class="ex" id="ex"></div>
-      <p class="note">The report shown first and the buttons above are made-up practice reports. “METAR and TAF now” at the top fetches the real one.</p>
+      <p class="note">The report shown first and the buttons above are made-up practice reports. The Now tab fetches the real one.</p>
     </div>
     <div class="sum" id="sum"></div>
     <div class="split">
@@ -125,9 +136,9 @@ const NOd={
  'VFR at the aerodrome':'VFR på flyplassen','Based on SERA.5005 and SERA.5010 for aeroplanes. Your aerodrome, airspace and operator may have stricter rules.':'Basert på SERA.5005 og SERA.5010 for fly. Flyplassen, luftrommet og operatøren din kan ha strengere regler.',
  'Runway':'Rullebane','Crosswind and headwind':'Sidevind og motvind','Wind in a METAR is true, runway numbers are magnetic. In southern Norway the difference is only a few degrees, so most pilots use the numbers directly.':'Vinden i en METAR er rettvisende, rullebanenumrene er magnetiske. På Sørlandet og Østlandet er forskjellen bare noen få grader, så de fleste piloter bruker tallene direkte.',
  'The codes you meet most':'Kodene du møter oftest','Ten questions on reports generated for you. New reports every round.':'Ti spørsmål på meldinger som lages for deg. Nye meldinger hver runde.',
- 'The report shown first and the buttons above are made-up practice reports. “METAR and TAF now” at the top fetches the real one.':'Meldingen som vises først, og knappene over, er oppdiktede øvingsmeldinger. «METAR og TAF nå» øverst henter den ekte.',
+ 'The report shown first and the buttons above are made-up practice reports. The Now tab fetches the real one.':'Meldingen som vises først, og knappene over, er oppdiktede øvingsmeldinger. Fanen Nå henter den ekte.',
  'Training tool. The reports used as examples and in the practice are made up. For flight planning, use the official briefing service.':'Opplæringsverktøy. Meldingene i eksemplene og øvingen er oppdiktet. Bruk den offisielle briefingtjenesten til flyplanlegging.',
- 'Decoded':'Dekodet','Check the report':'Sjekk meldingen','Latest report for':'Siste melding for'
+ 'Decoded':'Dekodet','Weather':'Vær','The weather at an aerodrome now, the forecast for the days ahead, and METAR and TAF decoded line by line.':'Været på en flyplass nå, varselet for dagene fram, og METAR og TAF dekodet linje for linje.','Now':'Nå','Forecast':'Varsel','Decode and practise':'Dekod og øv','At the aerodrome now':'På flyplassen nå','Show':'Vis','The latest METAR and TAF, SIGMETs in force over the aerodrome, the freezing level and the radar. Tap a report to decode it line by line. For flight, the official briefing decides.':'Siste METAR og TAF, SIGMET i kraft over flyplassen, frysenivået og radaren. Trykk på en melding for å dekode den linje for linje. Før flyging er det offisiell briefing som gjelder.','Check the report':'Sjekk meldingen','Latest report for':'Siste melding for'
 };
 LAB.add({},NOd);
 
@@ -266,17 +277,39 @@ async function live(kind){ const id=el('liveId').value.trim().toUpperCase(), st=
   if(!r.ok||!j.ok){ say((j&&j.message)||LL('Couldn’t reach the weather service. Try again in a minute.','Fikk ikke kontakt med værtjenesten. Prøv igjen om et minutt.'),1); return; }
   const s=j.stations[id], x=s&&(kind==='T'?s.taf:s.metar);
   { const ago=t=>{ if(!t) return ''; const a=Math.round((Date.now()-new Date(t))/60e3); return ' · '+(a<120?a+' min':Math.round(a/60)+' h')+' '+LL('old','gammel'); };
-    el('liveOut').innerHTML=s&&(s.metar||s.taf)?[['M','METAR',s.metar],['T','TAF',s.taf]].filter(r=>r[2]).map(r=>`<button type="button" class="lo${(kind==='T')===(r[0]==='T')?' on':''}" data-k="${r[0]}"><span>${r[1]}${r[0]==='M'?ago(r[2].obsTime):''}</span><code>${wesc(r[2].raw)}</code></button>`).join(''):''; }
-  if(!x){ say(kind==='T'?LL(`No TAF for ${id}. Not every aerodrome publishes one.`,`Ingen TAF for ${id}. Ikke alle flyplasser publiserer TAF.`):LL(`No METAR for ${id}.`,`Ingen METAR for ${id}.`),1); return; }
-  el('raw').value=x.raw; run(); try{ localStorage.setItem('bb-wxid',id); }catch(e){} const t=x.obsTime||x.issueTime; const age=t?Math.round((Date.now()-new Date(t))/60e3):null;
+    NOW={id,s,ago}; paintNow(); }
+  if(!x&&!(s&&(s.metar||s.taf))){ say(kind==='T'?LL(`No TAF for ${id}. Not every aerodrome publishes one.`,`Ingen TAF for ${id}. Ikke alle flyplasser publiserer TAF.`):LL(`No METAR for ${id}.`,`Ingen METAR for ${id}.`),1); return; }
+  const y=x||s.metar||s.taf; el('raw').value=y.raw; run(); try{ localStorage.setItem('bb-wxid',id); localStorage.setItem('bb-ol-icao',id); }catch(e){} tabHrefs(id); const t=y.obsTime||y.issueTime; const age=t?Math.round((Date.now()-new Date(t))/60e3):null;
   const src=s.source||'aviationweather.gov';
   say(LL(`From ${src}${age!=null?`, ${age} min old`:''}. For training: check the official briefing before flight.`,`Fra ${src}${age!=null?`, ${age} min gammel`:''}. For trening: sjekk den offisielle briefingen før flyging.`)); }
+
+/* ---------- now: METAR, TAF, SIGMETs, freezing level and radar for one aerodrome ---------- */
+let NOW=null, APW=null, apWP=null;
+const ldS=src=>new Promise(ok=>{ if(document.querySelector(`script[src="${src}"]`)) return ok(); const sc=document.createElement('script'); sc.src=src; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); });
+const loadApW=()=>apWP||(apWP=fetch('data/nav-eu.json').then(r=>r.json()).then(d=>{ APW={}; (d.ap||[]).forEach(a=>{ APW[a[0]]={n:a[1],lat:a[2],lon:a[3],el:a[4]}; }); }).catch(()=>{ APW={}; }));
+function paintNow(){ if(!NOW) return; const {id,s,ago}=NOW, ap=APW&&APW[id];
+  const Lf=o=>L(o);
+  const rep=(k,lab,r)=>r?`<button type="button" class="rep" data-k="${k}"><span><b>${lab}</b>${k==='M'?ago(r.obsTime):''}${k==='M'&&window.ICB?ICB.badge(r.raw,Lf)+(ICB.ifrBadge?ICB.ifrBadge(r.raw,Lf):''):''}<em>${LL('Decode →','Dekod →')}</em></span><code>${wesc(r.raw)}</code></button>`:'';
+  let h=`<div style="font-size:14px"><b>${wesc(id)}</b>${ap?' · '+wesc(ap.n):''}</div>`+rep('M','METAR',s.metar)+rep('T','TAF',s.taf);
+  if(ap&&window.ICB){ ICB.ensure(id,ap,()=>{ if(NOW&&NOW.id===id) paintNow(); }); h+=`<div class="icbw">${ICB.html(id,s.metar?s.metar.raw:'',Lf,ap)}</div>`; }
+  const ns=window.ICB?ICB.notam(id):null;
+  h+=`<div class="lnk"><a class="fc" href="outlook.html?icao=${id}">${LL('Forecast, up to 14 days →','Varsel, opptil 14 dager →')}</a>${ns?`<a href="${ns.url}" target="_blank" rel="noopener">NOTAM ↗</a>`:''}<a href="/api/aip?icao=${id}&go=1" target="_blank" rel="noopener">AIP ↗</a><a href="sun.html?icao=${id}">${LL('Sun and twilight','Sol og tussmørke')}</a></div>`;
+  el('liveOut').innerHTML=h; }
+/* tabs: Now / Forecast / Decode and practise. Now and Decode live on this page; the forecast is outlook.html */
+function tabHrefs(id){ document.querySelectorAll('.wxtabs a').forEach(a=>{ if(a.dataset.w==='fc') a.href='outlook.html'+(id?'?icao='+id:''); }); }
+const DEC=['decode','xwind','codes','quiz'];
+function mode(){ const h=location.hash.slice(1), dec=DEC.includes(h);
+  el('live').hidden=dec; DEC.forEach(x=>{ el(x).hidden=!dec; }); el('wxsn').hidden=!dec; el('stat').hidden=!dec; document.querySelectorAll('.wxtabs a').forEach(a=>a.classList.toggle('on',a.dataset.w===(dec?'dec':'now')));
+  const note=document.querySelector('.page > p.note:last-of-type'); if(note) note.hidden=!dec; }
+document.querySelector('.wxtabs a[data-w="now"]').addEventListener('click',e=>{ e.preventDefault(); history.pushState(null,'',location.pathname+location.search); mode(); scrollTo(0,0); });
+addEventListener('hashchange',mode); mode();
+Promise.all([ldS('icaobrief.js?v=7'),loadApW()]).then(paintNow);
 // ?ids=ENGM (from the search bar or a link) fetches it straight away; otherwise the last code you looked up is filled in
-{ const q=new URLSearchParams(location.search), id=(q.get('ids')||'').split(',')[0].trim().toUpperCase(); let last=''; try{ last=localStorage.getItem('bb-wxid')||''; }catch(e){}
-  if(/^[A-Z]{4}$/.test(id)){ el('liveId').value=id; setTimeout(()=>live(q.get('k')==='T'?'T':'M'),0); } else if(/^[A-Z]{4}$/.test(last)) el('liveId').value=last; }
+{ const q=new URLSearchParams(location.search), id=(q.get('ids')||q.get('icao')||'').split(',')[0].trim().toUpperCase(); let last=''; try{ last=localStorage.getItem('bb-ol-icao')||localStorage.getItem('bb-wxid')||''; }catch(e){}
+  if(/^[A-Z]{4}$/.test(id)){ el('liveId').value=id; setTimeout(()=>live(q.get('k')==='T'?'T':'M'),0); } else if(/^[A-Z]{4}$/.test(last)){ el('liveId').value=last; if(!DEC.includes(location.hash.slice(1))) setTimeout(()=>live('M'),0); } }
 el('liveId').addEventListener('input',e=>{ const v=e.target.value.toUpperCase().replace(/[^A-Z]/g,''); if(v!==e.target.value) e.target.value=v; });
-el('liveOut').addEventListener('click',e=>{ const b=e.target.closest('button[data-k]'); if(b) live(b.dataset.k); });
-el('liveM').onclick=()=>live('M'); el('liveT').onclick=()=>live('T'); el('liveId').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); live('M'); } });
+el('liveOut').addEventListener('click',e=>{ const b=e.target.closest('button[data-k]'); if(!b||!NOW) return; const r=b.dataset.k==='T'?NOW.s.taf:NOW.s.metar; if(!r) return; el('raw').value=r.raw; run(); location.hash='decode'; });
+el('liveM').onclick=()=>live('M'); el('liveId').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); live('M'); } });
 
 /* ---------- sidevind ---------- */
 const XW={dir:210,spd:12,gust:0,rwy:36};

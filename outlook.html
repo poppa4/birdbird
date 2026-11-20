@@ -18,6 +18,10 @@
 <link rel="stylesheet" href="lab.css?v=15">
 <link rel="stylesheet" href="site.css?v=35">
 <style>
+.wxtabs{display:flex;gap:2px;margin:22px 0 0;border-bottom:1px solid var(--rule);overflow-x:auto}
+.wxtabs a{padding:10px 18px 9px;font-weight:600;font-size:15.5px;color:var(--ink-2);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.wxtabs a:hover{color:var(--ink)}.wxtabs a.on{color:var(--ink);border-bottom-color:var(--accent)}
+.wxtabs+.card{border-top:0;padding-top:28px}
 .olin{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;font-size:14px}
 .olin input,.olin select{font-family:var(--f-mono);font-size:16px;padding:6px 10px;border:1px solid var(--rule);border-radius:3px;background:#fff;color:var(--ink)}
 .olin #icao{width:84px;text-transform:uppercase}
@@ -130,15 +134,16 @@ details.olhow p{max-width:80ch;margin:8px 0 0}
 </style>
 </head>
 <body data-title="Weather forecast">
-<script src="site.js?v=115"></script>
+<script src="site.js?v=117"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
       <div class="eyebrow">NORDAP · Flight planning</div>
-      <h1>Weather forecast</h1>
+      <h1>Weather</h1>
       <p>Cloud base, ceiling, wind, freezing level and icing at any aerodrome, hour by hour up to 14 days ahead, from several weather models. A model estimate, not an official forecast.</p>
     </div>
   </header>
+  <nav class="wxtabs" aria-label="Weather"><a href="weather.html" data-w="now">Now</a><a href="outlook.html" data-w="fc" class="on">Forecast</a><a href="weather.html#decode" data-w="dec">Decode and practise</a></nav>
   <section class="card" id="ask">
     <div class="olin">
       <label for="icao">ICAO</label><input id="icao" maxlength="4" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ENTO">
@@ -179,7 +184,7 @@ details.olhow p{max-width:80ch;margin:8px 0 0}
 'use strict';
 const {L,el}=LAB;
 LAB.add({},{
- 'NORDAP · Flight planning':'NORDAP · Flyplanlegging','Weather forecast':'Værvarsel',
+ 'NORDAP · Flight planning':'NORDAP · Flyplanlegging','Weather forecast':'Værvarsel','Weather':'Vær','Now':'Nå','Forecast':'Varsel','Decode and practise':'Dekod og øv',
  'Cloud base, ceiling, wind, freezing level and icing at any aerodrome, hour by hour up to 14 days ahead, from several weather models. A model estimate, not an official forecast.':'Skybase, ceiling, vind, frysenivå og ising på enhver flyplass, time for time opptil 14 dager fram, fra flere værmodeller. Et modellestimat, ikke en offisiell prognose.',
  'Date':'Dato','Local time':'Lokal tid','Cloud profile':'Skyprofil','Around the aerodrome':'Rundt flyplassen','Radius':'Radius','Winds aloft':'Vind i høyden','Runways':'Baner','Models':'Modeller','Compare aerodromes':'Sammenlign flyplasser','Alternates or other aerodromes':'Alternativer eller andre flyplasser',
  'Icing likely':'Ising sannsynlig','Freezing level (0 °C)':'Frysenivå (0 °C)','Heights above the aerodrome':'Høyder over flyplassen','How it is worked out':'Slik regnes det ut',
@@ -209,7 +214,7 @@ function fmtWhen(ms,tz){ const loc=LAB.lang==='no'?'nb-NO':'en-GB'; return new I
 function msg(t){ el('out').innerHTML=`<p class="olwait">${t}</p>`; el('more').hidden=true; }
 function go(){
   const ap=AP&&AP[icao]; if(!ap){ el('st').textContent=AP?L({en:'Unknown ICAO code: ',no:'Ukjent ICAO-kode: '})+icao:L({en:'Loading aerodromes…',no:'Henter flyplasser …'}); return; }
-  try{ localStorage.setItem('bb-ol-icao',icao); }catch(e){}
+  try{ localStorage.setItem('bb-ol-icao',icao); }catch(e){} document.querySelectorAll('.wxtabs a').forEach(a=>{ if(a.dataset.w==='now') a.href='weather.html?icao='+icao; else if(a.dataset.w==='dec') a.href='weather.html?icao='+icao+'#decode'; });
   const p=new URLSearchParams(location.search); p.delete('q'); p.set('icao',icao); p.set('t',new Date(T).toISOString().slice(0,13)+':00Z'); history.replaceState(null,'','?'+p.toString());
   setInputs(); const tz=tzNow();
   el('st').innerHTML=`<b>${icao}</b> · ${esc(ap.n)} · ${sp(ap.el)} ft${tz?' · '+L({en:'local time ',no:'lokal tid '})+SUN.offset(new Date(T),tz):''}`;
