@@ -57,6 +57,7 @@ function pair0(segs) { // segments of one item (left to right) → { n, st, r }
   if (!segs.length) return null; const t = segs.map(s => s.s).join('   ');
   if (header(segs)) return null;
   if (segs.every(x => /^(ITEM|ITEMS|ACTION|ACTIONS|PILOT|CREW|CREW MEMBER|BY|ROLE|RESPONSE|CHALLENGE|STATUS|POSITION|STATE|CONTROL|STEP|NO\.?|#|REMARKS?|REF(ERENCE)?)$/i.test(x.s.trim()))) return null;
+  if (/\[N\/A\]/i.test(t)) { const q = /^(.+?)\s*(?:\.{3,}|…+)\s*(.*)$/.exec(t); if (q) { const n = cleanName(q[1]).slice(0, 90); if (n.length >= 3 && /[A-Za-z]{2}/.test(n)) return { n, st: (q[2] || '').replace(/^[.…\s]+/, '').trim().slice(0, 60), r, lead: true, na: true }; } } // N/A: kept to be shown as left out
   let m = /^(.+?)\s*(?:\.{2,}|(?:\.\s+){2,}\.?|…+|_{3,}|·{3,}|-{4,})\s*(.+)$/.exec(t); // BATTERY ........ ON
   if (m && /[A-Za-z0-9]/.test(m[2])) { const n = cleanName(m[1]), st = m[2].replace(/^[.…\s]+/, '').replace(/^"|"$/g, '').replace(/[.,;]+$/, '').trim(); return okName(n) && st && st.length <= 70 ? { n, st: st.length > 40 ? st.replace(/\s+until\b.*$/i, '').slice(0, 60) : st, r, lead: true, na: /\[N\/A\]/i.test(m[1]) } : null; }
   if (segs.length >= 2) { const st = segs[segs.length - 1].s, n = cleanName(segs.slice(0, -1).map(s => s.s).join(' ')); // BATTERY        ON (a table)
@@ -139,6 +140,10 @@ function find(doc, opt) { opt = opt || {}; const P = doc.pages || [];
     for (let i = 0; i < parts.length - 1;) { if (parts[i].steps.length < 3) { const n = parts[i + 1]; n.name = [parts[i].name, n.name].filter(Boolean).join(', '); n.steps = parts[i].steps.concat(n.steps); parts.splice(i, 1); } else i++; } // a part of one or two items joins the next
     if (parts.length > 1 && parts[parts.length - 1].steps.length < 3) { const l = parts.pop(), q = parts[parts.length - 1]; q.steps = q.steps.concat(l.steps); }
     return parts.map(q => ({ key: f.key + '|' + q.name, name: q.name ? f.name + ' – ' + q.name : f.name, page: q.steps[0].pg || f.page, page2: q.steps[q.steps.length - 1].pg || f.page, steps: q.steps })); }));
+  // a piece too short to be a flow of its own ("After all engines start:" with two items) joins the flow just before it instead of being lost
+  const kept = []; flows.forEach(f => { const short = f.steps.filter(s => s.k === 'act').length < (opt.min || 3), prev = kept[kept.length - 1];
+    if (short && prev && (prev.page2 || prev.page) >= f.page - 2 && f.steps.some(s => s.lead)) { prev.steps = prev.steps.concat(f.steps); prev.page2 = Math.max(prev.page2 || prev.page, f.page2 || f.page); } else kept.push(f); });
+  flows = kept;
   flows = flows.filter(f => f.steps.filter(s => s.k === 'act').length >= (opt.min || 3) && real(f) && !(f.steps.filter(s => /^[\d.,\/°%\-+ ]+[A-Za-z%°]{0,6}$/.test((s.t.split(' – ')[1] || '').trim())).length > f.steps.length * 0.6)); // a table of figures is not a flow
   return flows.map(f => { const used = new Set(f.steps.map(s => s.r).filter(r => r && r !== '*'));
     const rs = [...used].some(r => r === 'CM1' || r === 'CM2') && ![...used].some(r => r === 'PF' || r === 'PM') ? 'cm' : used.size ? 'pfpm' : (opt.crew === 1 ? 'one' : 'pfpm');
@@ -149,7 +154,7 @@ function find(doc, opt) { opt = opt || {}; const P = doc.pages || [];
       // the manual numbers its items: 1, 2, 3 … A number jumped over (and not struck out or N/A) may be an item that was not read
       if (s.num) { if (s.num === 1) want = 1; if (want && s.num > want && s.num - want <= 3) for (let q = want; q < s.num; q++) miss.push({ num: q, after: (steps[steps.length - 1] || {}).t || '', pg: s.pg }); if (want) want = s.num + 1; }
       if (s.k === 'cut') { cut.push({ t: s.t.replace(/\s+/g, ' ').trim().slice(0, 120), why: s.cut, pg: s.pg }); return; }
-      const r = map(s.r), k = r + '|' + s.t.toUpperCase(); if (seen.has(k)) return; seen.add(k); steps.push({ r, t: s.t.replace(/\s+/g, ' ').trim().slice(0, 120), k: s.k, pg: s.pg || 0 }); });
+      const r = map(s.r), k = r + '|' + (s.pg || 0) + '|' + s.t.toUpperCase(); if (seen.has(k)) return; seen.add(k); steps.push({ r, t: s.t.replace(/\s+/g, ' ').trim().slice(0, 120), k: s.k, pg: s.pg || 0 }); });
     return { page2: f.page2 || f.page, name: f.name.trim().slice(0, 80), phase: phaseOf(f.name), rs, roles, steps, cut, miss, pages: [...pages].sort((a, b) => a - b), page: f.page }; }); }
 
 /* ---------- step names → NORDAP's named controls ---------- */
@@ -258,7 +263,7 @@ function link(flows, figs, doc, opt) { opt = opt || {}; const out = flows.slice(
   (doc.pages || []).forEach((pg, i) => { L = L.concat(lines(pg, i + 1)); }); L = dropRunning(L, (doc.pages || []).length);
   const figPages = new Set(figs.map(g => g.page)), fits = (f, N) => { const a = f.steps.filter(s => s.k === 'act').length; return a >= N * 0.6 && a <= N * 1.5; };
   const pick = new Map(); figs.forEach(g => { const f = out.find(f => !f.fig && ![...pick.values()].includes(f) && f.page === g.page && fits(f, g.pts.length)); if (f) pick.set(g, f); }); // same page first
-  figs.forEach(g => { if (pick.has(g)) return; const f = out.filter(f => !f.fig && ![...pick.values()].includes(f) && Math.abs(f.page - g.page) === 1 && !figPages.has(f.page) && fits(f, g.pts.length)).sort((a, b) => b.page - a.page)[0]; if (f) pick.set(g, f); });
+  figs.forEach(g => { if (pick.has(g) || Object.keys(g.legend || {}).length >= g.pts.length * 0.6) return; /* a figure with its own legend is its own flow */ const f = out.filter(f => !f.fig && ![...pick.values()].includes(f) && Math.abs(f.page - g.page) === 1 && !figPages.has(f.page) && fits(f, g.pts.length)).sort((a, b) => b.page - a.page)[0]; if (f) pick.set(g, f); });
   figs.forEach(g => { const N = g.pts.length, near = pick.get(g);
     const lg = g.legend || {}, nl = Object.keys(lg).length;
     if (near) { near.fig = g; const acts = near.steps.filter(s => s.k === 'act'); acts.forEach((s, i) => { s.n = i + 1; });
@@ -270,7 +275,7 @@ function link(flows, figs, doc, opt) { opt = opt || {}; const out = flows.slice(
     const used = new Set(steps.map(s => s.r).filter(Boolean)), rs = [...used].some(r => /^CM/.test(r)) ? 'cm' : used.size ? 'pfpm' : (opt.crew === 1 ? 'one' : 'pfpm'), roles = { pfpm: ['PF', 'PM'], cm: ['CM1', 'CM2'], one: ['P'] }[rs];
     steps.forEach(s => { s.r = rs === 'one' ? 'P' : roles.includes(s.r) ? s.r : roles[0]; });
     const un = steps.filter(s => !s.named).length, nm = un > steps.length / 2 ? name + ' (figure, p. ' + g.page + ')' : name;
-    out.push({ name: nm.slice(0, 80), phase: phaseOf(name), rs, roles, steps, page: g.page, fig: g, unnamed: un, maybe: un > steps.length / 2 }); });
+    steps.forEach(s => { s.pg = g.page; }); out.push({ name: nm.slice(0, 80), phase: phaseOf(name), rs, roles, steps, page: g.page, pages: [g.page], miss: [], cut: [], fig: g, unnamed: un, maybe: un > steps.length / 2 }); });
   // a flow drawn as a scan picture (arrows, no numbers): the picture can be its cockpit; the steps are placed with a tap, in order
   out.forEach(f => { if (f.fig) return; let best = null; for (let q = f.page; q <= (f.page2 || f.page); q++) { const pg = (doc.pages || [])[q - 1]; if (!pg) continue; const W = pg.w || 600, H = pg.h || 800;
       (pg.imgs || []).forEach(B => { if (B.w * B.h > W * H * 0.12 && B.y > H * 0.1 && (!best || B.w * B.h > best.box.w * best.box.h)) best = { page: q, box: B }; }); }
