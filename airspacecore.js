@@ -1,11 +1,11 @@
 /* NORDAP – airspacecore.js: the model behind the airspace lab (airspace.html), no drawing.
-   One fictional airspace around one aerodrome (Nordvik, not a real AIP), flat terrain at sea level:
+   One fictional airspace around one aerodrome (not a real AIP), flat terrain at sea level:
      CTR   class D  SFC–2500 ft          within 8 NM
      TMA   class C  2500 ft–FL195 within 8 NM, 3500 ft–FL195 8–15 NM, 4500 ft–FL195 15–25 NM (stepped, "upside-down wedding cake")
      CTA   class E  FL95–FL195           beyond 25 NM
      Upper class C  FL195–FL660          everywhere
      G     class G  everything else, from the surface
-     RMZ   class G + RMZ, SFC–2000 ft, 4 NM around the small airfield Lia (33 NM east)
+     RMZ   class G + RMZ, SFC–2000 ft, 4 NM around a small airfield (33 NM east)
      R-101 restricted area, SFC–6500 ft, 28–34 NM west, 5 NM either side of the route
    Rules: EASA only. SERA (Implementing Regulation (EU) No 923/2012): Appendix 4 (classes), SERA.5001 (VMC minima, Table S5-1),
    SERA.5005 (VFR, incl. CTR 1500 ft / 5 km, night, FL195), SERA.5010 (special VFR), SERA.6001, SERA.6005 (RMZ/TMZ), SERA.3145 (P/R areas).
@@ -23,7 +23,7 @@ const NAMES={
   cta:t2('Control area (CTA)','Kontrollområde (CTA)'),
   up:t2('Upper control area','Øvre kontrollområde'),
   g:t2('Uncontrolled airspace','Ukontrollert luftrom'),
-  rmz:t2('Radio mandatory zone (RMZ) at Lia','Radiopliktig sone (RMZ) ved Lia')};
+  rmz:t2('Radio mandatory zone (RMZ)','Radiopliktig sone (RMZ)')};
 
 /* where am I: the volume, its class and its limits */
 function at(x,y,alt){ y=y||0; const r=Math.hypot(x,y);

@@ -35,7 +35,6 @@ function mount(cv,o){
   [10,20,30,40].forEach(r=>circle(r,0.01,0x8E99A4,.18));
   { const l=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(-42,.03,0),new T.Vector3(42,.03,0)]),lineMat(0xE46BAE,.6,true)); l.computeLineDistances(); scene.add(l); }
   const rw=new T.Mesh(new T.PlaneGeometry(2.4,.35),new T.MeshBasicMaterial({color:0xE6EBEF})); rw.rotation.x=-Math.PI/2; rw.position.y=.04; scene.add(rw);
-  label('Nordvik',0,-.2,3.2,{fs:34,bg:false,w:600}); label('Lia',33,-.2,2.6,{fs:30,bg:false,w:600,col:'#C9D2DA'});
   /* the volumes (the same geometry as airspacecore.js) */
   solid('up',ring(0,40,19500,30000),CC.C,.035,1);
   solid('cta',ring(25,40,9500,19500),CC.E,.08,2);
@@ -49,6 +48,7 @@ function mount(cv,o){
   const L=o.L, t2=(en,no)=>({en,no});
   const LB={};
   function labelsDraw(){ Object.values(LB).forEach(s=>{ scene.remove(s); const i=labels.indexOf(s); if(i>=0) labels.splice(i,1); });
+    LB.ad=label(L(t2('Aerodrome','Flyplass')),0,-.2,3.2,{fs:34,bg:false,w:600}); LB.af=label(L(t2('Airfield','Småflyplass')),33,-.2,2.6,{fs:30,bg:false,w:600,col:'#C9D2DA'});
     LB.ctr=label('D · CTR',-5,H(1500),6,{col:'#7FE0D3'});
     LB.tma=label('C · TMA',-3,H(14000),3,{col:'#9CC7F0'});
     LB.s2=label('3500 ft',11.5,H(3500)+.4,-0,{fs:30,col:'#9CC7F0',w:600});

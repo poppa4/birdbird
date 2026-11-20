@@ -40,7 +40,7 @@ function draw(g,W,H,p,tm){
   /* sky and ground */
   const sk=g.createLinearGradient(0,top,0,yg); sk.addColorStop(0,'#0E1722'); sk.addColorStop(1,'#203245'); g.fillStyle=sk; g.fillRect(0,0,W,yg);
   g.fillStyle='#2d3628'; g.fillRect(0,yg,W,H-yg);
-  g.fillStyle='#E6EBEF'; g.fillRect(X(0)-9,yg-2,18,3); txt(g,'Nordvik',X(0),yg+15*fs,{al:'center',size:10.5*fs,col:'#DDE4EA'});
+  g.fillStyle='#E6EBEF'; g.fillRect(X(0)-9,yg-2,18,3); txt(g,L({en:'Aerodrome',no:'Flyplass'}),X(0),yg+15*fs,{al:'center',size:10.5*fs,col:'#DDE4EA'});
   const box=(x0,x1,a0,a1,c,al,o)=>{ g.save(); g.globalAlpha*=o; g.fillStyle=hex(c,al); g.fillRect(X(x0),Y(a1),X(x1)-X(x0),Y(a0)-Y(a1)); g.strokeStyle=hex(c,.95); g.lineWidth=1.5; g.strokeRect(X(x0),Y(a1),X(x1)-X(x0),Y(a0)-Y(a1)); g.restore(); };
   const big=(s,x,alt,c,o,sub)=>{ g.save(); g.globalAlpha*=o; txt(g,s,X(x),Y(alt),{al:'center',size:(sm?16:22)*fs,w:700,col:c}); if(sub) txt(g,sub,X(x),Y(alt)+14*fs,{al:'center',size:10*fs,col:'#C9D2DA'}); g.restore(); };
   /* 1 · G */
