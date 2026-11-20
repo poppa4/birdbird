@@ -575,7 +575,7 @@ async function manRead(file) { const d = $('dman'), b = $('dmanb'); MAN = null; 
   catch (e) { if (d.open) b.innerHTML = manMsg(L({ en: 'Could not open the PDF. If it is password protected, save a copy without the password and try again.', no: 'Fikk ikke åpnet PDF-en. Er den passordbeskyttet, lagre en kopi uten passord og prøv igjen.' })); return; }
   if (!d.open) return; // cancelled while reading
   if (doc.chars < 200) { b.innerHTML = manMsg(L({ en: 'This PDF has no text to read: the pages are scanned pictures. Use a PDF where you can select the text, or paste the flow under “Paste SOP text”.', no: 'Denne PDF-en har ingen tekst å lese: sidene er skannede bilder. Bruk en PDF der du kan markere teksten, eller lim inn flowen under «Lim inn SOP-tekst».' })); return; }
-  const found = MP.find(doc), g = MP.guessAc(doc);
+  const g = MP.guessAc(doc), found = MP.find(doc, { crew: g && A.get(g) ? A.get(g).crew : 2 });
   if (!found.length) { b.innerHTML = manMsg(L({ en: `No flows found in ${doc.pages.length} pages. The flows may be drawn as pictures rather than written as items. You can still paste a flow under “Paste SOP text”.`, no: `Fant ingen flows på ${doc.pages.length} sider. Flowene kan være tegnet som bilder i stedet for skrevet som punkter. Du kan fortsatt lime inn en flow under «Lim inn SOP-tekst».` })); return; }
   MAN = { name: doc.name, pages: doc.pages.length, ac: g && A.get(g) ? g : (cur && A.get(cur.ac) ? cur.ac : 'img'), open: -1, flows: found.map(f => Object.assign(f, { on: true })) };
   d.classList.add('wide'); manDraw(); }

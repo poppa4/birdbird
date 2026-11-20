@@ -121,7 +121,7 @@ function find(doc, opt) { opt = opt || {}; const P = doc.pages || [];
     return { name: f.name.slice(0, 80), phase: phaseOf(f.name), rs, roles, steps, page: f.page }; }); }
 
 /* ---------- step names → NORDAP's named controls ---------- */
-const SYN = [[/\bBATT?(ERY|ERIES|S)?\b/g, 'BAT'], [/\bENGINES?\b/g, 'ENG'], [/\bFLIGHT\b/g, 'FLT'], [/\bCONTROLS\b/g, 'CONTROL'], [/\bGENERATORS?\b/g, 'GEN'], [/\bLIGHTS?\b|\bLTS\b/g, 'LT'], [/\bSELECTORS?\b/g, 'SEL'], [/\bSWITCH(ES)?\b|\bSW\b|\bP\/?B\b|\bPUSH ?BUTTONS?\b|\bKNOBS?\b/g, ''], [/\bLEVERS?\b/g, 'LVR'], [/\bTHRUST\b/g, 'THR'], [/\bRUDDER\b/g, 'RUD'], [/\bWEATHER\b/g, 'WX'], [/\bOXY(GEN)?\b/g, 'OXYGEN'], [/\bA-ICE\b/g, 'ANTI ICE'], [/\bBRAKES?\b/g, 'BRK'], [/\bSTATUS\b/g, 'STS'],
+const SYN = [[/\bBATT?(ERY|ERIES|S)?\b/g, 'BAT'], [/\bENGINES?\b/g, 'ENG'], [/\bFLIGHT\b/g, 'FLT'], [/\bCONTROLS\b/g, 'CONTROL'], [/\bGENERATORS?\b/g, 'GEN'], [/\bLIGHTS?\b|\bLTS\b/g, 'LT'], [/\bSELECTORS?\b/g, 'SEL'], [/\bSWITCH(ES)?\b|\bSW\b|\bP\/?B\b|\bPUSH ?BUTTONS?\b|\bKNOBS?\b/g, ''], [/\bLEVERS?\b/g, 'LVR'], [/\bTHRUST\b/g, 'THR'], [/\bRUDDER\b/g, 'RUD'], [/\bWEATHER\b/g, 'WX'], [/\bOXY(GEN)?\b/g, 'OXYGEN'], [/\bA-ICE\b/g, 'ANTI ICE'], [/\bBRAKES?\b/g, 'BRK'], [/\bSTATUS\b/g, 'STS'], [/\bHEATING\b|\bHEATERS?\b/g, 'HEAT'],
   [/\bPUMPS\b/g, 'PUMP'], [/\bVALVES?\b/g, 'VALVE'], [/\bAUX(ILIARY)? POWER UNIT\b/g, 'APU'], [/\bHYDRAULICS?\b/g, 'HYD'], [/\bELEC(TRICAL|TRICS)?\b/g, 'ELEC'], [/\bPARK(ING)? (BRAKE|BRK)\b/g, 'PARK BRK'],
   [/\bANTI[- ]?ICE\b/g, 'ANTI ICE'], [/\bNO\.? ?(\d)\b/g, '$1'], [/\bNUMBER (\d)\b/g, '$1'], [/\bTRANSPONDER\b|\bXPDR\b|\bATC\b(?! ?(MSG|CLEARANCE|CLR|CLRNC))/g, 'XPDR'], [/\bWINDSHIELD|WINDOW\b/g, 'WINDOW'], [/\bSEAT ?BELTS?\b/g, 'SEAT BELTS'],
   [/\bNO SMOKING\b/g, 'NO SMOKING'], [/\bEMER(GENCY)?\b/g, 'EMER'], [/\bEXTERIOR\b|\bEXT\b/g, 'EXT'], [/\bLANDING\b|\bLDG\b/g, 'LAND'], [/\bTAXI\b/g, 'TAXI'], [/\bNAVIGATION\b/g, 'NAV'], [/\bSTROBES?\b/g, 'STROBE'], [/\bBEACONS?\b/g, 'BEACON'],
@@ -132,7 +132,7 @@ const stem = x => x.length > 3 && /[^S]S$/.test(x) ? x.slice(0, -1) : x;
 const toks = s => { const o = []; norm(s).split(' ').filter(Boolean).forEach(x => { o.push(stem(x)); }); const n = new Set(o).size; norm(s).split(' ').forEach(x => { if (x.includes('/')) x.split('/').filter(Boolean).forEach(y => o.push(stem(y))); }); o.n = n; return o; }; // ON/OFF also reads as ON and OFF
 /* "BAT 1 & 2", "FUEL PUMPS 1+2", "ENG 1/2 MASTER": the first of the pair is where the hand goes first */
 function firstOfPair(n) { return String(n).replace(/\b(\d)(?:\s*(?:&|\+|AND|,|\/)\s*\d\b)+/gi, '$1').replace(/\bALL\b/gi, ' ').replace(/\bBOTH\b/gi, ' '); }
-const GENERIC = /^(LT|PUMP|SEL|VALVE|ENG|GEN|BAT|ALL|MODE|TEST|LVR|ON|OFF|AUTO|SYS|IND|CHECK|SET|PANEL|1|2|3|4)$/;
+const GENERIC = /^(MASTER|SWITCHE|LT|PUMP|SEL|VALVE|ENG|GEN|BAT|ALL|MODE|TEST|LVR|ON|OFF|AUTO|SYS|IND|CHECK|SET|PANEL|1|2|3|4)$/;
 function score(A, B, st, nm) { if (!A.length || !B.length) return 0; const a = new Set(A), b = new Set(B);
   const nA = A.filter(x => /^\d$/.test(x)), nB = B.filter(x => /^\d$/.test(x)); if (nA.length && nB.length && !nA.some(x => b.has(x))) return 0; // BAT 1 is never BAT 2
   if (nm && A.join(' ') === nm.join(' ') || !nm && A.join(' ') === B.join(' ')) return 1.1; // the very name
@@ -142,9 +142,12 @@ function score(A, B, st, nm) { if (!A.length || !B.length) return 0; const a = n
   if (a.size === 1 && (GENERIC.test(A[0]) || rc < 0.25 || (nm && !nm.includes(A[0])))) return 0; // one word must be in the control's own name
   return 0.45 * pr + 0.25 * pa + 0.3 * rc + (pa === 1 ? 0.1 : 0) + (B.some(x => x === 'L' || x === '1' || x === 'CPT') ? 0.005 : 0) + (st && st.some(x => b.has(x) && !a.has(x)) ? 0.08 : 0) + (nm && A.some(x => nm.includes(x)) ? 0.03 : 0); } // AUTO BRK – MAX: the MAX button
 /* targets: [{ id, name, panel, x, y, w, h, whole }] (BBFLOWAC.targets) → the best control for a step, or null */
-function match(name, targets) { const parts = String(name || '').split(' – '), A = toks(firstOfPair(parts[0])), st = toks(parts[1] || ''); if (!A.length) return null; let best = null, bs = 0;
-  targets.forEach(t => { if (t.whole) return; const s = Math.max(score(A, toks(t.name), st), t.panel ? 0.97 * score(A, toks(t.panel + ' ' + t.name), st, toks(t.name)) : 0); if (s > bs + 1e-9) { bs = s; best = t; } });
-  return bs >= 0.6 ? best : null; }
+const side = t => toks(t.name).filter(x => !/^(L|R|C|1|2|3|4|CPT|FO|F\/O|LEFT|RIGHT|CTR)$/.test(x)).join(' ');
+function match(name, targets) { const parts = String(name || '').split(' – '), A = toks(firstOfPair(parts[0].replace(/\([^)]*\)/g, ' '))), st = toks(parts[1] || ''); if (!A.length) return null;
+  const head = A.filter(x => !/^\d$/.test(x) && !/^(SEL|MODE|SYS|PANEL|CONTROL|UNIT|ALL)$/.test(x)).pop(); let best = null, bs = 0, second = 0; // "Fuel pumps" is a pump: the last word must be on the control
+  targets.forEach(t => { if (t.whole) return; const nm = toks(t.name), pn = t.panel ? toks(t.panel + ' ' + t.name) : null; if (head && !nm.includes(head) && !(pn && pn.includes(head))) return;
+    const s = Math.max(score(A, nm, st), pn ? 0.97 * score(A, pn, st, nm) : 0); if (s > bs + 1e-9) { if (best && side(best) !== side(t)) second = bs; bs = s; best = t; } else if (s > second && best && side(best) !== side(t)) second = s; });
+  return bs >= 0.6 ? best : null; } // a tie between two controls ("MASTER": electric, avionic or engine?) is left for a tap
 function place(steps, targets) { let n = 0; steps.forEach(s => { if (s.k !== 'act') return; const t = match(s.t, targets); if (t) { s.tg = t.id; s.x = Math.round(t.x + t.w / 2); s.y = Math.round(t.y + t.h / 2); n++; } else { s.x = null; s.y = null; } }); return n; }
 
 /* which aircraft the manual is about: the type named most often */
