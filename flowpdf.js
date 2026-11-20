@@ -17,10 +17,10 @@ function roleOf(s) { const t = String(s || '').trim().toUpperCase().replace(/\s+
 function roleInTitle(t) { const m = /(?:^|[\s(\[–—\-:\/])(PF|PM|PNF|CM ?1|CM ?2|CAPT(?:AIN)?|CPT|F\/O|FO|FIRST OFFICER|PILOT FLYING|PILOT MONITORING)(?=$|[\s)\]–—\-:\/])/i.exec(String(t || '')); return m ? roleOf(m[1]) : null; }
 /* flight phases (the ids of F.PHASES), first match wins */
 const PHASE_KW = [['abn', /\b(MEMORY ITEMS?|ABNORMAL|EMERGENCY|NON[- ]NORMAL|QRH|REJECTED TAKE ?OFF|RTO|EVACUATION|ENGINE FAIL|WINDSHEAR|EGPWS|TCAS|STALL RECOVERY|UNRELIABLE)\b/i],
-  ['aldg', /\bAFTER LANDING\b/i], ['shut', /\b(PARKING|SECURING|SHUT ?DOWN|LEAVING THE AIRCRAFT|TERMINATION|POWER DOWN)\b/i],
-  ['ldg', /\b(LANDING|GO[- ]AROUND|MISSED APPROACH|TOUCHDOWN|FLARE)\b/i], ['app', /\b(APPROACH|FINAL)\b/i], ['des', /\b(DESCENT|TOP OF DESCENT|ARRIVAL)\b/i],
-  ['crz', /\bCRUISE\b/i], ['clb', /\b(AFTER TAKE ?OFF|CLIMB|TRANSITION ALTITUDE)\b/i], ['bto', /\b(BEFORE TAKE ?OFF|LINE ?UP|TAKE ?OFF|RUNWAY ENTRY)\b/i],
-  ['taxi', /\bTAXI/i], ['ast', /\b(AFTER START|ENGINE START|ENGINES? START|STARTING)\b/i], ['bst', /\b(BEFORE START|BEFORE PUSH|PUSH ?BACK|PUSH AND START)\b/i],
+  ['aldg', /\bAFTER LANDING\b/i], ['shut', /\b(PARKING|SECURING|SHUT[- ]?DOWN|POST[- ]?FLIGHT|LEAVING THE AIRCRAFT|TERMINATION|POWER DOWN)\b/i],
+  ['ldg', /\b(LANDING|GO[- ]?AROUND|MISSED APPROACH|TOUCHDOWN|FLARE)\b/i], ['app', /\b(APPROACH|FINAL)\b/i], ['des', /\b(DESCENT|TOP OF DESCENT|ARRIVAL)\b/i],
+  ['crz', /\bCRUISE\b/i], ['clb', /\b(AFTER TAKE[- ]?OFF|CLIMB|TRANSITION ALTITUDE)\b/i], ['bto', /\b(BEFORE TAKE[- ]?OFF|LINE[- ]?UP|TAKE[- ]?OFF|RUNWAY ENTRY)\b/i],
+  ['taxi', /\bTAXI/i], ['bst', /\b(BEFORE START(ING)?|BEFORE PUSH|PUSH ?BACK|PUSH AND START)\b/i], ['ast', /\b(AFTER START|ENGINE START|ENGINES? START|STARTING)\b/i],
   ['pre', /\b(COCKPIT PREP(ARATION)?|PRELIMINARY|SAFETY (CHECK|INSPECTION)|EXTERIOR|WALK ?AROUND|ORIGINATING|POWER ?UP|RECEIVING|FLIGHT DECK PREP(ARATION)?|PREFLIGHT|PRE-?FLIGHT)\b/i]];
 const phaseOf = t => { for (const [id, rx] of PHASE_KW) if (rx.test(t)) return id; return ''; };
 const FLOWWORD = /\b(FLOWS?|PROCEDURES?|SCAN|CHECKLIST|SEQUENCE|DUTIES|TASKS)\b/i;
@@ -45,25 +45,25 @@ function dropRunning(L, pages) { if (pages < 4) return L; const key = l => l.tex
 /* ---------- one line → zero, one or two items ---------- */
 const upperish = s => { const a = s.replace(/[^A-Za-z]/g, ''); return a.length > 0 && a.replace(/[^A-Z]/g, '').length / a.length >= 0.6; };
 const words = s => s.trim().split(/\s+/).length;
-const BULLET = /^(\(?\d{1,3}[.)]|\(?[a-z][.)]|[-–•*·▪►>✓☐□■◦○]|\[\s?\])\s*/;
-function cleanName(s) { return s.replace(BULLET, '').replace(/^\d{1,2}\s+(?=[A-Za-z]{2})/, '').replace(/[\s.…:_·]+$/, '').replace(/\s+/g, ' ').trim(); }
-function okName(n) { return n.length >= 2 && n.length <= 70 && /[A-Za-z]/.test(n) && words(n) <= 10 && !/[.!?]$/.test(n) && !/^(NOTE|CAUTION|WARNING|REMARK|REF|SEE|IF|WHEN|THE|THIS|IN|ON|AT)\b/i.test(n); }
-function okState(st) { st = st.trim(); return st.length >= 1 && st.length <= 40 && words(st) <= 7 && (STATE.test(st) || upperish(st) || /^[\d.,\/°%\-+ ]+[A-Za-z%°]{0,6}$/.test(st)) && !/[.!?]$/.test(st.replace(/\.{2,}$/, '')); }
+const BULLET = /^(\(?\d{1,3}[.)]|\(?[a-zA-Z][.)](?=\s)|[-–•*·▪►>✓☐□■◦○]|\[\s?\])\s*/;
+function cleanName(s) { return s.replace(/\[(ALL|VAR|[A-Z]{1,4}\d*)\]\s*/g, '').replace(BULLET, '').replace(/^\d{1,2}\s+(?=[A-Za-z]{2})/, '').replace(/[\s.…:_·]+$/, '').replace(/\s+/g, ' ').trim(); }
+function okName(n) { if (ASIDE.test(n) || /^QRH\b/i.test(n) || !/[A-Za-z]{2}/.test(n.replace(/\b(KT|FT|HPA|RPM)\b/gi, ''))) return false; return n.length >= 2 && n.length <= 70 && /[A-Za-z]/.test(n) && words(n) <= 10 && !/[.!?]$/.test(n) && !/^(NOTE|CAUTION|WARNING|REMARK|REF|SEE|IF|WHEN|THE|THIS|IN|ON|AT)\b/i.test(n); }
+function okState(st) { st = st.trim(); if (/^[A-Z]{1,3}$/.test(st) && /^\d/.test(st)) return false; return st.length >= 1 && st.length <= 40 && words(st) <= 7 && (STATE.test(st) || upperish(st) || /^[\d.,\/°%\-+ ]+[A-Za-z%°]{0,6}$/.test(st)) && !/[.!?]$/.test(st.replace(/\.{2,}$/, '')); }
 function pair(segs) { // segments of one item (left to right) → { n, st, r }
   segs = segs.slice(); let r = null;
   for (let i = segs.length - 1; i >= 0; i--) if (ROLE_RX.test(segs[i].s.trim())) { r = r || roleOf(segs[i].s); segs.splice(i, 1); }
-  if (segs.length > 1 && labelNum(segs[0].s) && /[A-Za-z]/.test(segs[1].s)) segs.shift(); // "1   BAT 1+2 ..... ON": the legend number of a figure
+  if (segs.length > 1 && (labelNum(segs[0].s) || /^[(\[]?[A-Za-z][)\].]$/.test(segs[0].s.trim())) && /[A-Za-z]/.test(segs[1].s)) segs.shift(); // "1   BAT 1+2 ..... ON": the legend number of a figure
   if (!segs.length) return null; const t = segs.map(s => s.s).join('   ');
   if (header(segs)) return null;
   if (segs.every(x => /^(ITEM|ITEMS|ACTION|ACTIONS|PILOT|CREW|CREW MEMBER|BY|ROLE|RESPONSE|CHALLENGE|STATUS|POSITION|STATE|CONTROL|STEP|NO\.?|#|REMARKS?|REF(ERENCE)?)$/i.test(x.s.trim()))) return null;
   let m = /^(.+?)\s*(?:\.{2,}|(?:\.\s+){2,}\.?|…+|_{3,}|·{3,}|-{4,})\s*(.+)$/.exec(t); // BATTERY ........ ON
-  if (m) { const n = cleanName(m[1]), st = m[2].replace(/^[.…\s]+/, '').replace(/^"|"$/g, '').trim(); return okName(n) && st && st.length <= 40 ? { n, st, r } : null; }
+  if (m && /[A-Za-z0-9]/.test(m[2])) { const n = cleanName(m[1]), st = m[2].replace(/^[.…\s]+/, '').replace(/^"|"$/g, '').replace(/[.,;]+$/, '').trim(); return okName(n) && st && st.length <= 40 && !/\[N\/A\]/i.test(m[1]) ? { n, st, r, lead: true } : null; }
   if (segs.length >= 2) { const st = segs[segs.length - 1].s, n = cleanName(segs.slice(0, -1).map(s => s.s).join(' ')); // BATTERY        ON (a table)
     if (okName(n) && okState(st) && (upperish(n) || STATE.test(st))) return { n, st, r }; return null; }
   m = /^(.+?\S)\s+[–—]\s+(\S.*)$/.exec(t) || /^(.+?\S)\s+-\s+(\S.*)$/.exec(t) || /^([A-Z0-9][A-Z0-9 &\/+().'-]{1,60}):\s+(\S.*)$/.exec(t); // BEACON – ON / BEACON: ON
-  if (m) { const n = cleanName(m[1]), st = m[2].trim(); if (okName(n) && okState(st) && upperish(n)) return { n, st, r }; }
+  if (m && /[A-Za-z0-9]/.test(m[2])) { const n = cleanName(m[1]), st = m[2].trim(); if (okName(n) && okState(st) && upperish(n)) return { n, st, r }; }
   const q = /^(?:call|request|ask for|read)\s+["“]?([^"”]*checklist)\.?["”]?\.?$/i.exec(t); if (q) return { n: q[1].toUpperCase(), st: '', r, call: true };
-  if (/checklist/i.test(t) && words(t) <= 8 && !/[.!?]$/.test(t)) { const n = cleanName(t.replace(/\s*[–—-]\s*(call|request|read|complete)\w*\s*$/i, '')); if (okName(n)) return { n, st: '', r, call: true }; } // BEFORE START CHECKLIST
+  if (/checklist|\bC\/L\b/i.test(t) && words(t) <= 8 && !/[.!?]$/.test(t)) { const n = cleanName(t.replace(/\s*[–—-]\s*(call|request|read|complete)\w*\s*$/i, '')); if (okName(n)) return { n, st: '', r, call: true }; } // BEFORE START CHECKLIST
   return null; }
 function items(l) { // two items side by side (PF left, PM right): split where the page splits, if both halves read as items
   const mid = l.W / 2, Lh = l.segs.filter(s => s.x2 <= mid + 4), Rh = l.segs.filter(s => s.x >= mid - 4);
@@ -78,12 +78,15 @@ function roleHead(l) { const S = l.segs.map(s => s.s.trim().replace(/\s+(TASKS?|
   return null; }
 const HEADWORDS = /^(ITEM|ITEMS|ACTION|ACTIONS|PILOT|CREW|CREW MEMBER|BY|ROLE|RESPONSE|CHALLENGE|STATUS|POSITION|STATE|CONTROL|STEP|NO\.?|#|REMARKS?|REF(ERENCE)?|PF|PM|CM ?1|CM ?2)$/i;
 const header = segs => segs.length >= 2 && segs.every(x => HEADWORDS.test(x.s.trim()));
-function heading(l, body) { if (header(l.segs)) return false; const t = l.text.replace(/\s{2,}/g, ' ').trim(); if (t.length < 3 || t.length > 90 || !/[A-Za-z]{3}/.test(t) || /[.,;]$/.test(t) || words(t) > 12) return false;
-  return upperish(t) || l.h >= body * 1.15; }
+const SEC_RX = /^\s*[A-Z]{0,4}\d{1,3}(\.\d{1,3})+/;
+const ASIDE = /^(NOTES?|CAUTIONS?|WARNINGS?|REMARKS?|CONTINUED( ON)? NEXT PAGE|CONT['’]?D|END OF CHECKLIST|INTENTIONALLY LEFT BLANK|\[N\/A\]|\[ALL\]|XREF\b.*)$/i;
+const SENTENCE = /^(PROCEED|REFER|SEE|WHEN|WHILE|IF|PASS|THE|THIS|THESE|IT|ENSURE|DO NOT|TO BE|NOTE:|CAUTION:|WARNING:|AS |ONCE|THEN|ALWAYS|NEVER|\(|\d+\.\s*[a-z])/i;
+function heading(l, body) { const tt = l.text.replace(/\s{2,}/g, ' ').trim(); const t0 = tt.replace(/^\s*[A-Z]{0,4}\d{1,3}(\.\d{1,3})+\.?\s*/, ''); if (/\b(C\/L|CHECK ?LIST)\s*$/i.test(tt) && !SEC_RX.test(tt)) return false; if (header(l.segs) || ASIDE.test(tt) || SENTENCE.test(t0) || /\w\. \w/.test(t0) || /\.{4,}|…/.test(tt) || /^([a-z]|[ivx]+|[IVX]+)\)/.test(tt)) return false; const t = l.text.replace(/\s{2,}/g, ' ').trim(); if (t.length < 3 || t.length > 90 || !/[A-Za-z]{3}/.test(t) || /[.,;]$/.test(t) || words(t) > 12) return false;
+  return upperish(t) || l.h >= body * 1.15 || (SEC_RX.test(t) && /\s[A-Za-z]/.test(t)); } // "F02.3.2.1. Normal take-off": a numbered heading in any case
 function titleCase(t) { return t.replace(/\s+/g, ' ').trim().toLowerCase().replace(/(^|[\s(\/–-])([a-z])/g, (m, a, b) => a + b.toUpperCase())
   .replace(/\b(Pf|Pm|Cm1|Cm2|Fo|Capt|Apu|Atc|Qrh|Sop|Ils|Rnav|Rnp|Fms|Fmgs|Mcdu|Fmc|Ecam|Eicas|Efb|Toga|Flx|Ctot|Atis|Adirs?|Irs|Gpws|Egpws|Tcas|Ram|Rto|Etops)\b/g, m => m.toUpperCase())
   .replace(/\b(And|Or|Of|The|To|For|In|On|At|With)\b/g, (m, a, o) => o ? m.toLowerCase() : m); }
-function cleanTitle(t) { return titleCase(String(t || '').replace(/(^|\s[–—-]\s)\s*(\d+(\.\d+)*\.?|[A-Z]\d*(\.\d+)+|[IVX]+\.|[A-Z]{1,4}(-[A-Z]{1,6})*-\d+[A-Z]?(-\d+)*|DSC-[\d-]+)\s+/g, '$1').replace(/\s*[\(\[]?\s*(PF|PM|PNF|CM ?1|CM ?2|CAPT(AIN)?|CPT|F\/O|FO|PILOT FLYING|PILOT MONITORING)\s*[\)\]]?\s*$/i, '').replace(/\s*[–—:\-]\s*$/, '')).trim(); }
+function cleanTitle(t) { return titleCase(String(t || '').replace(/^\s*QRH\s+[A-Z/]+\s*\d*(\.\d+)?\s*[-–—]\s*/i, '').replace(/\[[^\]]*\]/g, ' ').replace(/\(\s*cont['’]?d\.?\s*\)|\(\s*continued\s*\)/ig, ' ').replace(/^\s*([A-Z]{0,4}\d{1,3}(\.\d{1,3})+)\.?\s*/, '').replace(/\s{2,}/g, ' ').replace(/(^|\s[–—-]\s)\s*(\d+(\.\d+)*\.?|[A-Z]\d*(\.\d+)+|[IVX]+\.|[A-Z]{1,4}(-[A-Z]{1,6})*-\d+[A-Z]?(-\d+)*|DSC-[\d-]+)\s+/g, '$1').replace(/\s*[\(\[]?\s*(PF|PM|PNF|CM ?1|CM ?2|CAPT(AIN)?|CPT|F\/O|FO|PILOT FLYING|PILOT MONITORING)\s*[\)\]]?\s*$/i, '').replace(/\s*[–—:\-]\s*$/, '')).trim(); }
 
 /* ---------- the flows of a whole manual ---------- */
 /* doc: { pages: [{ w, h, items }] } → [{ name, phase, rs, roles, steps: [{ r, t, k }], page }] */
@@ -91,39 +94,50 @@ function find(doc, opt) { opt = opt || {}; const P = doc.pages || [];
   let L = []; P.forEach((pg, i) => { L = L.concat(lines(pg, i + 1)); }); L = dropRunning(L, P.length);
   const hs = L.map(l => l.h).sort((a, b) => a - b), body = hs.length ? hs[Math.floor(hs.length / 2)] : 9;
   const out = []; let B = null, gap = 0, role = null, cols = null, heads = [];
-  const close = () => { if (B && B.steps.filter(s => s.k === 'act').length >= (opt.min || 3)) out.push(B); B = null; gap = 0; };
-  const titleFor = i => { const near = heads.filter(h => i - h.i <= 45 && h.p >= L[i].p - 1); if (!near.length) return '';
-    const top = near.slice().reverse().find(h => phaseOf(h.t)) || near.slice().reverse().find(h => FLOWWORD.test(h.t)) || near[near.length - 1], last = near[near.length - 1];
-    // "Cockpit preparation" above "Overhead panel scan": both, the phase first
-    return last !== top && last.i > top.i && !roleInTitle(last.t) && !phaseOf(last.t) ? top.t + ' – ' + last.t : top.t; };
+  const close = () => { if (B && B.steps.length) out.push(B); B = null; gap = 0; }; // short pieces are kept: they may join the rest of their procedure
+  const SEC = /^\s*[A-Z]{0,4}\d{1,3}(\.\d{1,3})+\.?\s*[\[A-Za-z]/; // "F02.1.5. BEFORE STARTING ENGINE", "2.3 TAXI"
+  const titleFor = i => { const isSec = h => SEC.test(h.t) && !(L[h.i + 1] && SEC.test(L[h.i + 1].text)) && !(L[h.i - 1] && SEC.test(L[h.i - 1].text)), sec = heads.filter(h => h.p >= L[i].p - 8 && isSec(h)).pop(), near = heads.filter(h => i - h.i <= 45 && h.p >= L[i].p - 1 && !/^QRH\b/i.test(h.t));
+    const sub = h => h.i > sec.i && !SEC.test(h.t) && h.h >= sec.h - 0.5 && (FLOWWORD.test(h.t) || (phaseOf(h.t) && /^\s*(BEFORE|AFTER|PRIOR TO)\b/i.test(h.t)));
+    if (sec && !near.some(sub)) return sec.t; if (sec) { const u = near.filter(sub).pop().t; return /^\W*(PROCEDURES?|GENERAL|FLOWS?|ACTIONS?|SEQUENCE|SCAN|TASKS|DUTIES)\W*$/i.test(u) ? sec.t : u; } // a named part of the section ("BEFORE STARTING ENGINE WITH EXTERNAL POWER") // the numbered section the items are in
+    if (!near.length) return sec ? sec.t : '';
+    const top = near.slice().reverse().find(h => phaseOf(h.t) && h.big) || near.slice().reverse().find(h => phaseOf(h.t)) || near.slice().reverse().find(h => FLOWWORD.test(h.t)) || near[near.length - 1];
+    const last = near[near.length - 1]; return last.i > top.i && last.h >= top.h - 0.5 ? last.t : top.t; }; // a new heading of the same rank starts something else
   L.forEach((l, i) => {
     const R = roleHead(l); if (R) { if (R.length === 1) { role = R[0].r; cols = null; } else cols = R; gap = 0; return; }
-    const its = l.h >= body * 1.25 ? [] : items(l);
+    const pg = P[l.p - 1] || {}, inPic = (pg.imgs || []).some(B => B.w * B.h > (pg.w || 600) * (pg.h || 800) * 0.03 && inBox(l.segs[0].x + 2, l.y + l.h / 2, B, 0));
+    const its = inPic ? [] : items(l).filter(x => x.lead || l.h < body * 1.25); // big text is a heading, unless it has dot leaders; text on a picture is a label
     if (its.length) { if (!B) { const t = titleFor(i); B = { title: t, page: l.p, steps: [], role0: roleInTitle(t) }; }
       its.forEach(it => { let r = it.r; if (!r && cols) { let d = Infinity; cols.forEach(c => { const e = Math.abs(c.x - it.col); if (e < d) { d = e; r = c.r; } }); }
-        if (!r) r = role || B.role0 || null; B.steps.push({ r, t: it.st ? it.n + ' – ' + it.st : it.n, k: it.call || /\bchecklist\b/i.test(it.n) ? 'call' : 'act' }); });
+        if (!r) r = role || B.role0 || null; B.steps.push({ r, t: it.st ? it.n + ' – ' + it.st : it.n, k: it.call || /\bchecklist\b|\bC\/L\b/i.test(it.n) ? 'call' : 'act', lead: !!it.lead, sw: STATE.test(it.st || '') }); });
       gap = 0; return; }
     if (heading(l, body)) { const t = l.text.replace(/\s{2,}/g, ' ').trim();
       if (B && (phaseOf(t) || FLOWWORD.test(t) || l.h >= body * 1.3 || roleInTitle(t))) { close(); role = null; cols = null; }
       else if (B) { gap++; if (gap > 4) close(); }
-      heads.push({ i, t, p: l.p }); if (roleInTitle(t) && !B) role = roleInTitle(t); return; }
+      heads.push({ i, t, p: l.p, h: l.h, big: l.h >= body * 1.15 }); if (roleInTitle(t) && !B) role = roleInTitle(t); return; }
     if (B) { gap++; if (gap > 3 || (l.p > B.page + 1 && gap > 1)) close(); } });
   close();
   // one flow per title: the PF and PM parts of the same flow, found one after the other, become one flow with two layers
-  const flows = []; out.forEach(b => { const name = cleanTitle(b.title) || '', prev = flows[flows.length - 1];
-    const nums = b.steps.filter(s => /^[\d.,\/°%\-+ ]+[A-Za-z%°]{0,6}$/.test((s.t.split(' – ')[1] || '').trim())).length; if (nums > b.steps.length * 0.6) return; // a table of figures, not a flow
-    if (prev && name && prev.key === name.toLowerCase() && prev.page >= b.page - 3) { prev.steps = prev.steps.concat(b.steps); return; }
-    flows.push({ key: name.toLowerCase(), name: name || ('Flow, page ' + b.page), page: b.page, steps: b.steps.slice() }); });
+  // a flow is items with a position: dot leaders, or mostly real switch positions (a contents page or a table of figures is not)
+  const echo = s => { const [a, b] = s.t.split(' – '); if (!b) return false; const A = norm(a).split(' '), Bt = norm(b).split(' ').filter(Boolean); return norm(a) === norm(b) || (norm(b).length >= 3 && Bt.length && Bt.every(x => A.includes(x))); }; // "90 G – 90 G", "LOAD % – LOAD %": labels of a picture
+  out.forEach(b => { b.steps = b.steps.filter(s => !echo(s)); });
+  const real = b => { const A = b.steps.filter(s => s.k === 'act'); return A.filter(s => s.lead).length >= 3 || (A.length >= 4 && A.filter(s => s.sw).length >= A.length * 0.6); };
+  // the same procedure over several pages ("… (Cont'd)") or cut by notes is one flow: same section number, else same title
+  const key = t => { const m = /^\s*([A-Z]{0,4}\d{1,3}(?:\.\d{1,3})+)\b/.exec(t || ''); return (m ? m[1] + '|' : '') + cleanTitle(t).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); };
+  const table = f => f.steps.filter(s => /^[\d.,\/°%\-+ ]+[A-Za-z%°]{0,6}$/.test((s.t.split(' – ')[1] || '').trim())).length > f.steps.length * 0.6;
+  let flows = []; out.filter(b => !table(b)).forEach(b => { const name = cleanTitle(b.title) || '', k = key(b.title);
+    const same = k && flows.slice().reverse().find(f => f.key === k && (f.page2 || f.page) >= b.page - 20); if (same) { same.steps = same.steps.concat(b.steps); same.page2 = b.page; return; }
+    flows.push({ key: k, name: name || ('Flow, page ' + b.page), page: b.page, steps: b.steps.slice() }); });
+  flows = flows.filter(f => f.steps.filter(s => s.k === 'act').length >= (opt.min || 3) && real(f) && !(f.steps.filter(s => /^[\d.,\/°%\-+ ]+[A-Za-z%°]{0,6}$/.test((s.t.split(' – ')[1] || '').trim())).length > f.steps.length * 0.6)); // a table of figures is not a flow
   return flows.map(f => { const used = new Set(f.steps.map(s => s.r).filter(r => r && r !== '*'));
     const rs = [...used].some(r => r === 'CM1' || r === 'CM2') && ![...used].some(r => r === 'PF' || r === 'PM') ? 'cm' : used.size ? 'pfpm' : (opt.crew === 1 ? 'one' : 'pfpm');
     const roles = { pfpm: ['PF', 'PM'], cm: ['CM1', 'CM2'], one: ['P'] }[rs], map = r => { if (rs === 'one') return 'P'; if (!r || r === '*') return roles[0];
       if (rs === 'pfpm') return r === 'CM1' ? 'PF' : r === 'CM2' ? 'PM' : r; return r === 'PF' ? 'CM1' : r === 'PM' ? 'CM2' : r; };
     const steps = []; const seen = new Set(); f.steps.forEach(s => { const r = map(s.r), k = r + '|' + s.t.toUpperCase(); if (seen.has(k)) return; seen.add(k); steps.push({ r, t: s.t.slice(0, 120), k: s.k }); });
-    return { name: f.name.slice(0, 80), phase: phaseOf(f.name), rs, roles, steps, page: f.page }; }); }
+    return { name: f.name.trim().slice(0, 80), phase: phaseOf(f.name), rs, roles, steps, page: f.page }; }); }
 
 /* ---------- step names → NORDAP's named controls ---------- */
 const SYN = [[/\bBATT?(ERY|ERIES|S)?\b/g, 'BAT'], [/\bENGINES?\b/g, 'ENG'], [/\bFLIGHT\b/g, 'FLT'], [/\bCONTROLS\b/g, 'CONTROL'], [/\bGENERATORS?\b/g, 'GEN'], [/\bLIGHTS?\b|\bLTS\b/g, 'LT'], [/\bSELECTORS?\b/g, 'SEL'], [/\bSWITCH(ES)?\b|\bSW\b|\bP\/?B\b|\bPUSH ?BUTTONS?\b|\bKNOBS?\b/g, ''], [/\bLEVERS?\b/g, 'LVR'], [/\bTHRUST\b/g, 'THR'], [/\bRUDDER\b/g, 'RUD'], [/\bWEATHER\b/g, 'WX'], [/\bOXY(GEN)?\b/g, 'OXYGEN'], [/\bA-ICE\b/g, 'ANTI ICE'], [/\bBRAKES?\b/g, 'BRK'], [/\bSTATUS\b/g, 'STS'], [/\bHEATING\b|\bHEATERS?\b/g, 'HEAT'],
-  [/\bPUMPS\b/g, 'PUMP'], [/\bVALVES?\b/g, 'VALVE'], [/\bAUX(ILIARY)? POWER UNIT\b/g, 'APU'], [/\bHYDRAULICS?\b/g, 'HYD'], [/\bELEC(TRICAL|TRICS)?\b/g, 'ELEC'], [/\bPARK(ING)? (BRAKE|BRK)\b/g, 'PARK BRK'],
+  [/\bPUMPS\b/g, 'PUMP'], [/\bVALVES?\b/g, 'VALVE'], [/\bAUX(ILIARY)? POWER UNIT\b/g, 'APU'], [/\bHYDRAULICS?\b/g, 'HYD'], [/\bELEC(T|TRIC|TRICAL|TRICS)?\b\.?/g, 'ELEC'], [/\bGEAR SEL(ECTOR)?\b/g, 'GEAR LVR'], [/\bREVERSIONARY( MODE)?\b/g, 'DISPLAY BACKUP'], [/\bCIRCUIT BREAKERS?\b|\bC\/B\b/g, 'CB'], [/\bPARK(ING)? (BRAKE|BRK)\b/g, 'PARK BRK'],
   [/\bANTI[- ]?ICE\b/g, 'ANTI ICE'], [/\bNO\.? ?(\d)\b/g, '$1'], [/\bNUMBER (\d)\b/g, '$1'], [/\bTRANSPONDER\b|\bXPDR\b|\bATC\b(?! ?(MSG|CLEARANCE|CLR|CLRNC))/g, 'XPDR'], [/\bWINDSHIELD|WINDOW\b/g, 'WINDOW'], [/\bSEAT ?BELTS?\b/g, 'SEAT BELTS'],
   [/\bNO SMOKING\b/g, 'NO SMOKING'], [/\bEMER(GENCY)?\b/g, 'EMER'], [/\bEXTERIOR\b|\bEXT\b/g, 'EXT'], [/\bLANDING\b|\bLDG\b/g, 'LAND'], [/\bTAXI\b/g, 'TAXI'], [/\bNAVIGATION\b/g, 'NAV'], [/\bSTROBES?\b/g, 'STROBE'], [/\bBEACONS?\b/g, 'BEACON'],
   [/\bAUTO ?THRUST\b|\bA\/THR\b|\bATHR\b/g, 'A/THR'], [/\bAUTO ?PILOT\b|\bA\/P\b/g, 'AP'], [/\bFLIGHT DIRECTORS?\b|\bF\/D\b/g, 'FD'], [/\bAUTO ?BRAKES?\b/g, 'AUTO BRK'], [/\bSPEED ?BRAKES?\b|\bSPOILERS?\b/g, 'SPD BRK']];
@@ -144,9 +158,10 @@ function score(A, B, st, nm) { if (!A.length || !B.length) return 0; const a = n
   return 0.45 * pr + 0.25 * pa + 0.3 * rc + (pa === 1 ? 0.1 : 0) + (B.some(x => x === 'L' || x === '1' || x === 'CPT') ? 0.005 : 0) + (st && st.some(x => b.has(x) && !a.has(x)) ? 0.08 : 0) + (nm && A.some(x => nm.includes(x)) ? 0.03 : 0); } // AUTO BRK – MAX: the MAX button
 /* targets: [{ id, name, panel, x, y, w, h, whole }] (BBFLOWAC.targets) → the best control for a step, or null */
 const side = t => toks(t.name).filter(x => !/^(L|R|C|1|2|3|4|CPT|FO|F\/O|LEFT|RIGHT|CTR)$/.test(x)).join(' ');
-function match(name, targets) { const parts = String(name || '').split(' – '), A = toks(firstOfPair(parts[0].replace(/\([^)]*\)/g, ' '))), st = toks(parts[1] || ''); if (!A.length) return null;
+function match(name, targets) { const p0 = String(name || '').split(' – ')[0]; if (/\s\/\s/.test(p0)) { const first = match(p0.split(/\s\/\s/)[0] + (String(name).includes(' – ') ? ' – ' + String(name).split(' – ')[1].split(/\s?\/\s?/)[0] : ''), targets); if (first) return first; } // "ELECT. MASTER / HORIZON – ON / Cage": the first control
+  const parts = String(name || '').split(' – '), A = toks(firstOfPair(parts[0].replace(/\([^)]*\)/g, ' '))), st = toks(parts[1] || ''); if (!A.length) return null;
   const head = A.filter(x => !/^\d$/.test(x) && !/^(SEL|MODE|SYS|PANEL|CONTROL|UNIT|ALL)$/.test(x)).pop(); let best = null, bs = 0, second = 0; // "Fuel pumps" is a pump: the last word must be on the control
-  targets.forEach(t => { if (t.whole) return; const nm = toks(t.name), pn = t.panel ? toks(t.panel + ' ' + t.name) : null; if (head && !nm.includes(head) && !(pn && pn.includes(head))) return;
+  const cb = A.includes('CB'); targets.forEach(t => { if (t.whole || (!cb && /^CB\b/.test(t.name))) return; const nm = toks(t.name), pn = t.panel ? toks(t.panel + ' ' + t.name) : null; if (head && !nm.includes(head) && !(pn && pn.includes(head))) return;
     const s = Math.max(score(A, nm, st), pn ? 0.97 * score(A, pn, st, nm) : 0); if (s > bs + 1e-9) { if (best && side(best) !== side(t)) second = bs; bs = s; best = t; } else if (s > second && best && side(best) !== side(t)) second = s; });
   return bs >= 0.6 ? best : null; } // a tie between two controls ("MASTER": electric, avionic or engine?) is left for a tap
 function place(steps, targets) { let n = 0; steps.forEach(s => { if (s.k !== 'act') return; const t = match(s.t, targets); if (t) { s.tg = t.id; s.x = Math.round(t.x + t.w / 2); s.y = Math.round(t.y + t.h / 2); n++; } else { s.x = null; s.y = null; } }); return n; }
@@ -162,34 +177,47 @@ function guessAc(doc) { const t = (doc.pages || []).map(p => p.items.map(i => i.
 const CIRC = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳', CIRC2 = '❶❷❸❹❺❻❼❽❾❿⓫⓬⓭⓮⓯⓰⓱⓲⓳⓴', CIRC3 = '➀➁➂➃➄➅➆➇➈➉', CIRC4 = '➊➋➌➍➎➏➐➑➒➓';
 function labelNum(s) { s = String(s || '').trim(); if (s.length === 1) { for (const C of [CIRC, CIRC2, CIRC3, CIRC4]) { const i = C.indexOf(s); if (i >= 0) return i + 1; } }
   const m = /^[(\[]?(\d{1,2})[)\].]?$/.exec(s); return m && +m[1] >= 1 && +m[1] <= 60 ? +m[1] : 0; }
+/* a callout label and its kind: n (1, 2, 3 · ① · (1) · 1.), u (A, B, C · (A) · A.), l (a, b, c · (a) · a)) */
+function labelOf(s) { const n = labelNum(s); if (n) return { k: 'n', n }; const m = /^[(\[]?([A-Za-z])[)\].]?$/.exec(String(s || '').trim()); if (!m) return null;
+  const c = m[1]; return /[A-Z]/.test(c) ? { k: 'u', n: c.charCodeAt(0) - 64 } : { k: 'l', n: c.charCodeAt(0) - 96 }; }
+const labelTxt = (k, n) => k === 'u' ? String.fromCharCode(64 + n) : k === 'l' ? String.fromCharCode(96 + n) : String(n);
 const inBox = (x, y, B, pad) => x >= B.x - pad && x <= B.x + B.w + pad && y >= B.y - pad && y <= B.y + B.h + pad;
 const union = (A, B) => { if (!A) return Object.assign({}, B); const x = Math.min(A.x, B.x), y = Math.min(A.y, B.y); return { x, y, w: Math.max(A.x + A.w, B.x + B.w) - x, h: Math.max(A.y + A.h, B.y + B.h) - y }; };
 /* the callout numbers of one page: a lone number (nothing written right after it), not in the running head or foot.
    A legend line ("1  BAT 1+2 ...... ON") has text after its number, so it is not a callout. */
 function callouts(pg) { const W = pg.w || 600, H = pg.h || 800, it = pg.items, out = [];
-  it.forEach(i => { const n = labelNum(i.s); if (!n) return; const h = i.h || 8, cx = i.x + (i.w || h * 0.5) / 2, cy = i.y + (i.ocr ? (i.h / 2) : h * 0.5);
-    if (!(pg.imgs || []).some(B => inBox(cx, cy, B, 2)) && (cy < H * 0.06 || cy > H * 0.94)) return;
-    const after = it.some(j => j !== i && !labelNum(j.s) && /[A-Za-z]/.test(j.s) && Math.abs(j.y - i.y) < h * 0.6 && j.x >= i.x + (i.w || 0) - 1 && j.x <= i.x + (i.w || 0) + h * 2.2);
-    if (!after) out.push({ n, x: cx, y: cy, h, r: i.ocr ? h / 2 : h * 0.9, src: i.ocr ? 'ocr' : 'text' }); });
+  it.forEach(i => { const lb = labelOf(i.s); if (!lb) return; const n = lb.n, h = i.h || 8, cx = i.x + (i.w || h * 0.5) / 2, cy = i.y + (i.ocr ? (i.h / 2) : h * 0.5);
+    if (cy < H * 0.13 || cy > H * 0.92) return; // the running head and foot (logos, page numbers) are never a figure
+    const after = it.some(j => j !== i && !labelOf(j.s) && /[A-Za-z]/.test(j.s) && Math.abs(j.y - i.y) < h * 0.6 && j.x >= i.x + (i.w || 0) - 1 && j.x <= i.x + (i.w || 0) + h * 2.2);
+    if (!after) out.push({ n, k: lb.k, x: cx, y: cy, h, r: i.ocr ? h / 2 : h * 0.9, src: i.ocr ? 'ocr' : 'text' }); });
   return out; }
 /* 1..N with most of the numbers there; a number found twice keeps the one nearest the others */
-function sequence(L) { const by = new Map(); L.forEach(c => { if (!by.has(c.n)) by.set(c.n, []); by.get(c.n).push(c); });
+function sequence(L) { for (const k of ['n', 'u', 'l']) { const S = seq1(L.filter(c => (c.k || 'n') === k)); if (S) { S.k = k; return S; } } return null; }
+function seq1(L) { const by = new Map(); L.forEach(c => { if (!by.has(c.n)) by.set(c.n, []); by.get(c.n).push(c); });
   if (!by.has(1)) return null; let N = 0; for (let n = 1; n <= 60; n++) { if (by.has(n)) N = n; else if ([...by.keys()].filter(k => k > n).length === 0) break; }
   let have = 0; for (let n = 1; n <= N; n++) if (by.has(n)) have++; if (N < 3 || have < Math.max(3, N * 0.75)) return null;
   const all = [].concat(...[...by.values()]), mx = all.reduce((a, c) => a + c.x, 0) / all.length, my = all.reduce((a, c) => a + c.y, 0) / all.length, pts = [];
   for (let n = 1; n <= N; n++) { const C = by.get(n); if (!C) { pts.push({ n, x: null, y: null }); continue; } C.sort((a, b) => Math.hypot(a.x - mx, a.y - my) - Math.hypot(b.x - mx, b.y - my)); pts.push({ n, x: C[0].x, y: C[0].y, r: C[0].r }); }
   return pts; }
 /* the legend of a figure: lines that start with a callout number, on the same page or the next */
-function legend(doc, p, next) { const out = {}; (next ? [p, p + 1] : [p]).forEach(q => { const pg = doc.pages[q - 1]; if (!pg) return;
-    lines(pg, q).forEach(l => { const m = /^[(\[]?(\d{1,2})[)\].]?\s+(.+)$/.exec(l.text) || (l.segs.length > 1 && labelNum(l.segs[0].s) ? [0, labelNum(l.segs[0].s), l.segs.slice(1).map(x => x.s).join('   ')] : null);
-      if (!m || out[+m[1]]) return; const segs = [{ x: 0, x2: 0, s: m[2] }], it = pair(l.segs.length > 1 && labelNum(l.segs[0].s) ? l.segs.slice(1) : segs) || pair(segs);
-      const t = it ? (it.st ? it.n + ' – ' + it.st : it.n) : cleanName(m[2]); if (t && t.length <= 120 && /[A-Za-z]/.test(t) && words(t) <= 14) out[+m[1]] = { t, r: it && it.r || roleInTitle(m[2]) }; }); });
+function legend(doc, p, next, k, box) { const out = {}, rank = {}, rx = k === 'u' ? /^[(\[]?([A-Z])[)\].]\s+(.+)$/ : k === 'l' ? /^[(\[]?([a-z])[)\].]\s+(.+)$/ : /^[(\[]?(\d{1,2})[)\].]?\s+(.+)$/;
+  const num = v => { const L = labelOf(v); return L && L.k === (k || 'n') ? L.n : 0; };
+  (next ? [p, p + 1] : [p]).forEach(q => { const pg = doc.pages[q - 1]; if (!pg) return; const LL = lines(pg, q);
+    LL.forEach((l, li) => { let n = 0, rest = ''; const m = rx.exec(l.text); if (m) { n = num(m[1]); rest = m[2]; } else if (l.segs.length > 1 && num(l.segs[0].s)) { n = num(l.segs[0].s); rest = l.segs.slice(1).map(x => x.s).join('   '); }
+      if (!n) return;
+      // a legend line wrapped onto the next line ("(3) Below Instrument Panel in / Front of Left Seat")
+      const nx = LL[li + 1]; if (nx && !rx.exec(nx.text) && !(nx.segs.length > 1 && num(nx.segs[0].s)) && nx.y - l.y < l.h * 1.8 && nx.segs[0].x > l.segs[0].x + 2 && nx.text.length < 50 && !/\.{3,}/.test(rest)) rest += ' ' + nx.text.trim();
+      // where it is: in or beside the figure is the legend; above it (a heading such as "1. Cabin Check") is not
+      const sc = q !== p || !box ? 1 : (l.y > box.y + box.h * 0.5 ? 3 : l.y >= box.y ? 2 : 0) + (/^[(\[]/.test(l.text.trim()) ? 1 : 0);
+      if (rank[n] != null && rank[n] >= sc) return;
+      const it = pair(l.segs.length > 1 && num(l.segs[0].s) ? l.segs.slice(1) : [{ x: 0, x2: 0, s: rest }]) || pair([{ x: 0, x2: 0, s: rest }]);
+      const t = it ? (it.st ? it.n + ' – ' + it.st : it.n) : cleanName(rest); if (t && t.length <= 120 && /[A-Za-z]/.test(t) && words(t) <= 14) { out[n] = { t, r: it && it.r || roleInTitle(rest) }; rank[n] = sc; } }); });
   return out; }
 /* doc → figures: { page, box (page units), pts [{ n, x, y }], legend, src } */
 function figures(doc) { const out = []; (doc.pages || []).forEach((pg, i) => { const p = i + 1, C = callouts(pg); if (C.length < 3) return; const W = pg.w || 600, H = pg.h || 800, used = new Set();
     // callouts inside a picture belong to that picture
     (pg.imgs || []).filter(B => B.w * B.h > W * H * 0.04).forEach(B => { const mine = C.filter(c => !used.has(c) && inBox(c.x, c.y, B, 3)), S = sequence(mine); if (!S) return; mine.forEach(c => used.add(c));
-      out.push({ page: p, box: B, pts: S, src: mine.some(c => c.src === 'ocr') ? 'ocr' : 'text' }); });
+      out.push({ page: p, box: B, pts: S, kind: S.k, src: mine.some(c => c.src === 'ocr') ? 'ocr' : 'text' }); });
     // callouts over a drawing (vector line art): the drawing's paths around them make the box
     const rest = C.filter(c => !used.has(c)), S = sequence(rest); if (!S) return;
     const xs = rest.map(c => c.x), ys = rest.map(c => c.y), col = xs.filter(x => Math.abs(x - xs[0]) < 4).length >= xs.length * 0.7; if (col) return; // a numbered column is a list, not a figure
@@ -197,8 +225,8 @@ function figures(doc) { const out = []; (doc.pages || []).forEach((pg, i) => { c
     const E = { x: U.x - W * 0.08, y: U.y - H * 0.06, w: U.w + W * 0.16, h: U.h + H * 0.12 };
     (pg.paths || []).forEach(P => { if (P.w * P.h < W * H * 0.6 && P.w < W * 0.95 && inBox(P.x + P.w / 2, P.y + P.h / 2, E, 0)) U = union(U, P); });
     const pad = Math.max(W, H) * 0.015, x0 = Math.max(0, U.x - pad), y0 = Math.max(0, U.y - pad); U = { x: x0, y: y0, w: Math.min(W, U.x + U.w + pad) - x0, h: Math.min(H, U.y + U.h + pad) - y0 };
-    out.push({ page: p, box: U, pts: S, src: 'text' }); });
-  const fp = new Set(out.map(f => f.page)); out.forEach(f => { f.legend = legend(doc, f.page, !fp.has(f.page + 1)); }); return out; }
+    out.push({ page: p, box: U, pts: S, kind: S.k, src: 'text' }); });
+  const fp = new Set(out.map(f => f.page)); out.forEach(f => { f.legend = legend(doc, f.page, !fp.has(f.page + 1), f.kind, f.box); }); return out; }
 /* text flows + figures → one list: a flow written next to its figure gets the figure (its steps go onto the callouts in order);
    a figure with no flow beside it becomes a flow of its own, named from its legend or numbered */
 function link(flows, figs, doc, opt) { opt = opt || {}; const out = flows.slice(); let L = [];
@@ -213,10 +241,11 @@ function link(flows, figs, doc, opt) { opt = opt || {}; const out = flows.slice(
     // the title: the closest heading above the figure on its page, else the page's first heading
     const above = L.filter(l => l.p === g.page && l.y < g.box.y + 4 && heading(l, 9)).pop() || L.filter(l => l.p === g.page && heading(l, 9))[0];
     const name = cleanTitle(above ? above.text.replace(/\s{2,}/g, ' ') : '') || ('Figure, page ' + g.page);
-    const steps = g.pts.map(pt => { const e = lg[pt.n]; return { r: e && e.r && e.r !== '*' ? e.r : null, t: e ? e.t : 'Step ' + pt.n, k: e && /\bchecklist\b/i.test(e.t) ? 'call' : 'act', n: pt.n, named: !!e }; });
+    const steps = g.pts.map(pt => { const e = lg[pt.n]; return { r: e && e.r && e.r !== '*' ? e.r : null, t: e ? e.t : 'Step ' + labelTxt(g.kind, pt.n), k: e && /\bchecklist\b/i.test(e.t) ? 'call' : 'act', n: pt.n, named: !!e }; });
     const used = new Set(steps.map(s => s.r).filter(Boolean)), rs = [...used].some(r => /^CM/.test(r)) ? 'cm' : used.size ? 'pfpm' : (opt.crew === 1 ? 'one' : 'pfpm'), roles = { pfpm: ['PF', 'PM'], cm: ['CM1', 'CM2'], one: ['P'] }[rs];
     steps.forEach(s => { s.r = rs === 'one' ? 'P' : roles.includes(s.r) ? s.r : roles[0]; });
-    out.push({ name: name.slice(0, 80), phase: phaseOf(name), rs, roles, steps, page: g.page, fig: g, unnamed: steps.filter(s => !s.named).length }); });
+    const un = steps.filter(s => !s.named).length, nm = un > steps.length / 2 ? name + ' (figure, p. ' + g.page + ')' : name;
+    out.push({ name: nm.slice(0, 80), phase: phaseOf(name), rs, roles, steps, page: g.page, fig: g, unnamed: un, maybe: un > steps.length / 2 }); });
   return out.sort((a, b) => a.page - b.page); }
 /* a step's spot on the figure, in the flow's own coordinates (the picture is 1000 wide) */
 function figSpot(g, n) { const pt = g.pts.find(x => x.n === n); if (!pt || pt.x == null) return null; return { x: Math.round((pt.x - g.box.x) / g.box.w * 1000), y: Math.round((pt.y - g.box.y) / g.box.w * 1000) }; }
@@ -292,7 +321,9 @@ function glyph(c) { const g = c.getContext('2d', { willReadFrequently: true }), 
 async function readDiscs(w, D) { const out = [];
   for (const o of D) { const gl = glyph(o.c); if (!gl) continue; let best = null;
     for (const psm of ['10', '8', '13']) { await w.setParameters({ tessedit_pageseg_mode: psm }); const r = await w.recognize(gl), t = (r.data.text || '').replace(/\s+/g, '');
-      if (/^\d{1,2}$/.test(t) && r.data.confidence >= 45) { best = +t; break; } }
+      if (/^\d{1,2}$/.test(t) && r.data.confidence >= 45) { best = t; break; } }
+    if (!best) { await w.setParameters({ tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', tessedit_pageseg_mode: '10' }); const r = await w.recognize(gl), t = (r.data.text || '').replace(/\s+/g, '');
+      if (/^[A-Za-z]$/.test(t) && r.data.confidence >= 60) best = t; await w.setParameters({ tessedit_char_whitelist: '0123456789' }); }
     if (best) out.push(Object.assign({}, o, { n: best })); }
   return out; }
 async function ocr(doc, figs, progress, stop) { const C = ocrPages(doc, figs); if (!C.length) return 0; const w = await ocrWorker(); let n = 0;
