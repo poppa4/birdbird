@@ -37,6 +37,40 @@
 /* Explore */
 .vv[hidden],.vp[hidden]{display:none!important}
 #cvS,#cvP{aspect-ratio:16/10.5;max-height:720px;touch-action:none;cursor:crosshair}
+#cv3{aspect-ratio:16/10.5;max-height:720px;touch-action:none;cursor:grab;display:block;width:100%}
+#cv3:active{cursor:grabbing}
+.cam{display:inline-flex;gap:0;border:1px solid rgba(255,255,255,.14);border-radius:6px;overflow:hidden}
+.cam[hidden]{display:none}
+.vtools .cam button{border:0;border-radius:0;margin:0;min-height:32px;padding:4px 10px;background:transparent;color:#C9D2DA;font-size:12.5px}
+.vtools .cam button.on{background:rgba(255,255,255,.14);color:#fff}
+.hint3{position:absolute;right:10px;bottom:6px;margin:0;font-family:var(--f-mono);font-size:10.5px;color:#8E99A4;pointer-events:none}
+.pcard{position:absolute;z-index:3;right:10px;bottom:28px;width:min(320px,calc(100% - 20px));background:rgba(12,16,20,.9);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:10px 12px 11px;color:#DDE4EA;font-size:12.5px;line-height:1.45;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.pcard[hidden]{display:none}
+.pcard .ph{display:flex;align-items:center;gap:8px;margin-bottom:4px;padding-right:18px}
+.pcard .ph b.c{font-family:var(--f-mono);font-size:13px;color:#fff;border-radius:3px;padding:0 6px}
+.pcard .ph span{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:15px;color:#fff}
+.pcard .pl{font-family:var(--f-mono);font-size:11px;color:#9FB0BE;margin-bottom:6px}
+.pcard dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:3px 10px}
+.pcard dt{color:#8E99A4;font-size:11.5px}.pcard dd{margin:0}
+.pcard .px{position:absolute;top:4px;right:6px;background:none;border:0;color:#9FB0BE;font-size:16px;cursor:pointer;padding:2px 5px}
+.pcard .go{margin-top:8px;font-size:12px;font-weight:600;color:#fff;background:#9A1E68;border:0;border-radius:5px;padding:5px 10px;cursor:pointer}
+@media (max-width:640px){#cv3{aspect-ratio:4/4}.pcard{position:static;width:auto;margin:8px}.hint3{display:none}}
+.lays{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:4px}
+.lays label{display:inline-flex;align-items:center;gap:6px;font-size:13px}
+.lays i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.vtab h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:18px;margin:6px 0 2px}
+.vtab{margin-top:22px;padding-top:16px;border-top:1px solid var(--rule-2)}
+.otab{min-width:860px}
+.otab td:first-child{white-space:normal;min-width:170px}
+.otab td:nth-child(3){min-width:130px}.otab td:nth-child(4){min-width:120px}
+.otab td small{display:block;font-weight:400;color:var(--ink-3);font-size:12px}
+.otab tr.here td{background:rgba(154,30,104,.06)}
+.otab tr.here td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.otab tr.pick td{background:rgba(94,155,214,.10)}
+.otab .tagh{display:inline-block;font-family:var(--f-mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:var(--accent);border-radius:3px;padding:1px 5px;margin-top:3px}
+.otab .clb{display:inline-block;font-family:var(--f-mono);font-weight:700;color:#fff;border-radius:3px;padding:0 6px;min-width:20px;text-align:center}
+.otab .fly{font-size:12px;font-weight:600;color:var(--accent);background:none;border:1px solid var(--rule);border-radius:5px;padding:4px 8px;cursor:pointer;white-space:nowrap}
+.otab .fly:hover{border-color:var(--accent)}
 @media (max-width:640px){#cvS{aspect-ratio:4/5}#cvP{aspect-ratio:4/4.8}}
 .xsee b{color:var(--ink)}
 .xsee .ok{color:var(--ok);font-weight:600}.xsee .no{color:var(--warning);font-weight:600}.xsee .sv{color:var(--caution);font-weight:600}
@@ -104,11 +138,12 @@ body.depth-instructor .ro .rrow b{font-size:15px}
   <section class="card" id="explore" data-step="explore">
     <div class="eyebrow">2 · Explore</div>
     <h2>The airspace lab</h2>
-    <p class="lead" data-tx="e1">One fictional airspace around the aerodrome Nordvik, built the way real ones are: a control zone from the surface, a TMA stepped above it, class G underneath, a control area further out, a restricted area and a radio mandatory zone around a small airfield. Drag the aircraft, or use the sliders. Side view shows the layers; From above shows the airspace at your altitude, as a VFR chart does. The panel says what applies to you there.</p>
+    <p class="lead" data-tx="e1">One fictional airspace around the aerodrome Nordvik, built the way real ones are: a control zone from the surface, a TMA stepped above it, class G underneath, a control area further out, a restricted area and a radio mandatory zone around a small airfield. Drag the aircraft, or use the sliders. 3D shows the whole structure; turn it with your finger or the mouse. Side view lays the layers out flat, and From above shows the airspace at your altitude, as a VFR chart does. The panel says what applies to you there.</p>
     <div class="xapp" id="aapp">
       <div class="xvp" id="avp" data-lab-model>
-        <div class="vbar"><div class="vtabs" id="aTabs" role="tablist" aria-label="View"></div><div class="vtools" id="aTools"><button type="button" id="tFr" aria-pressed="false">VFR</button></div></div>
-        <div class="vcv vv" data-v="side"><canvas id="cvS" aria-label="Side view of the airspace from 40 NM west to 40 NM east of Nordvik, from the surface to FL300, with the class of each volume, the cloud layer and your aircraft. Drag to move the aircraft."></canvas><div class="vchip" id="chipS" aria-live="polite"></div></div>
+        <div class="vbar"><div class="vtabs" id="aTabs" role="tablist" aria-label="View"></div><div class="vtools" id="aTools"><span class="cam" id="cam"><button type="button" data-c="iso">Oblique</button><button type="button" data-c="side">Side</button><button type="button" data-c="top">Top</button></span><button type="button" id="tFr" aria-pressed="false">VFR</button></div></div>
+        <div class="vcv vv" data-v="d3"><canvas id="cv3" aria-label="The airspace in 3D around Nordvik: the class D control zone, the stepped class C TMA, the class E control area, the upper airspace, the restricted area R-101, the RMZ at Lia, the cloud layer and your aircraft. Drag to turn, scroll or pinch to zoom, tap a volume to see what it asks of you."></canvas><div class="vchip" id="chip3" aria-live="polite"></div><div class="pcard" id="pcard" hidden></div><p class="hint3" id="hint3">Drag to turn · scroll or pinch to zoom · tap a volume</p></div>
+        <div class="vcv vv" data-v="side" hidden><canvas id="cvS" aria-label="Side view of the airspace from 40 NM west to 40 NM east of Nordvik, from the surface to FL300, with the class of each volume, the cloud layer and your aircraft. Drag to move the aircraft."></canvas><div class="vchip" id="chipS" aria-live="polite"></div></div>
         <div class="vcv vv" data-v="plan" hidden><canvas id="cvP" aria-label="The airspace seen from above at your altitude: the class in each ring around Nordvik, the restricted area and the RMZ, and your aircraft on the route. Drag to move the aircraft along the route."></canvas><div class="vchip" id="chipP" aria-live="polite"></div></div>
         <div class="vleg" id="aLeg"></div>
       </div>
@@ -131,7 +166,8 @@ body.depth-instructor .ro .rrow b{font-size:15px}
         <details class="xsec" open><summary id="gFl">Your flight</summary><div class="grp" id="gFr" style="margin-top:0">Flight rules</div><div id="sFr"></div><div class="grp" id="gDn">Time</div><div id="sDn"></div><div id="ctlF" style="margin-top:8px"></div></details>
         <details class="xsec" open><summary id="gWx">Weather</summary><div id="ctlW"></div><p class="note" id="wNote" style="margin-top:4px">One cloud layer, 2500 ft thick, over the whole area; its base is the ceiling at Nordvik.</p></details>
         <details class="xsec presec" open><summary id="gPre">Scenarios</summary><div class="pre" id="pre"></div></details>
-        <details class="xsec"><summary id="gAdv">Airspace</summary><label class="xchk"><input type="checkbox" id="rAct" checked> <span id="lRact">Restricted area R-101 active</span></label></details>
+        <details class="xsec" open><summary id="gAdv">Airspace</summary><label class="xchk"><input type="checkbox" id="rAct" checked> <span id="lRact">Restricted area R-101 active</span></label>
+          <div class="grp" id="gShow">Show in 3D</div><div class="lays" id="lays"></div></details>
       </details>
       <div class="tryblk" id="try" data-step="try">
         <h3 id="tryH">Try it</h3>
@@ -139,6 +175,11 @@ body.depth-instructor .ro .rrow b{font-size:15px}
         <ol class="tasks" id="tasks"></ol>
       </div>
     </div>
+    <div class="vtab" id="vtab">
+        <h3 id="vtabH">All the airspace in the lab</h3>
+        <p class="note" id="vtabN">Every volume around Nordvik with its limits and what it asks of you. The row you are in is marked; Fly there puts your aircraft inside it.</p>
+        <div class="wrapx"><table class="ltab otab" id="tAll"></table></div>
+      </div>
   </section>
 
   <!-- 3 · KEY POINTS -->
@@ -172,12 +213,14 @@ body.depth-instructor .ro .rrow b{font-size:15px}
     <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
-  <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> A fictional airspace for learning, not a real AIP. Flat terrain at sea level, so 3000 ft AMSL is also 1000 ft above the ground, and a transition altitude of 5000 ft. One cloud layer, 2500 ft thick, covers the whole area, and its base is the ceiling at Nordvik. The rules are from the EASA rules of the air, SERA (Implementing Regulation (EU) No 923/2012): Appendix 4 for the classes, SERA.5001 and Table S5-1 for the VMC minima, SERA.5005 for VFR (CTR minima, night, FL195), SERA.5010 for special VFR, SERA.6005 for RMZ and TMZ and SERA.3145 for restricted areas. Reduced visibility allowed by the authority in classes F and G, and national rules, are not modelled. Always check the AIP and NOTAM for the real airspace.</p>
+  <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> A fictional airspace for learning, not a real AIP. Heights are stretched low down in the pictures (not to scale) so the CTR and the TMA steps can be read. Flat terrain at sea level, so 3000 ft AMSL is also 1000 ft above the ground, and a transition altitude of 5000 ft. One cloud layer, 2500 ft thick, covers the whole area, and its base is the ceiling at Nordvik. The rules are from the EASA rules of the air, SERA (Implementing Regulation (EU) No 923/2012): Appendix 4 for the classes, SERA.5001 and Table S5-1 for the VMC minima, SERA.5005 for VFR (CTR minima, night, FL195), SERA.5010 for special VFR, SERA.6005 for RMZ and TMZ and SERA.3145 for restricted areas. Reduced visibility allowed by the authority in classes F and G, and national rules, are not modelled. Always check the AIP and NOTAM for the real airspace.</p>
 </div>
 <script src="lab.js?v=60"></script>
 <script src="concepts.js?v=10"></script>
+<script src="three.min.js?v=128"></script>
 <script src="airspacecore.js?v=1"></script>
-<script src="airspace-lab.js?v=1"></script>
+<script src="airspace3d.js?v=1"></script>
+<script src="airspace-lab.js?v=2"></script>
 <script src="corepic.js?v=13"></script>
 <script src="pic-airspace.js?v=1"></script>
 </body>

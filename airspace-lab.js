@@ -24,19 +24,20 @@ LAB.add({},{
  'Restricted area R-101 active':'Restriksjonsområde R-101 aktivt',
  'One cloud layer, 2500 ft thick, over the whole area; its base is the ceiling at Nordvik.':'Ett skylag, 2500 ft tykt, over hele området; basen er skyhøyden (ceiling) på Nordvik.',
  'The two SERA tables: airspace classes and VMC minima':'De to SERA-tabellene: luftromsklasser og VMC-minima',
- 'Position (NM, west − / east +)':'Posisjon (NM, vest − / øst +)','Altitude':'Høyde','Visibility':'Sikt','Cloud base':'Skybase','Day':'Dag','Night':'Natt'
+ 'Position (NM, west − / east +)':'Posisjon (NM, vest − / øst +)','Oblique':'Skrått','Side':'Siden','Top':'Ovenfra','Drag to turn · scroll or pinch to zoom · tap a volume':'Dra for å snu · rull eller knip for å zoome · trykk på et volum','Show in 3D':'Vis i 3D','All the airspace in the lab':'Alt luftrommet i labben',
+ 'Every volume around Nordvik with its limits and what it asks of you. The row you are in is marked; Fly there puts your aircraft inside it.':'Hvert volum rundt Nordvik med grensene og hva det krever av deg. Raden du er i, er merket; Fly dit setter flyet ditt inn i det.','Altitude':'Høyde','Visibility':'Sikt','Cloud base':'Skybase','Day':'Dag','Night':'Natt'
 });
 LAB.tx({
  lead:'Hver bit av himmelen har en klasse, og klassen avgjør hva du trenger før du flyr inn: en klarering, en radio, en transponder, eller ingenting. Fly gjennom et trappetrinnsformet luftrom rundt en flyplass, sett fra siden og ovenfra, og se i hvert punkt hvilke regler som gjelder for deg, IFR eller VFR, i været du stiller inn. Alt her er fra EASAs lufttrafikkregler (SERA).',
  goal:'<span class="k">Læringsmål</span>Si hvilken klasse et luftrom har ut fra grensene, hva hver klasse gir og krever av IFR- og VFR-flyginger, bruke VMC-minima og reglene for CTR og spesiell VFR på dagens vær, og planlegge en VFR-rute som holder seg lovlig rundt kontrollert luftrom.',
  u0:'Luftrom er <b>kontrollert</b> (klasse A til E: ATC gir klareringer) eller <b>ukontrollert</b> (F og G). Fra A mot G gjør ATC mindre og du mer selv. En klasse sier tre ting: hvem som kan fly der, hva ATC gjør for deg, og hva du må gjøre: få klarering, snakke på radio, holde VMC-minima.',
  u3:'<span class="k">Dypdykk · slik henger delene sammen</span><p><b>Kontrollert luftrom har navn i tillegg til klasse.</b> En kontrollsone (CTR) starter ved bakken og beskytter ankomster og avganger. Et kontrollområde (CTA) starter på en nedre grense over bakken; et terminalområde (TMA) er et CTA der rutene møtes rundt én eller flere travle flyplasser, og en luftvei er et CTA formet som en korridor. Staten gir hvert av dem en klasse og publiserer det i AIP.</p><p><b>Grensene er en del av luftrommet.</b> Et volum beskrives med sideveis grense og med nedre og øvre grense, for eksempel «3500 ft – FL195». Under den nedre grensen er du ikke i det. Nedre grenser trappes opp bort fra flyplassen, så VFR-flyginger kan holde seg under dem. På og under overgangshøyden er grensene høyder på QNH; over den er de flygenivåer på 1013,25 hPa.</p><p><b>Spesielle områder ligger oppå klassen.</b> Forbudte (P) og restriksjonsområder (R) kan ikke flys inn i unntatt etter de publiserte vilkårene eller med tillatelse; et fareområde (D) varsler om aktivitet som kan være farlig for luftfartøy. En RMZ legger til et radiokrav og en TMZ et transponderkrav i luftrommet, uansett klasse.</p>',
- e1:'Ett fiktivt luftrom rundt flyplassen Nordvik, bygd slik ekte luftrom er: en kontrollsone fra bakken, et TMA i trinn over den, klasse G under, et kontrollområde lenger ute, et restriksjonsområde og en radiopliktig sone rundt en liten flyplass. Dra flyet, eller bruk glidebryterne. Fra siden viser lagene; Ovenfra viser luftrommet i din høyde, slik et VFR-kart gjør. Panelet sier hva som gjelder for deg der.',
+ e1:'Ett fiktivt luftrom rundt flyplassen Nordvik, bygd slik ekte luftrom er: en kontrollsone fra bakken, et TMA i trinn over den, klasse G under, et kontrollområde lenger ute, et restriksjonsområde og en radiopliktig sone rundt en liten flyplass. Dra flyet, eller bruk glidebryterne. 3D viser hele strukturen; snu den med fingeren eller musen. Fra siden legger lagene flatt ut, og Ovenfra viser luftrommet i din høyde, slik et VFR-kart gjør. Panelet sier hva som gjelder for deg der.',
  t1:'Fire korte oppgaver. To løser du i modellen, med direkte tilbakemelding; to svarer du på her, og ser dem så i modellen.',
  d1:'<div class="box"><b class="t"><i>1</i>Klassen avgjør hva du trenger</b><p>I A til D trenger alle flyginger klarering og radio. I E er det bare IFR som gjør det: en VFR-flyging kan fly der uten å snakke med noen. I F og G trenger ingen klarering. Separasjon følger samme mønster: jo lenger ned i alfabetet, jo mer er din egen jobb.</p></div><div class="box"><b class="t"><i>2</i>Les grensene, ikke bare strekene</b><p>En strek på kartet er bare en del av historien. Et TMA som starter på 3500 ft finnes ikke på 3000 ft, så VFR-trafikk flyr under det i klasse G. Kjenn den nedre grensen i hvert punkt på ruten, og hvilke som er høyder og hvilke som er flygenivåer.</p></div><div class="box"><b class="t"><i>3</i>VFR er luftrom og vær sammen</b><p>VMC-minima endrer seg med høyde og klasse: 8 km over FL100, 5 km under, og fri av skyer med bakken i sikte bare lavt i F og G. Inn i en CTR trenger du skyhøyde 1500 ft og 5 km, eller spesiell VFR-klarering.</p></div>',
  d2:'<li><b>Planlegg den vertikale profilen, ikke bare streken.</b> Merk den nedre grensen for hvert kontrollerte volum langs ruten og planlegg en høyde med margin under den. En høydemåler som står 10 hPa feil, viser rundt 300 ft feil.</li><li><b>Ring før grensen, ikke på den.</b> Klarering inn i en CTR eller et TMA trengs før du krysser streken. Planlegg et venteområde utenfor, og har du ikke klarering, hold deg ute.</li><li><b>Klasse E er delt luftrom.</b> IFR-trafikk der er bare separert fra annen IFR. VFR-flyginger kan være der uten klarering eller radio, og ofte uten transponder. Hold godt utkikk, og be om trafikkinformasjon når du kan.</li><li><b>Sjekk de spesielle områdene på dagen.</b> Restriksjons-, fare- og midlertidige områder slås av og på med NOTAM og AIP-tider. Et R-område som var inaktivt i går, kan være aktivt i dag.</li><li><b>Under CTR-minima: spør tidlig.</b> Med skyhøyde under 1500 ft eller sikt under 5 km trenger en VFR-ankomst eller -avgang spesiell VFR, om dagen, fri av skyer med bakken i sikte. Under 600 ft eller 1500 m gir ikke ATC det.</li>',
  d3:'<span class="k">Dypdykk · i rutefly</span><p><b>Inne i systemet hele veien.</b> Et IFR-rutefly er i kontrollert luftrom fra bane til bane: CTR, TMA på SID-en, luftveier eller øvre luftrom i marsj, og ned igjen gjennom TMA på STAR-en. I klasse C er det separert fra alle; i D og E bare fra annen IFR-trafikk, så besetningen holder fortsatt utkikk og bruker TCAS.</p><p><b>Fart.</b> Grensen på 250 kt under FL100 gjelder IFR i klasse D til G, ikke i C. Publiserte SID-er og STAR-er og ATC-instrukser begrenser ofte farten likevel, så les kartet og klareringen.</p><p><b>Ut av kontrollert luftrom.</b> Noen regionale flyplasser og øyflyplasser ligger i klasse G med en RMZ i stedet for en CTR. En IFR-innflyging der får flygeinformasjon, ikke ATC-separasjon: lytt, gi posisjonsrapporter, og regn med VFR-trafikk som ikke er separert fra deg.</p>',
- foot:'<b>Modell og begrensninger.</b> Et fiktivt luftrom for læring, ikke en ekte AIP. Flatt terreng ved havnivå, så 3000 ft AMSL er også 1000 ft over bakken, og en overgangshøyde på 5000 ft. Ett skylag, 2500 ft tykt, dekker hele området, og basen er skyhøyden på Nordvik. Reglene er fra EASAs lufttrafikkregler, SERA (gjennomføringsforordning (EU) nr. 923/2012): tillegg 4 for klassene, SERA.5001 og tabell S5-1 for VMC-minima, SERA.5005 for VFR (CTR-minima, natt, FL195), SERA.5010 for spesiell VFR, SERA.6005 for RMZ og TMZ og SERA.3145 for restriksjonsområder. Redusert sikt som myndigheten kan tillate i klasse F og G, og nasjonale regler, er ikke modellert. Sjekk alltid AIP og NOTAM for det virkelige luftrommet.'
+ foot:'<b>Modell og begrensninger.</b> Et fiktivt luftrom for læring, ikke en ekte AIP. Høydene er strukket lavt nede i bildene (ikke i skala) så CTR og TMA-trinnene kan leses. Flatt terreng ved havnivå, så 3000 ft AMSL er også 1000 ft over bakken, og en overgangshøyde på 5000 ft. Ett skylag, 2500 ft tykt, dekker hele området, og basen er skyhøyden på Nordvik. Reglene er fra EASAs lufttrafikkregler, SERA (gjennomføringsforordning (EU) nr. 923/2012): tillegg 4 for klassene, SERA.5001 og tabell S5-1 for VMC-minima, SERA.5005 for VFR (CTR-minima, natt, FL195), SERA.5010 for spesiell VFR, SERA.6005 for RMZ og TMZ og SERA.3145 for restriksjonsområder. Redusert sikt som myndigheten kan tillate i klasse F og G, og nasjonale regler, er ikke modellert. Sjekk alltid AIP og NOTAM for det virkelige luftrommet.'
 });
 
 /* =====================================================================
@@ -54,18 +55,18 @@ const clsTag=c=>`<span class="cl" style="background:${CC[c]}">${c}</span>`;
 /* =====================================================================
    Viewport: tabs, chip, legend, "what you're seeing"
    ===================================================================== */
-const VIEWS=[['side',t2('Side view','Fra siden')],['plan',t2('From above','Ovenfra')]];
-let view='side';
+const VIEWS=[['d3',t2('3D','3D')],['side',t2('Side view','Fra siden')],['plan',t2('From above','Ovenfra')]];
+let view='d3';
 function drawTabs(){ el('aTabs').innerHTML=VIEWS.map(([k,n])=>`<button type="button" role="tab" data-v="${k}" class="${k===view?'on':''}" aria-selected="${k===view}">${L(n)}</button>`).join('');
   el('tFr').textContent=S.fr==='VFR'?L(t2('Flying VFR','Flyr VFR')):L(t2('Flying IFR','Flyr IFR')); el('tFr').setAttribute('aria-pressed',String(S.fr==='IFR'));
   el('tFr').title=L(t2('Switch between VFR and IFR','Bytt mellom VFR og IFR'));
-  el('xsv').textContent=L(VIEWS.find(x=>x[0]===view)[1]); }
+  el('xsv').textContent=L(VIEWS.find(x=>x[0]===view)[1]); el('cam').hidden=view!=='d3'; }
 function setView(v){ if(!VIEWS.some(x=>x[0]===v)) return; view=v;
   document.querySelectorAll('#avp .vv').forEach(e=>{ e.hidden=e.dataset.v!==v; }); drawTabs(); legend(); draw(); }
 el('aTabs').addEventListener('click',e=>{ const b=e.target.closest('button[data-v]'); if(b) setView(b.dataset.v); });
 el('tFr').addEventListener('click',()=>{ S.fr=S.fr==='VFR'?'IFR':'VFR'; segFr.set(S.fr); upd(); });
-function legend(){ const it=[[CC.C,'C'],[CC.D,'D'],[CC.E,'E'],[CC.G,'G'],[COL.r,'R-101'],[COL.rmz,'RMZ'],...(view==='side'?[[COL.cloud,L(t2('Cloud','Sky'))]]:[]),[COL.ac,L(t2('You','Du'))]];
-  const lines=view==='side'?[['#C9D2DA',t2('3000 ft: VMC minima change','3000 ft: VMC-minima endres')],['#7FCBE8',t2('TA: transition altitude','TA: overgangshøyde')],['#F0B440',t2('FL100: 8 km above, 250 kt below','FL100: 8 km over, 250 kt under')],['#EC8A7C',t2('FL195: top of VFR','FL195: øverst for VFR')]]:[];
+function legend(){ const it=[[CC.C,'C'],[CC.D,'D'],[CC.E,'E'],[CC.G,'G'],[COL.r,'R-101'],[COL.rmz,'RMZ'],...(view!=='plan'?[[COL.cloud,L(t2('Cloud','Sky'))]]:[]),[COL.ac,L(t2('You','Du'))]];
+  const lines=view!=='plan'?[['#C9D2DA',t2('3000 ft: VMC minima change','3000 ft: VMC-minima endres')],['#7FCBE8',t2('TA: transition altitude','TA: overgangshøyde')],['#F0B440',t2('FL100: 8 km above, 250 kt below','FL100: 8 km over, 250 kt under')],['#EC8A7C',t2('FL195: top of VFR','FL195: øverst for VFR')]]:[];
   el('aLeg').innerHTML=it.map(([c,n],i)=>`<span><i class="${i>=4&&i<6?'d':''}" style="--c:${c};${i<4?'height:9px;width:12px;opacity:.85':''}"></i>${n}</span>`).join('')+lines.map(([c,n])=>`<span><i class="d" style="--c:${c}"></i>${L(n)}</span>`).join(''); }
 const chipLast={}; function chip(id,items){ const h=items.map(([k,v,c])=>`<span><i>${L(k)}</i><b${c?` class="${c}"`:''}>${v}</b></span>`).join(''); if(chipLast[id]!==h){ chipLast[id]=h; el(id).innerHTML=h; } }
 
@@ -92,7 +93,7 @@ function out(){ const j=J, v=j.v, r=j.row;
   /* chip and the one-line summary */
   const st=!j.ok?['no',t2('Not OK','Ikke OK')]:j.clr==='svfr'?['sv',t2('OK with special VFR','OK med spesiell VFR')]:j.clr==='yes'?['sv',t2('OK with a clearance','OK med klarering')]:['ok',t2('OK','OK')];
   const ch=[[t2('Class','Klasse'),v.c],[t2('Airspace','Luftrom'),L(v.name).replace(/ \(.*\)/,'').replace(/ at Lia| ved Lia/,'')],[t2('Limits','Grenser'),v.lims],[t2('You','Du'),`${S.fr} · ${fmtAlt(S.alt)}`],[t2('Status','Status'),L(st[1]),st[0]==='ok'?'g':st[0]==='sv'?'a':'r']];
-  chip('chipS',ch); chip('chipP',ch);
+  chip('chipS',ch); chip('chipP',ch); chip('chip3',ch);
   el('aSee').innerHTML=see(j,st); live(); }
 function see(j,st){ const v=j.v, fr=S.fr, nm=L(v.name);
   let s;
@@ -221,7 +222,53 @@ function drawPlan(){ if(!CP.w) return; const g=CP.ctx, W=CP.w, H=CP.h, sm=W<560;
   const lbl=L(t2('Airspace at ','Luftrom i '))+fmtAlt(alt); g.font=`600 ${Math.round(12*GS.fs)}px ${SANS}`; const lw=g.measureText(lbl).width+16; g.fillStyle='rgba(12,16,20,.8)'; g.fillRect(W-pad-lw,top-2,lw,22); txt(g,lbl,W-pad-8,top+13,{al:'right',size:12,col:'#fff'});
   const c=!J.ok?COL.bad:J.clr==='svfr'||J.clr==='yes'?COL.amb:COL.ac; plane(g,X(S.x),cy,sm?.85:1,c,1); }
 
-function draw(){ if(view==='side') drawSide(); else drawPlan(); }
+function draw(){ if(view==='side') drawSide(); else if(view==='plan') drawPlan(); else draw3(); }
+
+/* =====================================================================
+   3D view, the pick card and the table of all airspace
+   ===================================================================== */
+const VOLS=[
+ {k:'ctr',c:'D',n:t2('Nordvik control zone (CTR)','Nordvik kontrollsone (CTR)'),lat:t2('Circle, 8 NM radius round Nordvik','Sirkel, 8 NM radius rundt Nordvik'),v:'SFC – 2500 ft',
+  vfr:t2('Clearance and two-way radio. No separation; traffic information. 250 kt.','Klarering og toveis radio. Ingen separasjon; trafikkinformasjon. 250 kt.'),ifr:t2('Clearance and two-way radio. Separated from IFR. 250 kt.','Klarering og toveis radio. Separert fra IFR. 250 kt.'),at:[2,1200]},
+ {k:'tma1',c:'C',n:t2('Nordvik TMA, sector 1','Nordvik TMA, sektor 1'),lat:t2('Within 8 NM, above the CTR','Innenfor 8 NM, over CTR-en'),v:'2500 ft – FL195',
+  vfr:t2('Clearance and two-way radio. Separated from IFR. 250 kt below FL100.','Klarering og toveis radio. Separert fra IFR. 250 kt under FL100.'),ifr:t2('Clearance and two-way radio. Separated from all. No speed limit in the class.','Klarering og toveis radio. Separert fra alle. Ingen fartsgrense i klassen.'),at:[3,6000]},
+ {k:'tma2',c:'C',n:t2('Nordvik TMA, sector 2','Nordvik TMA, sektor 2'),lat:t2('Ring 8–15 NM','Ring 8–15 NM'),v:'3500 ft – FL195',vfr:null,ifr:null,at:[12,6000]},
+ {k:'tma3',c:'C',n:t2('Nordvik TMA, sector 3','Nordvik TMA, sektor 3'),lat:t2('Ring 15–25 NM','Ring 15–25 NM'),v:'4500 ft – FL195',vfr:null,ifr:null,at:[20,8000]},
+ {k:'cta',c:'E',n:t2('Control area (CTA)','Kontrollområde (CTA)'),lat:t2('Beyond 25 NM','Utenfor 25 NM'),v:'FL95 – FL195',
+  vfr:t2('Nothing: no clearance, no radio. Traffic information as far as practical. 250 kt.','Ingenting: verken klarering eller radio. Trafikkinformasjon så langt det er praktisk mulig. 250 kt.'),ifr:t2('Clearance and two-way radio. Separated from IFR only. 250 kt.','Klarering og toveis radio. Bare separert fra IFR. 250 kt.'),at:[-37,12000]},
+ {k:'up',c:'C',n:t2('Upper control area','Øvre kontrollområde'),lat:t2('The whole area','Hele området'),v:'FL195 – FL660',
+  vfr:t2('Not allowed above FL195 unless the authority allows it (SERA.5005).','Ikke tillatt over FL195 uten at myndigheten tillater det (SERA.5005).'),ifr:t2('Clearance and two-way radio. Separated from all.','Klarering og toveis radio. Separert fra alle.'),at:[0,22000]},
+ {k:'g',c:'G',n:t2('Uncontrolled airspace','Ukontrollert luftrom'),lat:t2('Under the TMA steps and the CTA','Under TMA-trinnene og CTA-et'),v:t2('SFC – 3500 ft (8–15 NM), 4500 ft (15–25 NM), FL95 (beyond)','SFC – 3500 ft (8–15 NM), 4500 ft (15–25 NM), FL95 (utenfor)'),
+  vfr:t2('Nothing. Flight information if requested. 250 kt.','Ingenting. Flygeinformasjon på forespørsel. 250 kt.'),ifr:t2('No clearance; must be able to talk to ATS. No separation. 250 kt.','Ingen klarering; må kunne snakke med ATS. Ingen separasjon. 250 kt.'),at:[12,2000]},
+ {k:'rmz',c:'G',z:'RMZ',n:t2('Lia radio mandatory zone (RMZ)','Lia radiopliktig sone (RMZ)'),lat:t2('Circle, 4 NM radius round Lia','Sirkel, 4 NM radius rundt Lia'),v:'SFC – 2000 ft',
+  vfr:t2('Class G, plus: listening watch and a call before entry (SERA.6005).','Klasse G, pluss: lyttevakt og melding før innflyging (SERA.6005).'),ifr:t2('As VFR: listening watch and a call before entry. No separation.','Som VFR: lyttevakt og melding før innflyging. Ingen separasjon.'),at:[33,1200]},
+ {k:'r',c:'G',z:'R',n:t2('Restricted area R-101','Restriksjonsområde R-101'),lat:t2('28–34 NM west, 5 NM either side of the route','28–34 NM vest, 5 NM på hver side av ruten'),v:'SFC – 6500 ft',
+  vfr:t2('Do not enter while active, unless under its published conditions or with permission (SERA.3145).','Ikke fly inn mens det er aktivt, med mindre du følger de publiserte vilkårene eller har tillatelse (SERA.3145).'),ifr:t2('The same as VFR.','Det samme som VFR.'),at:[-31,3000]}];
+VOLS[2].vfr=VOLS[3].vfr=VOLS[1].vfr; VOLS[2].ifr=VOLS[3].ifr=VOLS[1].ifr;
+const keyOf=v=>v.r?'r':v.k==='tma'?({2500:'tma1',3500:'tma2',4500:'tma3'})[v.lo]:v.k;
+const D3=window.ASP3D?ASP3D.mount(el('cv3'),{fOf,L,onPick:k=>pickVol(k)}):null;
+if(!D3){ VIEWS.shift(); view='side'; }
+const HEXC={ac:0xE46BAE,amb:0xF0B440,bad:0xEC5A47};
+function draw3(){ if(!D3||!J) return; const c=!J.ok?HEXC.bad:J.clr==='svfr'||J.clr==='yes'?HEXC.amb:HEXC.ac;
+  D3.update({x:S.x,alt:S.alt,col:c,tag:`${S.fr} ${fmtAlt(S.alt)}`,base:S.base>=NOCLOUD?null:S.base,thick:2500,inKey:keyOf(J.v),small:CS.w<560}); }
+let picked=null;
+function pickVol(k){ picked=k; if(D3) D3.select(k); drawCard(); drawAll(); }
+function drawCard(){ const b=el('pcard'); const v=VOLS.find(x=>x.k===picked); if(!v){ b.hidden=true; return; } b.hidden=false;
+  b.innerHTML=`<button type="button" class="px" aria-label="${L(t2('Close','Lukk'))}">×</button><div class="ph"><b class="c" style="background:${v.z==='R'?COL.r:v.z==='RMZ'?COL.rmz:CC[v.c]}">${v.z||v.c}</b><span>${L(v.n)}</span></div><div class="pl">${typeof v.v==='string'?v.v:L(v.v)} · ${L(v.lat)}${v.z?' · '+L(t2('class G underneath','klasse G under')):''}</div>
+  <dl><dt>VFR</dt><dd>${L(v.vfr)}</dd><dt>IFR</dt><dd>${L(v.ifr)}</dd></dl><button type="button" class="go" data-fly="${v.k}">${L(t2('Fly there','Fly dit'))}</button>`; }
+el('pcard').addEventListener('click',e=>{ if(e.target.closest('.px')){ pickVol(null); return; } const f=e.target.closest('[data-fly]'); if(f) flyTo(f.dataset.fly); });
+function flyTo(k){ const v=VOLS.find(x=>x.k===k); if(!v) return; S.x=v.at[0]; S.alt=v.at[1]; if(k==='r') S.rActive=true; sync(); upd(); }
+let allLast='';
+function drawAll(){ if(!J) return; const here=keyOf(J.v);
+  const H=[t2('Airspace','Luftrom'),t2('Class','Klasse'),t2('Lateral limits','Sideveis grenser'),t2('Vertical limits','Vertikale grenser'),t2('VFR needs','VFR trenger'),t2('IFR needs','IFR trenger'),''];
+  const h=`<tr>${H.map(x=>`<th>${x?L(x):''}</th>`).join('')}</tr>`+VOLS.map(v=>`<tr class="${v.k===here?'here':''}${v.k===picked?' pick':''}"><td>${L(v.n)}${v.k===here?`<br><span class="tagh">${L(t2('You are here','Du er her'))}</span>`:''}</td><td><span class="clb" style="background:${CC[v.c]}">${v.c}</span>${v.z?` <small>+ ${v.z}</small>`:''}</td><td>${L(v.lat)}</td><td>${typeof v.v==='string'?v.v:L(v.v)}</td><td>${L(v.vfr)}</td><td>${L(v.ifr)}</td><td><button type="button" class="fly" data-fly="${v.k}">${L(t2('Fly there','Fly dit'))}</button></td></tr>`).join('');
+  if(h!==allLast){ allLast=h; el('tAll').innerHTML=h; } }
+el('tAll').addEventListener('click',e=>{ const f=e.target.closest('[data-fly]'); if(f){ flyTo(f.dataset.fly); pickVol(f.dataset.fly); el('avp').scrollIntoView({behavior:'smooth',block:'start'}); } });
+el('cam').addEventListener('click',e=>{ const b=e.target.closest('[data-c]'); if(!b||!D3) return; D3.view(b.dataset.c); el('cam').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); });
+const LAYS=[['ctr','CTR',CC.D],['tma','TMA',CC.C],['cta','CTA (E)',CC.E],['up',t2('Upper airspace','Øvre luftrom'),CC.C],['areas',t2('R-101 and RMZ','R-101 og RMZ'),COL.r],['cloud',t2('Cloud','Sky'),COL.cloud]];
+const layOn={ctr:true,tma:true,cta:true,up:false,areas:true,cloud:true};
+function drawLays(){ el('lays').innerHTML=LAYS.map(([k,n,c])=>`<label><input type="checkbox" data-l="${k}" ${layOn[k]?'checked':''}><i style="background:${c}"></i>${typeof n==='string'?n:L(n)}</label>`).join(''); }
+el('lays').addEventListener('change',e=>{ const k=e.target.dataset.l; if(!k) return; layOn[k]=e.target.checked; if(D3) D3.layers(layOn); draw3(); });
 
 /* dragging the aircraft */
 function drag(cv,side){ let on=false;
@@ -256,7 +303,7 @@ const PRE=[
 function drawPre(){ el('pre').innerHTML=PRE.map(([k,n])=>`<button type="button" class="btn sm" data-p="${k}">${L(n)}</button>`).join(''); }
 function preset(k){ const p=PRE.find(x=>x[0]===k); if(!p) return; Object.assign(S,{rActive:S.rActive},p[2]); sync(); upd(); }
 el('pre').addEventListener('click',e=>{ const b=e.target.closest('button[data-p]'); if(b) preset(b.dataset.p); });
-function upd(){ judge(); drawTabs(); out(); draw(); }
+function upd(){ judge(); drawTabs(); out(); draw(); drawAll(); }
 
 /* =====================================================================
    Try it
@@ -391,10 +438,10 @@ LAB.quiz(el('qbox'),'airspace',()=>LAB.shuffle([
    Start
    ===================================================================== */
 LAB.start('airsp');
-judge(); sync(); drawPre(); drawTabs(); legend(); drawTasks(); drawTables(); drawMaid(); out();
+judge(); sync(); drawPre(); drawTabs(); legend(); drawTasks(); drawTables(); drawMaid(); drawLays(); drawAll(); out(); document.querySelectorAll('#avp .vv').forEach(e=>{ e.hidden=e.dataset.v!==view; }); el('cam').querySelector('[data-c=iso]').classList.add('on'); if(D3) D3.layers(layOn);
 { const keepS=LAB.keep(S); LAB.reset(()=>{ keepS(); sync(); upd(); }); }
-function fromHash(){ const h=location.hash.slice(1); if(h==='plan'){ setView('plan'); requestAnimationFrame(()=>el('explore').scrollIntoView({block:'start'})); } }
+function fromHash(){ const h=location.hash.slice(1); if(['plan','side','d3'].includes(h)){ setView(h); requestAnimationFrame(()=>el('explore').scrollIntoView({block:'start'})); } }
 addEventListener('hashchange',fromHash); fromHash(); draw();
 document.addEventListener('labdepth',()=>draw());
-LAB.onLang(()=>{ drawPre(); drawTabs(); legend(); drawTasks(); drawTables(); drawMaid(); out(); draw(); });
+LAB.onLang(()=>{ drawPre(); drawTabs(); legend(); drawTasks(); drawTables(); drawMaid(); drawLays(); allLast=''; drawAll(); drawCard(); if(D3) D3.relabel(); out(); draw(); });
 })();
