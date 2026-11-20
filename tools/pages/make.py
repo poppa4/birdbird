@@ -108,7 +108,7 @@ TOOLS = [
    [('Replacing the AFM, NOTAM, minima or weather from official sources. Check each of them yourself.', 'Å erstatte AFM, NOTAM, minima eller vær fra offisielle kilder. Kontroller hver av dem selv.')]]),
  ('labs', ('Virtual Labs', 'Virtual Labs'), ['illus'], 'lab.html', [
    [('Simplified physics that shows how things relate. Each lab states its purpose and what it leaves out.', 'Forenklet fysikk som viser hvordan ting henger sammen. Hver lab oppgir formålet og hva den utelater.')],
-   [('Changing one thing at a time and seeing what follows, in six subject areas.', 'Å endre én ting om gangen og se hva som følger, i seks fagområder.')],
+   [('Changing one thing at a time and seeing what follows, in seven subject areas.', 'Å endre én ting om gangen og se hva som følger, i sju fagområder.')],
    [('Aircraft figures, also where a lab says A320, are illustrative values.', 'Flytall, også der en lab sier A320, er illustrative verdier.'),
     ('The labs are a visual reference. They do not cover a whole ATPL subject and are not a question bank.', 'Labbene er et visuelt oppslagsverk. De dekker ikke et helt ATPL-fag og er ikke en spørsmålsbank.')],
    [('Operational decisions or exam preparation alone.', 'Operative beslutninger eller eksamensforberedelse alene.')]]),

@@ -12,8 +12,8 @@ const LABS=[...lab.matchAll(/\['([a-z0-9-]+\.html)','([a-z0-9]+)','[^']+','[^']+
 const goalSrc=lab.slice(lab.indexOf('const GOAL={')), goalKeys=new Set([...goalSrc.slice(0,goalSrc.indexOf('};')).matchAll(/^\s{3}([a-z]+):t2\(/gm)].map(m=>m[1]));
 const scriptsOf=html=>[...html.matchAll(/<script src="([A-Za-z0-9.-]+\.js)(?:\?v=\d+)?"/g)].map(m=>m[1]);
 
-test('the lab list is complete (25 listed labs and the unlisted mass and balance lab)', ()=>{
-  assert.equal(new Set(LABS.map(l=>l[0])).size,26);
+test('the lab list is complete (26 listed labs and the unlisted mass and balance lab)', ()=>{
+  assert.equal(new Set(LABS.map(l=>l[0])).size,27);
   for(const [f] of LABS) assert.ok(fs.existsSync(path.join(root,f)), f+' exists');
 });
 test('every lab has a learning goal in English and Norwegian: its own p.goal or an entry in GOAL', ()=>{

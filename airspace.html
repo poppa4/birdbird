@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Airspace classes A to G, the control zone, the TMA and the rules that come with them, all from EASA SERA. Fly through a stepped airspace in side view and from above, and see at every point what you need: clearance, radio, separation, service, the 250 kt limit and the VMC minima for the weather you set.">
+<link rel="canonical" href="https://nordap.eu/airspace">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NORDAP">
+<meta property="og:title" content="Airspace and the rules of the air">
+<meta property="og:description" content="Airspace classes A to G, the control zone, the TMA and the rules that come with them, all from EASA SERA. Fly through a stepped airspace and see at every point what you need: clearance, radio, separation, service, the 250 kt limit and the VMC minima.">
+<meta property="og:url" content="https://nordap.eu/airspace">
+<meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Airspace and the rules of the air</title>
+<link rel="stylesheet" href="lab.css?v=15">
+<link rel="stylesheet" href="site.css?v=35">
+<style>
+.kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
+.kfull>summary{width:auto!important;max-width:100%}
+.deepbox{border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--radius);padding:14px 18px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
+.deepbox>.k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
+.deepbox p{margin:0 0 8px}.deepbox p:last-child{margin-bottom:0}
+.ltab{width:100%;border-collapse:collapse;font-size:13.5px;line-height:1.4;margin-top:4px}
+.ltab th,.ltab td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--rule-2);vertical-align:top}
+.ltab th{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.ltab td:first-child{font-weight:700;color:var(--ink);white-space:nowrap}
+.ltab td.cls{font-family:var(--f-mono);font-size:15px}
+.ltab tr.top td{border-top:2px solid var(--rule)}
+.ltab .y{color:var(--ink);font-weight:600}.ltab .n{color:var(--ink-3)}
+.ltab caption{text-align:left;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:16px;color:var(--ink);padding:14px 0 4px}
+.ltab caption small{display:block;font-family:var(--f-body);font-weight:400;font-size:12.5px;color:var(--ink-3);margin-top:2px}
+.wrapx{overflow-x:auto}
+@media (max-width:640px){.ltab td:first-child{white-space:normal}.ltab th,.ltab td{padding:6px}}
+/* Explore */
+.vv[hidden],.vp[hidden]{display:none!important}
+#cvS,#cvP{aspect-ratio:16/10.5;max-height:720px;touch-action:none;cursor:crosshair}
+@media (max-width:640px){#cvS{aspect-ratio:4/5}#cvP{aspect-ratio:4/4.8}}
+.xsee b{color:var(--ink)}
+.xsee .ok{color:var(--ok);font-weight:600}.xsee .no{color:var(--warning);font-weight:600}.xsee .sv{color:var(--caution);font-weight:600}
+.ro .rrow small{display:block;font-size:11px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.ro .rrow b{white-space:normal;text-align:right;font-weight:600;font-size:13px;max-width:62%}
+.ro .rrow b.warn{color:var(--caution)}.ro .rrow b.bad{color:var(--warning)}.ro .rrow b.good{color:var(--ok)}
+.ro .rrow b .cl{display:inline-block;font-family:var(--f-mono);font-weight:700;min-width:22px;text-align:center;border-radius:3px;padding:0 5px;color:#fff;margin-right:6px}
+.xsec .ro{margin:0}
+.xsec .xchk{display:flex;align-items:center;gap:8px;font-size:13.5px;margin-top:4px}
+.chk{margin:8px 0 0;padding:0;list-style:none;font-size:13px;line-height:1.45}
+.chk li{padding:5px 0 5px 22px;position:relative;border-top:1px solid var(--rule-2)}
+.chk li::before{position:absolute;left:2px;top:5px;font-weight:700}
+.chk li.ok::before{content:"✓";color:var(--ok)}.chk li.no::before{content:"✕";color:var(--warning)}.chk li.nt::before{content:"i";font-family:var(--f-mono);color:var(--info)}
+/* Key points */
+.why .box b.t i{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--ink-3);margin-right:6px}
+.maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg) var(--radius-lg) 0;background:var(--sheet);padding:14px 18px;max-width:80ch}
+.maid .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.maid b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:700;font-size:20px;color:var(--ink);line-height:1.25}
+.maid p{margin:6px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
+.take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
+.take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
+.take li::before{content:"";position:absolute;left:4px;top:19px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
+.take li b{font-weight:600}
+.foot b{color:var(--ink)}
+body.depth-instructor .maid b{font-size:24px}
+body.depth-instructor .xsee{font-size:16px}
+body.depth-instructor .xpanel .ctl label{font-size:15px}
+body.depth-instructor .ro .rrow b{font-size:15px}
+</style>
+</head>
+<body data-title="Airspace and the rules of the air">
+<script src="site.js?v=118"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Labs"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">NORDAP Virtual Labs · Air law</div>
+      <h1>Airspace and the rules of the air</h1>
+      <p data-tx="lead">Every piece of sky has a class, and the class decides what you need before you fly into it: a clearance, a radio, a transponder, or nothing at all. Fly through a stepped airspace around an aerodrome, in side view and from above, and see at every point which rules apply to you, IFR or VFR, in the weather you set. Everything here is from the EASA rules of the air (SERA).</p>
+      <p class="goal" id="goal" data-tx="goal"><span class="k">Learning goal</span>Name the class of any piece of airspace from its limits, say what each class gives and asks of IFR and VFR flights, apply the VMC minima and the CTR and special VFR rules to the weather of the day, and plan a VFR route that stays legal around controlled airspace.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#understand">Key concepts</a><a href="#explore">The airspace lab</a><a href="#try">Try it</a><a href="#debrief">Key points</a><a href="#quiz">Test yourself</a></nav>
+
+  <!-- 1 · UNDERSTAND -->
+  <section class="card" id="understand" data-step="understand">
+    <div class="eyebrow">1 · Understand</div>
+    <h2>Key concepts</h2>
+    <p class="kintro" data-tx="u0">Airspace is <b>controlled</b> (classes A to E: ATC gives clearances) or <b>uncontrolled</b> (F and G). Going from A to G, ATC does less and you do more yourself. A class says three things: who may fly there, what ATC does for you, and what you must do: get a clearance, talk on the radio, keep the VMC minima.</p>
+    <div id="kcGrid"></div>
+    <div id="corePic"></div>
+    <details class="kfull"><summary id="tabSum">The two SERA tables: airspace classes and VMC minima</summary><div>
+      <div class="wrapx"><table class="ltab" id="tCls"></table></div>
+      <div class="wrapx"><table class="ltab" id="tVmc"></table></div>
+      <div class="deepbox deep" data-tx="u3" style="margin-top:16px"><span class="k">Deep dive · how the pieces fit</span>
+        <p><b>Controlled airspace has names as well as classes.</b> A control zone (CTR) starts at the surface and protects arrivals and departures. A control area (CTA) starts at a lower limit above the ground; a terminal control area (TMA) is a CTA where routes meet around one or more busy aerodromes, and an airway is a CTA shaped as a corridor. Each one is given a class by the State and published in the AIP.</p>
+        <p><b>Limits are part of the airspace.</b> A volume is described by its lateral boundary and by its lower and upper limit, for example “3500 ft – FL195”. Below the lower limit you are not in it. Lower limits step up away from the aerodrome, so VFR flights can stay under them. At and below the transition altitude limits are altitudes on QNH; above it they are flight levels on 1013.25 hPa.</p>
+        <p><b>Special areas sit on top of the class.</b> Prohibited (P) and restricted (R) areas may not be entered except under their published conditions or with permission; a danger area (D) warns of activity that may be dangerous to aircraft. An RMZ adds a radio requirement and a TMZ a transponder requirement inside airspace of any class they are placed in.</p>
+      </div>
+    </div></details>
+  </section>
+
+  <!-- 2 · EXPLORE -->
+  <section class="card" id="explore" data-step="explore">
+    <div class="eyebrow">2 · Explore</div>
+    <h2>The airspace lab</h2>
+    <p class="lead" data-tx="e1">One fictional airspace around the aerodrome Nordvik, built the way real ones are: a control zone from the surface, a TMA stepped above it, class G underneath, a control area further out, a restricted area and a radio mandatory zone around a small airfield. Drag the aircraft, or use the sliders. Side view shows the layers; From above shows the airspace at your altitude, as a VFR chart does. The panel says what applies to you there.</p>
+    <div class="xapp" id="aapp">
+      <div class="xvp" id="avp" data-lab-model>
+        <div class="vbar"><div class="vtabs" id="aTabs" role="tablist" aria-label="View"></div><div class="vtools" id="aTools"><button type="button" id="tFr" aria-pressed="false">VFR</button></div></div>
+        <div class="vcv vv" data-v="side"><canvas id="cvS" aria-label="Side view of the airspace from 40 NM west to 40 NM east of Nordvik, from the surface to FL300, with the class of each volume, the cloud layer and your aircraft. Drag to move the aircraft."></canvas><div class="vchip" id="chipS" aria-live="polite"></div></div>
+        <div class="vcv vv" data-v="plan" hidden><canvas id="cvP" aria-label="The airspace seen from above at your altitude: the class in each ring around Nordvik, the restricted area and the RMZ, and your aircraft on the route. Drag to move the aircraft along the route."></canvas><div class="vchip" id="chipP" aria-live="polite"></div></div>
+        <div class="vleg" id="aLeg"></div>
+      </div>
+      <p class="xsee" id="aSee"></p>
+      <details class="xpanel" id="xpanel" open aria-label="Controls">
+        <summary class="xsum"><span>Controls</span><span class="xsv" id="xsv"></span></summary>
+        <div class="tbox" id="tbox" hidden></div>
+        <details class="xsec" open><summary id="gHere">What applies here</summary>
+          <div class="ro">
+            <div class="rrow"><span id="lAs">Airspace</span><b id="rAs"></b></div>
+            <div class="rrow"><span id="lCl">ATC clearance</span><b id="rCl"></b></div>
+            <div class="rrow"><span id="lRa">Radio</span><b id="rRa"></b></div>
+            <div class="rrow"><span id="lSe">Separation</span><b id="rSe"></b></div>
+            <div class="rrow"><span id="lSv">Service</span><b id="rSv"></b></div>
+            <div class="rrow"><span id="lSp">Speed limit</span><b id="rSp"></b></div>
+            <div class="rrow" id="rowVm"><span id="lVm">VMC minima here</span><b id="rVm"></b></div>
+          </div>
+          <ul class="chk" id="chk"></ul>
+        </details>
+        <details class="xsec" open><summary id="gFl">Your flight</summary><div class="grp" id="gFr" style="margin-top:0">Flight rules</div><div id="sFr"></div><div class="grp" id="gDn">Time</div><div id="sDn"></div><div id="ctlF" style="margin-top:8px"></div></details>
+        <details class="xsec" open><summary id="gWx">Weather</summary><div id="ctlW"></div><p class="note" id="wNote" style="margin-top:4px">One cloud layer, 2500 ft thick, over the whole area; its base is the ceiling at Nordvik.</p></details>
+        <details class="xsec presec" open><summary id="gPre">Scenarios</summary><div class="pre" id="pre"></div></details>
+        <details class="xsec"><summary id="gAdv">Airspace</summary><label class="xchk"><input type="checkbox" id="rAct" checked> <span id="lRact">Restricted area R-101 active</span></label></details>
+      </details>
+      <div class="tryblk" id="try" data-step="try">
+        <h3 id="tryH">Try it</h3>
+        <p class="note" data-tx="t1">Four short tasks. Two you solve in the model, with live feedback; two you answer here, then see them in the model.</p>
+        <ol class="tasks" id="tasks"></ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · KEY POINTS -->
+  <section class="card" id="debrief" data-step="debrief">
+    <div class="eyebrow">3 · Key points</div>
+    <h2>Key points</h2>
+    <div class="cols why" data-tx="d1">
+      <div class="box"><b class="t"><i>1</i>The class decides what you need</b><p>In A to D every flight needs a clearance and a radio. In E only IFR does: a VFR flight may fly there without talking to anyone. In F and G nobody needs a clearance. Separation follows the same pattern: the further down the alphabet, the more of it is your own job.</p></div>
+      <div class="box"><b class="t"><i>2</i>Read the limits, not only the lines</b><p>A line on the chart is only part of the story. A TMA that starts at 3500 ft is not there at 3000 ft, so VFR traffic flies under it in class G. Know the lower limit at every point of your route, and which are altitudes and which are flight levels.</p></div>
+      <div class="box"><b class="t"><i>3</i>VFR is airspace and weather together</b><p>The VMC minima change with altitude and class: 8 km above FL100, 5 km below, and clear of cloud with the surface in sight only low in F and G. Into a CTR you need a ceiling of 1500 ft and 5 km, or a special VFR clearance.</p></div>
+    </div>
+    <div class="maid" id="maid"></div>
+    <h3 id="takeH">Pilot takeaways</h3>
+    <ul class="take" data-tx="d2">
+      <li><b>Plan the vertical profile, not only the line.</b> Mark the lower limit of every controlled volume along the route and plan a level with a margin below it. An altimeter set wrong by 10 hPa is 300 ft wrong.</li>
+      <li><b>Call before the boundary, not at it.</b> A clearance into a CTR or TMA is needed before you cross the line. Plan a holding point outside, and if you do not have the clearance, stay out.</li>
+      <li><b>Class E is shared airspace.</b> IFR traffic there is separated only from other IFR. VFR flights may be there without a clearance or a radio, and often without a transponder. Keep a good lookout, and ask for traffic information when you can.</li>
+      <li><b>Check the special areas on the day.</b> Restricted, danger and temporary areas are switched on and off by NOTAM and AIP times. An R area that was inactive yesterday can be active today.</li>
+      <li><b>Below the CTR minima, ask early.</b> With a ceiling under 1500 ft or visibility under 5 km, a VFR arrival or departure needs special VFR, by day, clear of cloud with the surface in sight. Below 600 ft or 1500 m ATC will not give it.</li>
+    </ul>
+    <div class="deepbox deep" data-tx="d3"><span class="k">Deep dive · in the airliner</span>
+      <p><b>Inside the system all the way.</b> An IFR airliner is in controlled airspace from the runway to the runway: the CTR, the TMA on the SID, airways or upper airspace in cruise, and back down through the TMA on the STAR. In class C it is separated from everyone; in D and E only from other IFR traffic, so the crew still looks out and uses TCAS.</p>
+      <p><b>Speed.</b> The 250 kt limit below FL100 applies to IFR in classes D to G, not in C. Published SIDs and STARs and ATC instructions often restrict the speed anyway, so read the chart and the clearance.</p>
+      <p><b>Leaving controlled airspace.</b> Some regional and island aerodromes lie in class G with an RMZ instead of a CTR. An IFR approach there gets flight information, not ATC separation: listen out, give position reports, and expect VFR traffic that is not separated from you.</p>
+    </div>
+  </section>
+
+  <!-- TEST YOURSELF -->
+  <section class="card" id="quiz" data-step="check">
+    <div class="eyebrow">3 · Test yourself</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> A fictional airspace for learning, not a real AIP. Flat terrain at sea level, so 3000 ft AMSL is also 1000 ft above the ground, and a transition altitude of 5000 ft. One cloud layer, 2500 ft thick, covers the whole area, and its base is the ceiling at Nordvik. The rules are from the EASA rules of the air, SERA (Implementing Regulation (EU) No 923/2012): Appendix 4 for the classes, SERA.5001 and Table S5-1 for the VMC minima, SERA.5005 for VFR (CTR minima, night, FL195), SERA.5010 for special VFR, SERA.6005 for RMZ and TMZ and SERA.3145 for restricted areas. Reduced visibility allowed by the authority in classes F and G, and national rules, are not modelled. Always check the AIP and NOTAM for the real airspace.</p>
+</div>
+<script src="lab.js?v=59"></script>
+<script src="concepts.js?v=9"></script>
+<script src="airspacecore.js?v=1"></script>
+<script src="airspace-lab.js?v=1"></script>
+<script src="corepic.js?v=13"></script>
+<script src="pic-airspace.js?v=1"></script>
+</body>
+</html>
