@@ -44,19 +44,82 @@
 .plateguide .pg h4::before{content:attr(data-k);color:var(--magenta);font-size:26px;font-weight:780}
 .plateguide .pg p{margin:0;font-size:14px;color:var(--ink-2)}
 .plateguide .pg ul{margin:6px 0 0;padding-left:18px;font-size:14px}
-.crew{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-@media (max-width:760px){.crew{grid-template-columns:minmax(0,1fr)}}
-.crew .pg{background:var(--sheet);border:1px solid var(--rule);border-radius:3px;padding:14px 16px}
-.crew .pg.w{grid-column:1/-1}
-.crew .pg h4{margin:0 0 6px;font-family:var(--f-display);font-stretch:88%;font-size:18px;display:flex;gap:10px;align-items:baseline}
-.crew .pg h4::before{content:attr(data-k);color:var(--magenta);font-size:24px;font-weight:780}
-.crew .pg p{margin:0;font-size:14px;color:var(--ink-2)}
-.crew .pg ul{margin:6px 0 0;padding-left:18px;font-size:14px}
-.crew .who{font-family:var(--f-mono);font-size:11.5px;color:var(--chart-blue);margin-left:auto}
-.atm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:8px}
-@media (max-width:640px){.atm{grid-template-columns:minmax(0,1fr)}}
-.atm div{border-top:2px solid var(--accent);padding-top:6px;font-size:14px}
-.atm b{display:block;font-size:15px}
+.fmts{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:14px;margin:6px 0 26px}
+@media (max-width:900px){.fmts{grid-template-columns:minmax(0,1fr)}}
+.fmt{display:flex;flex-direction:column;gap:4px;background:var(--sheet);border:1px solid var(--rule);border-top:4px solid var(--ink-3);border-radius:4px;padding:14px 16px;color:var(--ink);text-decoration:none}
+.fmt:hover{border-color:var(--ink-3)}
+.fmt.main{border-top-color:var(--accent);background:linear-gradient(180deg,var(--accent-wash),var(--sheet) 70%)}
+.fmt .fk{font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}
+.fmt b{font-family:var(--f-display);font-stretch:85%;font-weight:780;font-size:24px;line-height:1.1}
+.fmt.main b{color:var(--accent)}
+.fmt p{margin:2px 0 6px;font-size:14px;color:var(--ink-2);line-height:1.5}
+.fmt .fg{margin-top:auto;font-size:14px;font-weight:600;color:var(--info)}
+.fmt.main .fg{color:var(--accent)}
+.sh-bar{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;border-top:1px solid var(--rule);padding-top:18px;margin-bottom:14px;scroll-margin-top:80px}
+.sh-bar .sh-h{display:block;font-family:var(--f-display);font-stretch:88%;font-size:22px}
+.sh-bar .btns{display:flex;gap:10px;align-items:center;margin:0}
+.sheets{display:flex;justify-content:center;background:#DDE3E1;border-radius:4px;padding:22px 12px;overflow-x:auto}
+/* the sheet: an A4 page */
+.bs{--pm:#1D4E9E;--pf:#9A1E68;--bo:#0B2545;--th:#B7791F;--thw:#FBF3E4;width:794px;min-height:1123px;flex:none;background:#fff;color:#13202A;box-shadow:0 2px 6px rgba(19,32,42,.15),0 22px 40px -26px rgba(19,32,42,.5);display:flex;flex-direction:column;font-family:var(--f-body)}
+.bs[hidden]{display:none}
+.bs-hd{background:var(--bo);color:#fff;padding:18px 28px 14px;display:grid;grid-template-columns:1fr auto;gap:6px 20px;align-items:end;position:relative}
+.bs-hd::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(90deg,var(--pm) 0 50%,var(--pf) 50% 100%)}
+.bs-brand{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:#A9C2E6}
+.bs .bs-hd h3{color:#fff;grid-column:1;margin:2px 0 0;font-family:var(--f-display);font-stretch:80%;font-weight:800;font-size:36px;line-height:1;letter-spacing:.01em}
+.bs-hd h3 em{font-style:normal;color:#F2A7D0}
+.bs-crit{grid-column:2;grid-row:1/3;display:grid;grid-template-columns:auto auto;gap:3px 12px;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#D7E1E6;text-align:right}
+.bs-crit span::before{content:"■ ";color:#F2A7D0}
+.bs-when{grid-column:1/-1;margin:6px 0 0;font-size:12.5px;color:#D7E1E6}
+.bs-when b{color:#fff}
+.bs-body{flex:1;padding:16px 28px 12px;display:flex;flex-direction:column;gap:9px}
+.bs-row{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:stretch}
+.bs-n{display:flex;flex-direction:column;align-items:center;gap:6px}
+.bs-n i{font-style:normal;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--c,var(--bo));color:#fff;font-family:var(--f-display);font-weight:800;font-size:21px}
+.bs-n::after{content:"";flex:1;width:2px;background:repeating-linear-gradient(var(--rule) 0 4px,transparent 4px 8px)}
+.bs-row:last-child .bs-n::after{display:none}
+.bs-box{border:1px solid #C6D0D3;border-radius:4px;overflow:hidden}
+.bs-bh{display:flex;align-items:center;gap:10px;padding:5px 12px;background:#F5F7F5;border-bottom:1px solid #DCE3E4}
+.bs-bh b{font-family:var(--f-display);font-stretch:88%;font-size:16px}
+.bs-tag{margin-left:auto;font-family:var(--f-mono);font-size:10.5px;font-weight:600;letter-spacing:.05em;padding:2px 7px;border-radius:2px;color:#fff;background:var(--c,var(--bo))}
+.bs-bb{padding:7px 12px;font-size:12.5px;line-height:1.45}
+.bs-bb p{margin:0;color:#4C5B66}
+.bs-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bs-two .bs-box{border-top:4px solid var(--c)}
+.bs-two .bs-bh{background:#fff}
+.bs-two .bs-bh b{color:var(--c)}
+.bs ul.ck{list-style:none;margin:0;padding:0}
+.bs ul.ck li{display:flex;gap:8px;padding:1.5px 0;border-bottom:1px dotted #DCE3E4}
+.bs ul.ck li:last-child{border-bottom:0}
+.bs ul.ck li::before{content:"";flex:none;width:11px;height:11px;margin-top:3px;border:1.5px solid var(--c,var(--bo));border-radius:2px}
+.pm{--c:var(--pm)}.pf{--c:var(--pf)}.bo{--c:var(--bo)}.th{--c:var(--th)}
+.bs-row.th .bs-box{border-color:#E9CF9F}
+.bs-row.th .bs-bh{background:var(--thw)}
+.bs-chips{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 6px}
+.bs-chips span{font-size:11.5px;padding:2px 8px;border-radius:10px;background:var(--thw);border:1px solid #E9CF9F;color:#8A5A0B}
+.bs-wr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bs-wr div{font-family:var(--f-mono);font-size:10.5px;font-weight:600;color:var(--c)}
+.bs-wr div::after{content:"";display:block;height:69px;margin-top:2px;background:repeating-linear-gradient(transparent 0 22px,#C6D0D3 22px 23px)}
+.bs-atm{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0}
+.bs-atm div{position:relative;padding:6px 14px 6px 24px;background:#F5F7F5;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%,14px 50%)}
+.bs-atm div:first-child{padding-left:14px;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%)}
+.bs-atm div:nth-child(1){background:#EEF3FA}.bs-atm div:nth-child(2){background:#E7EDF5}.bs-atm div:nth-child(3){background:#F6EDF2}
+.bs-atm b{display:block;font-family:var(--f-display);font-stretch:85%;font-size:20px;line-height:1.1;color:var(--bo)}
+.bs-atm b u{text-decoration:none;color:var(--pf)}
+.bs-atm small{display:block;font-size:12px;color:#4C5B66;line-height:1.4}
+.bs-atmq{margin:6px 0 0;font-size:12.5px;color:#4C5B66}
+.bs-ft{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:auto}
+.bs-ft>div{border-left:4px solid var(--c);background:#F5F7F5;padding:7px 12px;font-size:12px;line-height:1.45}
+.bs-ft b{display:block;font-size:13.5px;margin-bottom:2px}
+.bs-foot{display:flex;justify-content:space-between;padding:9px 30px;border-top:1px solid #DCE3E4;font-family:var(--f-mono);font-size:10px;color:#5F6D77}
+@media (max-width:860px){.sheets{justify-content:flex-start}}
+@media print{
+  body.psheet>*:not(.page),body.psheet .page>*:not(#crew),body.psheet #crew>*:not(#sheets){display:none!important}
+  body.psheet,body.psheet .page{background:#fff;margin:0;padding:0;max-width:none}
+  body.psheet #crew{padding:0;border:0;margin:0;box-shadow:none}
+  body.psheet #sheets{display:block;background:none;padding:0;overflow:visible}
+  body.psheet .bs,body.psheet .bs[hidden]{display:flex!important;box-shadow:none;width:794px;min-height:0;height:1123px;zoom:.88!important;break-after:page;page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body.psheet .bs:last-child{break-after:auto;page-break-after:auto}
+}
 .hist{font-size:13px;color:var(--ink-2)}
 .rgrid{display:grid;grid-template-columns:minmax(0,600px) minmax(0,1fr);gap:28px;align-items:start}
 @media (max-width:1180px){.rgrid{grid-template-columns:minmax(0,1fr)}}
@@ -108,7 +171,7 @@
     </div>
     <div class="hright"></div>
   </header>
-  <nav class="snav"><a href="#trainer">Trainer</a><a href="#reading">Reading an approach chart</a><a href="#plate">How to brief a plate</a><a href="#crew">Two-pilot briefing</a><a href="#speeds">A320 speed card</a></nav>
+  <nav class="snav"><a href="#trainer">Trainer</a><a href="#reading">Reading an approach chart</a><a href="#plate">How to brief a plate</a><a href="#crew">Briefing formats</a><a href="#speeds">A320 speed card</a></nav>
 
   <section class="card" id="trainer" data-ai>
     <div class="btns" style="justify-content:space-between">
@@ -160,13 +223,20 @@
   </section>
 
   <section class="card" id="crew">
-    <div class="eyebrow">Airline practice</div>
-    <h2>Two-pilot briefing: the airline routine</h2>
-    <p class="lead">In a two-pilot airline cockpit the departure and arrival briefings follow a fixed routine built on threat and error management. TSADMM and T-RIBETS give you the content; this routine shares it between the pilots and turns the threats into an agreed plan. Keep it short, relevant, interactive and scaled to the day.</p>
-    <div class="btns"><div id="crk"></div></div>
-    <div class="crew" id="crg"></div>
-    <div class="callout blue">Re-brief when a new threat appears or the plan changes (runway, taxi route, procedure): only the items that changed, with the threats and the mitigation. After the flight, debrief: what went well, what would we do differently, and is there anything to report or write up.</div>
-    <p class="note">Shows how airlines commonly structure crew briefings. Your operator’s briefing guide and SOPs always come first.</p>
+    <div class="eyebrow">Briefing formats</div>
+    <h2>Choose your briefing</h2>
+    <p class="lead">Operators brief in different ways. NORDAP teaches three formats: pick the one your operator or your simulator course uses.</p>
+    <div class="fmts">
+      <a class="fmt main" href="#sheet"><span class="fk">Two pilots · departure and arrival</span><b>NORDAP crew brief</b><p>Built on threat and error management, the way many European airlines brief today: the PM and the PF each take their part of the plan, then you agree what to do about the threats.</p><span class="fg">Open the sheet ↓</span></a>
+      <a class="fmt" href="#dep" data-k="dep"><span class="fk">Departure · letters</span><b>T-RIBETS</b><p>Threats, Runway, Instruments, Bugs, Emergencies, Transition altitude, Safe altitude. A common checklist-style departure briefing in pilot training and with some operators.</p><span class="fg">Practise in the trainer →</span></a>
+      <a class="fmt" href="#plate"><span class="fk">Approach · from the plate</span><b>TSADMM</b><p>Threats, Setup, Arrival, Descent, Minimums, Missed approach. Works down an approach chart from top to bottom, ending with the missed approach.</p><span class="fg">How to brief a plate ↓</span></a>
+    </div>
+    <div class="sh-bar" id="sheet">
+      <div><b class="sh-h">NORDAP crew brief</b><span class="note">One A4 sheet each for departure and arrival. Print them for the simulator or keep them on the kneeboard.</span></div>
+      <div class="btns"><div id="crk"></div><button class="btn pri" id="shPrint">Print both sheets</button></div>
+    </div>
+    <div class="sheets" id="sheets"></div>
+    <p class="note">NORDAP training material. It shows how airlines commonly structure crew briefings; your operator’s briefing guide and SOPs always come first.</p>
   </section>
 
   <section class="card" id="speeds">
@@ -210,7 +280,14 @@ LAB.add({},{
  'TSADMM: Threats, Setup, Arrival, Descent, Minimums, Missed approach. Threats come first so the rest of the briefing is built around them. What matters is that the order is fixed and that you end with the missed approach. Set the minima on the bug and the missed-approach altitude in the preselect while you brief them.':'TSADMM: Threats, Setup, Arrival, Descent, Minimums, Missed approach. Truslene kommer først, så resten av briefingen bygges rundt dem. Det viktige er at rekkefølgen er fast og at du avslutter med missed approach. Sett minima på buggen og missed approach-høyden i preselect mens du briefer dem.',
  'Reference':'Oppslag',
  'Typical A320ceo values for training, rounded. On the line the FMS computes the speeds for the actual mass and configuration, and your operator’s FCOM and QRH always come first.':'Typiske A320ceo-verdier for opplæring, avrundet. På linjen regner FMS-en ut fartene for faktisk masse og konfigurasjon, og operatørens FCOM og QRH går alltid foran.',
- 'Arrival':'Ankomst','Two-pilot briefing':'Briefing med to piloter','Airline practice':'Praksis i flyselskap','Two-pilot briefing: the airline routine':'Briefing med to piloter: rutinen i flyselskapene',
+ 'Arrival':'Ankomst',
+ 'Briefing formats':'Briefingformater','Choose your briefing':'Velg briefing','Operators brief in different ways. NORDAP teaches three formats: pick the one your operator or your simulator course uses.':'Operatører briefer på ulike måter. NORDAP lærer bort tre formater: velg det operatøren eller simulatorkurset ditt bruker.',
+ 'Two pilots · departure and arrival':'To piloter · avgang og ankomst','NORDAP crew brief':'NORDAP crewbrief','Built on threat and error management, the way many European airlines brief today: the PM and the PF each take their part of the plan, then you agree what to do about the threats.':'Bygd på trussel- og feilhåndtering, slik mange europeiske flyselskap briefer i dag: PM og PF tar hver sin del av planen, så blir dere enige om hva dere gjør med truslene.','Open the sheet ↓':'Åpne arket ↓',
+ 'Departure · letters':'Avgang · bokstaver','Threats, Runway, Instruments, Bugs, Emergencies, Transition altitude, Safe altitude. A common checklist-style departure briefing in pilot training and with some operators.':'Threats, Runway, Instruments, Bugs, Emergencies, Transition altitude, Safe altitude. En vanlig avgangsbriefing i sjekklisteform i pilotutdanning og hos enkelte operatører.','Practise in the trainer →':'Øv i treneren →',
+ 'Approach · from the plate':'Innflyging · fra kartet','Threats, Setup, Arrival, Descent, Minimums, Missed approach. Works down an approach chart from top to bottom, ending with the missed approach.':'Threats, Setup, Arrival, Descent, Minimums, Missed approach. Går gjennom innflygingskartet ovenfra og ned og slutter med avbrutt innflyging.','How to brief a plate ↓':'Slik briefer du et kart ↓',
+ 'One A4 sheet each for departure and arrival. Print them for the simulator or keep them on the kneeboard.':'Ett A4-ark for avgang og ett for ankomst. Skriv dem ut til simulatoren eller ha dem på kneebrettet.','Print both sheets':'Skriv ut begge arkene',
+ 'NORDAP training material. It shows how airlines commonly structure crew briefings; your operator’s briefing guide and SOPs always come first.':'Opplæringsmateriell fra NORDAP. Det viser hvordan flyselskap vanligvis bygger opp crewbriefinger; operatørens briefingguide og SOP-er går alltid foran.',
+'Two-pilot briefing':'Briefing med to piloter','Airline practice':'Praksis i flyselskap','Two-pilot briefing: the airline routine':'Briefing med to piloter: rutinen i flyselskapene',
  'In a two-pilot airline cockpit the departure and arrival briefings follow a fixed routine built on threat and error management. TSADMM and T-RIBETS give you the content; this routine shares it between the pilots and turns the threats into an agreed plan. Keep it short, relevant, interactive and scaled to the day.':'I en flyselskapscockpit med to piloter følger avgangs- og ankomstbriefingen en fast rutine bygd på trussel- og feilhåndtering (TEM). TSADMM og T-RIBETS gir innholdet; rutinen fordeler det mellom pilotene og gjør truslene om til en felles plan. Hold den kort, relevant, interaktiv og tilpasset dagen.',
  'Re-brief when a new threat appears or the plan changes (runway, taxi route, procedure): only the items that changed, with the threats and the mitigation. After the flight, debrief: what went well, what would we do differently, and is there anything to report or write up.':'Brief på nytt når en ny trussel dukker opp eller planen endres (rullebane, taksirute, prosedyre): bare det som er endret, med truslene og tiltakene. Etter flygingen: debrief – hva gikk bra, hva ville vi gjort annerledes, og er det noe som skal rapporteres eller skrives opp.',
  'Shows how airlines commonly structure crew briefings. Your operator’s briefing guide and SOPs always come first.':'Viser hvordan flyselskaper vanligvis bygger opp crewbriefinger. Operatørens briefingguide og SOP-er går alltid foran.',
@@ -428,27 +505,49 @@ const PG=[
 ];
 function pg(){ el('pg').innerHTML=PG.map(([k,t,d,li])=>`<div class="pg"><h4 aria-level="3" data-k="${k}">${esc(L(t))}</h4><p>${esc(L(d))}</p><ul>${li.map(x=>`<li>${esc(L(x))}</li>`).join('')}</ul></div>`).join(''); }
 
-/* two-pilot crew briefing (TEM routine) */
-const ATM=[[{en:'Avoid',no:'Unngå'},{en:'Can the threat be removed completely? Another runway, more fuel, wait it out.',no:'Kan trusselen fjernes helt? Annen rullebane, mer drivstoff, vente den ut.'}],
- [{en:'Trap',no:'Fange'},{en:'Use your resources so an error is caught early: the other pilot, automation, charts and procedures, knowledge.',no:'Bruk ressursene slik at en feil fanges tidlig: den andre piloten, automatikk, kart og prosedyrer, kunnskap.'}],
- [{en:'Mitigate',no:'Begrense'},{en:'If it happens anyway: the worst case, who does what, the drill or memory items.',no:'Hvis det skjer likevel: verste tilfelle, hvem gjør hva, drillen eller memory items.'}]];
-const CR={dep:[
- ['1','',{en:'Set the scene',no:'Gjør klart'},{en:'Cockpit door closed, no interruptions, both pilots free to listen.',no:'Cockpitdøren lukket, ingen avbrytelser, begge pilotene ledige til å lytte.'},[]],
- ['2a','PM',{en:'The plan, PM part',no:'Planen, PMs del'},{en:'The PM reads the route out of the FMS and the charts.',no:'PM leser ruten fra FMS-en og kartene.'},[{en:'Take-off runway and intersection',no:'Avgangsrullebane og avkjørsel/intersection'},{en:'SID',no:'SID'},{en:'First cleared or expected altitude',no:'Første klarerte eller forventede høyde'},{en:'MSA, MOCA or MORA along the climb',no:'MSA, MOCA eller MORA langs stigningen'},{en:'Extra fuel and time',no:'Ekstra drivstoff og tid'}]],
- ['2b','PF',{en:'The plan, PF part',no:'Planen, PFs del'},{en:'The PF adds how the take-off and the first minutes will be flown.',no:'PF legger til hvordan avgangen og de første minuttene flys.'},[{en:'Hotspots on the planned taxi route',no:'Hotspots på den planlagte taksiruten'},{en:'Stop margin for a rejected take-off',no:'Stoppmargin ved avbrutt avgang'},{en:'Engine-out procedure (EOSID)',no:'Prosedyre ved motorstans (EOSID)'},{en:'Return or diversion plan',no:'Plan for retur eller alternativ'},{en:'Special or non-standard operations',no:'Spesielle eller ikke-standard operasjoner'}]],
- ['3','PM → PF',{en:'Threats',no:'Trusler'},{en:'The PM names the threats; the PF adds any that are missing.',no:'PM nevner truslene; PF legger til de som mangler.'},[{en:'Weather, runway state, terrain, traffic, NOTAM',no:'Vær, rullebaneforhold, terreng, trafikk, NOTAM'},{en:'Aircraft status (MEL items), crew state, time pressure',no:'Flystatus (MEL), crewets tilstand, tidspress'}]],
- ['4','PF + PM',{en:'Agree the mitigation',no:'Bli enige om tiltak'},{en:'For each threat, discuss and agree what you will do. Not every threat needs all three steps.',no:'For hver trussel: diskuter og bli enige om hva dere gjør. Ikke alle trusler trenger alle tre stegene.'},'atm'],
- ['5','PF + PM',{en:'Miscellaneous',no:'Diverse'},{en:'Whatever else the day needs.',no:'Det dagen ellers krever.'},[{en:'Use of automation after take-off',no:'Bruk av automatikk etter avgang'},{en:'Supplementary procedures not yet briefed',no:'Tilleggsprosedyrer som ikke er briefet'},{en:'Low-visibility procedures: task sharing, callouts, communication',no:'Prosedyrer for lav sikt: oppgavefordeling, callouts, kommunikasjon'},{en:'Observer briefing, dangerous goods',no:'Briefing av observatør, farlig gods'}]]],
- arr:[
- ['1','',{en:'Set the scene',no:'Gjør klart'},{en:'At the right time before top of descent, with as few interruptions as possible. Consider headsets on.',no:'I god tid før toppen av nedstigningen, med så få avbrytelser som mulig. Vurder headset på.'},[]],
- ['2a','PM',{en:'The plan, PM part',no:'Planen, PMs del'},{en:'The PM reads the arrival and the approach out of the FMS and the charts.',no:'PM leser ankomsten og innflygingen fra FMS-en og kartene.'},[{en:'Arrival and transition, STAR',no:'Ankomst og transition, STAR'},{en:'MSA, MOCA or MORA for the planned path',no:'MSA, MOCA eller MORA for planlagt bane'},{en:'Runway, type of approach and minimum',no:'Rullebane, type innflyging og minima'},{en:'Landing elevation',no:'Landingshøyde (elevation)'},{en:'Go-around path',no:'Go-around-banen'},{en:'Extra fuel and time',no:'Ekstra drivstoff og tid'}]],
- ['2b','PF',{en:'The plan, PF part',no:'Planen, PFs del'},{en:'The PF adds how the approach and landing will be flown.',no:'PF legger til hvordan innflygingen og landingen flys.'},[{en:'Transition level',no:'Overgangsnivå'},{en:'Configuration and guidance, landing flaps, stabilisation altitude',no:'Konfigurasjon og guidance, landingsklaffer, stabiliseringshøyde'},{en:'Stop margin, reverse thrust, autobrake',no:'Stoppmargin, reversering, autobrems'},{en:'Planned runway exit and hotspots for taxi-in',no:'Planlagt avkjøring og hotspots ved taksing inn'},{en:'Special or non-standard operations',no:'Spesielle eller ikke-standard operasjoner'}]],
- ['3','PM → PF',{en:'Threats',no:'Trusler'},{en:'The PM names the threats; the PF adds any that are missing.',no:'PM nevner truslene; PF legger til de som mangler.'},[{en:'Weather, runway state, terrain, traffic, NOTAM',no:'Vær, rullebaneforhold, terreng, trafikk, NOTAM'},{en:'Fatigue, unfamiliar airport, late runway change',no:'Tretthet, ukjent flyplass, sen rullebaneendring'}]],
- ['4','PF + PM',{en:'Agree the mitigation',no:'Bli enige om tiltak'},{en:'For each threat, discuss and agree what you will do. Not every threat needs all three steps.',no:'For hver trussel: diskuter og bli enige om hva dere gjør. Ikke alle trusler trenger alle tre stegene.'},'atm'],
- ['5','PF + PM',{en:'Miscellaneous',no:'Diverse'},{en:'Whatever else the day needs.',no:'Det dagen ellers krever.'},[{en:'Single-engine taxi; tell the cabin if low-visibility operations are expected',no:'Taksing på én motor; si fra til kabinen hvis det ventes lavsiktsoperasjoner'},{en:'Supplementary procedures not yet briefed',no:'Tilleggsprosedyrer som ikke er briefet'},{en:'Use of automation for the landing',no:'Bruk av automatikk ved landing'},{en:'Low-visibility procedures and degraded guidance',no:'Prosedyrer for lav sikt og redusert guidance'}]]]};
+/* NORDAP crew brief: printable A4 sheets */
+const X=(en,no)=>({en,no});
+const SH={
+ dep:{t:X('Departure','Avgang'),when:X('After the ATC clearance, before the Cockpit Preparation checklist.','Etter ATC-klareringen, før Cockpit Preparation-sjekklisten.'),
+  s1:X('Cockpit door closed. Set a distraction-free environment: no cabin calls, no ground calls, both pilots free to listen.','Cockpitdøren lukket. Ingen forstyrrelser: ingen anrop fra kabin eller bakke, begge pilotene ledige til å lytte.'),
+  pm:[X('Take-off runway and intersection','Avgangsrullebane og intersection'),X('SID designator','SID-betegnelse'),X('First cleared or expected altitude','Første klarerte eller forventede høyde'),X('MSA / MOCA / MORA for the climb','MSA / MOCA / MORA for stigningen'),X('Extra fuel and time','Ekstra drivstoff og tid')],
+  pf:[X('Hotspots on the planned taxi route','Hotspots på planlagt taksirute'),X('Stop margin for a rejected take-off','Stoppmargin ved avbrutt avgang'),X('Engine-out procedure (EOSID / EFP)','Prosedyre ved motorstans (EOSID / EFP)'),X('Return or diversion plan','Plan for retur eller alternativ'),X('Special or non-standard operations','Spesielle eller ikke-standard operasjoner')],
+  ch:[X('Weather','Vær'),X('Runway state','Rullebaneforhold'),X('Terrain and MSA','Terreng og MSA'),X('Performance','Ytelse'),X('Traffic and birds','Trafikk og fugl'),X('NOTAM','NOTAM'),X('MEL items','MEL'),X('Crew and time pressure','Crew og tidspress')],
+  mi:[X('Use of automation after take-off','Bruk av automatikk etter avgang'),X('Supplementary procedures not yet briefed','Tilleggsprosedyrer som ikke er briefet'),X('Low-visibility procedures: task sharing, callouts','Prosedyrer for lav sikt: oppgavefordeling, callouts'),X('Observer briefing, dangerous goods','Briefing av observatør, farlig gods')],
+  f1:[X('Cruise brief','Cruise-brief'),X('At cruise level, if the route brings specific threats or rules: terrain, weather, escape routes, special areas.','I marsjhøyde, hvis ruten har egne trusler eller regler: terreng, vær, rømningsveier, spesielle områder.')]},
+ arr:{t:X('Arrival','Ankomst'),when:X('After the descent preparation, well before top of descent.','Etter forberedelsen til nedstigning, i god tid før toppen av nedstigningen.'),
+  s1:X('Pick the right time before top of descent. Keep interruptions to a minimum and consider headsets on.','Velg riktig tidspunkt før toppen av nedstigningen. Hold avbrytelser på et minimum og vurder headset på.'),
+  pm:[X('Arrival, transition and STAR','Ankomst, transition og STAR'),X('MSA / MOCA / MORA for the planned path','MSA / MOCA / MORA for planlagt bane'),X('Runway and type of approach','Rullebane og type innflyging'),X('Approach minimum and landing elevation','Minima og landingshøyde'),X('Go-around path','Go-around-bane'),X('Extra fuel and time','Ekstra drivstoff og tid')],
+  pf:[X('Transition level','Overgangsnivå'),X('Configuration and guidance, landing flaps','Konfigurasjon og guidance, landingsklaffer'),X('Stabilisation altitude','Stabiliseringshøyde'),X('Stop margin, reverse thrust, autobrake','Stoppmargin, reversering, autobrems'),X('Planned runway exit, taxi-in hotspots','Planlagt avkjøring, hotspots ved taksing inn'),X('Special or non-standard operations','Spesielle eller ikke-standard operasjoner')],
+  ch:[X('Weather','Vær'),X('Runway state','Rullebaneforhold'),X('Terrain and MSA','Terreng og MSA'),X('Unfamiliar airport','Ukjent flyplass'),X('Late runway change','Sen rullebaneendring'),X('NOTAM','NOTAM'),X('Fatigue','Tretthet'),X('Fuel','Drivstoff')],
+  mi:[X('Single-engine taxi; tell the cabin if low visibility is expected','Taksing på én motor; si fra til kabinen ved lav sikt'),X('Supplementary procedures not yet briefed','Tilleggsprosedyrer som ikke er briefet'),X('Use of automation for the landing','Bruk av automatikk ved landing'),X('Low visibility and degraded guidance','Lav sikt og redusert guidance')],
+  f1:[X('Debrief','Debrief'),X('After the flight: what went well? What would we do differently? Anything to report or write up?','Etter flygingen: Hva gikk bra? Hva ville vi gjort annerledes? Noe som skal rapporteres eller skrives opp?')]}};
 let crK='dep';
-const crSeg=LAB.seg(el('crk'),[['dep','Departure'],['arr','Arrival']],crK,v=>{ crK=v; crew(); });
-function crew(){ el('crg').innerHTML=CR[crK].map(([k,who,t,d,li])=>`<div class="pg${k.length===1?' w':''}"><h4 aria-level="3" data-k="${k}">${esc(L(t))}${who?`<span class="who">${esc(who)}</span>`:''}</h4><p>${esc(L(d))}</p>${li==='atm'?`<div class="atm">${ATM.map(([h,p])=>`<div><b>${esc(L(h))}</b>${esc(L(p))}</div>`).join('')}</div>`:li.length?`<ul>${li.map(x=>`<li>${esc(L(x))}</li>`).join('')}</ul>`:''}</div>`).join(''); }
+const crSeg=LAB.seg(el('crk'),[['dep','Departure'],['arr','Arrival']],crK,v=>{ crK=v; showSheet(); });
+function sheet(k){ const D=SH[k], E=x=>esc(L(x)), ck=a=>`<ul class="ck">${a.map(x=>`<li>${E(x)}</li>`).join('')}</ul>`;
+  const row=(n,cls,title,tag,body)=>`<div class="bs-row ${cls}"><div class="bs-n"><i>${n}</i></div><div class="bs-box"><div class="bs-bh"><b>${title}</b>${tag?`<span class="bs-tag">${tag}</span>`:''}</div><div class="bs-bb">${body}</div></div></div>`;
+  return `<article class="bs" data-k="${k}"${k===crK?'':' hidden'} aria-label="${E(X('NORDAP crew brief','NORDAP crewbrief'))}: ${E(D.t)}">
+  <header class="bs-hd"><span class="bs-brand">NORDAP · ${E(X('CREW BRIEF','CREWBRIEF'))}</span>
+   <div class="bs-crit"><span>${E(X('Concise','Kort'))}</span><span>${E(X('Relevant','Relevant'))}</span><span>${E(X('Interactive','Interaktiv'))}</span><span>${E(X('Scalable','Skalerbar'))}</span></div>
+   <h3>${E(D.t).toUpperCase()} <em>BRIEF</em></h3>
+   <p class="bs-when"><b>${E(X('When','Når'))}:</b> ${E(D.when)}</p></header>
+  <div class="bs-body">
+   ${row(1,'bo',E(X('Set the scene','Gjør klart')),E(X('PF + PM','PF + PM')),`<p>${E(D.s1)}</p>`)}
+   <div class="bs-row"><div class="bs-n"><i style="background:linear-gradient(135deg,var(--pm) 50%,var(--pf) 50%)">2</i></div><div class="bs-two">
+     <div class="bs-box pm"><div class="bs-bh"><b>2a · ${E(X('The plan','Planen'))}</b><span class="bs-tag">PM</span></div><div class="bs-bb">${ck(D.pm)}</div></div>
+     <div class="bs-box pf"><div class="bs-bh"><b>2b · ${E(X('How we fly it','Slik flyr vi det'))}</b><span class="bs-tag">PF</span></div><div class="bs-bb">${ck(D.pf)}</div></div></div></div>
+   ${row(3,'th',E(X('Threats','Trusler')),'PM → PF',`<p>${E(X('PM identifies the threats, PF adds any that are missing. Think about:','PM identifiserer truslene, PF legger til det som mangler. Tenk på:'))}</p><div class="bs-chips">${D.ch.map(x=>`<span>${E(x)}</span>`).join('')}</div><div class="bs-wr"><div class="pm">3a · PM</div><div class="pf">3b · PF</div></div>`)}
+   ${row(4,'bo',E(X('Agree the mitigation','Bli enige om tiltak')),E(X('PF + PM','PF + PM')),`<div class="bs-atm"><div><b><u>A</u>void</b><small>${E(X('Can the threat be removed completely?','Kan trusselen fjernes helt?'))}</small></div><div><b><u>T</u>rap</b><small>${E(X('Use your resources so errors are caught early.','Bruk ressursene slik at feil fanges tidlig.'))}</small></div><div><b><u>M</u>itigate</b><small>${E(X('Worst case: drills, memory items, who does what.','Verste tilfelle: driller, memory items, hvem gjør hva.'))}</small></div></div><p class="bs-atmq">${E(X('Discuss and agree for each threat. Not every threat needs all three.','Diskuter og bli enige for hver trussel. Ikke alle trusler trenger alle tre.'))}</p>`)}
+   ${row(5,'bo',E(X('Miscellaneous','Diverse')),E(X('PF + PM','PF + PM')),ck(D.mi))}
+   <div class="bs-ft"><div class="th"><b>${E(X('Re-brief if','Brief på nytt hvis'))}</b>${E(X('A new threat appears or the plan changes (runway, taxi route, procedure): the changed items, the threats and the mitigation.','En ny trussel dukker opp eller planen endres (rullebane, taksirute, prosedyre): det som er endret, truslene og tiltakene.'))}</div><div class="pm"><b>${E(D.f1[0])}</b>${E(D.f1[1])}</div></div>
+  </div>
+  <footer class="bs-foot"><span>NORDAP · nordap.eu</span><span>${E(X('Training material. Your operator’s SOP comes first.','Opplæringsmateriell. Operatørens SOP går foran.'))}</span></footer></article>`; }
+function fitSheets(){ const box=el('sheets'), z=Math.min(1,(box.clientWidth-24)/794); box.querySelectorAll('.bs').forEach(a=>a.style.zoom=z<1?z.toFixed(3):''); }
+function crew(){ el('sheets').innerHTML=sheet('dep')+sheet('arr'); fitSheets(); }
+new ResizeObserver(fitSheets).observe(el('sheets'));
+function showSheet(){ el('sheets').querySelectorAll('.bs').forEach(a=>a.hidden=a.dataset.k!==crK); }
+el('shPrint').onclick=()=>{ document.body.classList.add('psheet'); const off=()=>{ document.body.classList.remove('psheet'); window.removeEventListener('afterprint',off); }; window.addEventListener('afterprint',off); window.print(); setTimeout(off,1500); };
+document.querySelector('#crew .fmt[data-k=dep]').addEventListener('click',e=>{ e.preventDefault(); el('scen').value=''; kind='dep'; kseg.set('dep'); history.replaceState(null,'','#dep'); scenario(); el('trainer').scrollIntoView({behavior:'smooth',block:'start'}); });
 
 /* A320-fartskort */
 let spM='64.5';
