@@ -59,8 +59,9 @@ test('the brain: every item on its surface, each section a region of the upper c
   /* items sit just above the surface of a hemisphere: inside the brain's bounding box, outside its core */
   g.nodes.forEach((n, i) => { const p = at(L, i).map(x => x / L.S); assert.ok(Math.abs(p[0]) < 0.75 && p[1] < 0.66 && p[1] > -0.5 && Math.abs(p[2]) < 0.9, 'on the brain: ' + n.id); assert.ok(Math.hypot(p[0] * 1.6, p[1] * 1.6, p[2]) > 0.45, 'on the surface: ' + n.id); });
   L.clusters.forEach(c => assert.ok(c.nrm && c.c[1] / L.S > -0.05, 'region on the upper half: ' + c.key));
-  const S1 = B.shell(L, 4000), S2 = B.shell(B.layout3d(SAMPLE()), 4000);
-  assert.equal(S1.n, 4000); assert.deepEqual([...S1.P.slice(0, 300)], [...S2.P.slice(0, 300)], 'deterministic');
+  const S1 = B.shell(L, 4), S2 = B.shell(B.layout3d(SAMPLE()), 4);
+  assert.ok(S1.n > 1000 && S1.I.length % 3 === 0 && Math.max(...S1.I) < S1.n, 'a closed triangle mesh'); assert.deepEqual([...S1.P.slice(0, 300)], [...S2.P.slice(0, 300)], 'deterministic');
+  assert.ok([...S1.F].every(f => f >= 0 && f <= 1), 'fold 0..1');
   assert.ok([...S1.reg].some(r => r >= 0) && new Set([...S1.reg].filter(r => r >= 0)).size === L.clusters.length, 'every section tints a region');
   const P = B.puffs(L.clusters); assert.equal(P.length % 5, 0);
   for (let k = 0; k < P.length; k += 5) { const c = L.clusters[P[k + 4]]; assert.ok(dist([P[k], P[k + 1], P[k + 2]], c.c) <= c.r + B.D, 'puff on its group'); }

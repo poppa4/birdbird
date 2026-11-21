@@ -92,6 +92,53 @@
     const res = { P, F, K, N: Nn }; if (shellCache.size > 6) shellCache.clear(); shellCache.set(key, res); return res;
   }
   /* the brain's size (world units) for N items: big enough that every item has room on the surface */
+  /* ---------- the brain as a surface (drawn as one smooth, lit mesh) ----------
+     brainMesh(level) -> { P Float32Array(3V) (units of S), I Uint32Array (triangles), F Float32Array(V) fold 0 sulcus .. 1 gyrus,
+     K Int8Array(V) part (0 left, 1 right cerebrum, 2 cerebellum, 3 stem), O Float32Array(3V) outward direction }.
+     Each part is a subdivided icosahedron pulled onto the part's shape: hemispheres with a flat inner wall at the
+     fissure, a narrower frontal lobe, the temporal lobe and the Sylvian fissure below, then pushed in along winding
+     sulci (ridged, warped noise) so the gyri stand out. Deterministic. level 6 ~ 180k triangles, 5 ~ 45k. */
+  function ico(level) {
+    const t = (1 + Math.sqrt(5)) / 2, V = [[-1, t, 0], [1, t, 0], [-1, -t, 0], [1, -t, 0], [0, -1, t], [0, 1, t], [0, -1, -t], [0, 1, -t], [t, 0, -1], [t, 0, 1], [-t, 0, -1], [-t, 0, 1]].map(v => { const l = Math.hypot(...v); return v.map(x => x / l); });
+    let F = [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8], [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9], [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]];
+    for (let l = 0; l < level; l++) {
+      const mid = new Map(), m = (a, b) => { const k = a < b ? a * 1e6 + b : b * 1e6 + a; let i = mid.get(k); if (i == null) { const v = [V[a][0] + V[b][0], V[a][1] + V[b][1], V[a][2] + V[b][2]], n = Math.hypot(...v); i = V.length; V.push(v.map(x => x / n)); mid.set(k, i); } return i; };
+      const nf = []; for (const [a, b, c] of F) { const ab = m(a, b), bc = m(b, c), ca = m(c, a); nf.push([a, ab, ca], [b, bc, ab], [c, ca, bc], [ab, bc, ca]); } F = nf;
+    }
+    return { V, F };
+  }
+  const meshCache = new Map();
+  function brainMesh(level) {
+    level = level || 6; if (meshCache.has(level)) return meshCache.get(level);
+    const P = [], I = [], Fd = [], K = [], O = [];
+    const add = (sph, map) => { const base = P.length / 3; sph.V.forEach(u => { const r = map(u); P.push(r.p[0], r.p[1], r.p[2]); Fd.push(r.f); K.push(r.k); O.push(r.o[0], r.o[1], r.o[2]); }); sph.F.forEach(f => I.push(base + f[0], base + f[1], base + f[2])); };
+    const sulc = (x, y, z, f) => { const wx = noise(x * 2.6 + 11, y * 2.6, z * 2.6) * 0.32, wy = noise(x * 2.6, y * 2.6 + 23, z * 2.6) * 0.32, wz = noise(x * 2.6 + 5, y * 2.6 + 7, z * 2.6 + 41) * 0.32;
+      const v = noise((x + wx) * f, (y + wy) * f, (z + wz) * f), v2 = noise((x - wy) * f * 2.1 + 3, (y + wz) * f * 2.1, (z + wx) * f * 2.1);
+      return Math.max(Math.exp(-v * v / 0.0058), 0.22 * Math.exp(-v2 * v2 / 0.004)); };
+    const hemi = s => u => {
+      const c = [0.25 * s, 0.07, 0], ax = 0.37, ay = u[1] < 0 ? 0.33 : 0.5, az = 0.82;
+      const r = 1 / Math.sqrt((u[0] / ax) ** 2 + (u[1] / ay) ** 2 + (u[2] / az) ** 2);
+      let p = [u[0] * r, u[1] * r, u[2] * r];
+      if (s * p[0] < 0) p[0] = Math.sign(p[0]) * 0.235 * Math.pow(Math.abs(p[0]) / ax, 0.42);   /* the inner wall: flat, along the fissure */
+      if (p[2] > 0.1) { const f = Math.pow((p[2] - 0.1) / 0.72, 1.5); p[0] *= 1 - 0.24 * f; if (p[1] < 0) p[1] *= 1 - 0.45 * f; }   /* frontal lobe */
+      if (p[2] < -0.5 && p[1] > 0) p[1] *= 1 - 0.25 * (-0.5 - p[2]) / 0.32;                                                      /* occipital pole */
+      const lat = Math.max(0, s * u[0]), wt = Math.exp(-((u[1] + 0.62) ** 2) / 0.06 - ((u[2] - 0.12) ** 2) / 0.22) * lat;        /* temporal lobe */
+      p = [p[0] + s * 0.03 * wt, p[1] - 0.11 * wt, p[2] + 0.04 * wt];
+      p = [p[0] + c[0], p[1] + c[1], p[2] + c[2]];
+      const o = [(p[0] - c[0]) / (ax * ax), (p[1] - c[1]) / (ay * ay), (p[2] - c[2]) / (az * az)], ol = Math.hypot(...o); for (let k = 0; k < 3; k++) o[k] /= ol;
+      const syl = lat * Math.exp(-((p[1] + 0.12 - 0.3 * (p[2] - 0.05)) ** 2) / 0.0016) * (p[2] > -0.25 ? 1 : 0);                  /* Sylvian fissure */
+      const sc = s * p[0] < 0.035 ? 0 : sulc(p[0], p[1], p[2], 8.5), dip = 0.028 * sc + 0.035 * syl, f = 1 - Math.min(1, sc + syl);
+      return { p: [p[0] - o[0] * dip, p[1] - o[1] * dip, p[2] - o[2] * dip], f, k: s < 0 ? 0 : 1, o };
+    };
+    const cereb = u => { const c = [0, -0.38, -0.56], a = [0.43, 0.2, 0.27]; const r = 1 / Math.sqrt((u[0] / a[0]) ** 2 + (u[1] / a[1]) ** 2 + (u[2] / a[2]) ** 2);
+      const p = [c[0] + u[0] * r, c[1] + u[1] * r, c[2] + u[2] * r], o = u, b = Math.exp(-Math.pow(Math.sin(p[1] * 70 + noise(p[0] * 6, p[1] * 6, p[2] * 6) * 3.2 + p[2] * 6), 2) / 0.05), dip = 0.014 * b;
+      return { p: [p[0] - o[0] * dip, p[1] - o[1] * dip, p[2] - o[2] * dip], f: 1 - b, k: 2, o }; };
+    const stem = u => { const c = [0, -0.6, -0.22], a = [0.085, 0.26, 0.095]; const r = 1 / Math.sqrt((u[0] / a[0]) ** 2 + (u[1] / a[1]) ** 2 + (u[2] / a[2]) ** 2); return { p: [c[0] + u[0] * r, c[1] + u[1] * r, c[2] + u[2] * r], f: 0.8, k: 3, o: u }; };
+    const H = ico(level), C = ico(Math.max(3, level - 1));
+    add(H, hemi(-1)); add(H, hemi(1)); add(C, cereb);   /* no stem: the brain floats over the scope */
+    const res = { P: new Float32Array(P), I: new Uint32Array(I), F: new Float32Array(Fd), K: new Int8Array(K), O: new Float32Array(O) };
+    meshCache.set(level, res); return res;
+  }
   const sizeFor = N => Math.max(70, Math.sqrt(N * 11) * D * 0.42 + 40);
 
   function layout3d(g, opts) {
@@ -100,8 +147,10 @@
     const hit = cache.get(sig); if (hit) return clone(hit);
     const N = g.nodes.length, groups = GW.groupsOf(g), P = new Float32Array(N * 3), gi = new Int32Array(N).fill(-1), S = sizeFor(N);
     /* candidate places for items: the outer and upper faces of the two hemispheres */
-    const BP = brainPoints(Math.max(5000, N * 14), 'layout'), cand = [], top = [];
-    BP.P.forEach((p, j) => { if (BP.K[j] < 2 && p[1] > -0.24 && Math.abs(p[0]) > 0.07) { cand.push(j); if (p[1] > 0.02) top.push(cand.length - 1); } });
+    const BM = brainMesh(5), BP = { P: [], N: [], K: [] }, cand = [], top = [];
+    for (let v = 0; v < BM.K.length; v++) { if (BM.K[v] > 1) continue; const p = [BM.P[v * 3], BM.P[v * 3 + 1], BM.P[v * 3 + 2]], o = [BM.O[v * 3], BM.O[v * 3 + 1], BM.O[v * 3 + 2]];
+      if (p[1] < -0.24 || Math.abs(p[0]) < 0.09 || (BM.K[v] === 0 ? o[0] : -o[0]) > 0.3 || BM.F[v] < 0.5) continue;   /* outer faces, on a gyrus, not in a fold */
+      BP.P.push(p); BP.N.push(o); BP.K.push(BM.K[v]); cand.push(BP.P.length - 1); if (p[1] > 0.02) top.push(cand.length - 1); }
     const W = j => BP.P[j].map(x => x * S);
     /* the regions: spread over the upper half of the cerebrum (where the home view sees them) by farthest-point sampling,
        the first at the front of the left hemisphere */
@@ -148,16 +197,18 @@
     return clone(res);
   }
   /* the particles of the brain itself for drawing: world positions, normals, fold, part, region (nearest cluster on the cerebrum, else -1) */
-  function shell(L, n) {
-    const BP = brainPoints(n, 'shell'), S = L.S, M = BP.P.length, P = new Float32Array(M * 3), Nn = new Float32Array(M * 3), F = new Float32Array(M), reg = new Int32Array(M).fill(-1), grow = new Float32Array(M);
+  /* the brain mesh in world units for drawing, with the region (nearest section on the cerebrum, else -1) of every vertex */
+  function shell(L, level) {
+    const M = brainMesh(level || 6), S = L.S, n = M.K.length, P = new Float32Array(n * 3), reg = new Int32Array(n).fill(-1), reg2 = new Int32Array(n).fill(-1), mix = new Float32Array(n).fill(1);
     const A = L.clusters.map(c => c.c.map(x => x / S));
-    for (let j = 0; j < M; j++) {
-      const p = BP.P[j]; P[j * 3] = p[0] * S; P[j * 3 + 1] = p[1] * S; P[j * 3 + 2] = p[2] * S; Nn.set(BP.N[j], j * 3); F[j] = BP.F[j];
-      if (BP.K[j] < 2 && A.length) { let bk = -1, bd = Infinity; A.forEach((a, k) => { const dd = d2(p, a); if (dd < bd) { bd = dd; bk = k; } }); reg[j] = bk; }
-      grow[j] = Math.max(0, Math.min(1, (0.85 - p[2]) / 1.75)) * 0.85;
+    for (let j = 0; j < n; j++) {
+      const p = [M.P[j * 3], M.P[j * 3 + 1], M.P[j * 3 + 2]]; P[j * 3] = p[0] * S; P[j * 3 + 1] = p[1] * S; P[j * 3 + 2] = p[2] * S;
+      if (M.K[j] < 2 && A.length) { let bk = -1, bd = Infinity, ck = -1, cd = Infinity; for (let k = 0; k < A.length; k++) { const dd = d2(p, A[k]); if (dd < bd) { cd = bd; ck = bk; bd = dd; bk = k; } else if (dd < cd) { cd = dd; ck = k; } }
+        reg[j] = bk; reg2[j] = ck; if (ck >= 0) mix[j] = 0.5 + 0.5 * Math.min(1, (Math.sqrt(cd) - Math.sqrt(bd)) / 0.09); }   /* soft edges between regions */
     }
-    return { P, F, K: Int8Array.from(BP.K), N: Nn, reg, grow, n: M };
+    return { P, I: M.I, F: M.F, K: M.K, O: M.O, reg, reg2, mix, n };
   }
+
   const clone = r => ({ P: r.P.slice(), grow: r.grow.slice(), gi: r.gi.slice(), clusters: r.clusters.map(c => Object.assign({}, c, { c: c.c.slice(), m: c.m.slice(), nrm: c.nrm ? c.nrm.slice() : null })), R: r.R, center: r.center.slice(), D: r.D, S: r.S, brain: r.brain, cols: r.cols });
 
   /* ---------- the soft light: a core and a few puffs round each group ---------- */
@@ -174,7 +225,7 @@
     return new Float32Array(out);
   }
 
-  const API = { layout3d, puffs, shell, brainPoints, sizeFor, PARTS, lattice, D, FLAT, hash };
+  const API = { layout3d, puffs, shell, brainMesh, brainPoints, sizeFor, PARTS, lattice, D, FLAT, hash };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   G.WSGRAPH3D = API;
 })(typeof window !== 'undefined' ? window : globalThis);

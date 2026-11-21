@@ -1,5 +1,5 @@
 /* NORDAP – My Workspace map in 3D (the full Map page only; the mini maps stay 2D in wsmap.js).
-   A brain drawn by three.js: tens of thousands of small particles on a folded surface (one draw call), each section
+   A brain drawn by three.js: one smooth, lit mesh with real folds (wsgraph3d.brainMesh) over a radar scope, each section
    (an aircraft, a group of your own, then 'Unsorted') a tinted region of the cerebrum with its items on it. The side
    facing you is bright with a brighter rim, the far side faint; seen from above, the cerebellum hides under the cerebrum.
    Earlier this was a calm cloud drawn by three.js (r128, lazy-loaded with this file): each group (an aircraft, then 'Unsorted') a soft
@@ -64,37 +64,80 @@
     precision mediump float; uniform vec3 uColor; varying vec2 vC; varying float vA;
     void main() { float r2 = dot(vC, vC); if (r2 > 1.0 || vA < 0.002) discard; float f = max(0.0, exp(-r2 * 3.0) - 0.05);
       vec3 c = uColor * f * vA; gl_FragColor = vec4(c, max(c.r, max(c.g, c.b))); }`;
-  /* the brain's particles: small crisp dots; the side facing you bright, its outline brighter still (rim), the far side faint */
-  const SHELL_VS = `
-    attribute vec3 color; attribute float size; attribute float alpha; attribute float grow; attribute vec3 nrm; attribute float occ;
-    uniform float uScale, uGrow, uNear, uFar, uSweep, uSweepOn; uniform vec3 uCam; varying vec3 vC; varying float vA;
+  /* the brain: one smooth mesh, lit like a model on a dark plate. Gyri catch the light, sulci fall dark, the outline
+     glows (fresnel), each section's region carries its tint, the picked one brighter; the radar sweep passes over it as a band of light */
+  const BRAIN_VS = `
+    attribute float fold; attribute float reg; attribute vec3 rcol;
+    varying vec3 vN, vW, vC; varying float vF, vR;
+    void main() { vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; vN = normalize(mat3(modelMatrix) * normal); vF = fold; vR = reg; vC = rcol; gl_Position = projectionMatrix * viewMatrix * w; }`;
+  const BRAIN_FS = `
+    precision highp float;
+    uniform vec3 uCam, uRim, uBase; uniform float uSweep, uSweepOn, uSel, uDim, uGrow;
+    varying vec3 vN, vW, vC; varying float vF, vR;
+    void main() {
+      vec3 N = normalize(vN), V = normalize(uCam - vW); if (dot(N, V) < 0.0) N = -N;
+      float ndv = clamp(dot(N, V), 0.0, 1.0), fr = pow(1.0 - ndv, 2.4);
+      vec3 L1 = normalize(vec3(-0.4, 0.85, 0.35)), L2 = normalize(vec3(0.7, 0.1, -0.6));
+      float lam = max(dot(N, L1), 0.0), back = max(dot(N, L2), 0.0), hl = 0.28 + 0.72 * lam;
+      float spec = pow(max(dot(reflect(-L1, N), V), 0.0), 36.0);
+      float gy = smoothstep(0.25, 0.95, vF), sel = uSel >= 0.0 && abs(vR - uSel) < 0.5 ? 1.0 : 0.0;
+      vec3 col = uBase * hl * mix(0.35, 1.0, gy) + vC * (0.18 + 0.34 * gy) * hl * (1.0 + 1.4 * sel) + uRim * back * 0.12;
+      col += vec3(0.75, 0.88, 1.0) * spec * 0.32 * gy + uRim * fr * (0.85 + 0.5 * sel);
+      float a = atan(vW.x, vW.z), tr = mod(uSweep - a, 6.28318);
+      col += uRim * uSweepOn * (exp(-tr * 5.0) * 0.45 + (1.0 - smoothstep(0.0, 0.02, tr)) * 0.7) * (0.35 + 0.65 * gy);
+      col *= (uSel >= 0.0 && sel < 0.5 ? 0.55 : uDim) * smoothstep(0.0, 0.8, uGrow);
+      gl_FragColor = vec4(col, 1.0);
+    }`;
+  /* your items as traffic symbols (TCAS style): aircraft a chevron, documents a filled diamond, notes an open diamond,
+     packs a circle, routes a square; crisp at any size, with a soft glow */
+  const SYM_VS = `
+    attribute vec3 color; attribute float size; attribute float alpha; attribute float grow; attribute float shape;
+    uniform float uScale, uGrow, uNear, uFar, uSweep, uSweepOn; varying vec3 vC; varying float vA, vS, vPx;
     void main() {
       vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
       float k = smoothstep(grow * 0.86, grow * 0.86 + 0.14, uGrow), d = max(0.1, -mv.z);
-      vec3 tc = normalize(uCam - position); float f = dot(nrm, tc), front = smoothstep(-0.3, 0.3, f), rim = pow(1.0 - abs(f), 3.0);
-      gl_PointSize = clamp(size * uScale / d, 1.2, 7.0);
-      float above = smoothstep(0.05, 0.55, normalize(uCam).y) * occ; /* seen from above, the cerebrum hides the cerebellum */
-      float sw = uSweepOn * exp(-mod(uSweep - atan(position.x, position.z), 6.28318) * 3.2);
-      vC = color * (1.0 + 1.6 * rim * front * (1.0 - occ) + 1.8 * sw); vA = alpha * k * (0.16 + 0.84 * front) * (1.0 - 0.5 * smoothstep(uNear, uFar, d)) * (1.0 - 0.92 * above) * (1.0 + 0.5 * sw);
+      float sw = uSweepOn * exp(-mod(uSweep - atan(position.x, position.z), 6.28318) * 2.6);
+      vPx = clamp(size * (0.3 + 0.7 * k) * (1.0 + 0.35 * sw) * uScale / d, 3.0, 90.0); gl_PointSize = vPx;
+      vC = color * (1.0 + 0.8 * sw); vA = alpha * k * (1.0 - 0.6 * smoothstep(uNear, uFar, d)); vS = shape;
     }`;
-  const SHELL_FS = `
-    precision mediump float; varying vec3 vC; varying float vA;
-    void main() { float r = length(gl_PointCoord - 0.5) * 2.0; if (r > 1.0 || vA < 0.004) discard; float a = smoothstep(1.0, 0.25, r);
-      vec3 c = vC * a * vA; gl_FragColor = vec4(c, max(c.r, max(c.g, c.b))); }`;
-  /* the radar scope under the brain: range rings, bearing spokes and the sweep with its fading trail, all in one flat disc */
-  const SCOPE_VS = `varying vec2 vP; void main() { vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
-  const SCOPE_FS = `
-    precision mediump float; uniform vec3 uColor; uniform float uSweep, uSweepOn, uA; varying vec2 vP;
+  const SYM_FS = `
+    precision highp float; varying vec3 vC; varying float vA, vS, vPx;
     void main() {
-      float r = length(vP); if (r > 1.0) discard;
-      float a = atan(vP.x, -vP.y), ring = 0.0;
-      for (int i = 1; i <= 4; i++) ring = max(ring, 1.0 - smoothstep(0.0, 0.006, abs(r - float(i) * 0.25)));
-      float sp = 1.0 - smoothstep(0.0, 0.006 / max(r, 0.05), abs(mod(a + 0.2618, 0.5236) - 0.2618));
-      float tick = step(0.94, r) * (1.0 - smoothstep(0.0, 0.004 / max(r, 0.05), abs(mod(a + 0.0873, 0.1745) - 0.0873)));
-      float tr = mod(uSweep - a, 6.28318), sw = uSweepOn * (exp(-tr * 2.2) * 0.55 + (1.0 - smoothstep(0.0, 0.012, tr)) * 0.9) * smoothstep(1.0, 0.85, r);
-      float f = (ring * 0.5 + sp * 0.16 * step(0.08, r) + tick * 0.4) * (1.0 - smoothstep(0.86, 1.0, r) * 0.5) + sw;
+      vec2 p = (gl_PointCoord - 0.5) * 2.0; p.y = -p.y; float aa = 2.4 / vPx, s = 0.42, d;
+      if (vS < 0.5) { vec2 q = vec2(abs(p.x), p.y), n = vec2(0.906, 0.423); float t1 = max(dot(vec2(q.x, q.y - 0.55), n), -0.45 - q.y), t2 = max(dot(vec2(q.x, q.y + 0.08), n), -0.45 - q.y); d = max(t1, -t2); }   /* chevron */
+      else if (vS < 1.5) d = abs(p.x) + abs(p.y) - s * 1.15;                                         /* filled diamond */
+      else if (vS < 2.5) d = abs(abs(p.x) + abs(p.y) - s) - 0.09;                                    /* open diamond */
+      else if (vS < 3.5) d = length(p) - s * 0.85;                                                   /* circle */
+      else if (vS < 4.5) d = length(p) - s * 0.5;                                                    /* small dot */
+      else d = max(abs(p.x), abs(p.y)) - s * 0.78;                                                   /* square */
+      float core = 1.0 - smoothstep(-aa, aa, d), halo = exp(-max(d, 0.0) * 9.0) * 0.35;
+      float a = (core + halo * (1.0 - core)) * vA; if (a < 0.004) discard;
+      vec3 c = vC * (core * 1.05 + halo * 0.8); gl_FragColor = vec4(c * vA, a);
+    }`;
+  /* the radar scope: a drawn compass rose (range rings, 5° ticks, bearings every 30°, N) on a flat disc under the brain,
+     with the sweep and its fading trail */
+  const SCOPE_VS = `varying vec2 vU; void main() { vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+  const SCOPE_FS = `
+    precision highp float; uniform sampler2D uTex; uniform vec3 uColor; uniform float uSweep, uSweepOn, uA; varying vec2 vU;
+    void main() {
+      vec2 p = vU * 2.0 - 1.0; float r = length(p); if (r > 1.0) discard;
+      float t = texture2D(uTex, vU).a, a = atan(p.x, p.y), tr = mod(uSweep - a, 6.28318);
+      float sw = uSweepOn * (exp(-tr * 2.4) * 0.32 + (1.0 - smoothstep(0.0, 0.01, tr)) * 0.85) * (1.0 - smoothstep(0.9, 0.98, r)) * smoothstep(0.02, 0.1, r);
+      float f = t * 0.85 * (1.0 + 1.5 * exp(-tr * 3.0) * uSweepOn) + sw;
       vec3 c = uColor * f * uA; gl_FragColor = vec4(c, max(c.r, max(c.g, c.b)));
     }`;
+  function scopeTexture(THREE) {
+    const N = 2048, cv = document.createElement('canvas'); cv.width = cv.height = N; const x = cv.getContext('2d'), c = N / 2, R = N / 2 - 8;
+    x.strokeStyle = '#fff'; x.fillStyle = '#fff';
+    [0.25, 0.5, 0.75].forEach(f => { x.globalAlpha = 0.55; x.lineWidth = 3; x.beginPath(); x.arc(c, c, R * f, 0, Math.PI * 2); x.stroke(); });
+    x.globalAlpha = 0.9; x.lineWidth = 5; x.beginPath(); x.arc(c, c, R * 0.86, 0, Math.PI * 2); x.stroke();
+    for (let d = 0; d < 360; d += 5) { const a = d * Math.PI / 180, l = d % 30 === 0 ? 46 : d % 10 === 0 ? 30 : 16, r0 = R * 0.86; x.globalAlpha = d % 10 === 0 ? 0.9 : 0.55; x.lineWidth = d % 30 === 0 ? 5 : 3;
+      x.beginPath(); x.moveTo(c + Math.sin(a) * r0, c - Math.cos(a) * r0); x.lineTo(c + Math.sin(a) * (r0 + l), c - Math.cos(a) * (r0 + l)); x.stroke(); }
+    x.globalAlpha = 0.2; x.lineWidth = 2; for (let d = 0; d < 360; d += 30) { const a = d * Math.PI / 180; x.beginPath(); x.moveTo(c + Math.sin(a) * R * 0.12, c - Math.cos(a) * R * 0.12); x.lineTo(c + Math.sin(a) * R * 0.86, c - Math.cos(a) * R * 0.86); x.stroke(); }
+    x.globalAlpha = 0.95; x.font = '600 52px "JetBrains Mono", "SFMono-Regular", Menlo, monospace'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    for (let d = 0; d < 360; d += 30) { const a = d * Math.PI / 180, r = R * 0.95; x.save(); x.translate(c + Math.sin(a) * r, c - Math.cos(a) * r); x.rotate(a); x.fillText(d === 0 ? 'N' : String(d / 10).padStart(2, '0'), 0, 0); x.restore(); }
+    const tx = new THREE.CanvasTexture(cv); tx.anisotropy = 8; tx.generateMipmaps = true; tx.minFilter = THREE.LinearMipmapLinearFilter; return tx;
+  }
   const SEG = 10; /* segments per link arc */
   /* palettes: Ice (calm ice-blue and white, the default), Ember (warm), Mono (greys); subtle tints per type */
   const PAL = {
@@ -111,7 +154,7 @@
     const pcol = () => (PAL[pal] || PAL.ice).col;
     const coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
     const phone = coarse && Math.min(screen.width, screen.height) < 820;
-    host.classList.add('wsm', 'wsm3');
+    host.classList.add('wsm', 'wsm3', 'brainmap');
     host.innerHTML = `<canvas class="wsm-c" tabindex="0" role="img" aria-roledescription="${esc(t('3D map', '3D-kart'))}"></canvas>
       <div class="wsm3-lbl"></div>
       <div class="wsm-top">
@@ -126,7 +169,7 @@
     { const ng = host.querySelector('[data-ng]'); if (ng) ng.addEventListener('click', () => o.onEdit('newgroup', null, ng)); }
     const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, powerPreference: 'high-performance' });
     renderer.setClearColor(0x000000, 0);
-    const dprCap = phone ? 1.25 : 1.5;
+    const dprCap = phone ? 2 : 2;
     let dpr = Math.min(dprCap, window.devicePixelRatio || 1);
     const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(34, 1, 0.5, 4000);
     const U = { uScale: { value: 1 }, uGrow: { value: reduced() ? 2 : 0 }, uNear: { value: 10 }, uFar: { value: 100 }, uSweep: { value: 0 }, uSweepOn: { value: 0 } };
@@ -137,10 +180,11 @@
     const lineMat = new THREE.ShaderMaterial({ uniforms: lineU, vertexShader: LINE_VS, fragmentShader: LINE_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
     const puffU = Object.assign({ uColor: { value: new THREE.Color(0.36, 0.56, 0.88) } }, U);
     const puffMat = new THREE.ShaderMaterial({ uniforms: puffU, vertexShader: PUFF_VS, fragmentShader: PUFF_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
-    const shellU = Object.assign({ uCam: { value: new THREE.Vector3() } }, U);
-    const scopeU = { uColor: { value: new THREE.Color(0.36, 0.56, 0.88) }, uSweep: U.uSweep, uSweepOn: U.uSweepOn, uA: { value: 0.6 } };
-    const scopeMat = new THREE.ShaderMaterial({ uniforms: scopeU, vertexShader: SCOPE_VS, fragmentShader: SCOPE_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
-    const shellMat = new THREE.ShaderMaterial({ uniforms: shellU, vertexShader: SHELL_VS, fragmentShader: SHELL_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
+    const brainU = { uCam: { value: new THREE.Vector3() }, uRim: { value: new THREE.Color(0.45, 0.72, 1) }, uBase: { value: new THREE.Color(0.1, 0.16, 0.27) }, uSweep: U.uSweep, uSweepOn: U.uSweepOn, uSel: { value: -1 }, uDim: { value: 1 }, uGrow: U.uGrow };
+    const scopeTx = scopeTexture(THREE), scopeU = { uTex: { value: scopeTx }, uColor: { value: new THREE.Color(0.36, 0.56, 0.88) }, uSweep: U.uSweep, uSweepOn: U.uSweepOn, uA: { value: 0.55 } };
+    const scopeMat = new THREE.ShaderMaterial({ uniforms: scopeU, vertexShader: SCOPE_VS, fragmentShader: SCOPE_FS, transparent: true, depthTest: true, depthWrite: false, ...blend });
+    const brainMat = new THREE.ShaderMaterial({ uniforms: brainU, vertexShader: BRAIN_VS, fragmentShader: BRAIN_FS, side: THREE.DoubleSide });
+    const symMat = new THREE.ShaderMaterial({ uniforms: U, vertexShader: SYM_VS, fragmentShader: SYM_FS, transparent: true, depthTest: true, depthWrite: false, blending: THREE.NormalBlending, premultipliedAlpha: true });
     const pulseMat = new THREE.ShaderMaterial({ uniforms: Object.assign({}, U, { uGrow: { value: 2 } }), vertexShader: NODE_VS, fragmentShader: NODE_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
 
     let g = null, L = null, N = 0, alive = true, raf = 0, W = 0, H = 0;
@@ -173,7 +217,8 @@
       const P = L.P, size = new Float32Array(N), al = new Float32Array(N), gr = new Float32Array(N);
       g.nodes.forEach((n, i) => { size[i] = (SZ[n.k] || 1.8) * (n.k === 'doc' ? 1 + Math.min(0.3, n.deg * 0.035) : 1); al[i] = 1; gr[i] = fresh && !fresh[i] ? 0 : L.grow[i]; });
       let geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(P, 3)); geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(N * 3), 3)); geo.setAttribute('size', new THREE.BufferAttribute(size, 1)); geo.setAttribute('alpha', new THREE.BufferAttribute(al, 1)); geo.setAttribute('grow', new THREE.BufferAttribute(gr, 1));
-      nodes = new THREE.Points(geo, nodeMat); nodes.frustumCulled = false; nodes.renderOrder = 3; nodes.userData.size = size.slice();
+      if (L.brain) { for (let i = 0; i < N; i++) size[i] *= 1.7; const SHP = { aircraft: 0, doc: 1, page: 4, note: 2, notebook: 2, pack: 3, route: 5, desk: 4 }; geo.setAttribute('shape', new THREE.BufferAttribute(Float32Array.from(g.nodes, n => SHP[n.k] != null ? SHP[n.k] : 4), 1)); }
+      nodes = new THREE.Points(geo, L.brain ? symMat : nodeMat); nodes.frustumCulled = false; nodes.renderOrder = 3; nodes.userData.size = size.slice();
       /* links: gentle arcs bowed away from the middle of the cloud; they grow from one end to the other */
       const nl = g.links.length, lp = new Float32Array(nl * SEG * 6), la = new Float32Array(nl * SEG * 2), lg = new Float32Array(nl * SEG * 2), C = L.center; curves = new Float32Array(nl * (SEG + 1) * 3);
       g.links.forEach((l, k) => {
@@ -197,18 +242,17 @@
       }
       geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pp, 3)); geo.setAttribute('corner', new THREE.BufferAttribute(pc, 2)); geo.setAttribute('rad', new THREE.BufferAttribute(pr2, 1)); geo.setAttribute('alpha', new THREE.BufferAttribute(pa, 1)); geo.setAttribute('grow', new THREE.BufferAttribute(pg, 1));
       cloud = new THREE.Mesh(geo, puffMat); cloud.frustumCulled = false; cloud.renderOrder = 0; cloud.userData.base = pa.slice(); scene.add(cloud);
-      /* the brain itself: thousands of small particles on its folded surface, each section's region in its own tint */
+      /* the brain itself: one smooth mesh, each section's region in its own tint; the radar scope under it */
+      cloud.visible = !L.brain;
       if (L.brain && G3.shell) {
-        SH = G3.shell(L, phone ? 14000 : 26000); const M = SH.n, sz = new Float32Array(M), sa = new Float32Array(M), sg = new Float32Array(M);
-        SH.base = new Float32Array(M);
-        for (let j = 0; j < M; j++) { const med = SH.K[j] === 0 ? SH.N[j * 3] : SH.K[j] === 1 ? -SH.N[j * 3] : -1, u = Math.max(0, Math.min(1, (med + 0.1) / 0.6)); SH.base[j] = 1 - 0.92 * u * u * (3 - 2 * u);
-          if (SH.K[j] >= 2) { const out = Math.max(-SH.N[j * 3 + 1], -SH.N[j * 3 + 2], Math.abs(SH.N[j * 3]) * 0.8); SH.base[j] = 0.1 + 0.9 * Math.max(0, Math.min(1, (out - 0.15) / 0.5)); } /* the cerebellum's top lies under the cerebrum: only its back and underside show */ /* the inner faces by the fissure fade out: no seam through the middle */
-          sz[j] = L.S * (0.0062 + 0.004 * SH.F[j]); sa[j] = 0.85 * SH.base[j]; sg[j] = before ? 0 : SH.grow[j]; }
-        geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(SH.P, 3)); geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(M * 3), 3)); geo.setAttribute('size', new THREE.BufferAttribute(sz, 1)); geo.setAttribute('alpha', new THREE.BufferAttribute(sa, 1)); geo.setAttribute('grow', new THREE.BufferAttribute(sg, 1)); geo.setAttribute('nrm', new THREE.BufferAttribute(SH.N, 3)); geo.setAttribute('occ', new THREE.BufferAttribute(Float32Array.from(SH.K, k => k >= 2 ? 1 : 0), 1));
-        brain = new THREE.Points(geo, shellMat); brain.frustumCulled = false; brain.renderOrder = 1; scene.add(brain);
-        /* the radar scope: a flat disc under the brain */
-        const R2 = L.S * 1.08; scope = new THREE.Mesh(new THREE.PlaneGeometry(R2 * 2, R2 * 2), scopeMat); scope.scale.set(R2, R2, 1); scope.geometry.scale(1 / R2, 1 / R2, 1); scope.rotation.x = -Math.PI / 2; scope.position.set(0, -0.8 * L.S, -0.05 * L.S); scope.frustumCulled = false; scope.renderOrder = 0; scene.add(scope);
-      } else SH = null;
+        SH = G3.shell(L, phone ? 5 : 6); const M = SH.n;
+        geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(SH.P, 3)); geo.setIndex(new THREE.BufferAttribute(SH.I, 1));
+        geo.setAttribute('fold', new THREE.BufferAttribute(SH.F, 1)); geo.setAttribute('reg', new THREE.BufferAttribute(Float32Array.from(SH.reg), 1)); geo.setAttribute('rcol', new THREE.BufferAttribute(new Float32Array(M * 3), 3));
+        geo.computeVertexNormals();
+        brain = new THREE.Mesh(geo, brainMat); brain.frustumCulled = false; brain.renderOrder = 0; scene.add(brain);
+        const R2 = L.S * 1.08; scope = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), scopeMat); scope.scale.set(R2, R2, 1); scope.rotation.x = -Math.PI / 2; scope.position.set(0, -0.8 * L.S, -0.05 * L.S); scope.frustumCulled = false; scope.renderOrder = 1; scene.add(scope);
+        links.material.depthTest = true;
+      } else { SH = null; links.material.depthTest = false; }
       /* pulses: up to 6 at once, a head and a short trail each */
       geo = new THREE.BufferGeometry(); const PM = 36;
       geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(PM * 3), 3)); geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(PM * 3).fill(0.9), 3));
@@ -227,9 +271,9 @@
       const p = PAL[pal] || PAL.ice, c = nodes.geometry.attributes.color;
       g.nodes.forEach((n, i) => { const h = hex(p.col[n.k] || p.col.note), b = BR[n.k] || 0.8; c.array.set([h[0] * b, h[1] * b, h[2] * b], i * 3); }); c.needsUpdate = true;
       lineU.uColor.value.setRGB(...p.line); puffU.uColor.value.setRGB(...p.cloud); scopeU.uColor.value.setRGB(...p.line);
-      if (brain && SH) { const bc = brain.geometry.attributes.color, base = p.cloud;
-        for (let j = 0; j < SH.n; j++) { const r = regCol(SH.reg[j]), f = SH.F[j], b = SH.K[j] === 3 ? 0.07 : (SH.K[j] < 2 ? 0.2 : 0.15) + 0.5 * f * f, m = r && pal !== 'mono' ? 0.7 : 0, c = [0, 1, 2].map(a => (base[a] * (1 - m) + (r ? r[a] : 0) * m) * b);
-          bc.array.set(c, j * 3); } bc.needsUpdate = true; }
+      if (brain && SH) { const bc = brain.geometry.attributes.rcol, base = p.cloud;
+        for (let j = 0; j < SH.n; j++) { const r = regCol(SH.reg[j]), r2 = regCol(SH.reg2[j]) || r, m = SH.mix[j], k = 0.62; if (r && pal !== 'mono') bc.array.set([0, 1, 2].map(a => (r[a] * m + r2[a] * (1 - m)) * k), j * 3); else bc.array.set([base[0] * 0.5, base[1] * 0.5, base[2] * 0.5], j * 3); }
+        bc.needsUpdate = true; brainU.uRim.value.setRGB(...p.line); brainU.uBase.value.setRGB(p.cloud[0] * 0.3, p.cloud[1] * 0.3, p.cloud[2] * 0.33); }
       const pc = pulsePts && pulsePts.geometry.attributes.color; if (pc) { for (let i = 0; i < pc.count; i++) pc.array.set(p.pulse, i * 3); pc.needsUpdate = true; }
       host.dataset.pal = pal;
       const pb = host.querySelector('.wsm-pal'); if (pb) pb.querySelectorAll('[data-pal]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.pal === pal)));
@@ -258,7 +302,7 @@
       const pa = cloud.geometry.attributes.alpha, base = cloud.userData.base;
       for (let k = 0; k < puffOf.length; k++) { const f = gsel < 0 ? 1 : puffOf[k] === gsel ? 1.25 : 0.4; for (let v = 0; v < 6; v++) pa.array[k * 6 + v] = base[k * 6 + v] * f; }
       pa.needsUpdate = true;
-      if (brain && SH) { const ba = brain.geometry.attributes.alpha; for (let j = 0; j < SH.n; j++) ba.array[j] = SH.base[j] * (gsel < 0 ? (ksel ? 0.42 : 0.85) : SH.reg[j] === gsel ? 1 : 0.3); ba.needsUpdate = true; }
+      if (brain) { brainU.uSel.value = gsel; brainU.uDim.value = ksel ? 0.55 : 1; }
       regEls.forEach((el, k) => { el.classList.toggle('on', k === gsel); el.classList.toggle('dim', gsel >= 0 && k !== gsel); });
       dbg.lit = lit ? lit.size : 0;
       labelSet(); request();
@@ -274,7 +318,7 @@
       lblEl.innerHTML = '';
       regEls = L.clusters.map((c, k) => {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'wsm3-reg' + (c.ac < 0 ? ' uns' : '');
-        b.innerHTML = `${L.brain ? `<i class="rg" style="background:${REG[k % REG.length]}" aria-hidden="true"></i>` : ''}<b>${esc(names2[k].toUpperCase())}</b><span>&nbsp;·&nbsp;${c.n}</span>`;
+        if (L.brain) b.style.setProperty('--rc', REG[k % REG.length]); b.innerHTML = `${L.brain ? `<i class="rg" aria-hidden="true"></i>` : ''}<b>${esc(names2[k].toUpperCase())}</b><span>&nbsp;·&nbsp;${c.n}</span>`;
         b.setAttribute('aria-label', t('Show the group ', 'Vis gruppen ') + names2[k] + ', ' + c.n);
         b.addEventListener('click', () => { if (gsel === k && sel < 0) back(); else flyToCluster(k); }); lblEl.appendChild(b); return b;
       });
@@ -311,7 +355,7 @@
       const dot = (a, p) => a[0] * p[0] + a[1] * p[1] + a[2] * p[2];
       let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, z1 = 0;
       L.clusters.forEach(c => { const x = dot(rt, c.c), y = dot(up, c.c), z = dot(dir, c.c), r = c.r + L.D * 0.8; x0 = Math.min(x0, x - r); x1 = Math.max(x1, x + r); y0 = Math.min(y0, y - r); y1 = Math.max(y1, y + r + L.D * 2.2); z1 = Math.max(z1, z + c.r); });
-      if (L.brain && SH) for (let j = 0; j < SH.n; j += 37) { const q = [SH.P[j * 3], SH.P[j * 3 + 1], SH.P[j * 3 + 2]], x = dot(rt, q), y = dot(up, q); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+      if (L.brain && SH) for (let j = 0; j < SH.n; j += 97) { const q = [SH.P[j * 3], SH.P[j * 3 + 1], SH.P[j * 3 + 2]], x = dot(rt, q), y = dot(up, q); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
       if (L.brain && scope) for (let k = 0; k < 24; k++) { const a = k / 24 * Math.PI * 2, q = [Math.sin(a) * L.S * 1.0, -0.8 * L.S, Math.cos(a) * L.S * 1.0 - 0.05 * L.S], x = dot(rt, q), y = dot(up, q); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
       if (!L.clusters.length && !(L.brain && SH)) { x0 = y0 = -10; x1 = y1 = 10; }
       const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, c = [0, 1, 2].map(a => rt[a] * mx + up[a] * my);
@@ -320,7 +364,7 @@
     function place() {
       const sp = Math.sin(cam.ph);
       camera.position.set(cam.tx + cam.d * sp * Math.sin(cam.th), cam.ty + cam.d * Math.cos(cam.ph), cam.tz + cam.d * sp * Math.cos(cam.th));
-      camera.lookAt(cam.tx, cam.ty, cam.tz); camera.updateMatrixWorld(); shellU.uCam.value.copy(camera.position);
+      camera.lookAt(cam.tx, cam.ty, cam.tz); camera.updateMatrixWorld(); brainU.uCam.value.copy(camera.position);
       const c0 = L.center, dc = Math.hypot(camera.position.x - c0[0], camera.position.y - c0[1], camera.position.z - c0[2]);
       U.uNear.value = Math.max(1, dc - L.R * 0.6); U.uFar.value = dc + L.R * 1.25;
       U.uScale.value = H * dpr / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
@@ -342,8 +386,8 @@
       /* the card on a phone sits at the foot of the plate: the group goes in the room above it */
       const low = !card.hidden && W < 600 && card.offsetTop + card.offsetHeight > H * 0.75, avail = low ? card.offsetTop - padT() - 16 : 0;
       let th = home.th, ph = home.ph;
-      if (L.brain && c.nrm) { const v = [c.nrm[0], c.nrm[1] + 0.45, c.nrm[2] + 0.15], vl = Math.hypot(v[0], v[1], v[2]); th = Math.atan2(v[0] / vl, v[2] / vl); ph = Math.max(0.35, Math.min(1.75, Math.acos(v[1] / vl))); }
-      const d = Math.max(lim().min * 1.4, L.brain ? L.S * 1.25 : 0, fitDist(c.r + L.D * 1.2, c.r + L.D * 1.3, c.r * 0.5, avail));
+      if (L.brain && c.nrm) { let dth = Math.atan2(c.nrm[0], c.nrm[2]) - home.th; while (dth > Math.PI) dth -= Math.PI * 2; while (dth < -Math.PI) dth += Math.PI * 2; th = home.th + dth; ph = Math.max(0.55, Math.min(1.05, Math.acos(Math.max(-1, Math.min(1, c.nrm[1] * 0.7 + 0.35))))); }   /* turn the brain towards the region, a little from above */
+      const d = L.brain ? home.d * 0.68 : Math.max(lim().min * 1.4, fitDist(c.r + L.D * 1.2, c.r + L.D * 1.3, c.r * 0.5, avail));
       const dir = [Math.sin(ph) * Math.sin(th), Math.cos(ph), Math.sin(ph) * Math.cos(th)], rt = [dir[2], 0, -dir[0]], rl = Math.hypot(rt[0], rt[2]); rt[0] /= rl; rt[2] /= rl;
       const wpp = 2 * d * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / H; let dx = 0, dy = L.D * 0.8 / wpp; /* where the group should appear (px from the middle of the free part); a little low leaves room for its name */
       if (!card.hidden && W >= 600) dx = (card.offsetLeft + card.offsetWidth) / 2;
@@ -395,7 +439,7 @@
       else if (probing) { probeD.push(raw); if (probeD.length >= 24) { probing = false; const a = probeD.slice(4).sort((x, y) => x - y), med = a[a.length >> 1], lim2 = window.__wsm3dProbeMs || 55; const cm = cpu.slice(-20).sort((x, y) => x - y)[10]; if ((med > lim2 || cm > 24) && o.onWeak) { setTimeout(() => o.onWeak('slow'), 0); } } }
       if (more) request(); else lastTs = 0;
     }
-    const clampPh = p => Math.max(0.12, Math.min(Math.PI - 0.12, p));
+    const clampPh = p => L && L.brain ? Math.max(0.18, Math.min(1.72, p)) : Math.max(0.12, Math.min(Math.PI - 0.12, p));   /* the brain: never seen from below the scope */
     /* the radar sweep: one turn every 7 s while the map is on screen and the page is in view; never with reduced motion */
     const sweeping = () => !!(L && L.brain && alive && onScreen && document.visibilityState === 'visible' && !reduced() && introP >= 1);
     function render() {
@@ -630,7 +674,7 @@
       destroy() {
         alive = false; if (raf) cancelAnimationFrame(raf); raf = 0; stopRot(); unschedule(); clearTimeout(wheelT); if (io) io.disconnect(); document.removeEventListener('visibilitychange', onVis);
         if (ro) ro.disconnect(); else window.removeEventListener('resize', resize);
-        disposeObjs(); [nodeMat, puffMat, lineMat, pulseMat, shellMat, scopeMat].forEach(m => m.dispose()); renderer.dispose(); try { renderer.forceContextLoss(); } catch (e) {}
+        disposeObjs(); [nodeMat, puffMat, lineMat, pulseMat, brainMat, symMat, scopeMat].forEach(m => m.dispose()); scopeTx.dispose(); renderer.dispose(); try { renderer.forceContextLoss(); } catch (e) {}
         host.innerHTML = ''; host.classList.remove('wsm3'); host.wsmap = null;
       }
     });
