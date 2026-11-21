@@ -138,6 +138,62 @@
     for (let d = 0; d < 360; d += 30) { const a = d * Math.PI / 180, r = R * 0.95; x.save(); x.translate(c + Math.sin(a) * r, c - Math.cos(a) * r); x.rotate(a); x.fillText(d === 0 ? 'N' : String(d / 10).padStart(2, '0'), 0, 0); x.restore(); }
     const tx = new THREE.CanvasTexture(cv); tx.anisotropy = 8; tx.generateMipmaps = true; tx.minFilter = THREE.LinearMipmapLinearFilter; return tx;
   }
+  /* ---------- the hub airport at night ----------
+     buildings: dark roofs with the section's colour along the edge, lit windows along the walls (warm, with mullions),
+     the tower cab as lit glass; the picked pier brighter, the rest dimmer */
+  const BLD_VS = `
+    attribute vec3 tint; attribute float reg; attribute float kind;
+    varying vec3 vN, vW, vT; varying float vR, vK;
+    void main() { vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; vN = normalize(mat3(modelMatrix) * normal); vT = tint; vR = reg; vK = kind; gl_Position = projectionMatrix * viewMatrix * w; }`;
+  const BLD_FS = `
+    precision highp float; uniform vec3 uCam, uRim; uniform float uSel, uDim, uGrow, uSweep, uSweepOn;
+    varying vec3 vN, vW, vT; varying float vR, vK;
+    void main() {
+      vec3 N = normalize(vN), V = normalize(uCam - vW); float fr = pow(1.0 - clamp(abs(dot(N, V)), 0.0, 1.0), 2.0);
+      float sel = uSel >= 0.0 && abs(vR - uSel) < 0.5 ? 1.0 : 0.0, dim = uSel >= 0.0 && vR >= 0.0 && sel < 0.5 ? 0.42 : uDim;
+      vec3 col;
+      if (vK > 2.5) { col = (vec3(0.07, 0.09, 0.125) + vT * 0.14) * (0.55 + 0.45 * max(N.y, 0.0)) + vT * fr * 0.2; }                     /* jet bridge */
+      else if (vK > 1.5) { col = vec3(0.35, 0.85, 1.0) * (0.55 + 0.45 * fr) + vec3(0.1, 0.25, 0.3); }                         /* tower cab glass */
+      else if (N.y > 0.5) {                                                                                                  /* roof */
+        col = vec3(0.05, 0.075, 0.115) + vT * 0.07 + vec3(0.03, 0.05, 0.08) * fr;
+      } else {                                                                                                               /* walls */
+        float h = vW.y, band = smoothstep(1.1, 1.35, h) * (1.0 - smoothstep(3.6, 3.85, h));
+        float along = vW.x * N.z - vW.z * N.x, mull = smoothstep(0.08, 0.16, abs(fract(along * 0.42) - 0.5));
+        vec3 glass = mix(vec3(1.0, 0.84, 0.6), vec3(0.75, 0.88, 1.0), 0.35) * (0.62 + 0.25 * sel);
+        col = vec3(0.03, 0.045, 0.07) + band * mull * glass * (vK > 0.5 ? 0.75 : 1.0) + vT * (1.0 - band) * 0.22;
+      }
+      col += uRim * fr * 0.12 + vT * sel * 0.12;
+      float a = atan(vW.x, vW.z), tr = mod(uSweep - a, 6.28318); col += uRim * uSweepOn * exp(-tr * 6.0) * 0.18;
+      gl_FragColor = vec4(col * dim * smoothstep(0.0, 0.6, uGrow), 1.0);
+    }`;
+  /* the ground: dark tarmac, a lighter apron round the terminal, faint grid, fading into the plate */
+  const GRD_VS = `varying vec3 vW; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`;
+  const GRD_FS = `
+    precision highp float; uniform float uApron, uFar, uGrow; uniform vec3 uTint; uniform vec4 uRw0, uRw1; varying vec3 vW;
+    float rwy(vec4 R, vec2 p) { vec2 q = vec2(p.x, p.y - R.x); if (abs(q.y) > R.z * 0.5 || abs(q.x) > R.y * 0.5) return 0.0;
+      float cl = (1.0 - smoothstep(0.25, 0.45, abs(q.y))) * step(0.45, fract(q.x / 14.0)) * step(abs(q.x), R.y * 0.5 - 16.0);
+      float keys = step(R.y * 0.5 - 10.0, abs(q.x)) * step(abs(q.x), R.y * 0.5 - 2.0) * step(0.5, fract(q.y * 0.55 + 0.25)) * step(abs(q.y), R.z * 0.5 - 1.2);
+      float edge = 1.0 - smoothstep(0.2, 0.4, R.z * 0.5 - abs(q.y));
+      return 1.0 + 2.0 * max(cl, max(keys, edge * 0.6)); }
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    void main() {
+      float r = length(vW.xz), apron = 1.0 - smoothstep(uApron - 6.0, uApron + 6.0, r);
+      vec2 gp = abs(fract(vW.xz / 24.0) - 0.5); float grid = (1.0 - smoothstep(0.0, 0.02, min(gp.x, gp.y))) * 0.5;
+      vec3 c = mix(vec3(0.018, 0.03, 0.05), vec3(0.045, 0.062, 0.088), apron) + uTint * 0.015 * grid + vec3(0.006) * hash(floor(vW.xz * 0.7));
+      float rw = max(rwy(uRw0, vW.xz), rwy(uRw1, vW.xz)); if (rw > 0.0) c = vec3(0.035, 0.045, 0.06) + vec3(0.11, 0.12, 0.13) * (rw - 1.0) * 0.5;
+      float a = max(apron * 0.92, 0.16 + 0.1 * grid) * (1.0 - smoothstep(uFar * 0.55, uFar, r)); if (rw > 0.0) a = 0.95 * (1.0 - smoothstep(uFar * 0.75, uFar, r));
+      gl_FragColor = vec4(c * smoothstep(0.0, 0.5, uGrow) * a, a);
+    }`;
+  /* ground lights: small round glows (taxiway green, edge blue, runway white, threshold green, ends red, stand yellow) */
+  const LGT_VS = `
+    attribute vec3 color; attribute float size; attribute float alpha;
+    uniform float uScale, uGrow; varying vec3 vC; varying float vA;
+    void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv; float d = max(0.1, -mv.z);
+      gl_PointSize = clamp(size * uScale / d, 1.5, 28.0); vC = color; vA = alpha * smoothstep(0.2, 0.9, uGrow); }`;
+  const LGT_FS = `
+    precision mediump float; varying vec3 vC; varying float vA;
+    void main() { float r = length(gl_PointCoord - 0.5) * 2.0; if (r > 1.0 || vA < 0.004) discard; float f = exp(-r * r * 5.0) + (1.0 - smoothstep(0.18, 0.3, r)) * 0.8;
+      vec3 c = vC * f * vA; gl_FragColor = vec4(c, max(c.r, max(c.g, c.b))); }`;
   const SEG = 10; /* segments per link arc */
   /* palettes: Ice (calm ice-blue and white, the default), Ember (warm), Mono (greys); subtle tints per type */
   const PAL = {
@@ -181,14 +237,21 @@
     const puffU = Object.assign({ uColor: { value: new THREE.Color(0.36, 0.56, 0.88) } }, U);
     const puffMat = new THREE.ShaderMaterial({ uniforms: puffU, vertexShader: PUFF_VS, fragmentShader: PUFF_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
     const brainU = { uCam: { value: new THREE.Vector3() }, uRim: { value: new THREE.Color(0.45, 0.72, 1) }, uBase: { value: new THREE.Color(0.1, 0.16, 0.27) }, uSweep: U.uSweep, uSweepOn: U.uSweepOn, uSel: { value: -1 }, uDim: { value: 1 }, uGrow: U.uGrow };
-    const scopeTx = scopeTexture(THREE), scopeU = { uTex: { value: scopeTx }, uColor: { value: new THREE.Color(0.36, 0.56, 0.88) }, uSweep: U.uSweep, uSweepOn: U.uSweepOn, uA: { value: 0.55 } };
+    const scopeTx = scopeTexture(THREE), scopeU = { uTex: { value: scopeTx }, uColor: { value: new THREE.Color(0.36, 0.56, 0.88) }, uSweep: U.uSweep, uSweepOn: U.uSweepOn, uA: { value: 0.4 } };
     const scopeMat = new THREE.ShaderMaterial({ uniforms: scopeU, vertexShader: SCOPE_VS, fragmentShader: SCOPE_FS, transparent: true, depthTest: true, depthWrite: false, ...blend });
+    const bldU = { uCam: brainU.uCam, uRim: brainU.uRim, uSel: brainU.uSel, uDim: brainU.uDim, uGrow: U.uGrow, uSweep: U.uSweep, uSweepOn: U.uSweepOn };
+    const bldMat = new THREE.ShaderMaterial({ uniforms: bldU, vertexShader: BLD_VS, fragmentShader: BLD_FS });
+    const grdU = { uApron: { value: 60 }, uFar: { value: 300 }, uGrow: U.uGrow, uTint: brainU.uRim, uRw0: { value: new THREE.Vector4() }, uRw1: { value: new THREE.Vector4() } };
+    const grdMat = new THREE.ShaderMaterial({ uniforms: grdU, vertexShader: GRD_VS, fragmentShader: GRD_FS, transparent: true, depthWrite: false });
+    const lgtMat = new THREE.ShaderMaterial({ uniforms: U, vertexShader: LGT_VS, fragmentShader: LGT_FS, transparent: true, depthTest: true, depthWrite: false, ...blend });
+    const outlineMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false });
+    const standMat = new THREE.LineBasicMaterial({ color: 0xE8B43C, transparent: true, opacity: 0.35, depthWrite: false });
     const brainMat = new THREE.ShaderMaterial({ uniforms: brainU, vertexShader: BRAIN_VS, fragmentShader: BRAIN_FS, side: THREE.DoubleSide });
     const symMat = new THREE.ShaderMaterial({ uniforms: U, vertexShader: SYM_VS, fragmentShader: SYM_FS, transparent: true, depthTest: true, depthWrite: false, blending: THREE.NormalBlending, premultipliedAlpha: true });
     const pulseMat = new THREE.ShaderMaterial({ uniforms: Object.assign({}, U, { uGrow: { value: 2 } }), vertexShader: NODE_VS, fragmentShader: NODE_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
 
     let g = null, L = null, N = 0, alive = true, raf = 0, W = 0, H = 0;
-    let nodes = null, links = null, cloud = null, pulsePts = null, curves = null, puffOf = null, brain = null, SH = null, scope = null;
+    let nodes = null, links = null, cloud = null, pulsePts = null, curves = null, puffOf = null, brain = null, SH = null, scope = null, AP = null;
     let hover = -1, sel = -1, gsel = -1, hidden = new Set(), near = null, names2 = [];
     const scr = { x: new Float32Array(0), y: new Float32Array(0), d: new Float32Array(0), ok: false };
     /* camera: orbit round a target */
@@ -205,7 +268,7 @@
     const visible = i => !hidden.has(g.nodes[i].g);
 
     /* ---------- data -> buffers ---------- */
-    function disposeObjs() { [nodes, links, cloud, pulsePts, brain, scope].forEach(m => { if (m) { scene.remove(m); m.geometry.dispose(); } }); nodes = links = cloud = pulsePts = brain = scope = null; }
+    function disposeObjs() { [nodes, links, cloud, pulsePts, brain, scope].concat(AP ? AP.objs : []).forEach(m => { if (m) { scene.remove(m); m.geometry.dispose(); } }); nodes = links = cloud = pulsePts = brain = scope = AP = null; }
     const aspect = () => { const r = host.getBoundingClientRect(); return r.width && r.height ? Math.max(0.45, Math.min(3, (r.width - 32) / Math.max(120, r.height - padT() - padB()))) : 1.7; };
     function setGraph(ng, keep) {
       const before = g && keep ? new Set(g.nodes.map(n => n.id)) : null;
@@ -217,8 +280,8 @@
       const P = L.P, size = new Float32Array(N), al = new Float32Array(N), gr = new Float32Array(N);
       g.nodes.forEach((n, i) => { size[i] = (SZ[n.k] || 1.8) * (n.k === 'doc' ? 1 + Math.min(0.3, n.deg * 0.035) : 1); al[i] = 1; gr[i] = fresh && !fresh[i] ? 0 : L.grow[i]; });
       let geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(P, 3)); geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(N * 3), 3)); geo.setAttribute('size', new THREE.BufferAttribute(size, 1)); geo.setAttribute('alpha', new THREE.BufferAttribute(al, 1)); geo.setAttribute('grow', new THREE.BufferAttribute(gr, 1));
-      if (L.brain) { for (let i = 0; i < N; i++) size[i] *= 1.7; const SHP = { aircraft: 0, doc: 1, page: 4, note: 2, notebook: 2, pack: 3, route: 5, desk: 4 }; geo.setAttribute('shape', new THREE.BufferAttribute(Float32Array.from(g.nodes, n => SHP[n.k] != null ? SHP[n.k] : 4), 1)); }
-      nodes = new THREE.Points(geo, L.brain ? symMat : nodeMat); nodes.frustumCulled = false; nodes.renderOrder = 3; nodes.userData.size = size.slice();
+      if (L.brain || L.hub) { for (let i = 0; i < N; i++) size[i] *= L.hub ? 2.2 : 1.7; const SHP = { aircraft: 0, doc: 1, page: 4, note: 2, notebook: 2, pack: 3, route: 5, desk: 4 }; geo.setAttribute('shape', new THREE.BufferAttribute(Float32Array.from(g.nodes, n => SHP[n.k] != null ? SHP[n.k] : 4), 1)); }
+      nodes = new THREE.Points(geo, L.brain || L.hub ? symMat : nodeMat); nodes.frustumCulled = false; nodes.renderOrder = 3; nodes.userData.size = size.slice();
       /* links: gentle arcs bowed away from the middle of the cloud; they grow from one end to the other */
       const nl = g.links.length, lp = new Float32Array(nl * SEG * 6), la = new Float32Array(nl * SEG * 2), lg = new Float32Array(nl * SEG * 2), C = L.center; curves = new Float32Array(nl * (SEG + 1) * 3);
       g.links.forEach((l, k) => {
@@ -243,7 +306,7 @@
       geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pp, 3)); geo.setAttribute('corner', new THREE.BufferAttribute(pc, 2)); geo.setAttribute('rad', new THREE.BufferAttribute(pr2, 1)); geo.setAttribute('alpha', new THREE.BufferAttribute(pa, 1)); geo.setAttribute('grow', new THREE.BufferAttribute(pg, 1));
       cloud = new THREE.Mesh(geo, puffMat); cloud.frustumCulled = false; cloud.renderOrder = 0; cloud.userData.base = pa.slice(); scene.add(cloud);
       /* the brain itself: one smooth mesh, each section's region in its own tint; the radar scope under it */
-      cloud.visible = !L.brain;
+      cloud.visible = !L.brain && !L.hub;
       if (L.brain && G3.shell) {
         SH = G3.shell(L, phone ? 5 : 6); const M = SH.n;
         geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(SH.P, 3)); geo.setIndex(new THREE.BufferAttribute(SH.I, 1));
@@ -252,6 +315,8 @@
         brain = new THREE.Mesh(geo, brainMat); brain.frustumCulled = false; brain.renderOrder = 0; scene.add(brain);
         const R2 = L.S * 1.08; scope = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), scopeMat); scope.scale.set(R2, R2, 1); scope.rotation.x = -Math.PI / 2; scope.position.set(0, -0.8 * L.S, -0.05 * L.S); scope.frustumCulled = false; scope.renderOrder = 1; scene.add(scope);
         links.material.depthTest = true;
+      } else if (L.hub) { SH = null; links.material.depthTest = true; AP = buildAirport();
+        const R2 = L.airport.reach + 26; scope = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), scopeMat); scope.scale.set(R2, R2, 1); scope.rotation.x = -Math.PI / 2; scope.position.set(0, 0.08, 0); scope.frustumCulled = false; scope.renderOrder = 1; scene.add(scope);
       } else { SH = null; links.material.depthTest = false; }
       /* pulses: up to 6 at once, a head and a short trail each */
       geo = new THREE.BufferGeometry(); const PM = 36;
@@ -266,6 +331,78 @@
       if (regrow) { introP = 0; U.uGrow.value = 0; growMs = before ? 1500 : 2600; stopRot(); } else { introP = 1; U.uGrow.value = 2; }
       request();
     }
+    /* ---------- the hub airport: terminal and tower, piers, jet bridges, ground, lights, landing traffic ---------- */
+    function buildAirport() {
+      const A = L.airport, objs = [], pos = [], nor = [], tin = [], rg = [], kd = [], m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
+      const put = (geo, x, y, z, ry, tint, reg, kind) => { const gg = geo.index ? geo.toNonIndexed() : geo; e.set(0, ry || 0, 0); q.setFromEuler(e); m4.compose(new THREE.Vector3(x, y, z), q, new THREE.Vector3(1, 1, 1)); gg.applyMatrix4(m4);
+        const P = gg.attributes.position.array, Nn = gg.attributes.normal.array; for (let i = 0; i < P.length; i += 3) { pos.push(P[i], P[i + 1], P[i + 2]); nor.push(Nn[i], Nn[i + 1], Nn[i + 2]); tin.push(tint[0], tint[1], tint[2]); rg.push(reg); kd.push(kind); } gg.dispose(); if (gg !== geo) geo.dispose(); };
+      const T0 = [0.45, 0.72, 1];
+      put(new THREE.CylinderGeometry(A.RT, A.RT, 6, 72), 0, 3, 0, 0, T0, -1, 0);                 /* terminal */
+      put(new THREE.CylinderGeometry(A.RT * 0.55, A.RT * 0.55, 2.4, 48), 0, 7.2, 0, 0, T0, -1, 1); /* upper level */
+      put(new THREE.CylinderGeometry(2.2, 3.4, 30, 24), 0, 15, 0, 0, T0, -1, 1);                   /* tower shaft */
+      put(new THREE.CylinderGeometry(5.8, 4.2, 4.6, 24), 0, 32.3, 0, 0, T0, -1, 2);                /* tower cab */
+      put(new THREE.CylinderGeometry(6.4, 6.4, 0.7, 24), 0, 34.9, 0, 0, T0, -1, 0);
+      const lp = [], lc = [], ls = [], la = [], stand = [];
+      const light = (x, z, c, sz, a, y) => { lp.push(x, y == null ? 0.35 : y, z); lc.push(c[0], c[1], c[2]); ls.push(sz); la.push(a == null ? 1 : a); return ls.length - 1; };
+      const GRN = [0.25, 1, 0.5], BLU = [0.3, 0.55, 1], WHT = [1, 0.95, 0.86], RED = [1, 0.22, 0.16], YEL = [1, 0.78, 0.25];
+      L.clusters.forEach((c, k) => {
+        const p = A.piers[k], tint = regCol(k) || T0, mid = (p.r0 + p.r1) / 2, ry = -p.ang;
+        put(new THREE.BoxGeometry(p.r1 - p.r0, A.PH, A.PW), p.dir[0] * mid, A.PH / 2, p.dir[2] * mid, ry, tint, k, 0);
+        put(new THREE.CylinderGeometry(A.PW * 0.8, A.PW * 0.8, A.PH + 0.8, 32), p.dir[0] * p.r1, (A.PH + 0.8) / 2, p.dir[2] * p.r1, 0, tint, k, 0);
+        light(p.dir[0] * p.r1, p.dir[2] * p.r1, RED, 2.2, 0.9, A.PH + 1.2);
+        c.m.forEach(i => { if (g.nodes[i].k === 'aircraft') return; const x = L.P[i * 3], z = L.P[i * 3 + 2], sd = x * p.side[0] + z * p.side[2];
+          const along = x * p.dir[0] + z * p.dir[2], s0 = Math.sign(sd) || 1, wall = A.PW / 2, near = Math.abs(sd) < wall + 12;
+          if (near) { const bx = p.dir[0] * along + p.side[0] * s0 * (wall + 3), bz = p.dir[2] * along + p.side[2] * s0 * (wall + 3); put(new THREE.BoxGeometry(1.4, 1.2, 6), bx, 2.6, bz, ry, tint, k, 3); }   /* jet bridge */
+          const w0 = [p.dir[0] * along + p.side[0] * s0 * wall, p.dir[2] * along + p.side[2] * s0 * wall]; stand.push(w0[0], 0.12, w0[1], x, 0.12, z);   /* lead-in line */
+          light(x + p.side[0] * s0 * 3.5, z + p.side[2] * s0 * 3.5, YEL, 1.1, 0.55); });
+      });
+      /* neon roof outlines in each section's colour, and round the terminal */
+      const ol = [], oc = [], seg = (a, b, c) => { ol.push(...a, ...b); oc.push(...c, ...c); };
+      L.clusters.forEach((c, k) => { const p = A.piers[k], col = regCol(k) || T0, y = A.PH + 0.05, w = A.PW / 2, P0 = (r, s2) => [p.dir[0] * r + p.side[0] * s2, y, p.dir[2] * r + p.side[2] * s2];
+        seg(P0(A.RT, -w), P0(p.r1, -w), col); seg(P0(A.RT, w), P0(p.r1, w), col);
+        for (let j = 0; j < 40; j++) { const a1 = j / 40 * Math.PI * 2, a2 = (j + 1) / 40 * Math.PI * 2, R1 = A.PW * 0.8; seg([p.dir[0] * p.r1 + Math.cos(a1) * R1, A.PH + 0.85, p.dir[2] * p.r1 + Math.sin(a1) * R1], [p.dir[0] * p.r1 + Math.cos(a2) * R1, A.PH + 0.85, p.dir[2] * p.r1 + Math.sin(a2) * R1], col); } });
+      for (let j = 0; j < 96; j++) { const a1 = j / 96 * Math.PI * 2, a2 = (j + 1) / 96 * Math.PI * 2; seg([Math.cos(a1) * A.RT, 6.05, Math.sin(a1) * A.RT], [Math.cos(a2) * A.RT, 6.05, Math.sin(a2) * A.RT], T0); }
+      let geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(ol, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(oc, 3));
+      const outl = new THREE.LineSegments(geo, outlineMat); outl.frustumCulled = false; outl.renderOrder = 2; scene.add(outl); objs.push(outl);
+      geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+      geo.setAttribute('tint', new THREE.Float32BufferAttribute(tin, 3)); geo.setAttribute('reg', new THREE.Float32BufferAttribute(rg, 1)); geo.setAttribute('kind', new THREE.Float32BufferAttribute(kd, 1));
+      const bld = new THREE.Mesh(geo, bldMat); bld.frustumCulled = false; scene.add(bld); objs.push(bld);
+      /* ground */
+      const far = L.R * 1.45, gr = new THREE.Mesh(new THREE.PlaneGeometry(far * 2, far * 2), grdMat); gr.rotation.x = -Math.PI / 2; gr.frustumCulled = false; gr.renderOrder = -1; scene.add(gr); objs.push(gr);
+      grdU.uApron.value = A.reach + 8; grdU.uFar.value = far; grdU.uRw0.value.set(A.runways[0].z, A.runways[0].len, A.runways[0].w, 0); grdU.uRw1.value.set(A.runways[1].z, A.runways[1].len, A.runways[1].w, 0);
+      /* taxiways: a ring round the field, lanes between the piers, links to both runways */
+      const Rr = A.reach + 12;
+      for (let a = 0; a < Math.PI * 2; a += 5 / Rr) light(Math.cos(a) * Rr, Math.sin(a) * Rr, GRN, 1.1, 0.8);
+      for (let a = 0; a < Math.PI * 2; a += 10 / Rr) { light(Math.cos(a) * (Rr - 6), Math.sin(a) * (Rr - 6), BLU, 1.2, 0.7); light(Math.cos(a) * (Rr + 6), Math.sin(a) * (Rr + 6), BLU, 1.2, 0.7); }
+      const n = A.piers.length; if (n > 1) A.piers.forEach((p, k) => { const b = p.ang + Math.PI / n; for (let r = A.RT + 8; r < Rr - 4; r += 5) light(Math.cos(b) * r, Math.sin(b) * r, GRN, 1, 0.7); });
+      A.runways.forEach(w => { const sg = Math.sign(w.z), z0 = sg * Rr, z1 = w.z - sg * (w.w / 2 + 2); [-0.3, 0, 0.3].forEach(f => { const x = f * w.len; if (Math.abs(x) > w.len / 2 - 20) return; for (let z = z0; sg > 0 ? z < z1 : z > z1; z += sg * 5) light(x, z, GRN, 1, 0.75); }); });
+      /* runways: edges, centreline, thresholds, ends, approach lights (the rabbit runs on runway 1) */
+      const rabbit = [];
+      A.runways.forEach((w, ri) => { const h = w.len / 2;
+        for (let x = -h; x <= h; x += 12) { light(x, w.z - w.w / 2, WHT, 1.4, 0.85); light(x, w.z + w.w / 2, WHT, 1.4, 0.85); }
+        for (let x = -h + 16; x <= h - 16; x += 8) light(x, w.z, WHT, 0.8, 0.45);
+        for (let k = -4; k <= 4; k++) { light(-h, w.z + k * w.w / 9, GRN, 1.6, 1); light(h, w.z + k * w.w / 9, RED, 1.6, 0.9); }
+        for (let b = 1; b <= 14; b++) { const x = -h - b * 9; for (let k = -2; k <= 2; k++) light(x, w.z + k * 2.2, WHT, 1.3, 0.75); if (ri === 0) rabbit.push(light(x, w.z, WHT, 3.2, 0)); }
+      });
+      const beacon = light(0, 0, RED, 3, 1, 36);
+      geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(lp, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(lc, 3)); geo.setAttribute('size', new THREE.Float32BufferAttribute(ls, 1)); geo.setAttribute('alpha', new THREE.Float32BufferAttribute(la, 1));
+      const lights = new THREE.Points(geo, lgtMat); lights.frustumCulled = false; lights.renderOrder = 2; scene.add(lights); objs.push(lights);
+      geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(stand, 3)); const st = new THREE.LineSegments(geo, standMat); st.frustumCulled = false; scene.add(st); objs.push(st);
+      /* landing traffic: landing lights and navigation lights, on runway 1 now and then */
+      geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(12), 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute([1, 1, 0.95, 1, 0.2, 0.15, 0.25, 1, 0.45, 1, 1, 1], 3)); geo.setAttribute('size', new THREE.Float32BufferAttribute([5, 2, 2, 3], 1)); geo.setAttribute('alpha', new THREE.Float32BufferAttribute(new Float32Array(4), 1));
+      const traffic = new THREE.Points(geo, lgtMat); traffic.frustumCulled = false; traffic.renderOrder = 3; scene.add(traffic); objs.push(traffic);
+      return { objs, bld, lights, traffic, rabbit, beacon };
+    }
+    function animAirport(ts) {
+      if (!AP) return; const A = L.airport, la = AP.lights.geometry.attributes.alpha;
+      AP.rabbit.forEach((ix, k) => { const ph = ((ts / 500) % 1) * AP.rabbit.length; la.array[ix] = Math.abs(ph - (AP.rabbit.length - 1 - k)) < 0.6 ? 1 : 0; });
+      la.array[AP.beacon] = 0.25 + 0.75 * Math.pow(0.5 + 0.5 * Math.sin(ts / 420), 6); la.needsUpdate = true;
+      const w = A.runways[0], h = w.len / 2, t = (ts % 52000) / 52000, tp = AP.traffic.geometry.attributes.position, ta = AP.traffic.geometry.attributes.alpha;
+      let x, y, a; if (t < 0.6) { const u = t / 0.6; x = -h - 300 + u * 320; y = Math.max(0.8, 42 * (1 - u) * (1 - u * 0.15)); a = Math.min(1, u * 4); } else if (t < 0.82) { const u = (t - 0.6) / 0.22; x = -h + 20 + (1 - (1 - u) * (1 - u)) * 170; y = 0.8; a = 1; } else { x = -h + 190; y = 0.8; a = Math.max(0, 1 - (t - 0.82) / 0.06); }
+      tp.array.set([x, y, w.z, x - 1, y, w.z - 3.4, x - 1, y, w.z + 3.4, x - 3, y + 0.8, w.z], 0); tp.needsUpdate = true;
+      const strobe = (ts % 1100) < 70 ? 1 : 0; ta.array.set([a, a * 0.9, a * 0.9, a * strobe], 0); ta.needsUpdate = true;
+    }
+
     /* the palette: node colours by type, link and background-neuron colours, the plate's background */
     function paint() {
       const p = PAL[pal] || PAL.ice, c = nodes.geometry.attributes.color;
@@ -302,7 +439,7 @@
       const pa = cloud.geometry.attributes.alpha, base = cloud.userData.base;
       for (let k = 0; k < puffOf.length; k++) { const f = gsel < 0 ? 1 : puffOf[k] === gsel ? 1.25 : 0.4; for (let v = 0; v < 6; v++) pa.array[k * 6 + v] = base[k * 6 + v] * f; }
       pa.needsUpdate = true;
-      if (brain) { brainU.uSel.value = gsel; brainU.uDim.value = ksel ? 0.55 : 1; }
+      if (brain || AP) { brainU.uSel.value = gsel; brainU.uDim.value = ksel ? 0.55 : 1; }
       regEls.forEach((el, k) => { el.classList.toggle('on', k === gsel); el.classList.toggle('dim', gsel >= 0 && k !== gsel); });
       dbg.lit = lit ? lit.size : 0;
       labelSet(); request();
@@ -348,7 +485,7 @@
     }
     /* home: the whole cloud, seen almost from the front and a little from above, names included */
     function homeView() {
-      const th = L.brain ? -0.9 : 0.16, ph = L.brain ? 1.22 : 1.4;
+      const th = L.hub ? 0.62 : L.brain ? -0.9 : 0.16, ph = L.hub ? 0.92 : L.brain ? 1.22 : 1.4;
       const dir = [Math.sin(ph) * Math.sin(th), Math.cos(ph), Math.sin(ph) * Math.cos(th)];
       const rt = [dir[2], 0, -dir[0]], rl = Math.hypot(rt[0], rt[2]); rt[0] /= rl; rt[2] /= rl;
       const up = [dir[1] * rt[2] - dir[2] * rt[1], dir[2] * rt[0] - dir[0] * rt[2], dir[0] * rt[1] - dir[1] * rt[0]];
@@ -357,7 +494,8 @@
       L.clusters.forEach(c => { const x = dot(rt, c.c), y = dot(up, c.c), z = dot(dir, c.c), r = c.r + L.D * 0.8; x0 = Math.min(x0, x - r); x1 = Math.max(x1, x + r); y0 = Math.min(y0, y - r); y1 = Math.max(y1, y + r + L.D * 2.2); z1 = Math.max(z1, z + c.r); });
       if (L.brain && SH) for (let j = 0; j < SH.n; j += 97) { const q = [SH.P[j * 3], SH.P[j * 3 + 1], SH.P[j * 3 + 2]], x = dot(rt, q), y = dot(up, q); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
       if (L.brain && scope) for (let k = 0; k < 24; k++) { const a = k / 24 * Math.PI * 2, q = [Math.sin(a) * L.S * 1.0, -0.8 * L.S, Math.cos(a) * L.S * 1.0 - 0.05 * L.S], x = dot(rt, q), y = dot(up, q); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
-      if (!L.clusters.length && !(L.brain && SH)) { x0 = y0 = -10; x1 = y1 = 10; }
+      if (L.hub) { const A = L.airport, pts = [[0, 36, 0]]; for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2; pts.push([Math.cos(a) * (A.reach + 14), 0, Math.sin(a) * (A.reach + 14)]); } pts.forEach(q => { const x = dot(rt, q), y = dot(up, q); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }); }
+      if (!L.clusters.length && !(L.brain && SH) && !L.hub) { x0 = y0 = -10; x1 = y1 = 10; }
       const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, c = [0, 1, 2].map(a => rt[a] * mx + up[a] * my);
       Object.assign(home, { tx: c[0], ty: c[1], tz: c[2], th, ph, d: fitDist((x1 - x0) / 2, (y1 - y0) / 2, z1 * 0.6) });
     }
@@ -386,14 +524,16 @@
       /* the card on a phone sits at the foot of the plate: the group goes in the room above it */
       const low = !card.hidden && W < 600 && card.offsetTop + card.offsetHeight > H * 0.75, avail = low ? card.offsetTop - padT() - 16 : 0;
       let th = home.th, ph = home.ph;
+      if (L.hub && c.dir) { th = Math.atan2(-c.dir[0], -c.dir[2]); ph = 0.62; }   /* from behind the terminal, looking out along the pier */
       if (L.brain && c.nrm) { let dth = Math.atan2(c.nrm[0], c.nrm[2]) - home.th; while (dth > Math.PI) dth -= Math.PI * 2; while (dth < -Math.PI) dth += Math.PI * 2; th = home.th + dth; ph = Math.max(0.55, Math.min(1.05, Math.acos(Math.max(-1, Math.min(1, c.nrm[1] * 0.7 + 0.35))))); }   /* turn the brain towards the region, a little from above */
-      const d = L.brain ? home.d * 0.68 : Math.max(lim().min * 1.4, fitDist(c.r + L.D * 1.2, c.r + L.D * 1.3, c.r * 0.5, avail));
+      const d = L.hub ? Math.max(L.D * 22, c.len * 2.1 + 60) : L.brain ? home.d * 0.68 : Math.max(lim().min * 1.4, fitDist(c.r + L.D * 1.2, c.r + L.D * 1.3, c.r * 0.5, avail));
       const dir = [Math.sin(ph) * Math.sin(th), Math.cos(ph), Math.sin(ph) * Math.cos(th)], rt = [dir[2], 0, -dir[0]], rl = Math.hypot(rt[0], rt[2]); rt[0] /= rl; rt[2] /= rl;
       const wpp = 2 * d * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / H; let dx = 0, dy = L.D * 0.8 / wpp; /* where the group should appear (px from the middle of the free part); a little low leaves room for its name */
       if (!card.hidden && W >= 600) dx = (card.offsetLeft + card.offsetWidth) / 2;
       if (low) dy += (card.offsetTop - (H - padB())) / 2;
       const up = [dir[1] * rt[2] - dir[2] * rt[1], dir[2] * rt[0] - dir[0] * rt[2], dir[0] * rt[1] - dir[1] * rt[0]];
-      const tgt = [0, 1, 2].map(a => c.c[a] - rt[a] * dx * wpp + up[a] * dy * wpp);
+      const base = L.hub && c.dir ? c.c.map((v, a) => v + c.dir[a] * c.len * 0.2) : c.c;
+      const tgt = [0, 1, 2].map(a => base[a] - rt[a] * dx * wpp + up[a] * dy * wpp);
       flyTo({ tx: tgt[0], ty: tgt[1], tz: tgt[2], th, ph, d }, 900);
       afterInteract();
     }
@@ -431,6 +571,7 @@
         else { only = false; rot.t += dt / 1000; const s = rot.secs; cam.th = rot.th0 + 0.2 * Math.sin(Math.PI * 2 * Math.min(1, rot.t / s)); if (rot.t >= s) { cam.th = rot.th0; stopRot(); } else more = true; }
       }
       if (pulses.length) { if (only) { stats.pulseFrames++; } more = stepPulses(ts) || more; }
+      if (sweeping() && AP) animAirport(ts);
       if (sweeping()) { U.uSweepOn.value = Math.min(1, U.uSweepOn.value + dt / 800); U.uSweep.value = (U.uSweep.value + dt * Math.PI * 2 / 7000) % (Math.PI * 2); more = true; } else U.uSweepOn.value = 0;
       render();
       const c1 = performance.now(); cpu.push(c1 - c0); if (cpu.length > 400) cpu.shift();
@@ -439,9 +580,9 @@
       else if (probing) { probeD.push(raw); if (probeD.length >= 24) { probing = false; const a = probeD.slice(4).sort((x, y) => x - y), med = a[a.length >> 1], lim2 = window.__wsm3dProbeMs || 55; const cm = cpu.slice(-20).sort((x, y) => x - y)[10]; if ((med > lim2 || cm > 24) && o.onWeak) { setTimeout(() => o.onWeak('slow'), 0); } } }
       if (more) request(); else lastTs = 0;
     }
-    const clampPh = p => L && L.brain ? Math.max(0.18, Math.min(1.72, p)) : Math.max(0.12, Math.min(Math.PI - 0.12, p));   /* the brain: never seen from below the scope */
+    const clampPh = p => L && L.hub ? Math.max(0.15, Math.min(1.3, p)) : L && L.brain ? Math.max(0.18, Math.min(1.72, p)) : Math.max(0.12, Math.min(Math.PI - 0.12, p));   /* the brain: never seen from below the scope */
     /* the radar sweep: one turn every 7 s while the map is on screen and the page is in view; never with reduced motion */
-    const sweeping = () => !!(L && L.brain && alive && onScreen && document.visibilityState === 'visible' && !reduced() && introP >= 1);
+    const sweeping = () => !!(L && (L.brain || L.hub) && alive && onScreen && document.visibilityState === 'visible' && !reduced() && introP >= 1);
     function render() {
       place(); renderer.render(scene, camera); dbg.renders++;
       /* project the nodes once per frame: labels and hit tests use it */
@@ -462,7 +603,7 @@
         const c = L.clusters[k], el = regEls[k]; if (!el) return;
         if (c.m.length && !c.m.some(i => visible(i))) { el.hidden = true; return; }
         el.hidden = false; const w = el._w || (el._w = el.offsetWidth), h = el._h || (el._h = el.offsetHeight);
-        const pa = pr([c.c[0], c.c[1] + c.r + L.D * 0.4, c.c[2]]), pb = pr([c.c[0], c.c[1] - c.r - L.D * 0.4, c.c[2]]), cand = [];
+        const an = c.tip || c.c, rr = c.tip ? L.D * 1.6 : c.r, pa = pr([an[0], an[1] + rr + L.D * 0.4, an[2]]), pb = pr([an[0], an[1] - (c.tip ? 0 : rr) - L.D * 0.4, an[2]]), cand = [];
         for (const [p, above] of [[pa, true], [pb, false]]) if (p) for (const dx of [0, -0.6, 0.6, -1.1, 1.1]) cand.push([p[0] + dx * w, above ? p[1] - 4 - h : p[1] + 4]);
         let at = null;
         for (const [x, y] of cand) { const x0 = Math.max(6, Math.min(W - 6 - w, x - w / 2)); if (y < yTop || y + h > yBot || hits(x0 - 3, y - 3, w + 6, h + 6) || onDot(x0, y, x0 + w, y + h)) continue; at = [x0, y]; break; }
@@ -674,7 +815,7 @@
       destroy() {
         alive = false; if (raf) cancelAnimationFrame(raf); raf = 0; stopRot(); unschedule(); clearTimeout(wheelT); if (io) io.disconnect(); document.removeEventListener('visibilitychange', onVis);
         if (ro) ro.disconnect(); else window.removeEventListener('resize', resize);
-        disposeObjs(); [nodeMat, puffMat, lineMat, pulseMat, brainMat, symMat, scopeMat].forEach(m => m.dispose()); scopeTx.dispose(); renderer.dispose(); try { renderer.forceContextLoss(); } catch (e) {}
+        disposeObjs(); [nodeMat, puffMat, lineMat, pulseMat, brainMat, symMat, scopeMat, bldMat, grdMat, lgtMat, standMat, outlineMat].forEach(m => m.dispose()); scopeTx.dispose(); renderer.dispose(); try { renderer.forceContextLoss(); } catch (e) {}
         host.innerHTML = ''; host.classList.remove('wsm3'); host.wsmap = null;
       }
     });

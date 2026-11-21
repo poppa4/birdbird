@@ -24,24 +24,23 @@ const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 function check(g, L, tag) {
   g.nodes.forEach((n, i) => { const c = L.clusters[L.gi[i]]; assert.ok(dist(at(L, i), c.c) <= c.r + 1e-4, tag + ' inside its ball: ' + n.id);
     assert.equal(c.ac >= 0 ? g.nodes[c.ac].id : '', n.ac && g.index[n.ac] != null ? n.ac : '', tag + ' grouped by aircraft: ' + n.id); });
-  for (let a = 0; a < L.clusters.length; a++) for (let b = a + 1; b < L.clusters.length; b++) { const p = L.clusters[a], q = L.clusters[b]; assert.ok(dist(p.c, q.c) >= p.r + q.r + L.D, tag + ' balls apart'); }
   let md = Infinity; for (let i = 0; i < g.nodes.length; i++) for (let j = i + 1; j < g.nodes.length; j++) md = Math.min(md, dist(at(L, i), at(L, j)));
   if (g.nodes.length > 1) assert.ok(md >= 0.55 * L.D, tag + ' points apart: ' + md.toFixed(2));
 }
 
-test('example: three soft balls, one per aircraft, deterministic, the aircraft in the middle', () => {
+test('example: a pier per aircraft, deterministic, the aircraft at the tip', () => {
   const g = SAMPLE(), a = B.layout3d(g), b = B.layout3d(SAMPLE());
   assert.ok(g.nodes.length >= 40 && g.nodes.length <= 55);
   assert.deepEqual([...a.P], [...b.P], 'the same workspace, the same cloud');
   assert.deepEqual(a.clusters.slice(0, 3).map(c => g.nodes[c.ac].label), ['LN-EXA', 'LN-EXB', 'LN-EXC']);
   assert.deepEqual(a.clusters.map(c => c.n), [14, 14, 13, 5]);
-  a.clusters.slice(0, 3).forEach(c => assert.ok(dist(at(a, c.ac), c.c) < 1e-6, 'aircraft in the middle'));
+  a.clusters.slice(0, 3).forEach(c => assert.ok(dist(at(a, c.ac), c.tip) < B.HUB.TIP, 'aircraft at the pier tip'));
   check(g, a, 'example');
   assert.ok(a.grow.every(v => v >= 0 && v <= 1), 'growth 0..1');
-  assert.ok(new Set(a.clusters.map(c => c.c[2].toFixed(2))).size > 1, 'groups at different depths (parallax)');
+  assert.ok(new Set(a.clusters.map(c => c.c[2].toFixed(2))).size > 1, 'piers in different directions');
 });
 
-test('own maps: a ball per aircraft plus Unsorted, points apart; a large map is laid out quickly', () => {
+test('own maps: a pier per aircraft plus Unsorted, items apart; a large map is laid out quickly', () => {
   for (const n of [1, 3, 12, 40, 300]) {
     const g = OWN(n), L = B.layout3d(g);
     assert.equal(L.clusters.length, g.counts.aircraft + (g.nodes.some(x => !x.ac) ? 1 : 0), 'groups (' + n + ')');
@@ -53,22 +52,22 @@ test('own maps: a ball per aircraft plus Unsorted, points apart; a large map is 
   const t0 = performance.now(); const g6 = OWN(600), L6 = B.layout3d(g6); assert.ok(performance.now() - t0 < 1500); check(g6, L6, 'own 600');
 });
 
-test('the brain: every item on its surface, each section a region of the upper cerebrum; the particles are deterministic', () => {
-  const g = SAMPLE(), L = B.layout3d(g);
-  assert.ok(L.brain && L.S >= 70);
-  /* items sit just above the surface of a hemisphere: inside the brain's bounding box, outside its core */
-  g.nodes.forEach((n, i) => { const p = at(L, i).map(x => x / L.S); assert.ok(Math.abs(p[0]) < 0.75 && p[1] < 0.66 && p[1] > -0.5 && Math.abs(p[2]) < 0.9, 'on the brain: ' + n.id); assert.ok(Math.hypot(p[0] * 1.6, p[1] * 1.6, p[2]) > 0.45, 'on the surface: ' + n.id); });
-  L.clusters.forEach(c => assert.ok(c.nrm && c.c[1] / L.S > -0.05, 'region on the upper half: ' + c.key));
-  const S1 = B.shell(L, 4), S2 = B.shell(B.layout3d(SAMPLE()), 4);
-  assert.ok(S1.n > 1000 && S1.I.length % 3 === 0 && Math.max(...S1.I) < S1.n, 'a closed triangle mesh'); assert.deepEqual([...S1.P.slice(0, 300)], [...S2.P.slice(0, 300)], 'deterministic');
-  assert.ok([...S1.F].every(f => f >= 0 && f <= 1), 'fold 0..1');
-  assert.ok([...S1.reg].some(r => r >= 0) && new Set([...S1.reg].filter(r => r >= 0)).size === L.clusters.length, 'every section tints a region');
+test('the hub airport: a pier per section round the terminal, every item at a gate of its own pier, runways outside the field', () => {
+  const g = SAMPLE(), L = B.layout3d(g), A = L.airport;
+  assert.ok(L.hub && A.piers.length === L.clusters.length && A.runways.length === 2);
+  L.clusters.forEach((c, k) => {
+    const p = A.piers[k];
+    c.m.forEach(i => { const x = L.P[i * 3], z = L.P[i * 3 + 2], along = x * p.dir[0] + z * p.dir[2], side = Math.abs(x * p.side[0] + z * p.side[2]);
+      assert.ok(along > A.RT && along <= Math.hypot(c.tip[0], c.tip[2]), 'along its pier: ' + g.nodes[i].id);
+      assert.ok(g.nodes[i].k === 'aircraft' ? side < 1e-3 : side > A.PW / 2, 'beside the pier, not on it: ' + g.nodes[i].id); });
+    if (c.ac >= 0) assert.ok(Math.abs(Math.hypot(L.P[c.ac * 3], L.P[c.ac * 3 + 2]) - (p.r1 + B.HUB.TIP)) < 1e-3, 'the aircraft at the tip');
+  });
+  const ang = A.piers.map(p => p.ang).sort((a, b) => a - b); for (let k = 1; k < ang.length; k++) assert.ok(Math.abs(ang[k] - ang[k - 1] - Math.PI * 2 / ang.length) < 1e-9, 'evenly round');
+  A.runways.forEach(w => assert.ok(Math.abs(w.z) > A.reach + 20, 'runways outside the field'));
   const P = B.puffs(L.clusters); assert.equal(P.length % 5, 0);
-  for (let k = 0; k < P.length; k += 5) { const c = L.clusters[P[k + 4]]; assert.ok(dist([P[k], P[k + 1], P[k + 2]], c.c) <= c.r + B.D, 'puff on its group'); }
 });
 
-test('growth runs from the middle of the cloud outwards', () => {
-  const g = SAMPLE(), L = B.layout3d(g);
-  const mid = L.clusters.map(c => c.ac).sort((a, b) => L.grow[a] - L.grow[b])[0], far = L.grow.reduce((m, v) => Math.max(m, v), 0);
-  assert.ok(L.grow[mid] < far, 'the middle first');
+test('growth runs from the terminal outwards', () => {
+  const g = SAMPLE(), L = B.layout3d(g), c = L.clusters[0], gates = c.m.filter(i => i !== c.ac).sort((x, y) => L.grow[x] - L.grow[y]);
+  assert.ok(L.grow[gates[0]] < L.grow[c.ac], 'the gates by the terminal before the aircraft at the tip');
 });

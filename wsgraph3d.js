@@ -141,58 +141,44 @@
   }
   const sizeFor = N => Math.max(70, Math.sqrt(N * 11) * D * 0.42 + 40);
 
+  /* ---------- the hub airport (the map since Nov 2026) ----------
+     layout3d(g) -> { P (items, world; y up, ground at 0), grow, gi, clusters, R, center, D, hub: true, airport }
+     The terminal is a round building with the tower in the middle. One pier per section (aircraft, groups, then
+     'Unsorted') runs out from it like the spokes of a wheel, evenly round; the section's aircraft is parked at the tip,
+     its documents, notes, packs and routes at the gates along both sides, nearest the terminal first, in more rows when
+     the pier would get too long. Two parallel runways frame the field. Deterministic.
+     cluster: { key, ac, topic, n, m, c (pier middle), r (round the whole pier), tip (label point), dir (out along the pier), len, nrm } */
+  const HUB = { D0: 6, RT: 26, PW: 10, PH: 5, SP: 10, SIDE: 9, ROW: 9, MAXG: 14, TIP: 16 };
   function layout3d(g, opts) {
     opts = opts || {};
-    const sig = g.nodes.map(n => n.id + '@' + n.ac).join(',') + '|' + (g.topics || []).map(x => x.id + '=' + x.name).join(',');
+    const sig = 'hub|' + g.nodes.map(n => n.id + '@' + n.ac).join(',') + '|' + (g.topics || []).map(x => x.id + '=' + x.name).join(',');
     const hit = cache.get(sig); if (hit) return clone(hit);
-    const N = g.nodes.length, groups = GW.groupsOf(g), P = new Float32Array(N * 3), gi = new Int32Array(N).fill(-1), S = sizeFor(N);
-    /* candidate places for items: the outer and upper faces of the two hemispheres */
-    const BM = brainMesh(5), BP = { P: [], N: [], K: [] }, cand = [], top = [];
-    for (let v = 0; v < BM.K.length; v++) { if (BM.K[v] > 1) continue; const p = [BM.P[v * 3], BM.P[v * 3 + 1], BM.P[v * 3 + 2]], o = [BM.O[v * 3], BM.O[v * 3 + 1], BM.O[v * 3 + 2]];
-      if (p[1] < -0.24 || Math.abs(p[0]) < 0.09 || (BM.K[v] === 0 ? o[0] : -o[0]) > 0.3 || BM.F[v] < 0.5) continue;   /* outer faces, on a gyrus, not in a fold */
-      BP.P.push(p); BP.N.push(o); BP.K.push(BM.K[v]); cand.push(BP.P.length - 1); if (p[1] > 0.02) top.push(cand.length - 1); }
-    const W = j => BP.P[j].map(x => x * S);
-    /* the regions: spread over the upper half of the cerebrum (where the home view sees them) by farthest-point sampling,
-       the first at the front of the left hemisphere */
-    const anchors = [];
-    if (groups.length) {
-      const start = [-0.42, 0.32, 0.5]; let best = cand[0], bd = Infinity;
-      cand.forEach(j => { const dd = d2(BP.P[j], start); if (dd < bd) { bd = dd; best = j; } }); anchors.push(best);
-      const T = top.length >= groups.length * 4 ? top.map(x => cand[x]) : cand, md = T.map(j => d2(BP.P[j], BP.P[best]));
-      while (anchors.length < groups.length) {
-        let bi = 0; for (let x = 1; x < T.length; x++) if (md[x] > md[bi]) bi = x;
-        anchors.push(T[bi]); const ap = BP.P[T[bi]]; for (let x = 0; x < T.length; x++) md[x] = Math.min(md[x], d2(BP.P[T[x]], ap));
-      }
-    }
-    /* each candidate belongs to its nearest region; a region takes its own places, nearest first, a spacing apart */
-    const own = new Int32Array(cand.length), used = new Uint8Array(BP.P.length), sep2 = (D / S) ** 2 * 0.95;
-    cand.forEach((j, x) => { let bk = 0, bd = Infinity; anchors.forEach((a, k) => { const dd = d2(BP.P[j], BP.P[a]); if (dd < bd) { bd = dd; bk = k; } }); own[x] = bk; });
-    const taken = [];
-    const free = (j, s2) => { const p = BP.P[j]; for (let t = 0; t < taken.length; t++) if (d2(p, BP.P[taken[t]]) < s2) return false; return true; };
-    /* the biggest groups choose first, so they get the room they need */
-    const order = groups.map((q, k) => k).sort((a, b) => groups[b].m.length - groups[a].m.length || a - b);
-    const placeOf = new Array(groups.length);
-    order.forEach(k => {
-      const q = groups[k], ap = BP.P[anchors[k]], mine = [];
-      const pool = cand.map((j, x) => [j, own[x] === k ? 0 : 1, d2(BP.P[j], ap)]).sort((a, b) => a[1] - b[1] || a[2] - b[2]);
-      let s2 = sep2;
-      for (let pass = 0; pass < 4 && mine.length < q.m.length; pass++, s2 *= 0.6) {
-        for (const [j] of pool) { if (mine.length >= q.m.length) break; if (used[j] || !free(j, s2)) continue; used[j] = 1; taken.push(j); mine.push(j); }
-      }
-      placeOf[k] = mine;
-    });
+    const N = g.nodes.length, groups = GW.groupsOf(g), P = new Float32Array(N * 3), gi = new Int32Array(N).fill(-1);
+    const n = Math.max(1, groups.length), a0 = -Math.PI / 2 + (n % 2 ? 0 : Math.PI / n), piers = [];
+    /* a long pier gets more rows rather than running off forever; the gates start far enough out that neighbouring piers never touch */
+    const plan = groups.map(q => { const head = q.ac >= 0 && q.m.includes(q.ac) ? q.ac : -1, rest = q.m.filter(i => i !== head), per = Math.ceil(rest.length / 2), maxg = Math.max(HUB.MAXG, Math.ceil(Math.sqrt(per * 4))), rows = Math.max(1, Math.ceil(per / maxg));
+      return { head, rest, per, maxg, rows, span: HUB.PW / 2 + HUB.SIDE + (rows - 1) * HUB.ROW + HUB.D0 }; });
+    const span = plan.reduce((m, x) => Math.max(m, x.span), 0), RG = n < 2 ? HUB.RT : Math.max(HUB.RT, (span + HUB.D0) / Math.sin(Math.PI / n) - HUB.SP * 0.8);
     const clusters = groups.map((q, k) => {
-      const a = anchors[k], nr = BP.N[a], lift = D * 0.35, c = W(a).map((x, ax) => x + nr[ax] * lift);
-      let r = D * 0.8;
-      q.m.forEach((i, x) => { const j = placeOf[k][x], p = j != null ? W(j) : c, n2 = j != null ? BP.N[j] : nr; for (let ax = 0; ax < 3; ax++) P[i * 3 + ax] = p[ax] + (j != null ? n2[ax] * lift : 0); gi[i] = k; });
-      if (q.m.length) for (let ax = 0; ax < 3; ax++) c[ax] = P[q.m[0] * 3 + ax];
-      q.m.forEach(i => { r = Math.max(r, Math.sqrt(d2([P[i * 3], P[i * 3 + 1], P[i * 3 + 2]], c))); });
-      return { key: q.key, ac: q.ac, topic: q.topic, n: q.n, m: q.m, c, r, nrm: nr.slice() };
+      const ang = a0 + k * Math.PI * 2 / n, dir = [Math.cos(ang), 0, Math.sin(ang)], side = [-dir[2], 0, dir[0]];
+      const { head, rest, per, maxg } = plan[k], along = Math.max(1, Math.min(per, maxg));
+      const len = (RG - HUB.RT) + along * HUB.SP + HUB.SP * 0.6, r0 = HUB.RT - 2, r1 = HUB.RT + len;
+      rest.forEach((i, x) => { const sd = x % 2 ? 1 : -1, pos = Math.floor(x / 2), al = pos % maxg, row = Math.floor(pos / maxg);
+        const rr = RG + HUB.SP * 0.8 + al * HUB.SP, off = sd * (HUB.PW / 2 + HUB.SIDE + row * HUB.ROW);
+        P[i * 3] = dir[0] * rr + side[0] * off; P[i * 3 + 1] = 1.2; P[i * 3 + 2] = dir[2] * rr + side[2] * off; gi[i] = k; });
+      const tipR = r1 + HUB.TIP;
+      if (head >= 0) { P[head * 3] = dir[0] * tipR; P[head * 3 + 1] = 1.2; P[head * 3 + 2] = dir[2] * tipR; gi[head] = k; }
+      const mid = (HUB.RT + tipR) / 2, c = [dir[0] * mid, 0, dir[2] * mid];
+      let r = (tipR - HUB.RT) / 2 + HUB.D0; q.m.forEach(i => { r = Math.max(r, Math.hypot(P[i * 3] - c[0], P[i * 3 + 1] - c[1], P[i * 3 + 2] - c[2]) + 0.5); });
+      piers.push({ ang, dir, side, r0, r1, rows: plan[k].rows });
+      return { key: q.key, ac: q.ac, topic: q.topic, n: q.n, m: q.m, c, r, tip: [dir[0] * (tipR + 4), 0, dir[2] * (tipR + 4)], dir, len: tipR - HUB.RT, nrm: [0, 1, 0] };
     });
-    const R = S * 0.95;
-    /* grow-in: each region from its middle outwards */
-    const grow = new Float32Array(N); clusters.forEach(c => c.m.forEach(i => { grow[i] = Math.min(1, 0.12 + 0.8 * Math.sqrt(d2([P[i * 3], P[i * 3 + 1], P[i * 3 + 2]], c.c)) / Math.max(D, c.r)); }));
-    const res = { P, grow, gi, clusters, R, center: [0, -0.08 * S, 0], D, S, brain: true, cols: 0 };
+    let reach = HUB.RT + 40; clusters.forEach(c => { reach = Math.max(reach, Math.hypot(c.tip[0], c.tip[2]) + HUB.SIDE + 2 * HUB.ROW); });
+    /* runways: two parallels, north and south of the field, longer than the field is wide */
+    const rwyZ = reach + 34, rwyLen = Math.max(220, reach * 2.6), runways = [{ z: -rwyZ, len: rwyLen, w: 12 }, { z: rwyZ, len: rwyLen * 0.86, w: 12 }];
+    const R = rwyZ + 20;
+    const grow = new Float32Array(N); for (let i = 0; i < N; i++) grow[i] = Math.min(1, 0.15 + 0.8 * Math.hypot(P[i * 3], P[i * 3 + 2]) / Math.max(1, reach));
+    const res = { P, grow, gi, clusters, R, center: [0, 0, 0], D, hub: true, airport: { RT: HUB.RT, PW: HUB.PW, PH: HUB.PH, reach, piers, runways }, cols: 0 };
     if (cache.size > 8) cache.clear(); cache.set(sig, res);
     return clone(res);
   }
@@ -209,7 +195,7 @@
     return { P, I: M.I, F: M.F, K: M.K, O: M.O, reg, reg2, mix, n };
   }
 
-  const clone = r => ({ P: r.P.slice(), grow: r.grow.slice(), gi: r.gi.slice(), clusters: r.clusters.map(c => Object.assign({}, c, { c: c.c.slice(), m: c.m.slice(), nrm: c.nrm ? c.nrm.slice() : null })), R: r.R, center: r.center.slice(), D: r.D, S: r.S, brain: r.brain, cols: r.cols });
+  const clone = r => ({ P: r.P.slice(), grow: r.grow.slice(), gi: r.gi.slice(), clusters: r.clusters.map(c => Object.assign({}, c, { c: c.c.slice(), m: c.m.slice(), nrm: c.nrm ? c.nrm.slice() : null, tip: c.tip ? c.tip.slice() : null, dir: c.dir ? c.dir.slice() : null })), R: r.R, center: r.center.slice(), D: r.D, S: r.S, brain: r.brain, hub: r.hub, airport: r.airport, cols: r.cols });
 
   /* ---------- the soft light: a core and a few puffs round each group ---------- */
   function puffs(clusters) {
@@ -225,7 +211,7 @@
     return new Float32Array(out);
   }
 
-  const API = { layout3d, puffs, shell, brainMesh, brainPoints, sizeFor, PARTS, lattice, D, FLAT, hash };
+  const API = { HUB, layout3d, puffs, shell, brainMesh, brainPoints, sizeFor, PARTS, lattice, D, FLAT, hash };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   G.WSGRAPH3D = API;
 })(typeof window !== 'undefined' ? window : globalThis);
