@@ -416,7 +416,7 @@
       dockApply(); if (dock.el.classList.contains('open')) focusDock();
     });
     /* narrow screens: asking opens the sheet */
-    dock.el.addEventListener('submit', () => { if (!dockWide() && !dock.sheet) { dock.sheet = true; dockApply(); } }, true);
+    dock.el.addEventListener('submit', () => { if (!dockWide() && !dock.sheet) { dock.sheet = true; dockApply(); } if (!M.fiTried) { M.fiTried = true; saveMeta(); } }, true);
     dock.el.addEventListener('focusin', e => { if (!dockWide() && !dock.sheet && e.target.matches('textarea')) { /* stay a bar until something is asked */ } });
     window.addEventListener('resize', dockApply);
     try { await window.WSDESK.needAsk(); } catch (e) { dock.el.querySelector('.bd').innerHTML = `<p class="ws-loading">${t('Flight Intelligence could not load. Check the connection.', 'Flight Intelligence kunne ikke lastes. Sjekk tilkoblingen.')}</p>`; return; }
@@ -541,45 +541,32 @@
     </section>`;
   }
 
-  /* Home: one platform. Flight Intelligence on top (it asks in the panel beside you, which knows your documents),
-     then what you do most, then your library. No decoration: everything here is something you can open. */
-  function askFi(q) { q = String(q || '').trim(); focusDock(); if (!q) return; const tryAsk = (n) => { const f = dock && dock.el.querySelector('form.ask-f'), ta = f && f.querySelector('textarea'); if (!ta) { if (n < 40) setTimeout(() => tryAsk(n + 1), 100); return; } ta.value = q; f.requestSubmit ? f.requestSubmit() : f.dispatchEvent(new Event('submit', { cancelable: true })); }; tryAsk(0); }
-  function fiGaps() { const m = {}; (S.fises || []).forEach(x => (x.gaps || []).forEach(g => { const k = String(g).toLowerCase(); if (!m[k]) m[k] = { t: g, n: 0, last: 0 }; m[k].n++; m[k].last = Math.max(m[k].last, x.started || 0); })); return Object.values(m).sort((a, b) => b.n - a.n || b.last - a.last); }
+  /* Home: compact and calm. Flight Intelligence lives in the panel beside you (and in the rail), so it is not repeated here.
+     Your aircraft are the centre, then one list of what you opened last, then the library as a row of counts.
+     An empty workspace gets one short setup checklist instead of empty boxes. */
   function viewHome() {
-    const ac = aircraft(), docs = docsAll(), notes = notesAll(), packs = packsAll(), routes = S.routes.slice().sort((a, b) => (b.updated || 0) - (a.updated || 0)), rec = recentList(), nb = needsBackup();
-    const ses = (S.fises || []).slice().sort((a, b) => (b.started || 0) - (a.started || 0)), gaps = fiGaps();
-    const sec = (href, title, count, body, foot) => `<section class="ovs"><header><h2><a href="${href}">${esc(title)}</a></h2>${count != null ? `<span class="c">${count}</span>` : ''}</header>${body}<footer>${foot}</footer></section>`;
-    const li = (h, b, s, w, v) => `<li><a href="${h}"${v ? ` data-visit="${esc(v)}"` : ''}><b>${b}</b><small>${s || '&nbsp;'}</small><span class="w">${w || ''}</span></a></li>`;
-    const cats = W.DOC_CATS.map(c => [c, docs.filter(d => d.cat === c).length]).filter(x => x[1]);
-    const def = ac.find(a => a.isDefault) || ac[0];
-    const ctx = docs.length
-      ? t(`Answers from your <b>${docs.length}</b> ${docs.length === 1 ? 'document' : 'documents'}${def ? ' (' + esc(def.reg || def.type || acName(def)) + ')' : ''}, the EASA rules library and general knowledge. Every answer shows its source.`, `Svar fra ${docs.length === 1 ? 'dokumentet ditt' : 'dine <b>' + docs.length + '</b> dokumenter'}${def ? ' (' + esc(def.reg || def.type || acName(def)) + ')' : ''}, EASA-regelbiblioteket og generell kunnskap. Hvert svar viser kilden.`)
-      : t('Answers from the EASA rules library and general knowledge. Add your AFM, QRH or SOP and it answers from them too, with the page.', 'Svar fra EASA-regelbiblioteket og generell kunnskap. Legg til AFM, QRH eller SOP, så svarer den også fra dem, med sidetall.');
-    const ex = docs.length
-      ? [t('What is the maximum demonstrated crosswind?', 'Hva er maksimal demonstrert sidevind?'), t('Engine failure after take-off: the memory items', 'Motorstans etter avgang: memory items'), t('Alternate planning minima for a non-precision approach', 'Planleggingsminima for alternativ med ikke-presisjonsinnflyging')]
-      : [t('Alternate planning minima for a non-precision approach', 'Planleggingsminima for alternativ med ikke-presisjonsinnflyging'), t('Why does a stall happen at a critical angle of attack?', 'Hvorfor staller vingen ved en kritisk innfallsvinkel?'), t('What are the VMC minima in class G below 3000 ft?', 'Hva er VMC-minima i klasse G under 3000 ft?')];
+    const ac = aircraft(), docs = docsAll(), notes = notesAll(), packs = packsAll(), rec = recentList(), nb = needsBackup();
+    const asked = !!M.fiTried || (S.fises || []).length > 0;
+    const steps = [
+      [ac.length > 0, t('Add the aircraft you fly', 'Legg til flyet du flyr'), t('Type and registration. Its documents, notes and briefing packs collect on one page.', 'Type og registrering. Dokumenter, notater og briefingpakker samles på én side.'), `<button type="button" class="btn sm pri" data-act="ac-new">${t('Add aircraft', 'Legg til fly')}</button>`],
+      [docs.length > 0, t('Add its AFM or POH', 'Legg til AFM eller POH'), t('Then the QRH, SOP and checklists. Files stay on this device.', 'Deretter QRH, SOP og sjekklister. Filene blir på denne enheten.'), `<button type="button" class="btn sm${ac.length ? ' pri' : ''}" data-act="doc-add"${ac.length ? ` data-id="${esc((ac.find(a => a.isDefault) || ac[0]).id)}"` : ''}>${t('Add documents', 'Legg til dokumenter')}</button>`],
+      [asked, t('Ask Flight Intelligence', 'Spør Flight Intelligence'), t('In your own words. Answers come from your documents, with the page.', 'Med dine egne ord. Svarene kommer fra dokumentene dine, med sidetall.'), `<button type="button" class="btn sm${ac.length && docs.length ? ' pri' : ''}" data-act="fi-try">${t('Ask a question', 'Still et spørsmål')}</button>`]];
+    const setup = steps.some(x => !x[0]);
+    const acDocs = a => docs.filter(d => (d.acIds || []).includes(a.id));
+    const acNotes = a => notes.filter(n => (n.links || []).some(l => l.t === 'aircraft' && l.id === a.id));
+    const acPacks = a => packs.filter(p => packAc(p) === a);
+    const card = a => { const d = acDocs(a), n = acNotes(a), pk = acPacks(a), lastP = pk[0];
+      return `<article class="hac"><a class="hac-h" href="#/aircraft/${esc(a.id)}"><span class="reg">${esc(a.reg || a.type || acName(a))}</span><span class="ty">${esc([a.reg ? a.type : '', a.callsign].filter(Boolean).join(' · ') || ' ')}</span>${a.isDefault ? `<span class="def">${t('Default', 'Standard')}</span>` : ''}</a>
+        <ul class="hac-d">${d.length ? d.slice().sort((x, y) => (y.updatedAt || 0) - (x.updatedAt || 0)).slice(0, 4).map(x => `<li><a href="#/documents/${esc(x.id)}" data-visit="doc:${esc(x.id)}"><span class="k">${esc(catName(x.cat))}</span><b>${esc(x.name)}</b></a></li>`).join('') : `<li class="none"><button type="button" class="lk" data-act="doc-add" data-id="${esc(a.id)}">${t('Add the AFM or POH', 'Legg til AFM eller POH')}</button></li>`}</ul>
+        <footer class="hac-f"><span><b>${d.length}</b> ${t(d.length === 1 ? 'document' : 'documents', d.length === 1 ? 'dokument' : 'dokumenter')}</span><span><b>${n.length}</b> ${t(n.length === 1 ? 'note' : 'notes', n.length === 1 ? 'notat' : 'notater')}</span><span>${lastP ? `<a href="prep.html?id=${encodeURIComponent(lastP.id)}" data-visit="pack:${esc(lastP.id)}">${t('Last pack', 'Siste pakke')}: ${esc(packTitle(lastP))}</a>` : `<b>${pk.length}</b> ${t('packs', 'pakker')}`}</span></footer></article>`; };
+    const tile = (h, n, c) => `<a class="hlib-t" href="${h}"><span>${esc(n)}</span><b>${c}</b></a>`;
     main.innerHTML = `
       ${nb ? `<div class="ws-remind"><span>${t(`<b>${plural(nb, 'document file exists', 'document files exist', '', '')} only on this device.</b> Files are not uploaded, so a backup file is their only copy elsewhere.`, `<b>${nb} ${nb === 1 ? 'dokumentfil finnes' : 'dokumentfiler finnes'} bare på denne enheten.</b> Filer lastes ikke opp, så en sikkerhetskopi er den eneste kopien et annet sted.`)}</span><button type="button" class="btn sm" data-act="export">${t('Export everything', 'Eksporter alt')}</button></div>` : ''}
-      <section class="hub-fi" aria-labelledby="hubFiH">
-        <div class="hf-top"><p class="hf-k" id="hubFiH"><i aria-hidden="true"></i>Flight Intelligence</p><span class="hf-src">${ctx}</span></div>
-        <div class="hf-ex" role="list" aria-label="${esc(t('Examples', 'Eksempler'))}"><button type="button" class="hf-go" data-ask="">${t('Ask a question', 'Still et spørsmål')} →</button>${ex.map(q => `<button type="button" role="listitem" data-ask="${esc(q)}">${esc(q)}</button>`).join('')}</div>
-        <nav class="hf-more" aria-label="Flight Intelligence">
-          <a href="fi.html#aircraft"><b>${t('Instructor training', 'Instruktørtrening')}</b><span>${t('Learn, get quizzed or run an oral check on your aircraft', 'Lær, bli spurt ut eller ta en muntlig sjekk på flyet ditt')}</span></a>
-          <a href="fi.html#progress"><b>${t('Training progress', 'Treningsprogresjon')}</b><span>${ses.length ? plural(ses.length, 'session', 'sessions', 'økt', 'økter') + (gaps.length ? ' · ' + plural(gaps.length, 'topic to revise', 'topics to revise', 'tema å repetere', 'temaer å repetere') : '') : t('Sessions, grades and topics to revise', 'Økter, karakterer og temaer å repetere')}</span></a>
-          <a href="fi.html#easa"><b>${t('EASA rules library', 'EASA-regelbibliotek')}</b><span>${t('Minima, fuel, alternates and VMC, linked to the official text', 'Minima, drivstoff, alternativer og VMC, lenket til den offisielle teksten')}</span></a>
-        </nav>
-        ${gaps.length ? `<div class="hf-rev"><span>${t('Revise next', 'Repeter neste')}</span>${gaps.slice(0, 3).map(g => `<a href="fi.html?topic=${encodeURIComponent(g.t)}#aircraft">${esc(g.t)}</a>`).join('')}</div>` : ''}
-      </section>
-      ${rec.length ? `<p class="ws-lbl" id="recH">${t('Recently opened', 'Sist åpnet')}</p><div class="recent" role="list" aria-labelledby="recH">${rec.map(r => `<a role="listitem" href="${r.h}"${r.v ? ` data-visit="${esc(r.v)}"` : ''}><span class="k">${esc(r.k)}</span><b>${esc(r.n)}</b><small>${esc(ago(r.at))}</small></a>`).join('')}</div>` : ''}
-      <div class="ov">
-        ${sec('#/aircraft', t('My aircraft', 'Mine fly'), ac.length, ac.length ? `<ul>${ac.slice(0, 4).map(a => li('#/aircraft/' + a.id, esc(a.reg || a.type || acName(a)), esc([a.reg ? a.type : '', a.callsign, a.isDefault ? t('default for briefing packs', 'standard for briefingpakker') : ''].filter(Boolean).join(' · ')), docs.filter(d => (d.acIds || []).includes(a.id)).length + ' ' + t('docs', 'dok.'))).join('')}</ul>` : `<p class="none">${t('Add the aircraft you fly. Its manuals, notes and briefing packs collect on one page, and Flight Intelligence answers from its documents.', 'Legg til flyet du flyr. Manualer, notater og briefingpakker samles på én side, og Flight Intelligence svarer fra dokumentene.')}</p>`, `<button type="button" class="lk" data-act="ac-new">${t('Add aircraft', 'Legg til fly')}</button>`)}
-        ${sec('#/documents', t('Documents', 'Dokumenter'), docs.length, docs.length ? `<div class="cats">${cats.map(([c, n]) => `<span>${esc(catName(c))} <b>${n}</b></span>`).join('')}</div><ul>${docs.slice().sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 3).map(d => li('#/documents/' + d.id, esc(d.name), esc(catName(d.cat) + (onDevice(d.id) ? '' : ' · ' + t('file not on this device', 'filen er ikke på denne enheten'))), esc(ago(d.updatedAt)), 'doc:' + d.id)).join('')}</ul>` : `<p class="none">${t('Your AFM, QRH, SOP and checklists. They stay on this device, open side by side on the desk, and Flight Intelligence reads them.', 'AFM, QRH, SOP og sjekklister. De blir på denne enheten, åpnes side om side på arbeidsflaten, og Flight Intelligence leser dem.')}</p>`, `<button type="button" class="lk" data-act="doc-add">${t('Add documents', 'Legg til dokumenter')}</button>`)}
-        ${sec('#/notes', t('Notes', 'Notater'), notes.length, notes.length ? `<ul>${notes.slice(0, 4).map(n => li('#/notes/' + n.id, (n.pinned ? '<i class="pin"></i> ' : '') + esc(noteTitle(n)), esc(W.noteText(n).slice(0, 80)), esc(ago(n.updatedAt)))).join('')}</ul>` : `<p class="none">${t('Write down what you want to remember from a lesson, a briefing or a manual. Saved as you type.', 'Skriv ned det du vil huske fra en leksjon, en briefing eller en manual. Lagres mens du skriver.')}</p>`, `<button type="button" class="lk" data-act="note-new">${t('New note', 'Nytt notat')}</button>`)}
-        ${sec('#/packs', t('Briefing packs', 'Briefingpakker'), packs.length, packs.length ? `<ul>${packs.slice(0, 4).map(p => { const f = p.f || {}, m = packMark(p.id); return li('prep.html?id=' + encodeURIComponent(p.id), (m && m.pinned ? '<i class="pin"></i> ' : '') + esc(packTitle(p)), esc([f.date, [f.type, f.reg].filter(Boolean).join(' '), f.rules].filter(Boolean).join(' · ')), esc(ago(p.updated || p.created)), 'pack:' + p.id); }).join('')}</ul>` : `<p class="none">${t('Briefing packs you save are kept here, with the route and aircraft they belong to.', 'Briefingpakker du lagrer, ligger her, med ruten og flyet de hører til.')}</p>`, `<button type="button" class="lk" data-act="pack-new">${t('New briefing pack', 'Ny briefingpakke')}</button>`)}
-        ${sec('#/routes', t('Routes', 'Ruter'), routes.length, routes.length ? `<ul>${routes.slice(0, 4).map(r => li('route.html?id=' + encodeURIComponent(r.id), esc(routeTitle(r)), (r.pts || []).length + ' ' + t('points', 'punkter') + (r.s && r.s.cr ? ' · ' + esc(r.s.cr) + ' ft' : ''), esc(ago(r.updated)), 'route:' + r.id)).join('')}</ul>` : `<p class="none">${t('Routes you draw in Route Explorer are saved here.', 'Ruter du tegner i Route Explorer, lagres her.')}</p>`, `<a class="lk" href="route.html">${t('Open Route Explorer', 'Åpne Route Explorer')}</a>`)}
-      </div>
-      ${custody()}`;
-    main.querySelectorAll('[data-ask]').forEach(b => b.addEventListener('click', () => askFi(b.dataset.ask)));
+      ${setup ? `<section class="hset" aria-labelledby="hsetH"><h2 id="hsetH">${t('Set up your workspace', 'Sett opp arbeidsområdet')}</h2><ol>${steps.map((x, i) => `<li class="${x[0] ? 'done' : ''}"><span class="n" aria-hidden="true">${x[0] ? '✓' : i + 1}</span><div><b>${esc(x[1])}</b><small>${esc(x[2])}</small></div>${x[0] ? `<span class="ok">${t('Done', 'Ferdig')}</span>` : x[3]}</li>`).join('')}</ol></section>` : ''}
+      ${ac.length ? `<section class="hsec"><header><h2>${t('My aircraft', 'Mine fly')}</h2><button type="button" class="lk" data-act="ac-new">+ ${t('Add aircraft', 'Legg til fly')}</button></header><div class="hac-g">${ac.map(card).join('')}</div></section>` : ''}
+      ${rec.length ? `<section class="hsec"><header><h2>${t('Recent', 'Nylig')}</h2></header><ul class="hrec">${rec.slice(0, 6).map(r => `<li><a href="${r.h}"${r.v ? ` data-visit="${esc(r.v)}"` : ''}><span class="k">${esc(r.k)}</span><b>${esc(r.n)}</b><small>${esc(ago(r.at))}</small></a></li>`).join('')}</ul></section>` : ''}
+      <section class="hsec"><header><h2>${t('Library', 'Bibliotek')}</h2></header><nav class="hlib" aria-label="${esc(t('Library', 'Bibliotek'))}">
+        ${tile('#/documents', t('Documents', 'Dokumenter'), docs.length)}${tile('#/notes', t('Notes', 'Notater'), notes.length)}${tile('#/packs', t('Briefing packs', 'Briefingpakker'), packs.length)}${tile('#/routes', t('Routes', 'Ruter'), S.routes.length)}</nav></section>`;
   }
 
   /* aircraft */
@@ -1268,6 +1255,7 @@
     else if (act === 'doc-file') pickFiles({ replaceId: id });
     else if (act === 'doc-dl') { const bl = await FI.getBlob(id), d = S.docs[id]; if (bl) download(bl, (d && d.file && d.file.name) || (item(id).name + '.' + (item(id).ext || 'pdf'))); }
     else if (act === 'note-new') newNote(id || null);
+    else if (act === 'fi-try') { M.fiTried = true; saveMeta(); focusDock(); if (route().path === 'library' || route().path === '') render(); }
     else if (act === 'pack-new') newPack(id || null);
     else if (act === 'pack-dup') dupPack(id);
     else if (act === 'pack-pin') { const m = packMark(id); await commit(m ? W.patch(m, { pinned: !m.pinned }) : W.newPackMark(id, { pinned: true })); render(); }

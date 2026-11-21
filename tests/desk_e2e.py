@@ -152,7 +152,7 @@ with sync_playwright() as p:
     pg.screenshot(path=SHOTS + '/desk-chips.png')
     pg.wait_for_timeout(1500)
     # Library is still reachable
-    pg.click('.dk-lib'); pg.wait_for_selector('.ovs'); check('library overview reachable', pg.is_visible('.ws-head') and not pg.is_visible('#wsDesk'))
+    pg.click('.dk-mapb'); pg.wait_for_selector('.hlib'); check('library overview reachable', pg.is_visible('.ws-head') and not pg.is_visible('#wsDesk'))
     pg.click('#wsHome'); pg.wait_for_selector('.dv-pages .pg canvas', timeout=20000)
     check('back to the desk, layout intact', pg.locator('.dk-pane').count() == 3)
     # Norwegian

@@ -27,12 +27,12 @@ with sync_playwright() as p:
         pg.on('pageerror', lambda e: errors.append('pageerror: ' + str(e)))
         pg.on('console', lambda m: errors.append('console: ' + m.text) if m.type == 'error' and '/api/' not in m.text and '404' not in m.text else None)
     pg = ctx.new_page(); watch(pg)
-    pg.goto(URL + '#/library'); pg.wait_for_selector('.ovs')
+    pg.goto(URL + '#/library'); pg.wait_for_selector('.hlib')
     check('home renders signed out', 'Not signed in' in pg.inner_text('#wsStatus'))
     pg.screenshot(path=SHOTS + '/00-empty-1470.png', full_page=True)
 
     # add aircraft
-    pg.click('.ovs [data-act="ac-new"]'); pg.wait_for_selector('#acForm')
+    pg.click('.hset [data-act="ac-new"]'); pg.wait_for_selector('#acForm')
     pg.select_option('#acTypeKey', 'da42'); pg.fill('#acReg', 'ln-abc'); pg.fill('#acCs', 'Birdie 12'); pg.click('#acForm button[type=submit]')
     pg.wait_for_selector('.achead'); check('aircraft page opens', 'LN-ABC' in pg.inner_text('.achead'))
     pg.fill('#spBody tr:nth-child(1) .v', '68'); pg.fill('#spBody tr:nth-child(2) .v', '75')
@@ -123,7 +123,7 @@ with sync_playwright() as p:
     pg.click('#dList a.n:has-text("Company SOP")'); pg.wait_for_selector('#docView .txt'); check('restored document keeps its text and links', 'Stabilised' in pg.inner_text('#docView') and pg.is_checked('#dAcs input >> nth=0'))
 
     # home + storage screenshots at the main size
-    pg.goto(URL + '#/library'); pg.wait_for_selector('.ovs'); pg.wait_for_timeout(200)
+    pg.goto(URL + '#/library'); pg.wait_for_selector('.hlib'); pg.wait_for_timeout(200)
     check('backup reminder shown for device-only files', pg.locator('.ws-remind').count() == 1)
     pg.screenshot(path=SHOTS + '/01-home-1470.png', full_page=True)
     pg.screenshot(path=SHOTS + '/01-home-1470-fold.png')
@@ -136,15 +136,15 @@ with sync_playwright() as p:
     with pg.expect_download() as dl: pg.click('[data-act="export"]')
     path = SHOTS + '/backup.zip'; dl.value.save_as(path)
     check('backup file downloaded', os.path.getsize(path) > 3000, os.path.getsize(path))
-    pg.wait_for_timeout(300); pg.goto(URL + '#/library'); pg.wait_for_selector('.ovs'); check('reminder gone after backup', pg.locator('.ws-remind').count() == 0)
+    pg.wait_for_timeout(300); pg.goto(URL + '#/library'); pg.wait_for_selector('.hlib'); check('reminder gone after backup', pg.locator('.ws-remind').count() == 0)
     pg.goto(URL + '#/storage'); pg.wait_for_selector('[data-act="wipe"]'); pg.click('[data-act="wipe"]'); pg.check('#wipeCk'); pg.click('#wsDlgOk'); pg.wait_for_timeout(600)
     pg.evaluate("() => { localStorage.removeItem('naeroson-store-prep'); localStorage.removeItem('naeroson-store-route'); }")
-    pg.goto(URL + '#/library'); pg.reload(); pg.wait_for_selector('.ovs')
+    pg.goto(URL + '#/library'); pg.reload(); pg.wait_for_selector('.hlib')
     wiped = snap(); check('wipe removed everything', wiped['ac'] == [] and wiped['notes'] == [] and wiped['docs'] == [] and wiped['files'] == 0 and wiped['packs'] == 0, wiped)
     pg.goto(URL + '#/storage'); pg.wait_for_selector('[data-act="import"]')
     with pg.expect_file_chooser() as fc: pg.click('[data-act="import"]')
     fc.value.set_files(path); pg.wait_for_function("document.getElementById('bkNote') && /imported|importert/.test(document.getElementById('bkNote').textContent)", timeout=20000)
-    pg.goto(URL + '#/library'); pg.reload(); pg.wait_for_selector('.ovs'); after = snap()
+    pg.goto(URL + '#/library'); pg.reload(); pg.wait_for_selector('.hlib'); after = snap()
     check('import brings everything back', after == before, {'before': before, 'after': after})
     pg.goto(URL + '#/documents'); pg.click('#dList a.n:has-text("DA42 NG AFM")'); pg.wait_for_selector('#docView .pg canvas', timeout=20000); check('PDF opens after import', True)
     # a not-a-backup file is refused without changes
@@ -160,7 +160,7 @@ with sync_playwright() as p:
     t = pg.inner_text('#wsMain'); check('missing file labelled and re-add offered', 'File not on this device' in t and 'listed but the file is not on this device' in t, t[:500])
 
     # keyboard: "/" focuses search, rail reachable
-    pg.goto(URL + '#/library'); pg.wait_for_selector('.ovs'); pg.keyboard.press('/'); check('slash focuses search', pg.evaluate("document.activeElement.id") == 'wsQ')
+    pg.goto(URL + '#/library'); pg.wait_for_selector('.hlib'); pg.keyboard.press('/'); check('slash focuses search', pg.evaluate("document.activeElement.id") == 'wsQ')
 
     # Norwegian
     pg.click('.langseg button[data-v="no"]'); pg.wait_for_timeout(200)
