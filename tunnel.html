@@ -3665,9 +3665,9 @@ const WAKE=window.WAKE=(function(){
   /* Diskret virvelmetode (Trefftz-plan): den frie virvelflaten bak en elliptisk lastet vinge deles i NV glattede
      punktvirvler (Krasny-blob) som beveger hverandre. Flaten ruller seg opp fra tuppene til to kjerner med
      avstand b0 = π/4·b, som synker med w0 = Γ0/(2π b0). Bakken modelleres med speilvirvler. Røyken er passive partikler. */
-  const NV=LOWW?40:64, vy=new Float64Array(NV), vz=new Float64Array(NV), vg=new Float64Array(NV), ky=new Float64Array(NV), kz=new Float64Array(NV);
+  const NV=LOWW?36:48, vy=new Float64Array(NV), vz=new Float64Array(NV), vg=new Float64Array(NV), ky=new Float64Array(NV), kz=new Float64Array(NV);
   let nv=NV, delta=1, lumped=false;
-  const NS=LOWW?1200:2200, NA=LOWW?200:380, NPw=NS+NA;
+  const NS=LOWW?1000:1600, NA=LOWW?160:260, NPw=NS+NA;
   const px=new Float32Array(NPw), pz=new Float32Array(NPw), ox=new Float32Array(NPw), oz=new Float32Array(NPw), pa=new Float32Array(NPw);
   const view={cy:0,cz:0,half:30};
   const V=[{y:0,z:0,s:-1},{y:0,z:0,s:1}];   // tyngdepunkt for hver side (til avlesning og etiketter)
@@ -3753,7 +3753,7 @@ const WAKE=window.WAKE=(function(){
     const sc=circ(ps.t), umax=prm.G/(2*Math.PI*delta), hmax=Math.max(1e-4,0.25*delta/umax);
     const n=Math.min(lumped?40:120,Math.max(1,Math.ceil(dt/hmax))), h=dt/n;
     // partikler: midtpunktsmetode med steg begrenset av rotasjonshastigheten i kjernen (unngår kunstig utslynging)
-    const om=prm.G*sc/(2*Math.PI*delta*delta), hpMax=Math.max(h,0.3/om), m=Math.max(1,Math.floor(hpMax/h));
+    const om=prm.G*sc/(2*Math.PI*delta*delta), hpMax=Math.max(h,0.3/om), m=Math.max(1,Math.floor(hpMax/h),Math.ceil(n/2));
     let acc=0;
     for(let s=0;s<n;s++){ stepV(h,sc); acc+=h; if((s+1)%m===0||s===n-1){ moveP(sc,acc); acc=0; } }
     ps.t+=dt;
@@ -3806,10 +3806,11 @@ const WAKE=window.WAKE=(function(){
     if(Y(0)>0&&Y(0)<H){ g.fillStyle='#7fcbe8'; g.textAlign='right'; g.textBaseline='bottom'; g.fillText(T('Flybane'),W-6,Y(0)-3); g.save(); g.globalAlpha=0.55; window.REARVIEW(g,X(0),Y(0),S,st.ac,false,'#c9d1d8'); g.restore(); }
     // røyk: luftpartikler (svake streker) og virvelflaten (myke prikker)
     g.lineWidth=1;
-    for(let i=NS;i<NPw;i++){ const d=Math.hypot(px[i]-ox[i],pz[i]-oz[i])*S; if(d<0.2) continue; g.strokeStyle=`rgba(127,203,232,${Math.min(0.35,0.08+d*0.08)*Math.min(1,pa[i]*2)})`;
-      g.beginPath(); g.moveTo(X(ox[i]),Y(oz[i])); g.lineTo(X(px[i]),Y(pz[i])); g.stroke(); }
+    { const B=[[],[],[],[]];
+      for(let i=NS;i<NPw;i++){ const d=Math.hypot(px[i]-ox[i],pz[i]-oz[i])*S; if(d<0.2) continue; const a=Math.min(0.35,0.08+d*0.08)*Math.min(1,pa[i]*2); B[Math.min(3,Math.floor(a/0.09))].push(i); }
+      for(let b=0;b<4;b++){ if(!B[b].length) continue; g.strokeStyle=`rgba(127,203,232,${0.05+b*0.09})`; g.beginPath(); for(const i of B[b]){ g.moveTo(X(ox[i]),Y(oz[i])); g.lineTo(X(px[i]),Y(pz[i])); } g.stroke(); } }
     const sz=Math.max(2.8,Math.min(8,0.26*S));
-    for(let i=0;i<NS;i++){ g.globalAlpha=0.11; g.drawImage(dot,X(px[i])-sz,Y(pz[i])-sz,2*sz,2*sz); }
+    g.globalAlpha=0.11; for(let i=0;i<NS;i++) g.drawImage(dot,X(px[i])-sz,Y(pz[i])-sz,2*sz,2*sz);
     g.globalAlpha=1;
     const tag=(t,x,y,col)=>{ g.font='600 11px "Public Sans", system-ui, sans-serif'; const w=g.measureText(t).width; x=Math.max(w/2+8,Math.min(W-w/2-8,x)); y=Math.max(30,Math.min(H-12,y)); g.fillStyle='rgba(13,19,25,.8)'; g.fillRect(x-w/2-5,y-9,w+10,18); g.fillStyle=col; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t,x,y); };
     const m=(V[0].z+V[1].z)/2, sep=V[1].y-V[0].y;
