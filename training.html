@@ -109,6 +109,34 @@
 .ifr-fig{min-width:0}
 .ifr-ph{display:block;border-radius:8px;overflow:hidden;background:var(--frame);box-shadow:0 0 0 1px rgba(16,23,29,.9),0 1px 2px rgba(19,32,42,.10),0 22px 44px -30px rgba(19,32,42,.55)}
 .ifr-ph img{display:block;width:100%;height:auto}
+.cb-card{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;box-shadow:0 1px 2px rgba(19,32,42,.08),0 22px 44px -30px rgba(19,32,42,.45);padding:18px 18px 14px;--pm:var(--info);--pf:var(--accent);--bo:var(--navy);--th:var(--caution)}
+.cb-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.cb-k{display:block;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.cb-t{display:block;font-family:var(--f-display);font-stretch:88%;font-size:21px;line-height:1.15;margin-top:2px}
+.cb-tg{display:inline-flex;border:1px solid var(--rule);border-radius:var(--radius);overflow:hidden}
+.cb-tg button{font:inherit;font-size:13px;font-weight:600;padding:7px 12px;min-height:36px;border:0;background:var(--sheet);color:var(--ink-2);cursor:pointer}
+.cb-tg button.on{background:var(--ink);color:#fff}
+.cb-key{list-style:none;display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0 10px;padding:0;font-size:12px;color:var(--ink-2)}
+.cb-key li{display:flex;align-items:center;gap:6px}.cb-key li::before{content:"";width:10px;height:10px;border-radius:2px;background:var(--c)}
+.cb-key .pm,.cb-steps .pm{--c:var(--pm)}.cb-key .pf,.cb-steps .pf{--c:var(--pf)}.cb-key .bo,.cb-steps .bo{--c:var(--bo)}.cb-key .th,.cb-steps .th{--c:var(--th)}
+.cb-steps{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.cb-steps>li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;padding:10px 12px;border-radius:4px;background:var(--wash);border-left:3px solid var(--c,var(--bo))}
+.cb-steps>li.sp{--c:linear-gradient(var(--pm),var(--pf));border-left:3px solid var(--pm)}
+.cb-steps>li.th{background:var(--caution-wash)}
+.cb-steps i{font-style:normal;font-family:var(--f-display);font-weight:780;font-size:22px;line-height:1;color:var(--c,var(--bo))}
+.cb-steps>li.sp i{color:var(--ink)}
+.cb-steps b{font-size:15px}
+.cb-steps p{margin:2px 0 0;font-size:13.5px;color:var(--ink-2);line-height:1.45}
+.cb-two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.cb-two>div{background:var(--sheet);border:1px solid var(--rule-2);border-top:3px solid var(--c);border-radius:3px;padding:7px 9px}
+.cb-two span{display:block;font-family:var(--f-mono);font-size:11px;color:var(--c);font-weight:600}
+.cb-two ul{list-style:disc;margin:4px 0 0;padding-left:16px;font-size:13px;line-height:1.45;color:var(--ink)}
+.cb-atm{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.cb-atm span{background:var(--sheet);border:1px solid var(--rule-2);border-radius:3px;padding:6px 8px;text-align:center}
+.cb-atm b{display:block;font-size:14px;color:var(--bo)}.cb-atm small{font-size:12px;color:var(--ink-2)}
+.cb-card a.cb-go{display:inline-block;margin-top:12px;font-size:14px;font-weight:600;color:var(--accent);text-decoration:none}.cb-go:hover{text-decoration:underline}
+.cb-card[data-b=dep] .a,.cb-card[data-b=arr] .d{display:none}
+@media (max-width:640px){.cb-card{padding:14px 12px 12px}.cb-two{grid-template-columns:minmax(0,1fr)}.cb-atm{grid-template-columns:minmax(0,1fr)}.cb-atm span{text-align:left;display:flex;gap:8px;align-items:baseline}}
 .ifr-fig figcaption{margin-top:12px;font-size:13.5px;line-height:1.5;color:var(--ink3)}
 .ifr-path{margin-top:40px;padding-top:24px;border-top:1px solid var(--rule2)}
 .ifr-path h3{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);line-height:1.5}
@@ -467,12 +495,27 @@
           </dl>
           <div class="ifr-cta"><a class="tv-btn" href="briefing.html#app" data-tx="brfGo">Brief an approach</a><a class="tv-btn ghost" href="briefing.html#dep" data-tx="brfDep">Brief a departure</a></div>
         </div>
-        <figure class="ifr-fig">
-          <a class="ifr-ph" href="briefing.html#app" tabindex="-1" aria-hidden="true">
-            <img src="img/training/briefing-approach-1216.webp" srcset="img/training/briefing-approach-608.webp 608w, img/training/briefing-approach-1216.webp 1216w, img/training/briefing-approach-1824.webp 1824w" sizes="(max-width:640px) calc(100vw - 72px), (max-width:1180px) calc(100vw - 160px), 640px" width="1824" height="1094" loading="lazy" decoding="async"
-              alt="The briefing trainer set up for an approach: today’s weather, ATIS and speeds above a fictional ILS training chart on the left, and on the right the approach briefing in order, threats, setup, arrival, descent and minimums, each with an example of what to say." data-alt-no="Briefingtreneren satt opp for en innflyging: dagens vær, ATIS og farter over et fiktivt ILS-treningskart til venstre, og til høyre innflygingsbriefingen i rekkefølge, trusler, oppsett, ankomst, nedstigning og minima, hver med et eksempel på hva du sier.">
-          </a>
-          <figcaption data-tx="brfCap">An approach briefing on the ILS at the practice airport. The airport, the chart and the numbers are fictional.</figcaption>
+        <figure class="ifr-fig cb" id="cbFig" aria-labelledby="cbCap">
+          <div class="cb-card" data-b="dep">
+            <div class="cb-hd">
+              <div><span class="cb-k" data-tx="cbK">NORDAP crew briefing</span><b class="cb-t" data-tx="cbT">Two pilots, five steps</b></div>
+              <div class="cb-tg" role="group" aria-label="Briefing"><button type="button" class="on" data-b="dep" aria-pressed="true" data-tx="cbDep">Departure</button><button type="button" data-b="arr" aria-pressed="false" data-tx="cbArr">Arrival</button></div>
+            </div>
+            <ul class="cb-key" aria-label="Colour key"><li class="pm" data-tx="cbPM">PM</li><li class="pf" data-tx="cbPF">PF</li><li class="bo" data-tx="cbBo">Both</li><li class="th" data-tx="cbTh">Threats</li></ul>
+            <ol class="cb-steps">
+              <li class="bo"><i>1</i><div><b data-tx="cb1">Set the scene</b><p class="d" data-tx="cb1d">Door closed, no interruptions, both pilots free to listen.</p><p class="a" data-tx="cb1a">Well before top of descent, few interruptions, headsets on if needed.</p></div></li>
+              <li class="sp"><i>2</i><div><b data-tx="cb2">The plan</b>
+                <div class="cb-two">
+                  <div class="pm"><span data-tx="cb2pm">PM · from the FMS and charts</span><ul class="d"><li data-tx="cbd1">Runway and intersection, SID</li><li data-tx="cbd2">First altitude, MSA</li><li data-tx="cbd3">Extra fuel and time</li></ul><ul class="a"><li data-tx="cba1">STAR, runway and approach</li><li data-tx="cba2">Minimum, MSA, go-around</li><li data-tx="cba3">Extra fuel and time</li></ul></div>
+                  <div class="pf"><span data-tx="cb2pf">PF · how it will be flown</span><ul class="d"><li data-tx="cbd4">Taxi hotspots</li><li data-tx="cbd5">Stop margin, rejected take-off</li><li data-tx="cbd6">Engine-out route, return plan</li></ul><ul class="a"><li data-tx="cba4">Configuration, landing flaps</li><li data-tx="cba5">Stop margin, autobrake, reverse</li><li data-tx="cba6">Runway exit, taxi-in hotspots</li></ul></div>
+                </div></div></li>
+              <li class="th"><i>3</i><div><b data-tx="cb3">Threats</b><p data-tx="cb3d">PM names them, PF adds what is missing: weather, runway, terrain, traffic, NOTAM, aircraft, crew.</p></div></li>
+              <li class="bo"><i>4</i><div><b data-tx="cb4">Agree the plan for each threat</b><div class="cb-atm"><span><b data-tx="cbA">Avoid</b><small data-tx="cbAd">remove it</small></span><span><b data-tx="cbTr">Trap</b><small data-tx="cbTrd">catch errors early</small></span><span><b data-tx="cbM">Mitigate</b><small data-tx="cbMd">worst case, who does what</small></span></div></div></li>
+              <li class="bo"><i>5</i><div><b data-tx="cb5">Miscellaneous</b><p class="d" data-tx="cb5d">Automation after take-off, low visibility, supplementary procedures.</p><p class="a" data-tx="cb5a">Automation for landing, low visibility, single-engine taxi.</p></div></li>
+            </ol>
+            <a class="cb-go" href="briefing.html#crew"><span data-tx="cbGo">The whole routine</span> <span aria-hidden="true">→</span></a>
+          </div>
+          <figcaption id="cbCap" data-tx="brfCap2">The crew briefing used in two-pilot airline cockpits, in NORDAP’s order: the plan shared between PM and PF, then threats and what you will do about them.</figcaption>
         </figure>
       </div>
       <div class="ifr-path ifr-in">
@@ -599,6 +642,15 @@ LAB.tx({
  bf3:'Vurdert når du er ferdig', bf3d:'En innebygd sjekk krysser av hvert element med en gang, og en modellbriefing viser hvordan det kan sies.',
  bf4:'Ett minutt, ikke fem', bf4d:'En kort metode for å gå gjennom kartet ovenfra og ned, med avbrutt innflyging til slutt.',
  brfGo:'Brief en innflyging', brfDep:'Brief en avgang',
+ brfCap2:'Crewbriefingen som brukes i flyselskap med to piloter, i NORDAPs rekkefølge: planen fordelt mellom PM og PF, så truslene og hva dere gjør med dem.',
+ cbK:'NORDAP crewbriefing', cbT:'To piloter, fem steg', cbDep:'Avgang', cbArr:'Ankomst', cbPM:'PM', cbPF:'PF', cbBo:'Begge', cbTh:'Trusler',
+ cb1:'Gjør klart', cb1d:'Døren lukket, ingen avbrytelser, begge pilotene ledige til å lytte.', cb1a:'God tid før toppen av nedstigningen, få avbrytelser, headset på ved behov.',
+ cb2:'Planen', cb2pm:'PM · fra FMS og kart', cb2pf:'PF · hvordan det flys',
+ cbd1:'Rullebane og intersection, SID', cbd2:'Første høyde, MSA', cbd3:'Ekstra drivstoff og tid', cbd4:'Hotspots ved taksing', cbd5:'Stoppmargin, avbrutt avgang', cbd6:'Rute ved motorstans, plan for retur',
+ cba1:'STAR, rullebane og innflyging', cba2:'Minima, MSA, go-around', cba3:'Ekstra drivstoff og tid', cba4:'Konfigurasjon, landingsklaffer', cba5:'Stoppmargin, autobrems, reversering', cba6:'Avkjøring, hotspots ved taksing inn',
+ cb3:'Trusler', cb3d:'PM nevner dem, PF legger til det som mangler: vær, rullebane, terreng, trafikk, NOTAM, fly, crew.',
+ cb4:'Bli enige om tiltak for hver trussel', cbA:'Unngå', cbAd:'fjern den', cbTr:'Fange', cbTrd:'fang feil tidlig', cbM:'Begrense', cbMd:'verste tilfelle, hvem gjør hva',
+ cb5:'Diverse', cb5d:'Automatikk etter avgang, lav sikt, tilleggsprosedyrer.', cb5a:'Automatikk ved landing, lav sikt, taksing på én motor.', cbGo:'Hele rutinen',
  brfCap:'En innflygingsbriefing for ILS på øvingsflyplassen. Flyplassen, kartet og tallene er fiktive.',
  brinH:'På siden', bi1:'Trener', bi1s:'Brief og få poeng', bi2:'Lese et innflygingskart', bi2s:'Hvert tall forklart', bi3:'Slik brifer du et kart', bi3s:'Rekkefølgen, steg for steg', bi4:'A320-fartskort', bi4s:'Typiske farter etter masse',
  radH:'Radio',
@@ -631,6 +683,9 @@ function attrs(){ const no=LAB.lang==='no';
   const x=document.querySelector('.tv-idx'); if(x) x.setAttribute('aria-label',no?'På denne siden':'On this page'); }
 LAB.start('training');
 attrs(); LAB.onLang(attrs);
+(function(){ const c=document.querySelector('#cbFig .cb-card'); if(!c) return;
+  c.querySelector('.cb-tg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; c.dataset.b=b.dataset.b;
+    c.querySelectorAll('.cb-tg button').forEach(x=>{ const on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-pressed',on); }); }); })();
 })();
 </script>
 </body>
