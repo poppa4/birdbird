@@ -112,7 +112,7 @@
       /* the answer service is looked for only when this pane is open (it answers 200 whether or not it is switched on) */
       try {
         if (!window.NAI) await A.loadScript('ai.js?v=8');
-        if (!window.EASA) await A.loadScript('easa.js?v=9').catch(() => {});
+        if (!window.EASA) await A.loadScript('easa.js?v=10').catch(() => {});
         const m = await Promise.race([window.NAI.ready, new Promise(r => setTimeout(() => r('timeout'), 6000))]);
         avail = !!m && m !== 'timeout';
       } catch (e) { avail = false; }

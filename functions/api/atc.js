@@ -77,7 +77,7 @@ const WORKERS_SYSTEM = 'Reasoning: high\n\n'
 const RULES_REMINDER = '\n\n(NORDAP rules for this answer: cite only the entries given above ([E…] EASA, [T…] theory, [S…] documents). '
   + 'Never name a regulation, rule ID, AMC/GM, document, handbook or website that is not in them, and never invent one. Rules come only from EASA; '
   + 'never use FAA/U.S. rules. If an entry lists several cases or conditions, give every one that fits the question, not only the first. '
-  + 'If the pilot\'s question contains a wrong fact, say so and correct it.)';
+  + 'If the pilot\'s question contains a wrong fact, say so and correct it. EASA entries are paraphrases: never put their words in quotation marks as if they were the legal text. Say whether a point comes from the IR (binding), AMC or GM (guidance). Start with the direct answer.)';
 /* the paid engine gets only the calculator rules as its system prompt: everything else is in the page's own prompt */
 const ANTHROPIC_SYSTEM = 'You are Flight Intelligence in NORDAP, a European (EASA) preparation platform for pilots. Follow the instructions in the user message exactly.\n\n' + CALC_RULES;
 /* Quality tests (tests/fi-eval: the question set run against the real model): a request carrying the header x-nordap-eval with

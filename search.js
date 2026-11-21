@@ -384,7 +384,7 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
   /* Flight Intelligence answers right here in the box (fiq.js: the same prompt as the front-page box, /api/atc);
      on fi.html the question goes into the page's own conversation */
   const ld=src=>new Promise((ok,ko)=>{ if(document.querySelector(`script[src="${src}"]`)) return ok(); const sc=document.createElement('script'); sc.src=src; sc.onload=ok; sc.onerror=ko; document.head.appendChild(sc); });
-  let fiP=null; const loadFi=()=>fiP||(fiP=Promise.all([window.NAI?0:ld('ai.js?v=8'),window.EASA?0:ld('easa.js?v=9'),window.THEORY?0:ld('theory.js?v=6'),window.FIQ?0:ld('fiq.js?v=1')]).catch(()=>{}));
+  let fiP=null; const loadFi=()=>fiP||(fiP=Promise.all([window.NAI?0:ld('ai.js?v=8'),window.EASA?0:ld('easa.js?v=10'),window.THEORY?0:ld('theory.js?v=6'),window.FIQ?0:ld('fiq.js?v=1')]).catch(()=>{}));
   const turns=[]; let aiBusy=false;
   function aiPaint(){ const t=turns[turns.length-1]; if(!t) return; items=[{u:'fi.html?q='+encodeURIComponent(t.q.slice(0,600))}];
     const body=t.err?`<p class="er">${esc(t.err)}</p>`:t.a==null?`<p class="ft">${L({en:'Flight Intelligence is thinking…',no:'Flight Intelligence tenker …'})}</p>`:FIQ.md(t.a,t.list,t.th,L({en:'general knowledge',no:'generell kunnskap'}));
