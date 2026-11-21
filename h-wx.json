@@ -1,0 +1,122 @@
+{
+ "ok": true,
+ "source": "MET Norway and aviationweather.gov",
+ "fetched": "2026-11-21T13:58:10.335Z",
+ "stations": {
+  "ENGM": {
+   "icao": "ENGM",
+   "name": null,
+   "source": "MET Norway",
+   "metar": {
+    "raw": "ENGM 211350Z 35007KT 310V030 CAVOK 03/M06 Q1003 NOSIG",
+    "obsTime": "2026-11-21T13:50:00.000Z"
+   },
+   "taf": {
+    "raw": "TAF ENGM 211100Z 2112/2212 32005KT CAVOK TEMPO 2118/2204 36015G25KT",
+    "issueTime": "2026-11-21T11:00:00.000Z",
+    "validFrom": "2026-11-21T12:00:00.000Z",
+    "validTo": "2026-11-22T12:00:00.000Z"
+   }
+  },
+  "ENNO": {
+   "icao": "ENNO",
+   "name": null,
+   "source": "MET Norway",
+   "metar": {
+    "raw": "ENNO 211350Z 00000KT CAVOK M02/M04 Q1007",
+    "obsTime": "2026-11-21T13:50:00.000Z"
+   },
+   "taf": {
+    "raw": "TAF ENNO 210800Z 2111/2115 33005KT CAVOK",
+    "issueTime": "2026-11-21T08:00:00.000Z",
+    "validFrom": "2026-11-21T11:00:00.000Z",
+    "validTo": "2026-11-21T15:00:00.000Z"
+   }
+  },
+  "ENKJ": {
+   "icao": "ENKJ",
+   "name": null,
+   "source": "aviationweather.gov",
+   "metar": null,
+   "taf": null
+  },
+  "ENTO": {
+   "icao": "ENTO",
+   "name": null,
+   "source": "MET Norway",
+   "metar": {
+    "raw": "ENTO 211350Z 31008KT CAVOK 04/M07 Q1005 NOSIG",
+    "obsTime": "2026-11-21T13:50:00.000Z"
+   },
+   "taf": {
+    "raw": "TAF ENTO 211100Z 2112/2212 33010KT CAVOK",
+    "issueTime": "2026-11-21T11:00:00.000Z",
+    "validFrom": "2026-11-21T12:00:00.000Z",
+    "validTo": "2026-11-22T12:00:00.000Z"
+   }
+  },
+  "ESSA": {
+   "icao": "ESSA",
+   "name": "Stockholm/Arlanda Arpt, AB, SE",
+   "source": "aviationweather.gov",
+   "metar": {
+    "raw": "METAR ESSA 211350Z 30012KT 3500 R01L/P2000D R19R/P2000N R01R/P2000N R19L/P2000N -SN VV011 M01/M02 Q0995 TEMPO 6000",
+    "obsTime": "2026-11-21T13:50:00.000Z"
+   },
+   "taf": {
+    "raw": "TAF ESSA 211130Z 2112/2212 33014G25KT 8000 -SN OVC008 TEMPO 2112/2117 1800 RASN OVC015 BECMG 2117/2119 3000 BKN004 TEMPO 2117/2212 1200 SN VV010 BECMG 2202/2204 36020G35KT",
+    "issueTime": "2026-11-21T11:30:00.000Z",
+    "validFrom": "2026-11-21T12:00:00.000Z",
+    "validTo": "2026-11-22T12:00:00.000Z"
+   }
+  },
+  "EDDF": {
+   "icao": "EDDF",
+   "name": "Frankfurt/Main Arpt, HE, DE",
+   "source": "aviationweather.gov",
+   "metar": {
+    "raw": "METAR EDDF 211350Z AUTO 19006KT CAVOK 09/02 Q1019 NOSIG",
+    "obsTime": "2026-11-21T13:50:00.000Z"
+   },
+   "taf": {
+    "raw": "TAF EDDF 211100Z 2112/2218 21005KT 9999 SCT045 PROB30 TEMPO 2203/2207 0500 FZFG VV001 BECMG 2204/2206 05007KT TEMPO 2207/2210 2500 BR BKN007",
+    "issueTime": "2026-11-21T11:00:00.000Z",
+    "validFrom": "2026-11-21T12:00:00.000Z",
+    "validTo": "2026-11-22T18:00:00.000Z"
+   }
+  },
+  "EGLL": {
+   "icao": "EGLL",
+   "name": "London/Heathrow Intl, EN, GB",
+   "source": "aviationweather.gov",
+   "metar": {
+    "raw": "METAR EGLL 211350Z COR AUTO 09006KT 9999 NCD 10/05 Q1016 NOSIG",
+    "obsTime": "2026-11-21T13:50:00.000Z"
+   },
+   "taf": {
+    "raw": "TAF EGLL 211058Z 2112/2218 06006KT 9999 FEW045 TEMPO 2123/2206 BKN014 PROB30 TEMPO 2200/2206 BKN008 PROB30 TEMPO 2207/2212 09015G25KT",
+    "issueTime": "2026-11-21T10:58:00.000Z",
+    "validFrom": "2026-11-21T12:00:00.000Z",
+    "validTo": "2026-11-22T18:00:00.000Z"
+   }
+  },
+  "LFPG": {
+   "icao": "LFPG",
+   "name": "Paris/De Gaulle Arpt, ID, FR",
+   "source": "aviationweather.gov",
+   "metar": {
+    "raw": "METAR LFPG 211330Z 17005KT 120V210 9999 BKN020 11/07 Q1017 NOSIG",
+    "obsTime": "2026-11-21T13:30:00.000Z"
+   },
+   "taf": {
+    "raw": "TAF LFPG 211100Z 2112/2218 14005KT 9999 SCT012 BKN020 TX10/2114Z TN06/2205Z PROB30 TEMPO 2113/2115 BKN012 TEMPO 2210/2218 BKN007 PROB40 TEMPO 2217/2218 4000 -RA",
+    "issueTime": "2026-11-21T11:00:00.000Z",
+    "validFrom": "2026-11-21T12:00:00.000Z",
+    "validTo": "2026-11-22T18:00:00.000Z"
+   }
+  }
+ },
+ "missing": [
+  "ENKJ"
+ ]
+}
