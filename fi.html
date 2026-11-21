@@ -21,17 +21,24 @@
 <style>
 .welcome{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--sheet);border:1px solid var(--rule);border-left:4px solid var(--info);padding:12px 16px;font-size:15px}
 .welcome[hidden]{display:none}
-.hub{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.hub .hc.main{grid-column:1/-1;border-top:3px solid var(--magenta)}
-.hub .hc.main b{font-size:19px}
-a.hc{text-decoration:none}
-@media (max-width:760px){.hub{grid-template-columns:minmax(0,1fr)}}
-.hc{display:flex;flex-direction:column;gap:6px;text-align:left;background:#fff;border:1px solid var(--rule);border-radius:6px;padding:14px 16px;font:inherit;color:var(--ink);cursor:pointer;transition:border-color .15s,box-shadow .15s}
-.hc:hover{border-color:var(--magenta);box-shadow:0 6px 18px rgba(19,32,42,.08)}
-.hc.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
-.hc b{font-size:16px}.hc span{font-size:14px;color:var(--ink-2)}
-.hc em{font-style:normal;font-size:13px;font-weight:600;letter-spacing:.01em;color:var(--info);margin-top:auto;padding-top:6px}
-.hc em::after{content:" →"}
+.lhead{margin-bottom:0}
+.lhead .brand p{max-width:62ch}
+.fitabs{position:sticky;top:0;z-index:15;background:var(--paper,#EDF1EF);margin:18px 0 22px;border-bottom:1px solid var(--rule)}
+.hub{display:flex;gap:0 26px;overflow-x:auto;scrollbar-width:none}
+.hub::-webkit-scrollbar{display:none}
+.hc{flex:0 0 auto;display:block;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:12px 0 10px;font:inherit;color:var(--ink-2);cursor:pointer;text-decoration:none;white-space:nowrap}
+.hc b{font-size:15px;font-weight:600}
+.hc:hover{color:var(--ink)}
+.hc.on{color:var(--ink);border-bottom-color:var(--magenta)}
+.hc.on b{font-weight:700}
+.hc.ws{margin-left:auto;color:var(--magenta)}
+.hc.ws b::after{content:" →"}
+@media (max-width:760px){.hub{gap:0 20px}.hc.ws{margin-left:0}}
+/* the tab names the view, so the views start straight under the tabs without a second big title */
+#vTrain,#vProg,#vEasa,#vDocs{border-top:0;padding-top:0}
+#instName,#vProg>h2{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#vTrain .btns:has(#instName){min-height:0}
+#vEasa #eTitle{font-size:22px}
 .wsnote{margin:8px 0 4px;padding:10px 12px;border-left:3px solid var(--magenta);background:#fff;font-size:14px}
 .tgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;align-items:start}
 @media (max-width:900px){.tgrid{grid-template-columns:minmax(0,1fr)}}
@@ -123,7 +130,6 @@ a.hc{text-decoration:none}
 .ecite:hover{border-color:#14532D;background:#DDEFE4}
 .ecite::after{content:" \2197";font-weight:400}
 .ecite.x{color:#8A5A00;background:#FBF1DE;border-color:#E9D3A8}.ecite.x::after{content:""}
-.hc.easa b::after{content:" · Rev. 24";font-family:var(--f-mono);font-size:12px;font-weight:500;color:#14532D}
 .ehead{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:flex-end;justify-content:space-between}
 .ehead h2{margin:0}
 .elive{background:var(--sheet);border:1px solid var(--rule);border-left:4px solid #14532D;padding:10px 14px;font-size:14.5px;max-width:880px}
@@ -158,23 +164,21 @@ a.hc{text-decoration:none}
     <div class="brand">
       <div class="eyebrow">NORDAP · Flight Intelligence</div>
       <h1>Flight Intelligence</h1>
-      <p>Ask anything about flying, from what lift is to the current EASA rules. Flight Intelligence answers, sends you to the right place on NORDAP, and works from your own AFM, QRH and SOP when you add them. Every answer shows where it comes from.</p>
+      <p>Ask anything about flying. Answers come from your own AFM, QRH and SOP, the EASA rules and general knowledge, and every answer shows its source.</p>
     </div>
     <div class="hright"></div>
   </header>
-  <a class="trex" href="typerating.html"><span>Type rating</span><b>Type rating trainer: King Air B200</b><em>Study plan, cockpit systems simulators, 320 questions, flashcards, exam mode and an oral examiner that uses your documents, built on NORDAP’s standard type-rating structure. →</em></a>
-  <style>.trex{display:grid;gap:2px;margin:14px 0 6px;padding:12px 14px;border:1px solid #9AA8AF;border-left:4px solid var(--magenta);background:#fff;text-decoration:none;color:var(--ink)}.trex span{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}.trex b{font-size:17px}.trex em{font-style:normal;font-size:14px;color:var(--ink-2)}.trex:hover{background:#FFF6D6}</style>
 
   <div class="welcome" id="welcome" hidden></div>
 
-  <section class="card" style="border-top:0;padding-top:8px">
-    <div class="hub" id="hub">
-      <button class="hc main" data-h="aircraft"><b>Instructor</b><span>Ask anything: theory, weather, EASA rules, your aircraft and your SOP. Answers from your own documents when you have added them.</span><em>ask, learn, practise</em></button>
-      <a class="hc ws" href="workspace.html#/aircraft"><b>My aircraft and documents</b><span>Kept in My workspace with your notes and briefing packs. Flight Intelligence reads them there and here.</span><em>open My workspace</em></a>
-      <button class="hc" data-h="progress"><b>Training progress</b><span>Past sessions, grades, the topics to revise, and your data.</span><em>where you stand</em></button>
-      <button class="hc easa" data-h="easa"><b>EASA rules library</b><span>Curated references to EASA’s official rules: alternates, planning minima, fuel, approach and VMC rules, each linked to the official text.</span><em>browse the rules</em></button>
+  <nav class="fitabs" aria-label="Flight Intelligence">
+    <div class="hub" id="hub" role="tablist">
+      <button class="hc" data-h="aircraft" role="tab"><b>Instructor</b></button>
+      <button class="hc" data-h="progress" role="tab"><b>Training progress</b></button>
+      <button class="hc easa" data-h="easa" role="tab"><b>EASA rules library</b></button>
+      <a class="hc ws" href="workspace.html#/aircraft"><b>My aircraft and documents</b></a>
     </div>
-  </section>
+  </nav>
 
   <!-- ===== trening ===== -->
   <section class="card" id="vTrain" data-ai hidden>
@@ -251,6 +255,9 @@ a.hc{text-decoration:none}
     <div class="elist" id="eList"></div>
     <div class="esrc" id="eSrc"></div>
   </section>
+
+  <a class="trex" href="typerating.html"><span>Type rating</span><b>Type rating trainer: King Air B200</b><em>Study plan, cockpit systems simulators, 320 questions, flashcards, exam mode and an oral examiner that uses your documents, built on NORDAP’s standard type-rating structure. →</em></a>
+  <style>.trex{display:grid;gap:2px;margin:28px 0 6px;padding:12px 14px;border:1px solid #9AA8AF;border-left:4px solid var(--magenta);background:#fff;text-decoration:none;color:var(--ink)}.trex span{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}.trex b{font-size:17px}.trex em{font-style:normal;font-size:14px;color:var(--ink-2)}.trex:hover{background:#FFF6D6}</style>
 
   <div class="modal" id="modal" hidden><div class="mbox"><div class="btns" style="justify-content:space-between"><b id="mTitle"></b><button class="btn" id="mClose">Close</button></div><div id="mBody"></div></div></div>
 </div>
@@ -427,12 +434,12 @@ function gapsAll(){ const m={}; SES.forEach(s=>(s.gaps||[]).forEach(g=>{ const k
   return Object.values(m).sort((a,b)=>b.last-a.last); }
 
 /* ---------- visninger ---------- */
-function show(h){ if(h==='sop'||h==='aviation') h='aircraft'; el('hub').querySelectorAll('.hc').forEach(b=>b.classList.toggle('on',b.dataset.h===h));
+function show(h){ if(h==='sop'||h==='aviation') h='aircraft'; el('hub').querySelectorAll('.hc').forEach(b=>{ b.classList.toggle('on',b.dataset.h===h); if(b.tagName==='BUTTON') b.setAttribute('aria-selected',String(b.dataset.h===h)); });
   el('vTrain').hidden=!INST[h]; el('vDocs').hidden=h!=='docs'; el('vProg').hidden=h!=='progress'; el('vEasa').hidden=h!=='easa';
   if(INST[h]){ if(S&&S.inst!==h&&!window.confirm(L({en:'End the current session?',no:'Avslutte økten som pågår?'}))) { show(S.inst); return; } if(S&&S.inst!==h) endSession(false); INSTK=h; drawTrain(); }
   if(h==='docs') drawDocs(); if(h==='progress') drawProg(); if(h==='easa') drawEasa();
   try{ sessionStorage.setItem('fi-view',h); }catch(e){} }
-el('hub').addEventListener('click',e=>{ const b=e.target.closest('button.hc'); if(b){ show(b.dataset.h); (el(INST[b.dataset.h]?'vTrain':b.dataset.h==='docs'?'vDocs':b.dataset.h==='easa'?'vEasa':'vProg')).scrollIntoView({behavior:'smooth',block:'start'}); } });
+el('hub').addEventListener('click',e=>{ const b=e.target.closest('button.hc'); if(b){ show(b.dataset.h); try{ history.replaceState(null,'','#'+b.dataset.h); }catch(_){} } });
 
 function drawTrain(){ el('instName').textContent=L({en:INST[INSTK].name,no:NOI[INST[INSTK].name]||INST[INSTK].name});
   const cur=el('tAc').value; el('tAc').innerHTML=ACS.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join(''); if(cur&&ACS.some(a=>a.id===cur)) el('tAc').value=cur;
@@ -666,7 +673,7 @@ LAB.add({},Object.assign({},NOI,{'Type rating':'Typerating','Type rating trainer
  'Ask anything: theory, weather, EASA rules, your aircraft and your SOP. Answers from your own documents when you have added them.':'Spør om hva som helst: teori, vær, EASA-regler, flyet ditt og SOP-en din. Svarer fra dine egne dokumenter når du har lagt dem inn.','ask, learn, practise':'spør, lær, øv','Systems, limitations, normal and abnormal procedures, from your AFM, POH, FCOM and QRH.':'Systemer, begrensninger, normale og unormale prosedyrer, fra din AFM, POH, FCOM og QRH.','your aircraft':'ditt fly',
  'Briefings, flows, callouts and flight profiles from your operator’s SOP and checklists.':'Briefinger, flows, callouts og flygeprofiler fra operatørens SOP og sjekklister.','your operator':'din operatør',
  'EASA rules, IFR, meteorology, navigation, aerodynamics and flight preparation.':'EASA-regler, IFR, meteorologi, navigasjon, aerodynamikk og flyforberedelse.','the theory':'teorien',
- 'My aircraft and documents':'Mine fly og dokumenter','Kept in My workspace with your notes and briefing packs. Flight Intelligence reads them there and here.':'Ligger i Mitt arbeidsområde sammen med notatene og briefingpakkene dine. Flight Intelligence leser dem både der og her.','open My workspace':'åpne Mitt arbeidsområde','Your aircraft and documents now live in':'Flyene og dokumentene dine ligger nå i','My workspace':'Mitt arbeidsområde',', together with your notes and briefing packs, with Flight Intelligence beside them. This page shows the same library.':', sammen med notatene og briefingpakkene dine, med Flight Intelligence ved siden av. Denne siden viser det samme biblioteket.','Aircraft profiles, your documents and the aircraft data you have checked.':'Flyprofiler, dokumentene dine og flydataene du har kontrollert.','your library':'ditt bibliotek',
+ 'My aircraft and documents':'Mine fly og dokumenter','Ask anything about flying. Answers come from your own AFM, QRH and SOP, the EASA rules and general knowledge, and every answer shows its source.':'Spør om alt som har med flyging å gjøre. Svarene kommer fra din egen AFM, QRH og SOP, EASA-reglene og generell kunnskap, og hvert svar viser kilden.','Kept in My workspace with your notes and briefing packs. Flight Intelligence reads them there and here.':'Ligger i Mitt arbeidsområde sammen med notatene og briefingpakkene dine. Flight Intelligence leser dem både der og her.','open My workspace':'åpne Mitt arbeidsområde','Your aircraft and documents now live in':'Flyene og dokumentene dine ligger nå i','My workspace':'Mitt arbeidsområde',', together with your notes and briefing packs, with Flight Intelligence beside them. This page shows the same library.':', sammen med notatene og briefingpakkene dine, med Flight Intelligence ved siden av. Denne siden viser det samme biblioteket.','Aircraft profiles, your documents and the aircraft data you have checked.':'Flyprofiler, dokumentene dine og flydataene du har kontrollert.','your library':'ditt bibliotek',
  'Training progress':'Treningsfremgang','EASA rules library':'EASA-regelbibliotek','Curated references to EASA’s official rules: alternates, planning minima, fuel, approach and VMC rules, each linked to the official text.':'Utvalgte henvisninger til EASAs offisielle regelverk: alternativer, planleggingsminima, drivstoff, innflyging og VMC-regler, hver lenket til den offisielle teksten.','browse the rules':'bla i reglene','EASA rules library · Rev. 24 (March 2026)':'EASA-regelbibliotek · Rev. 24 (mars 2026)','Briefing trainer':'Briefingtrener','Results from the labs, briefings, radio and simulator:':'Resultater fra labbene, briefingene, radio og simulator:','Progress →':'Fremgang →','Past sessions, grades, the topics to revise, and your data.':'Tidligere økter, karakterer, temaer å repetere og dataene dine.','where you stand':'hvor du står',
  'Aircraft':'Fly','Mode':'Modus','Topic (optional)':'Tema (valgfritt)','Session':'Økt','Pause':'Pause','Start':'Start','End session and report':'Avslutt økten med rapport','Speak the answers':'Les svarene høyt',
  'Type, or hold the talk button and speak…':'Skriv, eller hold inne snakkeknappen og snakk…','Preview.':'Forhåndsversjon.','Flight Intelligence runs on a lighter AI model while NORDAP is in testing. Use answers as a study reference, and always check the official source.':'Flight Intelligence bruker en lettere AI-modell mens NORDAP er i testfasen. Bruk svarene som studiereferanse, og sjekk alltid den offisielle kilden.','Hold to talk':'Hold for å snakke','Send':'Send','I don’t know':'Jeg vet ikke','Stop':'Stopp','Sources':'Kilder',
