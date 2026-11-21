@@ -44,6 +44,19 @@
 .plateguide .pg h4::before{content:attr(data-k);color:var(--magenta);font-size:26px;font-weight:780}
 .plateguide .pg p{margin:0;font-size:14px;color:var(--ink-2)}
 .plateguide .pg ul{margin:6px 0 0;padding-left:18px;font-size:14px}
+.crew{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:760px){.crew{grid-template-columns:minmax(0,1fr)}}
+.crew .pg{background:var(--sheet);border:1px solid var(--rule);border-radius:3px;padding:14px 16px}
+.crew .pg.w{grid-column:1/-1}
+.crew .pg h4{margin:0 0 6px;font-family:var(--f-display);font-stretch:88%;font-size:18px;display:flex;gap:10px;align-items:baseline}
+.crew .pg h4::before{content:attr(data-k);color:var(--magenta);font-size:24px;font-weight:780}
+.crew .pg p{margin:0;font-size:14px;color:var(--ink-2)}
+.crew .pg ul{margin:6px 0 0;padding-left:18px;font-size:14px}
+.crew .who{font-family:var(--f-mono);font-size:11.5px;color:var(--chart-blue);margin-left:auto}
+.atm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:8px}
+@media (max-width:640px){.atm{grid-template-columns:minmax(0,1fr)}}
+.atm div{border-top:2px solid var(--accent);padding-top:6px;font-size:14px}
+.atm b{display:block;font-size:15px}
 .hist{font-size:13px;color:var(--ink-2)}
 .rgrid{display:grid;grid-template-columns:minmax(0,600px) minmax(0,1fr);gap:28px;align-items:start}
 @media (max-width:1180px){.rgrid{grid-template-columns:minmax(0,1fr)}}
@@ -95,7 +108,7 @@
     </div>
     <div class="hright"></div>
   </header>
-  <nav class="snav"><a href="#trainer">Trainer</a><a href="#reading">Reading an approach chart</a><a href="#plate">How to brief a plate</a><a href="#speeds">A320 speed card</a></nav>
+  <nav class="snav"><a href="#trainer">Trainer</a><a href="#reading">Reading an approach chart</a><a href="#plate">How to brief a plate</a><a href="#crew">Two-pilot briefing</a><a href="#speeds">A320 speed card</a></nav>
 
   <section class="card" id="trainer" data-ai>
     <div class="btns" style="justify-content:space-between">
@@ -146,6 +159,16 @@
     <div class="callout blue">TSADMM: Threats, Setup, Arrival, Descent, Minimums, Missed approach. Threats come first so the rest of the briefing is built around them. What matters is that the order is fixed and that you end with the missed approach. Set the minima on the bug and the missed-approach altitude in the preselect while you brief them.</div>
   </section>
 
+  <section class="card" id="crew">
+    <div class="eyebrow">Airline practice</div>
+    <h2>Two-pilot briefing: the airline routine</h2>
+    <p class="lead">In a two-pilot airline cockpit the departure and arrival briefings follow a fixed routine built on threat and error management. TSADMM and T-RIBETS give you the content; this routine shares it between the pilots and turns the threats into an agreed plan. Keep it short, relevant, interactive and scaled to the day.</p>
+    <div class="btns"><div id="crk"></div></div>
+    <div class="crew" id="crg"></div>
+    <div class="callout blue">Re-brief when a new threat appears or the plan changes (runway, taxi route, procedure): only the items that changed, with the threats and the mitigation. After the flight, debrief: what went well, what would we do differently, and is there anything to report or write up.</div>
+    <p class="note">Shows how airlines commonly structure crew briefings. Your operator’s briefing guide and SOPs always come first.</p>
+  </section>
+
   <section class="card" id="speeds">
     <div class="eyebrow">Reference</div>
     <h2>A320 speed card</h2>
@@ -187,6 +210,10 @@ LAB.add({},{
  'TSADMM: Threats, Setup, Arrival, Descent, Minimums, Missed approach. Threats come first so the rest of the briefing is built around them. What matters is that the order is fixed and that you end with the missed approach. Set the minima on the bug and the missed-approach altitude in the preselect while you brief them.':'TSADMM: Threats, Setup, Arrival, Descent, Minimums, Missed approach. Truslene kommer først, så resten av briefingen bygges rundt dem. Det viktige er at rekkefølgen er fast og at du avslutter med missed approach. Sett minima på buggen og missed approach-høyden i preselect mens du briefer dem.',
  'Reference':'Oppslag',
  'Typical A320ceo values for training, rounded. On the line the FMS computes the speeds for the actual mass and configuration, and your operator’s FCOM and QRH always come first.':'Typiske A320ceo-verdier for opplæring, avrundet. På linjen regner FMS-en ut fartene for faktisk masse og konfigurasjon, og operatørens FCOM og QRH går alltid foran.',
+ 'Arrival':'Ankomst','Two-pilot briefing':'Briefing med to piloter','Airline practice':'Praksis i flyselskap','Two-pilot briefing: the airline routine':'Briefing med to piloter: rutinen i flyselskapene',
+ 'In a two-pilot airline cockpit the departure and arrival briefings follow a fixed routine built on threat and error management. TSADMM and T-RIBETS give you the content; this routine shares it between the pilots and turns the threats into an agreed plan. Keep it short, relevant, interactive and scaled to the day.':'I en flyselskapscockpit med to piloter følger avgangs- og ankomstbriefingen en fast rutine bygd på trussel- og feilhåndtering (TEM). TSADMM og T-RIBETS gir innholdet; rutinen fordeler det mellom pilotene og gjør truslene om til en felles plan. Hold den kort, relevant, interaktiv og tilpasset dagen.',
+ 'Re-brief when a new threat appears or the plan changes (runway, taxi route, procedure): only the items that changed, with the threats and the mitigation. After the flight, debrief: what went well, what would we do differently, and is there anything to report or write up.':'Brief på nytt når en ny trussel dukker opp eller planen endres (rullebane, taksirute, prosedyre): bare det som er endret, med truslene og tiltakene. Etter flygingen: debrief – hva gikk bra, hva ville vi gjort annerledes, og er det noe som skal rapporteres eller skrives opp.',
+ 'Shows how airlines commonly structure crew briefings. Your operator’s briefing guide and SOPs always come first.':'Viser hvordan flyselskaper vanligvis bygger opp crewbriefinger. Operatørens briefingguide og SOP-er går alltid foran.',
  'Mass':'Masse',
  'The aerodrome, procedures and charts are fictional and drawn for training. Not for navigation. A320 speeds and limits are typical teaching values, not FCOM data.':'Flyplassen, prosedyrene og kartene er oppdiktet og tegnet for opplæring. Ikke for navigasjon. A320-farter og -grenser er typiske undervisningsverdier, ikke FCOM-data.',
  'Departure':'Avgang','Approach':'Innflyging','VFR arrival':'VFR-ankomst','IFR':'IFR','VFR':'VFR'
@@ -401,6 +428,28 @@ const PG=[
 ];
 function pg(){ el('pg').innerHTML=PG.map(([k,t,d,li])=>`<div class="pg"><h4 aria-level="3" data-k="${k}">${esc(L(t))}</h4><p>${esc(L(d))}</p><ul>${li.map(x=>`<li>${esc(L(x))}</li>`).join('')}</ul></div>`).join(''); }
 
+/* two-pilot crew briefing (TEM routine) */
+const ATM=[[{en:'Avoid',no:'Unngå'},{en:'Can the threat be removed completely? Another runway, more fuel, wait it out.',no:'Kan trusselen fjernes helt? Annen rullebane, mer drivstoff, vente den ut.'}],
+ [{en:'Trap',no:'Fange'},{en:'Use your resources so an error is caught early: the other pilot, automation, charts and procedures, knowledge.',no:'Bruk ressursene slik at en feil fanges tidlig: den andre piloten, automatikk, kart og prosedyrer, kunnskap.'}],
+ [{en:'Mitigate',no:'Begrense'},{en:'If it happens anyway: the worst case, who does what, the drill or memory items.',no:'Hvis det skjer likevel: verste tilfelle, hvem gjør hva, drillen eller memory items.'}]];
+const CR={dep:[
+ ['1','',{en:'Set the scene',no:'Gjør klart'},{en:'Cockpit door closed, no interruptions, both pilots free to listen.',no:'Cockpitdøren lukket, ingen avbrytelser, begge pilotene ledige til å lytte.'},[]],
+ ['2a','PM',{en:'The plan, PM part',no:'Planen, PMs del'},{en:'The PM reads the route out of the FMS and the charts.',no:'PM leser ruten fra FMS-en og kartene.'},[{en:'Take-off runway and intersection',no:'Avgangsrullebane og avkjørsel/intersection'},{en:'SID',no:'SID'},{en:'First cleared or expected altitude',no:'Første klarerte eller forventede høyde'},{en:'MSA, MOCA or MORA along the climb',no:'MSA, MOCA eller MORA langs stigningen'},{en:'Extra fuel and time',no:'Ekstra drivstoff og tid'}]],
+ ['2b','PF',{en:'The plan, PF part',no:'Planen, PFs del'},{en:'The PF adds how the take-off and the first minutes will be flown.',no:'PF legger til hvordan avgangen og de første minuttene flys.'},[{en:'Hotspots on the planned taxi route',no:'Hotspots på den planlagte taksiruten'},{en:'Stop margin for a rejected take-off',no:'Stoppmargin ved avbrutt avgang'},{en:'Engine-out procedure (EOSID)',no:'Prosedyre ved motorstans (EOSID)'},{en:'Return or diversion plan',no:'Plan for retur eller alternativ'},{en:'Special or non-standard operations',no:'Spesielle eller ikke-standard operasjoner'}]],
+ ['3','PM → PF',{en:'Threats',no:'Trusler'},{en:'The PM names the threats; the PF adds any that are missing.',no:'PM nevner truslene; PF legger til de som mangler.'},[{en:'Weather, runway state, terrain, traffic, NOTAM',no:'Vær, rullebaneforhold, terreng, trafikk, NOTAM'},{en:'Aircraft status (MEL items), crew state, time pressure',no:'Flystatus (MEL), crewets tilstand, tidspress'}]],
+ ['4','PF + PM',{en:'Agree the mitigation',no:'Bli enige om tiltak'},{en:'For each threat, discuss and agree what you will do. Not every threat needs all three steps.',no:'For hver trussel: diskuter og bli enige om hva dere gjør. Ikke alle trusler trenger alle tre stegene.'},'atm'],
+ ['5','PF + PM',{en:'Miscellaneous',no:'Diverse'},{en:'Whatever else the day needs.',no:'Det dagen ellers krever.'},[{en:'Use of automation after take-off',no:'Bruk av automatikk etter avgang'},{en:'Supplementary procedures not yet briefed',no:'Tilleggsprosedyrer som ikke er briefet'},{en:'Low-visibility procedures: task sharing, callouts, communication',no:'Prosedyrer for lav sikt: oppgavefordeling, callouts, kommunikasjon'},{en:'Observer briefing, dangerous goods',no:'Briefing av observatør, farlig gods'}]]],
+ arr:[
+ ['1','',{en:'Set the scene',no:'Gjør klart'},{en:'At the right time before top of descent, with as few interruptions as possible. Consider headsets on.',no:'I god tid før toppen av nedstigningen, med så få avbrytelser som mulig. Vurder headset på.'},[]],
+ ['2a','PM',{en:'The plan, PM part',no:'Planen, PMs del'},{en:'The PM reads the arrival and the approach out of the FMS and the charts.',no:'PM leser ankomsten og innflygingen fra FMS-en og kartene.'},[{en:'Arrival and transition, STAR',no:'Ankomst og transition, STAR'},{en:'MSA, MOCA or MORA for the planned path',no:'MSA, MOCA eller MORA for planlagt bane'},{en:'Runway, type of approach and minimum',no:'Rullebane, type innflyging og minima'},{en:'Landing elevation',no:'Landingshøyde (elevation)'},{en:'Go-around path',no:'Go-around-banen'},{en:'Extra fuel and time',no:'Ekstra drivstoff og tid'}]],
+ ['2b','PF',{en:'The plan, PF part',no:'Planen, PFs del'},{en:'The PF adds how the approach and landing will be flown.',no:'PF legger til hvordan innflygingen og landingen flys.'},[{en:'Transition level',no:'Overgangsnivå'},{en:'Configuration and guidance, landing flaps, stabilisation altitude',no:'Konfigurasjon og guidance, landingsklaffer, stabiliseringshøyde'},{en:'Stop margin, reverse thrust, autobrake',no:'Stoppmargin, reversering, autobrems'},{en:'Planned runway exit and hotspots for taxi-in',no:'Planlagt avkjøring og hotspots ved taksing inn'},{en:'Special or non-standard operations',no:'Spesielle eller ikke-standard operasjoner'}]],
+ ['3','PM → PF',{en:'Threats',no:'Trusler'},{en:'The PM names the threats; the PF adds any that are missing.',no:'PM nevner truslene; PF legger til de som mangler.'},[{en:'Weather, runway state, terrain, traffic, NOTAM',no:'Vær, rullebaneforhold, terreng, trafikk, NOTAM'},{en:'Fatigue, unfamiliar airport, late runway change',no:'Tretthet, ukjent flyplass, sen rullebaneendring'}]],
+ ['4','PF + PM',{en:'Agree the mitigation',no:'Bli enige om tiltak'},{en:'For each threat, discuss and agree what you will do. Not every threat needs all three steps.',no:'For hver trussel: diskuter og bli enige om hva dere gjør. Ikke alle trusler trenger alle tre stegene.'},'atm'],
+ ['5','PF + PM',{en:'Miscellaneous',no:'Diverse'},{en:'Whatever else the day needs.',no:'Det dagen ellers krever.'},[{en:'Single-engine taxi; tell the cabin if low-visibility operations are expected',no:'Taksing på én motor; si fra til kabinen hvis det ventes lavsiktsoperasjoner'},{en:'Supplementary procedures not yet briefed',no:'Tilleggsprosedyrer som ikke er briefet'},{en:'Use of automation for the landing',no:'Bruk av automatikk ved landing'},{en:'Low-visibility procedures and degraded guidance',no:'Prosedyrer for lav sikt og redusert guidance'}]]]};
+let crK='dep';
+const crSeg=LAB.seg(el('crk'),[['dep','Departure'],['arr','Arrival']],crK,v=>{ crK=v; crew(); });
+function crew(){ el('crg').innerHTML=CR[crK].map(([k,who,t,d,li])=>`<div class="pg${k.length===1?' w':''}"><h4 aria-level="3" data-k="${k}">${esc(L(t))}${who?`<span class="who">${esc(who)}</span>`:''}</h4><p>${esc(L(d))}</p>${li==='atm'?`<div class="atm">${ATM.map(([h,p])=>`<div><b>${esc(L(h))}</b>${esc(L(p))}</div>`).join('')}</div>`:li.length?`<ul>${li.map(x=>`<li>${esc(L(x))}</li>`).join('')}</ul>`:''}</div>`).join(''); }
+
 /* A320-fartskort */
 let spM='64.5';
 const spmSeg=LAB.seg(el('spm'),[['55','55 t'],['60','60 t'],['64.5','64.5 t'],['70','70 t'],['77','77 t']],spM,v=>{ spM=v; speeds(); });
@@ -418,8 +467,8 @@ function speeds(){ const t=parseFloat(spM), s=spd(t,0), over=t>64.5;
    [{en:'VLE, VLO, VMO/MMO',no:'VLE, VLO, VMO/MMO'},{en:'VLO 250 kt to extend and 220 kt to retract the gear; VLE 280 kt / M0.67 with it down. VMO 350 kt and MMO M0.82: the speed limit switches from knots to Mach in the climb at about FL300.',no:'VLO 250 kt for å senke og 220 kt for å heve hjulene; VLE 280 kt / M0,67 med dem ute. VMO 350 kt og MMO M0,82: fartsgrensen går fra knop til Mach i stigningen ved ca. FL300.'}]];
   el('spc').innerHTML=C.map(([h,p])=>`<div class="box"><b class="t">${esc(L(h))}</b><p>${esc(L(p))}</p></div>`).join(''); }
 if(document.fonts) document.fonts.ready.then(()=>fitChartText(el('chart')));
-LAB.start('brief'); scenario(); pg(); speeds(); rchart(); hsDraw();
-LAB.onLang(()=>{ draw(); pg(); speeds(); hsDraw(); });
+LAB.start('brief'); scenario(); pg(); crew(); speeds(); rchart(); hsDraw();
+LAB.onLang(()=>{ draw(); pg(); crew(); speeds(); hsDraw(); });
 window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(['dep','app','land'].includes(h)&&h!==kind){ kind=h; kseg.set(h); scenario(); } });
 })();
 </script>
