@@ -308,8 +308,7 @@
         <span class="sp"></span>
         ${stA}
         <button type="button" class="dk-ib" data-b="split-h" title="${esc(t('Split right', 'Del til høyre'))}" aria-label="${esc(t('Split right', 'Del til høyre'))}"${D.panes(L).length >= maxPanes() ? ' disabled' : ''}>${ic('splith')}</button>
-        <a class="dk-ib dk-mapb" href="#/map" title="${esc(t('Map of your workspace', 'Kart over arbeidsområdet'))}" aria-label="${esc(t('Map of your workspace', 'Kart over arbeidsområdet'))}">${ic('map')}<span>${esc(t('Map', 'Kart'))}</span></a>
-        <a class="dk-lib" href="#/library">${esc(t('Library and backup', 'Bibliotek og sikkerhetskopi'))}</a>`;
+        <a class="dk-ib dk-mapb" href="#/library" title="${esc(t('My workspace: Flight Intelligence and your library', 'Mitt arbeidsområde: Flight Intelligence og biblioteket ditt'))}" aria-label="${esc(t('My workspace home', 'Mitt arbeidsområde, hjem'))}">${ic('lib')}<span>${esc(t('Workspace', 'Arbeidsområdet'))}</span></a>`;
     }
     function status() { if (!mounted) return; const st = A.statusShort(); host.querySelectorAll('.dk-st').forEach(s => { s.title = st.title || ''; s.innerHTML = `<i class="kept ${st.c}"></i><span>${esc(st.s)}</span>`; }); }
     const railCollapsed = () => !!(A.M.deskRail && A.M.deskRail.c);
@@ -341,7 +340,7 @@
     }
     /* phone: the way to the map, the library pages and "where things are kept" lives at the foot of the sheet */
     function sheetFoot() { const st = A.statusShort();
-      return `<nav class="dk-sf" aria-label="${esc(t('More', 'Mer'))}"><a href="#/map">${ic('map')}<span>${esc(t('Map', 'Kart'))}</span></a><a href="#/library">${ic('keep')}<span>${esc(t('Library and backup', 'Bibliotek og sikkerhetskopi'))}</span></a><a class="dk-st" href="#/storage" title="${esc(st.title || '')}"><i class="kept ${st.c}"></i><span>${esc(st.s)}</span></a></nav>`; }
+      return `<nav class="dk-sf" aria-label="${esc(t('More', 'Mer'))}"><a class="dk-st" href="#/storage" title="${esc(st.title || '')}"><i class="kept ${st.c}"></i><span>${esc(st.s)}</span></a></nav>`; }
     function drawRail() {
       if (!railEl) return;
       const col = railCollapsed() && !isPhone();
@@ -529,7 +528,7 @@
       else if (k === 'note') newNote({}, { pane: paneId });
       else if (k === 'nb') newNotebook({ pane: paneId });
       else if (k === 'ask') askBeside(null, paneId);
-      else if (k === 'map') A.go('map');
+      else if (k === 'map') A.go('library');
       else if (k === 'ac') { if (A.aircraft().length) palette({ only: 'aircraft', pane: paneId }); else A.aircraftDlg(null).then(id => { if (id) openItem('aircraft', id, { pane: paneId }); }); }
     }
     function mountEmptyPane(box, paneId) {
@@ -950,7 +949,7 @@
         { c: 'note', n: t('New note', 'Nytt notat'), i: 'note' }, { c: 'nb', n: t('New notebook', 'Ny notatbok'), i: 'pen' }, { c: 'ask', n: 'Flight Intelligence', i: 'ask' }, { c: 'add', n: t('Add documents…', 'Legg til dokumenter …'), i: 'plus' },
         !isPhone() && D.panes(L).length < maxPanes() ? { c: 'split-h', n: t('Split right', 'Del til høyre'), i: 'splith' } : null,
         canDown() && D.panes(L).length < maxPanes() ? { c: 'split-v', n: t('Split down', 'Del nedover'), i: 'splitv' } : null,
-        { c: 'desk', n: t('New desk…', 'Ny arbeidsflate …'), i: 'tabs' }, { c: 'map', n: t('Map of your workspace', 'Kart over arbeidsområdet'), i: 'map' }, { c: 'lib', n: t('Library and backup', 'Bibliotek og sikkerhetskopi'), i: 'lib' }].filter(Boolean);
+        { c: 'desk', n: t('New desk…', 'Ny arbeidsflate …'), i: 'tabs' }, { c: 'lib', n: t('Workspace home: Flight Intelligence and your library', 'Arbeidsområdet: Flight Intelligence og biblioteket'), i: 'lib' }].filter(Boolean);
       const name = { aircraft: t('Aircraft', 'Fly'), doc: t('Document', 'Dokument'), note: t('Note', 'Notat'), pack: t('Briefing pack', 'Briefingpakke'), route: t('Route', 'Rute'), notebook: t('Notebook', 'Notatbok') };
       let rows = [], sel = 0;
       function compute(q) {
@@ -996,7 +995,7 @@
     }
     function runCmd(c, paneId) {
       if (c === 'note') newNote({}, { pane: paneId }); else if (c === 'nb') newNotebook({ pane: paneId }); else if (c === 'ask') askBeside(null, paneId); else if (c === 'add') A.pickFiles({}); else if (c === 'split-h') splitPane(paneId, 'h'); else if (c === 'split-v') splitPane(paneId, 'v');
-      else if (c === 'desk') deskNew(); else if (c === 'lib') A.go('library'); else if (c === 'map') A.go('map');
+      else if (c === 'desk') deskNew(); else if (c === 'lib') A.go('library'); else if (c === 'map') A.go('library');
     }
 
     /* ---------- desks ---------- */

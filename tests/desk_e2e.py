@@ -29,7 +29,7 @@ def make_pdf(path):
         c.showPage()
     c.save()
 if not os.path.exists(PDF): make_pdf(PDF)
-URL = BASE + '/workspace.html'
+URL = BASE + '/workspace.html#/desk'  # the workspace opens on its home; the desk is one link away
 res = []
 def check(n, c, info=''):
     res.append((n, bool(c))); print(('ok   ' if c else 'FAIL ') + n + (('  ' + str(info)[:300]) if info and not c else ''))

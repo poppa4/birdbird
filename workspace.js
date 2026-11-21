@@ -16,7 +16,7 @@
   'use strict';
   /* opening My workspace (a fresh page load with no place in the address) always starts on the Map, whatever was open last;
      the desk is one click away ("Back to the desk"), and links to a place (#/documents/…, #/?open=…) still go straight there */
-  { const h = location.hash; if (!h || h === '#' || h === '#/') history.replaceState(null, '', location.pathname + location.search + '#/map'); }
+  { const h = location.hash; if (!h || h === '#' || h === '#/') history.replaceState(null, '', location.pathname + location.search + '#/library'); }
   const W = window.WSCORE, LAB = window.LAB, NSTORE = window.NSTORE;
   const el = id => document.getElementById(id);
   const t = (en, no) => LAB.lang === 'en' ? en : (no == null ? en : no);
@@ -87,7 +87,7 @@
   };
 
   /* ---------- state ---------- */
-  const S = { ready: false, items: {}, docs: {}, blobs: new Set(), packs: [], routes: [], fiac: [], prepAc: [], est: { usage: 0, quota: 0, persisted: null }, index: null };
+  const S = { ready: false, items: {}, docs: {}, blobs: new Set(), packs: [], routes: [], fiac: [], prepAc: [], fises: [], est: { usage: 0, quota: 0, persisted: null }, index: null };
   let M = { sync: { uid: null, last: 0, base: 0, paused: null, full: null }, recent: [], backupAt: 0, hideAdopt: {} };
   const F = { docs: { q: '', cat: '', ac: '' }, packs: { q: '', ac: '', when: '' }, notes: { q: '', tag: '' } };
   const saveMeta = () => ST.kvSet('meta', M);
@@ -163,8 +163,8 @@
   const packsAll = () => S.packs.slice().sort((a, b) => ((packMark(b.id) || {}).pinned ? 1 : 0) - ((packMark(a.id) || {}).pinned ? 1 : 0) || (b.updated || b.created || 0) - (a.updated || a.created || 0));
 
   async function loadStores() {
-    try { await NSTORE.ready; const [p, r, fa, pa] = await Promise.all(['prep', 'route', 'fiac', 'aircraft'].map(k => NSTORE.list(k).catch(() => [])));
-      S.packs = (p || []).filter(realPack); S.routes = (r || []).filter(x => x && (x.pts || []).length > 0); S.fiac = fa || []; S.prepAc = pa || []; } catch (e) {}
+    try { await NSTORE.ready; const [p, r, fa, pa, fs] = await Promise.all(['prep', 'route', 'fiac', 'aircraft', 'fises'].map(k => NSTORE.list(k).catch(() => [])));
+      S.packs = (p || []).filter(realPack); S.routes = (r || []).filter(x => x && (x.pts || []).length > 0); S.fiac = fa || []; S.prepAc = pa || []; S.fises = fs || []; } catch (e) {}
     S.index = null; GC = null;
   }
   async function storageInfo() { try { if (navigator.storage && navigator.storage.estimate) { const e = await navigator.storage.estimate(); S.est.usage = e.usage || 0; S.est.quota = e.quota || 0; } if (navigator.storage && navigator.storage.persisted) S.est.persisted = await navigator.storage.persisted(); } catch (e) {} }
@@ -356,10 +356,13 @@
   function route() { const h = location.hash.replace(/^#\/?/, ''); const i = h.indexOf('?'); const path = decodeURIComponent(i < 0 ? h : h.slice(0, i)); return { path, q: new URLSearchParams(i < 0 ? '' : h.slice(i + 1)) }; }
   function go(path) { location.hash = '#/' + path; }
   function visit(tp, id) { M.recent = W.pushRecent(M.recent, { t: tp, id }); saveMeta(); }
-  const RAIL = () => [['fi', 'Flight Intelligence', null], ['library', t('Overview', 'Oversikt'), null], ['map', t('Map', 'Kart'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
+  /* one platform: Flight Intelligence and your own library in the same rail. Entries: [path, label, count] for views here,
+     [null, label, null, href] for the Flight Intelligence pages, a string for a group heading, null for a gap */
+  const RAIL = () => [t('Flight Intelligence', 'Flight Intelligence'), ['fi', t('Ask a question', 'Still et spørsmål'), null], [null, t('Instructor training', 'Instruktørtrening'), null, 'fi.html#aircraft'], [null, t('Training progress', 'Treningsprogresjon'), null, 'fi.html#progress'], [null, t('EASA rules library', 'EASA-regelbibliotek'), null, 'fi.html#easa'],
+    t('My workspace', 'Mitt arbeidsområde'), ['library', t('Home', 'Hjem'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
   let railMap = null;
   function drawRailMap(cur) {
-    const rl = el('wsRail'); if (!rl || !window.WSMAP || !GW) return;
+    const rl = el('wsRail'); if (!rl || !window.WSMAP || !GW || !window.WS_RAILMAP) return;
     let box = el('wsRailMap');
     const want = cur !== 'map' && window.innerWidth > 1180;     /* only where the rail is a column (see workspace.css) */
     if (!want) { if (railMap) { railMap.m.destroy(); railMap = null; } if (box) box.remove(); return; }
@@ -436,7 +439,7 @@
     ensureDock();
     const cur = route().path.split('/')[0] || (deskMode() ? '' : 'library');
     setTimeout(() => drawRailMap(cur), 0);
-    const rl0 = el('wsRail'); rl0.innerHTML = RAIL().map(r => r ? `<a href="#/${r[0]}" class="${r[0] === cur ? 'on' : ''}"${r[0] === cur ? ' aria-current="page"' : ''}><span>${esc(r[1])}</span>${r[2] != null ? `<span class="c">${r[2]}</span>` : ''}</a>` : '<span class="gap"></span>').join('');
+    const rl0 = el('wsRail'); rl0.innerHTML = RAIL().map(r => typeof r === 'string' ? `<span class="grp">${esc(r)}</span>` : !r ? '<span class="gap"></span>' : r[3] ? `<a href="${esc(r[3])}" class="ext"><span>${esc(r[1])}</span></a>` : `<a href="#/${r[0]}" class="${r[0] === cur ? 'on' : ''}${r[0] === 'fi' ? ' fi' : ''}"${r[0] === cur ? ' aria-current="page"' : ''}><span>${esc(r[1])}</span>${r[2] != null ? `<span class="c">${r[2]}</span>` : ''}</a>`).join('');
     /* on the Map, the types in the rail work inside the map: Documents lights up your documents in the brain and lists them,
        and the list leads on to the Documents page. Elsewhere (or on the 2D map) they open their page as before. */
     if (!rl0.dataset.km) { rl0.dataset.km = '1'; rl0.addEventListener('click', e => {
@@ -538,24 +541,45 @@
     </section>`;
   }
 
+  /* Home: one platform. Flight Intelligence on top (it asks in the panel beside you, which knows your documents),
+     then what you do most, then your library. No decoration: everything here is something you can open. */
+  function askFi(q) { q = String(q || '').trim(); focusDock(); if (!q) return; const tryAsk = (n) => { const f = dock && dock.el.querySelector('form.ask-f'), ta = f && f.querySelector('textarea'); if (!ta) { if (n < 40) setTimeout(() => tryAsk(n + 1), 100); return; } ta.value = q; f.requestSubmit ? f.requestSubmit() : f.dispatchEvent(new Event('submit', { cancelable: true })); }; tryAsk(0); }
+  function fiGaps() { const m = {}; (S.fises || []).forEach(x => (x.gaps || []).forEach(g => { const k = String(g).toLowerCase(); if (!m[k]) m[k] = { t: g, n: 0, last: 0 }; m[k].n++; m[k].last = Math.max(m[k].last, x.started || 0); })); return Object.values(m).sort((a, b) => b.n - a.n || b.last - a.last); }
   function viewHome() {
     const ac = aircraft(), docs = docsAll(), notes = notesAll(), packs = packsAll(), routes = S.routes.slice().sort((a, b) => (b.updated || 0) - (a.updated || 0)), rec = recentList(), nb = needsBackup();
-    const P = window.NPROG; let rank = null; try { if (P) rank = P.rankOf(P.xpOf(P.load())); } catch (e) {}
+    const ses = (S.fises || []).slice().sort((a, b) => (b.started || 0) - (a.started || 0)), gaps = fiGaps();
     const sec = (href, title, count, body, foot) => `<section class="ovs"><header><h2><a href="${href}">${esc(title)}</a></h2>${count != null ? `<span class="c">${count}</span>` : ''}</header>${body}<footer>${foot}</footer></section>`;
     const li = (h, b, s, w, v) => `<li><a href="${h}"${v ? ` data-visit="${esc(v)}"` : ''}><b>${b}</b><small>${s || '&nbsp;'}</small><span class="w">${w || ''}</span></a></li>`;
     const cats = W.DOC_CATS.map(c => [c, docs.filter(d => d.cat === c).length]).filter(x => x[1]);
+    const def = ac.find(a => a.isDefault) || ac[0];
+    const ctx = docs.length
+      ? t(`Answers from your <b>${docs.length}</b> ${docs.length === 1 ? 'document' : 'documents'}${def ? ' (' + esc(def.reg || def.type || acName(def)) + ')' : ''}, the EASA rules library and general knowledge. Every answer shows its source.`, `Svar fra ${docs.length === 1 ? 'dokumentet ditt' : 'dine <b>' + docs.length + '</b> dokumenter'}${def ? ' (' + esc(def.reg || def.type || acName(def)) + ')' : ''}, EASA-regelbiblioteket og generell kunnskap. Hvert svar viser kilden.`)
+      : t('Answers from the EASA rules library and general knowledge. Add your AFM, QRH or SOP and it answers from them too, with the page.', 'Svar fra EASA-regelbiblioteket og generell kunnskap. Legg til AFM, QRH eller SOP, så svarer den også fra dem, med sidetall.');
+    const ex = docs.length
+      ? [t('What is the maximum demonstrated crosswind?', 'Hva er maksimal demonstrert sidevind?'), t('Engine failure after take-off: the memory items', 'Motorstans etter avgang: memory items'), t('Alternate planning minima for a non-precision approach', 'Planleggingsminima for alternativ med ikke-presisjonsinnflyging')]
+      : [t('Alternate planning minima for a non-precision approach', 'Planleggingsminima for alternativ med ikke-presisjonsinnflyging'), t('Why does a stall happen at a critical angle of attack?', 'Hvorfor staller vingen ved en kritisk innfallsvinkel?'), t('What are the VMC minima in class G below 3000 ft?', 'Hva er VMC-minima i klasse G under 3000 ft?')];
     main.innerHTML = `
       ${nb ? `<div class="ws-remind"><span>${t(`<b>${plural(nb, 'document file exists', 'document files exist', '', '')} only on this device.</b> Files are not uploaded, so a backup file is their only copy elsewhere.`, `<b>${nb} ${nb === 1 ? 'dokumentfil finnes' : 'dokumentfiler finnes'} bare på denne enheten.</b> Filer lastes ikke opp, så en sikkerhetskopi er den eneste kopien et annet sted.`)}</span><button type="button" class="btn sm" data-act="export">${t('Export everything', 'Eksporter alt')}</button></div>` : ''}
+      <section class="hub-fi" aria-labelledby="hubFiH">
+        <div class="hf-top"><p class="hf-k" id="hubFiH"><i aria-hidden="true"></i>Flight Intelligence</p><span class="hf-src">${ctx}</span></div>
+        <div class="hf-ex" role="list" aria-label="${esc(t('Examples', 'Eksempler'))}"><button type="button" class="hf-go" data-ask="">${t('Ask a question', 'Still et spørsmål')} →</button>${ex.map(q => `<button type="button" role="listitem" data-ask="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+        <nav class="hf-more" aria-label="Flight Intelligence">
+          <a href="fi.html#aircraft"><b>${t('Instructor training', 'Instruktørtrening')}</b><span>${t('Learn, get quizzed or run an oral check on your aircraft', 'Lær, bli spurt ut eller ta en muntlig sjekk på flyet ditt')}</span></a>
+          <a href="fi.html#progress"><b>${t('Training progress', 'Treningsprogresjon')}</b><span>${ses.length ? plural(ses.length, 'session', 'sessions', 'økt', 'økter') + (gaps.length ? ' · ' + plural(gaps.length, 'topic to revise', 'topics to revise', 'tema å repetere', 'temaer å repetere') : '') : t('Sessions, grades and topics to revise', 'Økter, karakterer og temaer å repetere')}</span></a>
+          <a href="fi.html#easa"><b>${t('EASA rules library', 'EASA-regelbibliotek')}</b><span>${t('Minima, fuel, alternates and VMC, linked to the official text', 'Minima, drivstoff, alternativer og VMC, lenket til den offisielle teksten')}</span></a>
+        </nav>
+        ${gaps.length ? `<div class="hf-rev"><span>${t('Revise next', 'Repeter neste')}</span>${gaps.slice(0, 3).map(g => `<a href="fi.html?topic=${encodeURIComponent(g.t)}#aircraft">${esc(g.t)}</a>`).join('')}</div>` : ''}
+      </section>
       ${rec.length ? `<p class="ws-lbl" id="recH">${t('Recently opened', 'Sist åpnet')}</p><div class="recent" role="list" aria-labelledby="recH">${rec.map(r => `<a role="listitem" href="${r.h}"${r.v ? ` data-visit="${esc(r.v)}"` : ''}><span class="k">${esc(r.k)}</span><b>${esc(r.n)}</b><small>${esc(ago(r.at))}</small></a>`).join('')}</div>` : ''}
       <div class="ov">
-        ${sec('#/aircraft', t('My aircraft', 'Mine fly'), ac.length, ac.length ? `<ul>${ac.slice(0, 4).map(a => li('#/aircraft/' + a.id, esc(a.reg || a.type || acName(a)), esc([a.reg ? a.type : '', a.callsign, a.isDefault ? t('default for briefing packs', 'standard for briefingpakker') : ''].filter(Boolean).join(' · ')), docs.filter(d => (d.acIds || []).includes(a.id)).length + ' ' + t('docs', 'dok.'))).join('')}</ul>` : `<p class="none">${t('Add the aircraft you fly. Each one gathers its AFM, SOP, checklists, notes and briefing packs.', 'Legg til flyene du flyr. Hvert fly samler AFM, SOP, sjekklister, notater og briefingpakker.')}</p>`, `<button type="button" class="lk" data-act="ac-new">${t('Add aircraft', 'Legg til fly')}</button>`)}
-        ${sec('#/documents', t('Documents', 'Dokumenter'), docs.length, docs.length ? `<div class="cats">${cats.map(([c, n]) => `<span>${esc(catName(c))} <b>${n}</b></span>`).join('')}</div><ul>${docs.slice().sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 3).map(d => li('#/documents/' + d.id, esc(d.name), esc(catName(d.cat) + (onDevice(d.id) ? '' : ' · ' + t('file not on this device', 'filen er ikke på denne enheten'))), d.pages ? d.pages + ' ' + t('p.', 's.') : '')).join('')}</ul>` : `<p class="none">${t('Keep your AFM or POH, SOP, checklists and company manuals here. Files stay on this device and are never uploaded.', 'Ha AFM eller POH, SOP, sjekklister og selskapsmanualer her. Filene blir på denne enheten og lastes aldri opp.')}</p>`, `<button type="button" class="lk" data-act="doc-add">${t('Add documents', 'Legg til dokumenter')}</button>`)}
-        ${sec('#/notes', t('Notes', 'Notater'), notes.length, notes.length ? `<ul>${notes.slice(0, 4).map(n => li('#/notes/' + n.id, (n.pinned ? '<i class="pin"></i> ' : '') + esc(noteTitle(n)), esc(W.noteText(n).slice(0, 80)), esc(ago(n.updatedAt)))).join('')}</ul>` : `<p class="none">${t('Write down what you want to remember from a lesson, a briefing or a manual. Saved as you type.', 'Skriv ned det du vil huske fra en time, en briefing eller en manual. Lagres mens du skriver.')}</p>`, `<button type="button" class="lk" data-act="note-new">${t('New note', 'Nytt notat')}</button>`)}
-        ${sec('#/packs', t('Briefing packs', 'Briefingpakker'), packs.length, packs.length ? `<ul>${packs.slice(0, 4).map(p => { const f = p.f || {}, m = packMark(p.id); return li('prep.html?id=' + encodeURIComponent(p.id), (m && m.pinned ? '<i class="pin"></i> ' : '') + esc(packTitle(p)), esc([f.date, [f.type, f.reg].filter(Boolean).join(' '), f.rules].filter(Boolean).join(' · ')), esc(ago(p.updated || p.created)), 'pack:' + p.id); }).join('')}</ul>` : `<p class="none">${t('Every briefing pack you save shows up here, ready to reopen or duplicate for the next flight.', 'Alle briefingpakker du lagrer, vises her, klare til å åpnes igjen eller dupliseres til neste tur.')}</p>`, `<button type="button" class="lk" data-act="pack-new">${t('New briefing pack', 'Ny briefingpakke')}</button>`)}
+        ${sec('#/aircraft', t('My aircraft', 'Mine fly'), ac.length, ac.length ? `<ul>${ac.slice(0, 4).map(a => li('#/aircraft/' + a.id, esc(a.reg || a.type || acName(a)), esc([a.reg ? a.type : '', a.callsign, a.isDefault ? t('default for briefing packs', 'standard for briefingpakker') : ''].filter(Boolean).join(' · ')), docs.filter(d => (d.acIds || []).includes(a.id)).length + ' ' + t('docs', 'dok.'))).join('')}</ul>` : `<p class="none">${t('Add the aircraft you fly. Its manuals, notes and briefing packs collect on one page, and Flight Intelligence answers from its documents.', 'Legg til flyet du flyr. Manualer, notater og briefingpakker samles på én side, og Flight Intelligence svarer fra dokumentene.')}</p>`, `<button type="button" class="lk" data-act="ac-new">${t('Add aircraft', 'Legg til fly')}</button>`)}
+        ${sec('#/documents', t('Documents', 'Dokumenter'), docs.length, docs.length ? `<div class="cats">${cats.map(([c, n]) => `<span>${esc(catName(c))} <b>${n}</b></span>`).join('')}</div><ul>${docs.slice().sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 3).map(d => li('#/documents/' + d.id, esc(d.name), esc(catName(d.cat) + (onDevice(d.id) ? '' : ' · ' + t('file not on this device', 'filen er ikke på denne enheten'))), esc(ago(d.updatedAt)), 'doc:' + d.id)).join('')}</ul>` : `<p class="none">${t('Your AFM, QRH, SOP and checklists. They stay on this device, open side by side on the desk, and Flight Intelligence reads them.', 'AFM, QRH, SOP og sjekklister. De blir på denne enheten, åpnes side om side på arbeidsflaten, og Flight Intelligence leser dem.')}</p>`, `<button type="button" class="lk" data-act="doc-add">${t('Add documents', 'Legg til dokumenter')}</button>`)}
+        ${sec('#/notes', t('Notes', 'Notater'), notes.length, notes.length ? `<ul>${notes.slice(0, 4).map(n => li('#/notes/' + n.id, (n.pinned ? '<i class="pin"></i> ' : '') + esc(noteTitle(n)), esc(W.noteText(n).slice(0, 80)), esc(ago(n.updatedAt)))).join('')}</ul>` : `<p class="none">${t('Write down what you want to remember from a lesson, a briefing or a manual. Saved as you type.', 'Skriv ned det du vil huske fra en leksjon, en briefing eller en manual. Lagres mens du skriver.')}</p>`, `<button type="button" class="lk" data-act="note-new">${t('New note', 'Nytt notat')}</button>`)}
+        ${sec('#/packs', t('Briefing packs', 'Briefingpakker'), packs.length, packs.length ? `<ul>${packs.slice(0, 4).map(p => { const f = p.f || {}, m = packMark(p.id); return li('prep.html?id=' + encodeURIComponent(p.id), (m && m.pinned ? '<i class="pin"></i> ' : '') + esc(packTitle(p)), esc([f.date, [f.type, f.reg].filter(Boolean).join(' '), f.rules].filter(Boolean).join(' · ')), esc(ago(p.updated || p.created)), 'pack:' + p.id); }).join('')}</ul>` : `<p class="none">${t('Briefing packs you save are kept here, with the route and aircraft they belong to.', 'Briefingpakker du lagrer, ligger her, med ruten og flyet de hører til.')}</p>`, `<button type="button" class="lk" data-act="pack-new">${t('New briefing pack', 'Ny briefingpakke')}</button>`)}
         ${sec('#/routes', t('Routes', 'Ruter'), routes.length, routes.length ? `<ul>${routes.slice(0, 4).map(r => li('route.html?id=' + encodeURIComponent(r.id), esc(routeTitle(r)), (r.pts || []).length + ' ' + t('points', 'punkter') + (r.s && r.s.cr ? ' · ' + esc(r.s.cr) + ' ft' : ''), esc(ago(r.updated)), 'route:' + r.id)).join('')}</ul>` : `<p class="none">${t('Routes you draw in Route Explorer are saved here.', 'Ruter du tegner i Route Explorer, lagres her.')}</p>`, `<a class="lk" href="route.html">${t('Open Route Explorer', 'Åpne Route Explorer')}</a>`)}
-        ${sec('profile.html', t('Training progress', 'Treningsprogresjon'), null, rank ? `<ul>${li('profile.html', esc(rank.name), rank.next ? esc((rank.next - rank.xp) + ' XP ' + t('to ', 'til ') + rank.nextName) : '', rank.xp + ' XP')}</ul><div class="bar" role="img" aria-label="${Math.round(rank.pct * 100)} %"><i style="width:${Math.round(rank.pct * 100)}%"></i></div><p class="none">${t('Your rank, learning path and achievements are on My page.', 'Rang, læringsløp og prestasjoner finner du på Min side.')}</p>` : `<p class="none">${t('Your rank, learning path and achievements are on My page.', 'Rang, læringsløp og prestasjoner finner du på Min side.')}</p>`, `<a class="lk" href="profile.html">${t('Open My page', 'Åpne Min side')}</a>`)}
       </div>
       ${custody()}`;
+    main.querySelectorAll('[data-ask]').forEach(b => b.addEventListener('click', () => askFi(b.dataset.ask)));
   }
 
   /* aircraft */
@@ -1139,7 +1163,7 @@
       const op = r.q.get('open'); if (op && window.FLIGHT) { history.replaceState(null, '', '#/'); lastPath = ''; const l = window.FLIGHT.parseOpen(op); l.forEach((x, i) => window.WSDESK.openItem(x[0], x[1], i ? { beside: true } : {})); if (l.length > 1) window.WSDESK.openItem(l[0][0], l[0][1]); }
       return; }
     /* Flight Intelligence: always one click away (the rail and the floating button): the desk with its tab open */
-    if (p[0] === 'fi') { history.replaceState(null, '', '#/' + (lastPath && lastPath !== 'fi' ? lastPath : 'map')); render(); focusDock(); return; }
+    if (p[0] === 'fi') { history.replaceState(null, '', '#/' + (lastPath && lastPath !== 'fi' ? lastPath : 'library')); render(); focusDock(); return; }
     if (p[0] === 'notebook' && p[1] && window.WSDESK) { const id = p[1]; history.replaceState(null, '', '#/'); render(); window.WSDESK.openItem('notebook', id); return; }
     if (window.WSDESK) window.WSDESK.hide();
     if (mapV && p[0] !== 'map') { if (mapV.m) mapV.m.destroy(); mapV = null; }
@@ -1151,7 +1175,7 @@
     else if (p[0] === 'packs') viewPacks();
     else if (p[0] === 'notes') p[1] ? viewNote(p[1]) : viewNotes();
     else if (p[0] === 'routes') viewRoutes();
-    else if (p[0] === 'map') viewMap();
+    else if (p[0] === 'map') { history.replaceState(null, '', '#/library'); viewHome(); }
     else if (p[0] === 'trash') viewTrash();
     else if (p[0] === 'storage') viewStorage();
     else viewHome();
@@ -1278,8 +1302,8 @@
   /* ---------- language ---------- */
   function drawChrome() {
     el('wsH1').textContent = t('My workspace', 'Mitt arbeidsområde');
-    el('wsHomeT').textContent = t('Back to the desk', 'Tilbake til arbeidsflaten');
-    el('wsLede').textContent = t('Your aircraft, documents, notes, briefing packs and routes in one place.', 'Flyene, dokumentene, notatene, briefingpakkene og rutene dine på ett sted.');
+    el('wsHomeT').textContent = t('Open the desk', 'Åpne arbeidsflaten');
+    el('wsLede').textContent = t('Flight Intelligence and your aircraft, documents, notes, briefing packs and routes in one place.', 'Flight Intelligence og flyene, dokumentene, notatene, briefingpakkene og rutene dine på ett sted.');
     qIn.setAttribute('aria-label', t('Search your workspace', 'Søk i arbeidsområdet ditt'));
     qPh();
     document.title = t('My workspace · NORDAP', 'Mitt arbeidsområde · NORDAP');
