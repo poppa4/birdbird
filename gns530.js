@@ -811,7 +811,21 @@ function latchAll(){ if(!SC) return; SC.steps.forEach((s,i)=>{ if(!LATCH[i]&&s.o
 /* faceplate */
 function knob(side){ /* outer ring = large knob, inner = small knob, the centre = push. Left half turns left, right half right. */
   const s=side; return `<svg class="kb" viewBox="0 0 100 100" aria-hidden="false">
-   <circle cx="50" cy="50" r="48" class="kbo"/><circle cx="50" cy="50" r="30" class="kbi"/>
+   <defs>
+    <radialGradient id="kgo${s}" cx="42%" cy="30%" r="78%"><stop offset="0" stop-color="#5E656B"/><stop offset=".5" stop-color="#33383D"/><stop offset="1" stop-color="#15181B"/></radialGradient>
+    <radialGradient id="kgi${s}" cx="42%" cy="30%" r="78%"><stop offset="0" stop-color="#727980"/><stop offset=".55" stop-color="#40464B"/><stop offset="1" stop-color="#1C1F22"/></radialGradient>
+    <radialGradient id="kgp${s}" cx="42%" cy="32%" r="75%"><stop offset="0" stop-color="#868D93"/><stop offset=".6" stop-color="#50565C"/><stop offset="1" stop-color="#2A2E32"/></radialGradient>
+    <filter id="kgs${s}" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.6"/></filter>
+   </defs>
+   <circle cx="50.5" cy="54.5" r="47" fill="#000" opacity=".6" filter="url(#kgs${s})"/>
+   <circle cx="50" cy="50" r="48" class="kbo" style="fill:url(#kgo${s})"/>
+   <circle cx="50" cy="50" r="46.4" fill="none" stroke="#0B0D0F" stroke-width="3.2" stroke-dasharray="1.25 1.8" opacity=".85"/>
+   <path d="M17 27A40 40 0 0 1 83 27" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="1.2" stroke-linecap="round"/>
+   <circle cx="50.5" cy="53" r="30" fill="#000" opacity=".55" filter="url(#kgs${s})"/>
+   <circle cx="50" cy="50" r="30" class="kbi" style="fill:url(#kgi${s})"/>
+   <circle cx="50" cy="50" r="28.6" fill="none" stroke="#0E1012" stroke-width="2.4" stroke-dasharray="1 1.45" opacity=".8"/>
+   <path d="M31 38A23 23 0 0 1 69 38" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1" stroke-linecap="round"/>
+   <circle cx="50.3" cy="51.6" r="12.5" fill="#000" opacity=".5" filter="url(#kgs${s})"/>
    <path data-k="${s}L-" d="M50 2A48 48 0 0 0 50 98L50 80A30 30 0 0 1 50 20Z" class="kz" role="button" aria-label="${s==='R'?'Right':'Left'} large knob, turn left"><title>${s==='R'?'Large knob ⟲':'MHz ⟲'}</title></path>
    <path data-k="${s}L+" d="M50 2A48 48 0 0 1 50 98L50 80A30 30 0 0 0 50 20Z" class="kz" role="button" aria-label="${s==='R'?'Right':'Left'} large knob, turn right"><title>${s==='R'?'Large knob ⟳':'MHz ⟳'}</title></path>
    <path data-k="${s}S-" d="M50 20A30 30 0 0 0 50 80L50 63A13 13 0 0 1 50 37Z" class="kz in" role="button" aria-label="${s==='R'?'Right':'Left'} small knob, turn left"><title>${s==='R'?'Small knob ⟲':'kHz ⟲'}</title></path>

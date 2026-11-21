@@ -1,0 +1,120 @@
+/* NORDAP – physical depth for the trainer units (MCDU, 737 CDU, GNS 530).
+   Loaded after each page's own <style>, so it only changes how the faceplate, screen and keys are lit:
+   a matte painted faceplate with a bevelled edge and fasteners, a screen set deep behind its frame with
+   glass on top, and keys as real caps with a side wall, a cast shadow and travel when pressed. */
+
+/* ---- faceplate ---- */
+.mcdu,.gns{position:relative;isolation:isolate;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.07'/%3E%3C/svg%3E"),
+    radial-gradient(130% 70% at 25% 0%,rgba(255,255,255,.075),transparent 62%),
+    linear-gradient(#3B4046,#2E3237 50%,#272B2F);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 1px 0 0 rgba(255,255,255,.07),
+    inset -1px 0 0 rgba(0,0,0,.4),
+    inset 0 -.5cqw 0 rgba(0,0,0,.3),
+    inset 0 0 0 .35cqw rgba(0,0,0,.08),
+    0 1px 2px rgba(0,0,0,.3),
+    0 6px 10px -2px rgba(0,0,0,.25),
+    0 26px 48px -12px rgba(0,0,0,.5)}
+
+/* quarter-turn fasteners in the four corners (MCDU and CDU) */
+.mcdu::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;border-radius:inherit;
+  --s:radial-gradient(circle,#A3AAB0 0,#6A7076 .35cqw,#2E3236 .85cqw,#101214 1.02cqw,rgba(0,0,0,.4) 1.2cqw,transparent 1.45cqw);
+  --t:linear-gradient(90deg,transparent calc(50% - .1cqw),rgba(0,0,0,.7) calc(50% - .1cqw) calc(50% + .1cqw),transparent calc(50% + .1cqw));
+  background:
+    var(--t) 1.8cqw 1.8cqw/1.6cqw 1.6cqw no-repeat,
+    var(--t) calc(100% - 1.8cqw) 1.8cqw/1.6cqw 1.6cqw no-repeat,
+    var(--t) 1.8cqw calc(100% - 1.8cqw)/1.6cqw 1.6cqw no-repeat,
+    var(--t) calc(100% - 1.8cqw) calc(100% - 1.8cqw)/1.6cqw 1.6cqw no-repeat,
+    var(--s) 1.1cqw 1.1cqw/3cqw 3cqw no-repeat,
+    var(--s) calc(100% - 1.1cqw) 1.1cqw/3cqw 3cqw no-repeat,
+    var(--s) 1.1cqw calc(100% - 1.1cqw)/3cqw 3cqw no-repeat,
+    var(--s) calc(100% - 1.1cqw) calc(100% - 1.1cqw)/3cqw 3cqw no-repeat}
+.mcdu>*{position:relative;z-index:1}
+
+/* ---- the screen, set into the faceplate ---- */
+.mscr,.gscrw{position:relative;
+  border-style:solid;border-color:#08090A #16191C #24282C #16191C;
+  box-shadow:
+    inset 0 1.4cqw 1.8cqw -.6cqw rgba(0,0,0,.95),
+    inset 0 0 2.4cqw rgba(0,0,0,.85),
+    0 0 0 1px #0A0C0E,
+    0 -1px 0 1px rgba(0,0,0,.55),
+    0 1px 0 1px rgba(255,255,255,.09)}
+.mscr{border-width:.7cqw}
+.gscrw{border-width:.7cqw}
+/* the glass: a faint reflection across the top and a little edge glare */
+.mscr::after,.gscrw::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:
+    linear-gradient(162deg,rgba(255,255,255,.075) 0%,rgba(255,255,255,.025) 34%,transparent 34.5%),
+    linear-gradient(180deg,rgba(255,255,255,.04),transparent 12%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
+/* a little glow on the characters, as on a real display */
+.mr i{text-shadow:0 0 .55cqw color-mix(in srgb,currentColor 38%,transparent)}
+.gscr text{filter:drop-shadow(0 0 1.2px color-mix(in srgb,currentColor 35%,transparent))}
+
+/* ---- keys: caps with a side wall, a cast shadow and travel ---- */
+.mcdu .k,.gns .k{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.02) 42%,rgba(0,0,0,.12)),
+    linear-gradient(#4D5359,#3A3F44);
+  border:1px solid #111315;
+  text-shadow:0 -1px 0 rgba(0,0,0,.65);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    inset 0 -1px 0 rgba(0,0,0,.4),
+    inset 1px 0 0 rgba(255,255,255,.07),
+    inset -1px 0 0 rgba(0,0,0,.18),
+    0 .22cqw 0 #2A2E32,
+    0 .5cqw 0 #16191B,
+    0 .62cqw .25cqw rgba(0,0,0,.45),
+    0 .9cqw 1.2cqw rgba(0,0,0,.35);
+  transition:transform .06s ease-out,box-shadow .06s ease-out,background-color .1s}
+.mcdu .k:hover,.gns .k:hover{background:
+    linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.03) 42%,rgba(0,0,0,.1)),
+    linear-gradient(#545A60,#3F4449)}
+.mcdu .k.dn,.mcdu .k:active,.gns .k.dn,.gns .k:active{transform:translateY(.42cqw);
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.06),rgba(0,0,0,.06)),
+    linear-gradient(#474D53,#383D42);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 .2cqw .5cqw rgba(0,0,0,.35),
+    0 .08cqw 0 #16191B,
+    0 .15cqw .3cqw rgba(0,0,0,.5)}
+/* line select keys: smaller caps with the dash pressed into them */
+.mlsk .lk span{box-shadow:0 1px 0 rgba(0,0,0,.6)}
+/* the 737 EXEC light: a lens in the cap */
+.mpk .pk.ex::before{box-shadow:inset 0 .15cqw .3cqw rgba(0,0,0,.8),0 1px 0 rgba(255,255,255,.12)}
+.mpk .pk.ex.lit::before{background:linear-gradient(#FFFFFF,#E6E9EC);box-shadow:0 0 1.8cqw rgba(255,255,255,.8),inset 0 -.1cqw .2cqw rgba(0,0,0,.15)}
+
+/* ---- GNS: round knobs and the volume knob ---- */
+.gns .idk{border:.55cqw solid transparent;
+  background:
+    radial-gradient(circle at 40% 32%,#72797F,#454B50 42%,#24282B 80%) padding-box,
+    repeating-conic-gradient(#1A1D20 0 5deg,#3E4449 5deg 10deg) border-box;
+  box-shadow:
+    inset 0 .2cqw .2cqw rgba(255,255,255,.18),
+    inset 0 -.3cqw .5cqw rgba(0,0,0,.45),
+    0 .5cqw 0 #121416,
+    0 .9cqw 1.4cqw rgba(0,0,0,.55)}
+.gns .idk:hover{background:
+    radial-gradient(circle at 40% 32%,#7B8288,#4B5156 42%,#26292C 80%) padding-box,
+    repeating-conic-gradient(#1A1D20 0 5deg,#3E4449 5deg 10deg) border-box}
+.gns .idk.dn,.gns .idk:active{transform:translateY(.35cqw);box-shadow:inset 0 .3cqw .6cqw rgba(0,0,0,.5),0 .12cqw 0 #121416,0 .2cqw .4cqw rgba(0,0,0,.5)}
+.gns .gv{border:.45cqw solid transparent;
+  background:
+    radial-gradient(circle at 40% 32%,#646B71,#363B40 50%,#1E2124 85%) padding-box,
+    repeating-conic-gradient(#16181B 0 6deg,#33383C 6deg 12deg) border-box;
+  box-shadow:inset 0 .2cqw .2cqw rgba(255,255,255,.14),0 .5cqw 0 #111315,0 .9cqw 1.3cqw rgba(0,0,0,.5);
+  text-shadow:0 -1px 0 rgba(0,0,0,.7)}
+/* the range rocker sits in its own well */
+.gns .grng{background:linear-gradient(#1F2226,#272B2F);box-shadow:inset 0 .4cqw .8cqw rgba(0,0,0,.6),inset 0 -1px 0 rgba(255,255,255,.06),0 1px 0 rgba(255,255,255,.07)}
+/* dual concentric knobs (drawn in gns530.js): pressed push button */
+.gns .kp[data-k="LPUSH"]{fill:url(#kgpL)}.gns .kp[data-k="RPUSH"]{fill:url(#kgpR)}.gns .kp:hover{filter:brightness(1.12)}
+.gns .kz.dn{fill:rgba(0,0,0,.28)}
+
+@media (prefers-reduced-motion:reduce){.mcdu .k,.gns .k{transition:none}}
+@media (forced-colors:active){.mscr::after,.gscrw::after,.mcdu::before{display:none}}
