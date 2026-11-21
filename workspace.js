@@ -430,11 +430,21 @@
     const q = dock.el.querySelector('textarea'); if (q) setTimeout(() => q.focus(), 30);
   }
   window.WSFI = { focus: focusDock };
+  const RAILKIND = { aircraft: 'aircraft', documents: 'doc', notes: 'note', packs: 'pack', routes: 'route' };
+  function railKind(k) { const rl = el('wsRail'); if (!rl) return; rl.querySelectorAll('a[href^="#/"]').forEach(a => { const h = a.getAttribute('href').slice(2), on = k ? RAILKIND[h] === k : h === route().path.split('/')[0]; a.classList.toggle('on', on || (!!k && h === 'map')); a.classList.toggle('sub', !!k && h === 'map'); }); }
   function drawRail() {
     ensureDock();
     const cur = route().path.split('/')[0] || (deskMode() ? '' : 'library');
     setTimeout(() => drawRailMap(cur), 0);
-    el('wsRail').innerHTML = RAIL().map(r => r ? `<a href="#/${r[0]}" class="${r[0] === cur ? 'on' : ''}"${r[0] === cur ? ' aria-current="page"' : ''}><span>${esc(r[1])}</span>${r[2] != null ? `<span class="c">${r[2]}</span>` : ''}</a>` : '<span class="gap"></span>').join('');
+    const rl0 = el('wsRail'); rl0.innerHTML = RAIL().map(r => r ? `<a href="#/${r[0]}" class="${r[0] === cur ? 'on' : ''}"${r[0] === cur ? ' aria-current="page"' : ''}><span>${esc(r[1])}</span>${r[2] != null ? `<span class="c">${r[2]}</span>` : ''}</a>` : '<span class="gap"></span>').join('');
+    /* on the Map, the types in the rail work inside the map: Documents lights up your documents in the brain and lists them,
+       and the list leads on to the Documents page. Elsewhere (or on the 2D map) they open their page as before. */
+    if (!rl0.dataset.km) { rl0.dataset.km = '1'; rl0.addEventListener('click', e => {
+      const a = e.target.closest('a[href^="#/"]'), k = a && RAILKIND[a.getAttribute('href').slice(2)];
+      if (!k || route().path !== 'map' || !mapV || !mapV.m || !mapV.m.showKind || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault(); const same = mapV.m.kind === k; mapV.m.showKind(same ? null : k); railKind(same ? null : k);
+    }); }
+    railKind(cur === 'map' && mapV && mapV.m && mapV.m.kind ? mapV.m.kind : null);
     const rl = el('wsRail'), on = rl.querySelector('.on'); if (on && rl.scrollWidth > rl.clientWidth) { const l = on.offsetLeft - rl.offsetLeft, r = l + on.offsetWidth; if (l < rl.scrollLeft || r > rl.scrollLeft + rl.clientWidth) rl.scrollLeft = Math.max(0, l - 24); }
   }
   function drawStatus() {
@@ -1072,7 +1082,7 @@
   const mapPref = () => { try { const v = LS && LS.getItem(MAPV); return v === '2d' || v === '3d' ? v : ''; } catch (e) { return ''; } };
   let webgl = null;
   let map3dP = null;
-  const load3d = () => map3dP || (map3dP = (window.THREE ? Promise.resolve() : loadScript('three.min.js?v=128')).then(() => window.WSGRAPH3D ? 0 : loadScript('wsgraph3d.js?v=5')).then(() => window.WSMAP3D ? 0 : loadScript('wsmap3d.js?v=9')).catch(e => { map3dP = null; throw e; }));
+  const load3d = () => map3dP || (map3dP = (window.THREE ? Promise.resolve() : loadScript('three.min.js?v=128')).then(() => window.WSGRAPH3D ? 0 : loadScript('wsgraph3d.js?v=6')).then(() => window.WSMAP3D ? 0 : loadScript('wsmap3d.js?v=10')).catch(e => { map3dP = null; throw e; }));
   /* room kept free at the foot of the map: the colour key (two rows on a phone), and the call to action on the example */
   const mapPadB = sample => window.innerWidth < 600 ? (sample ? 250 : 100) : sample ? 130 : 64;
   function viewMap() {
@@ -1103,7 +1113,7 @@
       if (mapV !== v || !main.contains(host)) return;
       host.innerHTML = '';
       const ga = mapAny().g; v.sig = mapSig(ga);
-      v.m = window.WSMAP3D.mount(host, { graph: ga, t, sample, onOpen: mapOpen, onEdit: mapEdit, padBottom: mapPadB(sample), view, probe: pref !== '3d', rotateSecs: window.__wsm3dRotate || 20,
+      v.m = window.WSMAP3D.mount(host, { graph: ga, t, sample, onOpen: mapOpen, onEdit: mapEdit, onKind: k => railKind(k), padBottom: mapPadB(sample), view, probe: pref !== '3d', rotateSecs: window.__wsm3dRotate || 20,
         onWeak: why => { if (mapV !== v) return; try { sessionStorage.setItem('bb-map-weak', why || '1'); } catch (e) {} if (v.m) v.m.destroy(); v.m = null; mount2d(); toast(why === 'lost' ? t('The 3D map stopped, so the map is shown in 2D.', '3D-kartet stoppet, så kartet vises i 2D.') : t('This device is showing the map in 2D for speed. Switch to 3D on the map toolbar.', 'Denne enheten viser kartet i 2D for å gå raskere. Bytt til 3D på kartverktøylinjen.')); } });
     }).catch(e => { console.warn('3D map', e); if (mapV === v && main.contains(host)) mount2d(); });
   }

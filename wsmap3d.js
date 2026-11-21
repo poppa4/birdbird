@@ -31,12 +31,13 @@
   }
   const NODE_VS = `
     attribute vec3 color; attribute float size; attribute float alpha; attribute float grow;
-    uniform float uScale, uGrow, uNear, uFar; varying vec3 vC; varying float vA;
+    uniform float uScale, uGrow, uNear, uFar, uSweep, uSweepOn; varying vec3 vC; varying float vA;
     void main() {
       vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
       float k = smoothstep(grow * 0.86, grow * 0.86 + 0.14, uGrow), d = max(0.1, -mv.z);
-      gl_PointSize = clamp(size * (0.3 + 0.7 * k) * uScale / d, 1.6, 110.0);
-      vC = color; vA = alpha * k * (1.0 - 0.72 * smoothstep(uNear, uFar, d));
+      float sw = uSweepOn * exp(-mod(uSweep - atan(position.x, position.z), 6.28318) * 2.6); /* the radar sweep has just passed: a short flash */
+      gl_PointSize = clamp(size * (0.3 + 0.7 * k) * (1.0 + 0.45 * sw) * uScale / d, 1.6, 110.0);
+      vC = color * (1.0 + 0.9 * sw); vA = alpha * k * (1.0 - 0.72 * smoothstep(uNear, uFar, d));
     }`;
   const NODE_FS = `
     precision mediump float; varying vec3 vC; varying float vA;
@@ -66,19 +67,34 @@
   /* the brain's particles: small crisp dots; the side facing you bright, its outline brighter still (rim), the far side faint */
   const SHELL_VS = `
     attribute vec3 color; attribute float size; attribute float alpha; attribute float grow; attribute vec3 nrm; attribute float occ;
-    uniform float uScale, uGrow, uNear, uFar; uniform vec3 uCam; varying vec3 vC; varying float vA;
+    uniform float uScale, uGrow, uNear, uFar, uSweep, uSweepOn; uniform vec3 uCam; varying vec3 vC; varying float vA;
     void main() {
       vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
       float k = smoothstep(grow * 0.86, grow * 0.86 + 0.14, uGrow), d = max(0.1, -mv.z);
       vec3 tc = normalize(uCam - position); float f = dot(nrm, tc), front = smoothstep(-0.3, 0.3, f), rim = pow(1.0 - abs(f), 3.0);
       gl_PointSize = clamp(size * uScale / d, 1.2, 7.0);
       float above = smoothstep(0.05, 0.55, normalize(uCam).y) * occ; /* seen from above, the cerebrum hides the cerebellum */
-      vC = color * (1.0 + 1.6 * rim * front * (1.0 - occ)); vA = alpha * k * (0.16 + 0.84 * front) * (1.0 - 0.5 * smoothstep(uNear, uFar, d)) * (1.0 - 0.92 * above);
+      float sw = uSweepOn * exp(-mod(uSweep - atan(position.x, position.z), 6.28318) * 3.2);
+      vC = color * (1.0 + 1.6 * rim * front * (1.0 - occ) + 1.8 * sw); vA = alpha * k * (0.16 + 0.84 * front) * (1.0 - 0.5 * smoothstep(uNear, uFar, d)) * (1.0 - 0.92 * above) * (1.0 + 0.5 * sw);
     }`;
   const SHELL_FS = `
     precision mediump float; varying vec3 vC; varying float vA;
     void main() { float r = length(gl_PointCoord - 0.5) * 2.0; if (r > 1.0 || vA < 0.004) discard; float a = smoothstep(1.0, 0.25, r);
       vec3 c = vC * a * vA; gl_FragColor = vec4(c, max(c.r, max(c.g, c.b))); }`;
+  /* the radar scope under the brain: range rings, bearing spokes and the sweep with its fading trail, all in one flat disc */
+  const SCOPE_VS = `varying vec2 vP; void main() { vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+  const SCOPE_FS = `
+    precision mediump float; uniform vec3 uColor; uniform float uSweep, uSweepOn, uA; varying vec2 vP;
+    void main() {
+      float r = length(vP); if (r > 1.0) discard;
+      float a = atan(vP.x, -vP.y), ring = 0.0;
+      for (int i = 1; i <= 4; i++) ring = max(ring, 1.0 - smoothstep(0.0, 0.006, abs(r - float(i) * 0.25)));
+      float sp = 1.0 - smoothstep(0.0, 0.006 / max(r, 0.05), abs(mod(a + 0.2618, 0.5236) - 0.2618));
+      float tick = step(0.94, r) * (1.0 - smoothstep(0.0, 0.004 / max(r, 0.05), abs(mod(a + 0.0873, 0.1745) - 0.0873)));
+      float tr = mod(uSweep - a, 6.28318), sw = uSweepOn * (exp(-tr * 2.2) * 0.55 + (1.0 - smoothstep(0.0, 0.012, tr)) * 0.9) * smoothstep(1.0, 0.85, r);
+      float f = (ring * 0.5 + sp * 0.16 * step(0.08, r) + tick * 0.4) * (1.0 - smoothstep(0.86, 1.0, r) * 0.5) + sw;
+      vec3 c = uColor * f * uA; gl_FragColor = vec4(c, max(c.r, max(c.g, c.b)));
+    }`;
   const SEG = 10; /* segments per link arc */
   /* palettes: Ice (calm ice-blue and white, the default), Ember (warm), Mono (greys); subtle tints per type */
   const PAL = {
@@ -113,7 +129,7 @@
     const dprCap = phone ? 1.25 : 1.5;
     let dpr = Math.min(dprCap, window.devicePixelRatio || 1);
     const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(34, 1, 0.5, 4000);
-    const U = { uScale: { value: 1 }, uGrow: { value: reduced() ? 2 : 0 }, uNear: { value: 10 }, uFar: { value: 100 } };
+    const U = { uScale: { value: 1 }, uGrow: { value: reduced() ? 2 : 0 }, uNear: { value: 10 }, uFar: { value: 100 }, uSweep: { value: 0 }, uSweepOn: { value: 0 } };
     /* additive light on a transparent canvas: colour and alpha both add (premultiplied), so the CSS background shows through */
     const blend = { blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneFactor };
     const nodeMat = new THREE.ShaderMaterial({ uniforms: U, vertexShader: NODE_VS, fragmentShader: NODE_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
@@ -122,11 +138,13 @@
     const puffU = Object.assign({ uColor: { value: new THREE.Color(0.36, 0.56, 0.88) } }, U);
     const puffMat = new THREE.ShaderMaterial({ uniforms: puffU, vertexShader: PUFF_VS, fragmentShader: PUFF_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
     const shellU = Object.assign({ uCam: { value: new THREE.Vector3() } }, U);
+    const scopeU = { uColor: { value: new THREE.Color(0.36, 0.56, 0.88) }, uSweep: U.uSweep, uSweepOn: U.uSweepOn, uA: { value: 0.6 } };
+    const scopeMat = new THREE.ShaderMaterial({ uniforms: scopeU, vertexShader: SCOPE_VS, fragmentShader: SCOPE_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
     const shellMat = new THREE.ShaderMaterial({ uniforms: shellU, vertexShader: SHELL_VS, fragmentShader: SHELL_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
     const pulseMat = new THREE.ShaderMaterial({ uniforms: Object.assign({}, U, { uGrow: { value: 2 } }), vertexShader: NODE_VS, fragmentShader: NODE_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
 
     let g = null, L = null, N = 0, alive = true, raf = 0, W = 0, H = 0;
-    let nodes = null, links = null, cloud = null, pulsePts = null, curves = null, puffOf = null, brain = null, SH = null;
+    let nodes = null, links = null, cloud = null, pulsePts = null, curves = null, puffOf = null, brain = null, SH = null, scope = null;
     let hover = -1, sel = -1, gsel = -1, hidden = new Set(), near = null, names2 = [];
     const scr = { x: new Float32Array(0), y: new Float32Array(0), d: new Float32Array(0), ok: false };
     /* camera: orbit round a target */
@@ -143,7 +161,7 @@
     const visible = i => !hidden.has(g.nodes[i].g);
 
     /* ---------- data -> buffers ---------- */
-    function disposeObjs() { [nodes, links, cloud, pulsePts, brain].forEach(m => { if (m) { scene.remove(m); m.geometry.dispose(); } }); nodes = links = cloud = pulsePts = brain = null; }
+    function disposeObjs() { [nodes, links, cloud, pulsePts, brain, scope].forEach(m => { if (m) { scene.remove(m); m.geometry.dispose(); } }); nodes = links = cloud = pulsePts = brain = scope = null; }
     const aspect = () => { const r = host.getBoundingClientRect(); return r.width && r.height ? Math.max(0.45, Math.min(3, (r.width - 32) / Math.max(120, r.height - padT() - padB()))) : 1.7; };
     function setGraph(ng, keep) {
       const before = g && keep ? new Set(g.nodes.map(n => n.id)) : null;
@@ -155,7 +173,7 @@
       const P = L.P, size = new Float32Array(N), al = new Float32Array(N), gr = new Float32Array(N);
       g.nodes.forEach((n, i) => { size[i] = (SZ[n.k] || 1.8) * (n.k === 'doc' ? 1 + Math.min(0.3, n.deg * 0.035) : 1); al[i] = 1; gr[i] = fresh && !fresh[i] ? 0 : L.grow[i]; });
       let geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(P, 3)); geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(N * 3), 3)); geo.setAttribute('size', new THREE.BufferAttribute(size, 1)); geo.setAttribute('alpha', new THREE.BufferAttribute(al, 1)); geo.setAttribute('grow', new THREE.BufferAttribute(gr, 1));
-      nodes = new THREE.Points(geo, nodeMat); nodes.frustumCulled = false; nodes.renderOrder = 3;
+      nodes = new THREE.Points(geo, nodeMat); nodes.frustumCulled = false; nodes.renderOrder = 3; nodes.userData.size = size.slice();
       /* links: gentle arcs bowed away from the middle of the cloud; they grow from one end to the other */
       const nl = g.links.length, lp = new Float32Array(nl * SEG * 6), la = new Float32Array(nl * SEG * 2), lg = new Float32Array(nl * SEG * 2), C = L.center; curves = new Float32Array(nl * (SEG + 1) * 3);
       g.links.forEach((l, k) => {
@@ -188,6 +206,8 @@
           sz[j] = L.S * (0.0062 + 0.004 * SH.F[j]); sa[j] = 0.85 * SH.base[j]; sg[j] = before ? 0 : SH.grow[j]; }
         geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(SH.P, 3)); geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(M * 3), 3)); geo.setAttribute('size', new THREE.BufferAttribute(sz, 1)); geo.setAttribute('alpha', new THREE.BufferAttribute(sa, 1)); geo.setAttribute('grow', new THREE.BufferAttribute(sg, 1)); geo.setAttribute('nrm', new THREE.BufferAttribute(SH.N, 3)); geo.setAttribute('occ', new THREE.BufferAttribute(Float32Array.from(SH.K, k => k >= 2 ? 1 : 0), 1));
         brain = new THREE.Points(geo, shellMat); brain.frustumCulled = false; brain.renderOrder = 1; scene.add(brain);
+        /* the radar scope: a flat disc under the brain */
+        const R2 = L.S * 1.08; scope = new THREE.Mesh(new THREE.PlaneGeometry(R2 * 2, R2 * 2), scopeMat); scope.scale.set(R2, R2, 1); scope.geometry.scale(1 / R2, 1 / R2, 1); scope.rotation.x = -Math.PI / 2; scope.position.set(0, -0.8 * L.S, -0.05 * L.S); scope.frustumCulled = false; scope.renderOrder = 0; scene.add(scope);
       } else SH = null;
       /* pulses: up to 6 at once, a head and a short trail each */
       geo = new THREE.BufferGeometry(); const PM = 36;
@@ -206,7 +226,7 @@
     function paint() {
       const p = PAL[pal] || PAL.ice, c = nodes.geometry.attributes.color;
       g.nodes.forEach((n, i) => { const h = hex(p.col[n.k] || p.col.note), b = BR[n.k] || 0.8; c.array.set([h[0] * b, h[1] * b, h[2] * b], i * 3); }); c.needsUpdate = true;
-      lineU.uColor.value.setRGB(...p.line); puffU.uColor.value.setRGB(...p.cloud);
+      lineU.uColor.value.setRGB(...p.line); puffU.uColor.value.setRGB(...p.cloud); scopeU.uColor.value.setRGB(...p.line);
       if (brain && SH) { const bc = brain.geometry.attributes.color, base = p.cloud;
         for (let j = 0; j < SH.n; j++) { const r = regCol(SH.reg[j]), f = SH.F[j], b = SH.K[j] === 3 ? 0.07 : (SH.K[j] < 2 ? 0.2 : 0.15) + 0.5 * f * f, m = r && pal !== 'mono' ? 0.7 : 0, c = [0, 1, 2].map(a => (base[a] * (1 - m) + (r ? r[a] : 0) * m) * b);
           bc.array.set(c, j * 3); } bc.needsUpdate = true; }
@@ -218,7 +238,7 @@
 
     /* highlight: the focused node with its neighbours and links bright, or the points the search matches, or the focused
        group; the rest dim. Types switched off in the colour key stay as faint points you cannot pick. */
-    let lit = null;
+    let lit = null, ksel = null;   /* ksel: a type picked in the sidebar (doc, note …): its items light up and are listed */
     const inner = l => L.gi[l.s] === L.gi[l.t];
     function states() {
       if (!nodes) return;
@@ -226,6 +246,7 @@
       const on = near || lit, al = nodes.geometry.attributes.alpha;
       for (let i = 0; i < N; i++) al.array[i] = !visible(i) ? 0.07 : on ? (on.has(i) ? 1 : 0.13) : gsel >= 0 && L.gi[i] !== gsel ? 0.2 : 1;
       al.needsUpdate = true;
+      { const sz = nodes.geometry.attributes.size, b0 = nodes.userData.size; for (let i = 0; i < N; i++) sz.array[i] = ksel && lit && lit.has(i) ? b0[i] * 1.8 : b0[i]; sz.needsUpdate = true; }   /* a picked type stands out */
       const la = links.geometry.attributes.alpha;
       g.links.forEach((l, k) => {
         const v = visible(l.s) && visible(l.t), hl = near ? (l.s === focus || l.t === focus) : lit ? (lit.has(l.s) && lit.has(l.t)) : false;
@@ -237,7 +258,7 @@
       const pa = cloud.geometry.attributes.alpha, base = cloud.userData.base;
       for (let k = 0; k < puffOf.length; k++) { const f = gsel < 0 ? 1 : puffOf[k] === gsel ? 1.25 : 0.4; for (let v = 0; v < 6; v++) pa.array[k * 6 + v] = base[k * 6 + v] * f; }
       pa.needsUpdate = true;
-      if (brain && SH) { const ba = brain.geometry.attributes.alpha; for (let j = 0; j < SH.n; j++) ba.array[j] = SH.base[j] * (gsel < 0 ? 0.85 : SH.reg[j] === gsel ? 1 : 0.3); ba.needsUpdate = true; }
+      if (brain && SH) { const ba = brain.geometry.attributes.alpha; for (let j = 0; j < SH.n; j++) ba.array[j] = SH.base[j] * (gsel < 0 ? (ksel ? 0.42 : 0.85) : SH.reg[j] === gsel ? 1 : 0.3); ba.needsUpdate = true; }
       regEls.forEach((el, k) => { el.classList.toggle('on', k === gsel); el.classList.toggle('dim', gsel >= 0 && k !== gsel); });
       dbg.lit = lit ? lit.size : 0;
       labelSet(); request();
@@ -264,6 +285,7 @@
       const focus = hover >= 0 ? hover : sel, want = [];
       if (focus >= 0) { want.push(focus); if (near) [...near].filter(j => j !== focus && visible(j) && g.nodes[j].k !== 'aircraft').sort((a, b) => g.nodes[b].deg - g.nodes[a].deg).slice(0, 10).forEach(j => want.push(j)); }
       if (gsel >= 0 && introP >= 1) L.clusters[gsel].m.forEach(j => { if (visible(j) && !want.includes(j) && want.length < 40) want.push(j); });
+      if (ksel && lit && introP >= 1) [...lit].forEach(j => { if (!want.includes(j) && want.length < 40) want.push(j); });
       shownLbl = want;
       while (nodeEls.length < want.length) { const s = document.createElement('span'); s.className = 'wsm3-nl'; lblEl.appendChild(s); nodeEls.push(s); }
       nodeEls.forEach((s, k) => { const i = want[k]; if (i == null) { s.hidden = true; return; } s.hidden = false; s.classList.toggle('on', i === focus); const lb = g.nodes[i].label, tx = lb.length > 44 ? lb.slice(0, 43) + '…' : lb; if (s.textContent !== tx) { s.textContent = tx; s._w = 0; } });
@@ -290,6 +312,7 @@
       let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, z1 = 0;
       L.clusters.forEach(c => { const x = dot(rt, c.c), y = dot(up, c.c), z = dot(dir, c.c), r = c.r + L.D * 0.8; x0 = Math.min(x0, x - r); x1 = Math.max(x1, x + r); y0 = Math.min(y0, y - r); y1 = Math.max(y1, y + r + L.D * 2.2); z1 = Math.max(z1, z + c.r); });
       if (L.brain && SH) for (let j = 0; j < SH.n; j += 37) { const q = [SH.P[j * 3], SH.P[j * 3 + 1], SH.P[j * 3 + 2]], x = dot(rt, q), y = dot(up, q); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+      if (L.brain && scope) for (let k = 0; k < 24; k++) { const a = k / 24 * Math.PI * 2, q = [Math.sin(a) * L.S * 1.0, -0.8 * L.S, Math.cos(a) * L.S * 1.0 - 0.05 * L.S], x = dot(rt, q), y = dot(up, q); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
       if (!L.clusters.length && !(L.brain && SH)) { x0 = y0 = -10; x1 = y1 = 10; }
       const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, c = [0, 1, 2].map(a => rt[a] * mx + up[a] * my);
       Object.assign(home, { tx: c[0], ty: c[1], tz: c[2], th, ph, d: fitDist((x1 - x0) / 2, (y1 - y0) / 2, z1 * 0.6) });
@@ -331,7 +354,23 @@
       afterInteract();
     }
     /* back to the whole cloud */
-    function back() { gsel = -1; sel = -1; hover = -1; showCard(-1); states(); flyTo(Object.assign({}, home), 800); afterInteract(); }
+    function back() { if (ksel) { ksel = null; lit = null; if (o.onKind) o.onKind(null); } gsel = -1; sel = -1; hover = -1; showCard(-1); states(); flyTo(Object.assign({}, home), 800); afterInteract(); }
+
+    /* a type from the sidebar (Documents, Notes …): every item of it lights up, the camera turns to where most of them are,
+       and the card lists them, with the way on to that page */
+    const KPAGE = { aircraft: '#/aircraft', doc: '#/documents', note: '#/notes', pack: '#/packs', route: '#/routes' };
+    function showKind(k) {
+      if (!g) return;
+      if (!k) { back(); return; }
+      const items = []; g.nodes.forEach((n, i) => { if (n.g === k && visible(i) && n.k !== 'page') items.push(i); });
+      ksel = k; gsel = -1; sel = -1; hover = -1; lit = new Set(items); showCard(-1); states(); stopRot();
+      if (!items.length) { flyTo(Object.assign({}, home), 700); return; }
+      let cx = 0, cy = 0, cz = 0; items.forEach(i => { cx += L.P[i * 3]; cy += L.P[i * 3 + 1]; cz += L.P[i * 3 + 2]; }); cx /= items.length; cy /= items.length; cz /= items.length;
+      let r = L.D * 2; items.forEach(i => { r = Math.max(r, Math.hypot(L.P[i * 3] - cx, L.P[i * 3 + 1] - cy, L.P[i * 3 + 2] - cz)); });
+      /* seen from the home angle, so the brain stays upright and familiar; only the distance and the centre change */
+      const th = home.th, ph = home.ph, wide = !card.hidden && W >= 600, d = Math.max(lim().min * 1.4, Math.min(home.d, fitDist(r + L.D * 2, r + L.D * 2, r * 0.5) * (wide ? 1.2 : 1)));
+      flyTo({ tx: cx, ty: cy, tz: cz, th, ph, d }, 900); afterInteract();
+    }
 
     /* ---------- frames: only while something moves ---------- */
     function request() { if (!raf && alive) raf = requestAnimationFrame(frame); }
@@ -348,6 +387,7 @@
         else { only = false; rot.t += dt / 1000; const s = rot.secs; cam.th = rot.th0 + 0.2 * Math.sin(Math.PI * 2 * Math.min(1, rot.t / s)); if (rot.t >= s) { cam.th = rot.th0; stopRot(); } else more = true; }
       }
       if (pulses.length) { if (only) { stats.pulseFrames++; } more = stepPulses(ts) || more; }
+      if (sweeping()) { U.uSweepOn.value = Math.min(1, U.uSweepOn.value + dt / 800); U.uSweep.value = (U.uSweep.value + dt * Math.PI * 2 / 7000) % (Math.PI * 2); more = true; } else U.uSweepOn.value = 0;
       render();
       const c1 = performance.now(); cpu.push(c1 - c0); if (cpu.length > 400) cpu.shift();
       /* the probe counts only frames drawn back to back while the page is in view (a hidden tab or a pause is not slowness) */
@@ -356,6 +396,8 @@
       if (more) request(); else lastTs = 0;
     }
     const clampPh = p => Math.max(0.12, Math.min(Math.PI - 0.12, p));
+    /* the radar sweep: one turn every 7 s while the map is on screen and the page is in view; never with reduced motion */
+    const sweeping = () => !!(L && L.brain && alive && onScreen && document.visibilityState === 'visible' && !reduced() && introP >= 1);
     function render() {
       place(); renderer.render(scene, camera); dbg.renders++;
       /* project the nodes once per frame: labels and hit tests use it */
@@ -445,9 +487,9 @@
     }
     function schedule() { if (ambT || !canPulse()) return; ambT = setTimeout(ambient, 14000 + Math.random() * 12000); }
     function unschedule() { if (ambT) clearTimeout(ambT); ambT = 0; }
-    const io = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver(es => { onScreen = es[es.length - 1].isIntersecting; if (onScreen) schedule(); else unschedule(); }) : null;
+    const io = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver(es => { onScreen = es[es.length - 1].isIntersecting; if (onScreen) { schedule(); request(); } else unschedule(); }) : null;
     if (io) io.observe(host);
-    const onVis = () => { if (document.visibilityState === 'visible') schedule(); else unschedule(); };
+    const onVis = () => { if (document.visibilityState === 'visible') { schedule(); request(); } else unschedule(); };
     document.addEventListener('visibilitychange', onVis);
 
     function resize() {
@@ -511,8 +553,11 @@
     /* the card moves to the right side when it would cover the dot it describes (so the pointer never lands on the card) */
     function aside(i) { if (host.clientWidth < 700) return; const [px, py] = [scr.ok ? scr.x[i] : -1, scr.ok ? scr.y[i] : -1]; if (px < 0) return; const m = 16; if (px < card.offsetLeft + card.offsetWidth + m && py < card.offsetTop + card.offsetHeight + m && px > card.offsetLeft - m && py > card.offsetTop - m) card.classList.add('r'); }
     function showCard(i) {
-      if (i >= 0) { card.classList.remove('r', 'grp'); card.hidden = false; card.innerHTML = UI.cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse, col: pcol(), edit: !sample && !!o.onEdit }) + (gsel >= 0 ? `<span class="bk"><button type="button" class="lnk" data-gl>${esc('← ' + names2[gsel])}</button></span>` : ''); aside(i); return; }
+      if (i >= 0) { card.classList.remove('r', 'grp'); card.hidden = false; card.innerHTML = UI.cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse, col: pcol(), edit: !sample && !!o.onEdit }) + (gsel >= 0 || ksel ? `<span class="bk"><button type="button" class="lnk" data-gl>${esc('← ' + (ksel ? GN[ksel] : names2[gsel]))}</button></span>` : ''); aside(i); return; }
       card.classList.remove('r');
+      if (ksel) { const items = lit ? [...lit] : [], pg = KPAGE[ksel];
+        card.hidden = false; card.classList.add('grp'); card.innerHTML = UI.groupCardHTML(g, items, { t, sample, edit: false, col: pcol(), name: GN[ksel], sub: items.length ? t('Lit up on the map. Pick one to open it.', 'Lyser på kartet. Velg én for å åpne den.') : t('None yet.', 'Ingen ennå.') }) +
+          (pg && !sample ? `<span class="b"><a class="btn sm" href="${pg}">${esc(t('All ', 'Alle ') + GN[ksel].toLowerCase() + ' →')}</a></span>` : ''); return; }
       if (gsel >= 0) { const c = L.clusters[gsel], a = c.ac >= 0 ? g.nodes[c.ac] : null; card.hidden = false; card.classList.add('grp'); card.innerHTML = UI.groupCardHTML(g, c.m.filter(visible), { t, sample, edit: !sample && !!o.onEdit, topic: c.topic, col: pcol(), name: names2[gsel], sub: a && names2[gsel].indexOf(a.label) < 0 ? a.label + (a.type ? ' · ' + a.type : '') : '' }); return; }
       card.hidden = true;
     }
@@ -529,8 +574,8 @@
       if (e.target.closest('[data-back]')) { back(); return; }
       if (e.target.closest('[data-gl]')) { sel = -1; showCard(-1); states(); }
     });
-    card.addEventListener('mouseover', e => { if (gsel < 0) return; const li = e.target.closest('[data-i]'), i = li ? +li.dataset.i : -1; if (i !== hover) { hover = i; states(); } });
-    card.addEventListener('mouseleave', () => { if (gsel >= 0 && hover >= 0) { hover = -1; states(); } });
+    card.addEventListener('mouseover', e => { if (gsel < 0 && !ksel) return; const li = e.target.closest('[data-i]'), i = li ? +li.dataset.i : -1; if (i !== hover) { hover = i; states(); } });
+    card.addEventListener('mouseleave', () => { if ((gsel >= 0 || ksel) && hover >= 0) { hover = -1; states(); } });
     function key(e) {
       if (e.target !== cv) return; const a = 0.14;
       if (e.key === '+' || e.key === '=') zoomBy(0.8); else if (e.key === '-' || e.key === '_') zoomBy(1.25);
@@ -578,14 +623,14 @@
     setGraph(o.graph); resize();
     if (introP >= 1) { render(); }
     return (host.wsmap = {
-      is3d: true, setGraph: ng => setGraph(ng, true), fit: () => flyTo(Object.assign({}, home), 700), focus: i => select(i, true), flyToCluster, focusKey: key => { const k = L.clusters.findIndex(c => c.key === key); if (k >= 0) flyToCluster(k); }, debug: dbg,
+      is3d: true, setGraph: ng => setGraph(ng, true), fit: () => flyTo(Object.assign({}, home), 700), focus: i => select(i, true), flyToCluster, showKind, get kind() { return ksel; }, focusKey: key => { const k = L.clusters.findIndex(c => c.key === key); if (k >= 0) flyToCluster(k); }, debug: dbg,
       pulseNow: () => { unschedule(); ambient(); }, stopAutoRotate: () => { stopRot(); },
       get graph() { return g; }, get camera() { return Object.assign({}, cam); }, get home() { return Object.assign({}, home); }, get layout() { return L; },
       screenOf: i => { if (!scr.ok) render(); return [scr.x[i], scr.y[i]]; },
       destroy() {
         alive = false; if (raf) cancelAnimationFrame(raf); raf = 0; stopRot(); unschedule(); clearTimeout(wheelT); if (io) io.disconnect(); document.removeEventListener('visibilitychange', onVis);
         if (ro) ro.disconnect(); else window.removeEventListener('resize', resize);
-        disposeObjs(); [nodeMat, puffMat, lineMat, pulseMat, shellMat].forEach(m => m.dispose()); renderer.dispose(); try { renderer.forceContextLoss(); } catch (e) {}
+        disposeObjs(); [nodeMat, puffMat, lineMat, pulseMat, shellMat, scopeMat].forEach(m => m.dispose()); renderer.dispose(); try { renderer.forceContextLoss(); } catch (e) {}
         host.innerHTML = ''; host.classList.remove('wsm3'); host.wsmap = null;
       }
     });

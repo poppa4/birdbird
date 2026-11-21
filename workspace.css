@@ -415,6 +415,7 @@ html.ws-deskmode .nsearch,html.ws-deskmode .ws-status{display:none}
 .wsm3-reg.dim{opacity:.55}
 .wsm-zm button{white-space:nowrap}
 .wsm3.narrow .wsm-pal{display:none}
+.ws-rail a.sub{font-weight:500;opacity:.75}
 .wsm3-reg .rg{width:8px;height:8px;border-radius:50%;margin-right:8px;align-self:center;flex:0 0 auto;box-shadow:0 0 8px currentColor}
 .wsm3-reg:focus-visible{outline:2px solid var(--focus-dark);outline-offset:1px}
 .wsm3-reg[hidden],.wsm3-nl[hidden]{display:none}

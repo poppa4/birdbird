@@ -34,13 +34,16 @@
   /* ---------- the brain: two hemispheres, the cerebellum and the stem, in units of S (1 = half the brain's length) ----------
      x right, y up, z front. Points are taken on the surfaces and pushed in and out along the normal by a folding pattern
      (gyri and sulci), with more points on the ridges, so a cloud of small particles reads as a brain. Deterministic. */
+  /* k: 0 left and 1 right cerebrum (a hemisphere and its temporal lobe), 2 cerebellum, 3 stem */
   const PARTS = [
-    { c: [-0.285, 0.04, 0.02], a: [0.37, 0.52, 0.8], k: 0 },   /* left hemisphere */
-    { c: [0.285, 0.04, 0.02], a: [0.37, 0.52, 0.8], k: 1 },    /* right hemisphere */
-    { c: [0, -0.42, -0.5], a: [0.44, 0.19, 0.27], k: 2 },      /* cerebellum */
-    { c: [0, -0.58, -0.2], a: [0.11, 0.3, 0.12], k: 3 }        /* brain stem */
+    { c: [-0.27, 0.07, 0], a: [0.36, 0.5, 0.82], k: 0, hemi: 1 },    /* left hemisphere */
+    { c: [0.27, 0.07, 0], a: [0.36, 0.5, 0.82], k: 1, hemi: 1 },     /* right hemisphere */
+    { c: [-0.33, -0.25, 0.1], a: [0.2, 0.18, 0.46], k: 0 },          /* left temporal lobe */
+    { c: [0.33, -0.25, 0.1], a: [0.2, 0.18, 0.46], k: 1 },           /* right temporal lobe */
+    { c: [0, -0.4, -0.56], a: [0.42, 0.2, 0.26], k: 2 },             /* cerebellum */
+    { c: [0, -0.6, -0.22], a: [0.11, 0.3, 0.12], k: 3 }              /* brain stem */
   ];
-  const SHARE = [0.435, 0.435, 0.115, 0.015];
+  const SHARE = [0.36, 0.36, 0.065, 0.065, 0.12, 0.03];
   const inPart = (p, q, m) => ((p[0] - q.c[0]) / q.a[0]) ** 2 + ((p[1] - q.c[1]) / q.a[1]) ** 2 + ((p[2] - q.c[2]) / q.a[2]) ** 2 < m;
   /* 3D gradient noise (Perlin), deterministic: the folds follow it, so they wind without lining up with any axis */
   const PERM = (() => { const R = prng(hash('brain-noise')), a = []; for (let i = 0; i < 256; i++) a.push(i); for (let i = 255; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.concat(a); })();
@@ -66,17 +69,19 @@
   function brainPoints(n, seed) {
     const key = n + '|' + (seed || ''); if (shellCache.has(key)) return shellCache.get(key);
     const R = prng(hash('brain|' + (seed || ''))), P = [], F = [], K = [], Nn = [];
-    PARTS.forEach((q, k) => {
-      let want = Math.round(n * SHARE[k]), tries = 0;
+    PARTS.forEach((q, pi) => {
+      const k = q.k; let want = Math.round(n * SHARE[pi]), tries = 0;
       while (want > 0 && tries++ < n * 60) {
         let u = [R() * 2 - 1, R() * 2 - 1, R() * 2 - 1]; const ul = Math.hypot(u[0], u[1], u[2]); if (ul > 1 || ul < 0.05) continue; u = u.map(x => x / ul);
         /* the cerebrum's underside is flatter (a shorter half-axis below the middle, so the surface stays smooth) */
-        const ay = k < 2 && u[1] < 0 ? q.a[1] * 0.7 : q.a[1];
+        const ay = q.hemi && u[1] < 0 ? q.a[1] * 0.62 : q.a[1];
         if (ay !== q.a[1] && R() > 0.78 + 0.22 * (1 - Math.abs(u[1]))) continue;   /* the same density above and below (no line round the middle) */
         let p = [q.c[0] + u[0] * q.a[0], q.c[1] + u[1] * ay, q.c[2] + u[2] * q.a[2]];
+        /* a brain, not two eggs: the frontal lobe narrows and its underside lifts, the back stays full */
+        if (q.hemi && p[2] > 0.1) { const f = Math.pow((p[2] - 0.1) / 0.72, 1.5); p[0] = q.c[0] + (p[0] - q.c[0]) * (1 - 0.22 * f); if (p[1] < q.c[1]) p[1] = q.c[1] + (p[1] - q.c[1]) * (1 - 0.4 * f); }
         /* the hemispheres do not show their inner faces (the fissure stays open) */
         if (k < 2 && (k === 0 ? p[0] > -0.035 : p[0] < 0.035)) continue;
-        if (PARTS.some((o, j) => j !== k && !(k === 3 && j === 2) && inPart(p, o, k < 2 ? 0.97 : 1))) continue;
+        if (PARTS.some((o, j) => j !== pi && !(k === 3 && o.k === 2) && inPart(p, o, k < 2 ? 0.97 : 1))) continue;
         let nr = [(p[0] - q.c[0]) / (q.a[0] * q.a[0]), (p[1] - q.c[1]) / (ay * ay), (p[2] - q.c[2]) / (q.a[2] * q.a[2])]; const nl = Math.hypot(nr[0], nr[1], nr[2]); nr = nr.map(x => x / nl);
         const f = fold(p, k), dep = k < 2 ? 0.045 : k === 2 ? 0.012 : 0;
         if (k < 3 && R() > 0.18 + 0.82 * f * f) continue;   /* more particles on the ridges: the folds show */
