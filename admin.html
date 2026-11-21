@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Admin · NORDAP</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="lab.css?v=15">
+<link rel="stylesheet" href="site.css?v=35">
+<style>
+/* ---------- Admin (page-only styles; tokens from site.css) ---------- */
+.ad-head{margin:40px 0 0}.ad-head>p{margin:12px 0 0;color:var(--ink-2);max-width:62ch;line-height:1.5}
+.ad-bar{display:flex;align-items:center;gap:10px;margin:18px 0 0;font-size:13px;color:var(--ink-2)}.ad-bar .sp{flex:1}
+.ad-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin:18px 0 0}
+.ad-t{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:14px 16px}
+.ad-t small{display:block;font-size:12.5px;color:var(--ink-2)}
+.ad-t b{display:block;font-family:var(--f-display);font-weight:700;font-size:32px;line-height:1.1;margin:6px 0 2px;color:var(--ink);font-variant-numeric:tabular-nums}
+.ad-t span{font-size:12.5px;color:var(--ink-2)}
+.ad-t.live b{display:flex;align-items:center;gap:10px}.ad-t.live b i{width:10px;height:10px;border-radius:50%;background:var(--ok,#1E8E4E);box-shadow:0 0 0 0 rgba(30,142,78,.5);animation:adp 2s infinite}
+@keyframes adp{70%{box-shadow:0 0 0 9px rgba(30,142,78,0)}100%{box-shadow:0 0 0 0 rgba(30,142,78,0)}}
+@media (prefers-reduced-motion:reduce){.ad-t.live b i{animation:none}}
+.ad-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px;margin:16px 0 0;align-items:start}
+@media (max-width:900px){.ad-grid{grid-template-columns:1fr}}
+.ad-card{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:16px 18px}.ad-card h2{font-size:16px;margin:0 0 10px}
+.ad-chart svg{display:block;width:100%;height:auto}.ad-chart .bar{fill:var(--accent)}.ad-chart .bar.v{fill:var(--rule-2,#cfd6dc)}.ad-chart text{font:11px var(--f-mono);fill:var(--ink-2)}
+.ad-leg{display:flex;gap:14px;font-size:12.5px;color:var(--ink-2);margin:8px 0 0}.ad-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.ad-tab{width:100%;border-collapse:collapse;font-size:14px}.ad-tab td{padding:7px 4px;border-bottom:1px solid var(--rule)}.ad-tab td:last-child{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.ad-tab td:first-child{font-family:var(--f-mono);font-size:13px;word-break:break-all}.ad-none{color:var(--ink-2);font-size:14px;margin:0}
+.ad-msg{margin:24px 0 0;padding:16px 18px;border:1px solid var(--rule);border-radius:var(--radius-lg);background:var(--sheet);max-width:70ch;line-height:1.5}
+.ad-msg code{font-family:var(--f-mono);background:var(--wash,#F2F4F5);padding:2px 6px;border-radius:4px;user-select:all;word-break:break-all}
+.ad-note{margin:16px 0 0;font-size:13px;color:var(--ink-2);max-width:80ch;line-height:1.5}
+</style>
+</head>
+<body data-title="Admin">
+<script src="site.js?v=122"></script>
+<div class="page">
+  <header class="ad-head">
+    <div class="eyebrow on">NORDAP · Admin</div>
+    <h1>Admin</h1>
+    <p>Visitors and members at a glance. Only your account can see this page.</p>
+  </header>
+  <div id="ad" aria-live="polite"><p class="ad-note">Loading…</p></div>
+  <p class="ad-note">Visits are counted anonymously: no cookies, and no IP addresses are stored. A visitor is one browser on one day, so the same person on two days counts twice. Online now means a page was open in the last two minutes. Bots are not counted.</p>
+</div>
+<script src="lab.js?v=60"></script>
+<script>
+LAB.add({},{
+ 'Admin':'Admin','Visitors and members at a glance. Only your account can see this page.':'Besøkende og medlemmer på ett blikk. Bare kontoen din kan se denne siden.','Loading…':'Laster …',
+ 'Visits are counted anonymously: no cookies, and no IP addresses are stored. A visitor is one browser on one day, so the same person on two days counts twice. Online now means a page was open in the last two minutes. Bots are not counted.':'Besøk telles anonymt: ingen cookies, og ingen IP-adresser lagres. En besøkende er én nettleser på én dag, så samme person to dager telles to ganger. Pålogget nå betyr at en side var åpen de siste to minuttene. Roboter telles ikke.'
+});
+LAB.start('admin');
+(function () {
+  'use strict';
+  const L = o => window.LAB.L(o), $ = id => document.getElementById(id), box = $('ad');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const nf = n => Number(n || 0).toLocaleString(document.documentElement.lang === 'nb' ? 'nb-NO' : 'en-GB');
+  let last = null, timer = 0;
+  function msg(html) { box.innerHTML = `<div class="ad-msg">${html}</div>`; }
+  function chart(days) {
+    const W = 640, H = 200, pad = 26, n = days.length, bw = (W - pad) / n, max = Math.max(4, ...days.map(d => Math.max(d.visitors, d.views)));
+    const y = v => H - 22 - (v / max) * (H - 40);
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(L({ en: 'Visitors and page views, last 14 days', no: 'Besøkende og sidevisninger, siste 14 dager' }))}">`;
+    [0, 0.5, 1].forEach(f => { const v = Math.round(max * f), yy = y(v); s += `<line x1="${pad}" x2="${W}" y1="${yy}" y2="${yy}" stroke="currentColor" stroke-opacity=".08"/><text x="0" y="${yy + 4}">${v}</text>`; });
+    days.forEach((d, i) => { const x = pad + i * bw, w = Math.max(3, bw * 0.34);
+      s += `<rect class="bar v" x="${(x + bw * 0.14).toFixed(1)}" y="${y(d.views).toFixed(1)}" width="${w.toFixed(1)}" height="${(H - 22 - y(d.views)).toFixed(1)}" rx="2"><title>${d.day}: ${d.views}</title></rect>`;
+      s += `<rect class="bar" x="${(x + bw * 0.14 + w + 2).toFixed(1)}" y="${y(d.visitors).toFixed(1)}" width="${w.toFixed(1)}" height="${(H - 22 - y(d.visitors)).toFixed(1)}" rx="2"><title>${d.day}: ${d.visitors}</title></rect>`;
+      if (i % 2 === n % 2 || i === n - 1) s += `<text x="${(x + bw / 2).toFixed(1)}" y="${H - 6}" text-anchor="middle">${d.day.slice(8)}.${d.day.slice(5, 7)}</text>`; });
+    return s + '</svg>';
+  }
+  const table = rows => rows && rows.length ? `<table class="ad-tab">${rows.map(r => `<tr><td>${esc(r.path)}</td><td>${nf(r.views != null ? r.views : r.n)}</td></tr>`).join('')}</table>` : `<p class="ad-none">${L({ en: 'Nothing yet.', no: 'Ingenting ennå.' })}</p>`;
+  function draw(j) {
+    const M = j.members, tile = (k, v, sub, live) => `<div class="ad-t${live ? ' live' : ''}"><small>${k}</small><b>${live ? '<i aria-hidden="true"></i>' : ''}${nf(v)}</b><span>${sub || '&nbsp;'}</span></div>`;
+    box.innerHTML = `<div class="ad-bar"><span>${L({ en: 'Updated ', no: 'Oppdatert ' })}${new Date(j.at).toLocaleTimeString(document.documentElement.lang === 'nb' ? 'nb-NO' : 'en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} · ${L({ en: 'updates every 30 seconds', no: 'oppdateres hvert 30. sekund' })}</span><span class="sp"></span><button class="btn sm" id="adr" type="button">${L({ en: 'Update now', no: 'Oppdater nå' })}</button></div>` +
+      `<div class="ad-tiles">` +
+      tile(L({ en: 'Online now', no: 'Pålogget nå' }), j.online, L({ en: 'pages open in the last 2 minutes', no: 'sider åpne siste 2 minutter' }), true) +
+      tile(L({ en: 'Visitors today', no: 'Besøkende i dag' }), j.today.visitors, nf(j.today.views) + ' ' + L({ en: 'page views', no: 'sidevisninger' })) +
+      tile(L({ en: 'Visitors, 7 days', no: 'Besøkende, 7 dager' }), j.week.visitors, nf(j.week.views) + ' ' + L({ en: 'page views', no: 'sidevisninger' })) +
+      tile(L({ en: 'Visitors, 30 days', no: 'Besøkende, 30 dager' }), j.month.visitors, nf(j.month.views) + ' ' + L({ en: 'page views', no: 'sidevisninger' })) +
+      tile(L({ en: 'Members', no: 'Medlemmer' }), M.total, `+${nf(M.new7)} ${L({ en: 'this week', no: 'denne uken' })} · +${nf(M.new30)} ${L({ en: '30 days', no: '30 dager' })}`) +
+      tile(L({ en: 'Active members', no: 'Aktive medlemmer' }), M.active30, L({ en: 'signed in during the last 30 days', no: 'innlogget de siste 30 dagene' })) +
+      `</div><div class="ad-grid"><div class="ad-card ad-chart"><h2>${L({ en: 'Last 14 days', no: 'Siste 14 dager' })}</h2>${chart(j.days)}<div class="ad-leg"><span><i style="background:var(--accent)"></i>${L({ en: 'Visitors', no: 'Besøkende' })}</span><span><i style="background:var(--rule-2,#cfd6dc)"></i>${L({ en: 'Page views', no: 'Sidevisninger' })}</span></div></div>` +
+      `<div class="ad-card"><h2>${L({ en: 'Open right now', no: 'Åpne akkurat nå' })}</h2>${table(j.onlinePages)}</div></div>` +
+      `<div class="ad-grid"><div class="ad-card"><h2>${L({ en: 'Top pages today', no: 'Mest besøkt i dag' })}</h2>${table(j.pages.today)}</div><div class="ad-card"><h2>${L({ en: 'Top pages, 7 days', no: 'Mest besøkt, 7 dager' })}</h2>${table(j.pages.week)}</div></div>`;
+    $('adr').onclick = load;
+  }
+  async function load() {
+    clearTimeout(timer); let r, j;
+    try { r = await fetch('/api/admin/stats', { credentials: 'same-origin', headers: { accept: 'application/json' } }); j = await r.json().catch(() => null); } catch (e) { j = null; }
+    if (r && r.ok && j && j.ok) { last = j; draw(j); }
+    else if (r && r.status === 401) msg(L({ en: 'Sign in to see this page.', no: 'Logg inn for å se denne siden.' }) + ` <a href="profile.html?next=admin.html#account">${L({ en: 'Sign in', no: 'Logg inn' })}</a>`);
+    else if (r && r.status === 403 && j) { const id = (/account id is ([\w-]+)/.exec(j.message || '') || [])[1];
+      msg(L({ en: 'This page is only for the site owner.', no: 'Denne siden er bare for eieren av nettstedet.' }) + (id ? `<br><br>${L({ en: 'To make this account the admin: in Cloudflare, open the Pages project, then Settings > Variables and secrets, add ADMIN_USER_IDS with this value, and deploy again:', no: 'For å gjøre denne kontoen til admin: åpne Pages-prosjektet i Cloudflare, så Settings > Variables and secrets, legg til ADMIN_USER_IDS med denne verdien, og publiser på nytt:' })}<br><code>${esc(id)}</code>` : '')); }
+    else if (j && j.error === 'no_db') msg(L({ en: 'Accounts are not switched on for this site, so there is nothing to count yet.', no: 'Kontoer er ikke slått på for dette nettstedet, så det er ingenting å telle ennå.' }));
+    else msg(L({ en: 'The numbers could not be loaded. Check your connection and try again.', no: 'Tallene kunne ikke lastes. Sjekk forbindelsen og prøv igjen.' }) + (last ? '' : ''));
+    if (r && r.ok) timer = setTimeout(() => { if (document.visibilityState === 'visible') load(); else document.addEventListener('visibilitychange', function f() { if (document.visibilityState === 'visible') { document.removeEventListener('visibilitychange', f); load(); } }); }, 30000);
+  }
+  new MutationObserver(() => { if (last) draw(last); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+  load();
+})();
+</script>
+</body>
+</html>

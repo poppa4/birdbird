@@ -26,6 +26,7 @@
    - WebAuthn challenges are single use (deleted when read) and expire after 5 minutes.
    - Responses: application/json, no-store, nosniff. Error bodies: { ok:false, error, message } where message says what to do. */
 
+import { adminFlag } from './stats.js';
 import { deleteAllFiles } from './files.js';
 import { b64u, unb64u, randomBytes, sha256, peekChallenge, verifyRegistration, verifyAuthentication, WAError, COSE_ES256, COSE_RS256 } from './webauthn.js';
 
@@ -610,7 +611,7 @@ async function meGet(c) {
   ]);
   return json({
     ok: true,
-    user: { id: s.user_id, name: s.name || null, created: s.user_created, signedInWith: s.via || null, email: pw ? pw.email || null : null, emailVerified: !!(pw && pw.email_verified_at), hasPassword: !!(pw && pw.password_hash) },
+    user: { id: s.user_id, name: s.name || null, created: s.user_created, signedInWith: s.via || null, email: pw ? pw.email || null : null, emailVerified: !!(pw && pw.email_verified_at), hasPassword: !!(pw && pw.password_hash), admin: await adminFlag(c) },
     mail: mailOn(c.env),
     recovery: { created: s.recovery_created_at || null },
     credentials: (creds.results || []).map(x => ({ id: x.id, name: x.name, created: x.created_at, lastUsed: x.last_used_at, synced: !!x.backup_eligible })),

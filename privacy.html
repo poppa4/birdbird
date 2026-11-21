@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Privacy · NORDAP</title>
-<meta name="description" content="NORDAP privacy in plain language: accounts are optional, what an account stores and where, documents stay in your browser, no analytics or tracking, and how to delete your data.">
+<meta name="description" content="NORDAP privacy in plain language: accounts are optional, what an account stores and where, documents stay in your browser, anonymous visit counts without cookies or tracking, and how to delete your data.">
 <link rel="canonical" href="https://nordap.eu/privacy">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NORDAP">
 <meta property="og:title" content="Privacy · NORDAP">
-<meta property="og:description" content="NORDAP privacy in plain language: accounts are optional, what an account stores and where, documents stay in your browser, no analytics or tracking, and how to delete your data.">
+<meta property="og:description" content="NORDAP privacy in plain language: accounts are optional, what an account stores and where, documents stay in your browser, anonymous visit counts without cookies or tracking, and how to delete your data.">
 <meta property="og:url" content="https://nordap.eu/privacy">
 <meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
 <meta property="og:image:width" content="1200">
@@ -52,7 +52,7 @@
 </style>
 </head>
 <body data-title="Privacy">
-<script src="site.js?v=121"></script>
+<script src="site.js?v=122"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -72,7 +72,7 @@
       <li>Documents you add, such as an AFM, QRH or SOP, are processed and stored in your own browser. A private copy is kept in your account only if you are signed in and cloud storage for documents is switched on.</li>
       <li>Messages you send through a form, and flows you publish in the flow library, are stored on NORDAP’s server. See Forms and sharing.</li>
       <li>AI features only send something when you use them. On nordap.eu the requests go to Cloudflare Workers AI (or Anthropic, if that is switched on); nothing of the question or the answer is stored.</li>
-      <li>No analytics, no tracking cookies and no advertising. The only cookie is the sign-in cookie, and only if you sign in.</li>
+      <li>No tracking, no tracking cookies and no advertising. Visits are only counted anonymously, without cookies. The only cookie is the sign-in cookie, and only if you sign in.</li>
       <li>Fonts are served from NORDAP itself, not from Google or another third party.</li>
     </ul>
   </section>
@@ -160,7 +160,7 @@
   <section class="card" id="tracking">
     <h2>Cookies, analytics and tracking</h2>
     <div class="pv-text">
-      <p>NORDAP does not use analytics or tracking tools and shows no advertising. No tracking pixels, no social media widgets. The only cookie is the sign-in cookie, set when you sign in to an account and removed when you sign out. It is needed for the account to work and is never used to follow you.</p>
+      <p>NORDAP does not use tracking or third-party analytics tools and shows no advertising. No tracking pixels, no social media widgets. NORDAP counts visits itself, anonymously: to know how many people use the site and which pages, each page sends a small count when it opens and once a minute while it is open. Nothing is stored on your device for this. The server keeps only a code made from the day, your IP address and your browser type; the IP address itself is not kept, and the code changes every day, so you cannot be followed from one day to the next or to other sites. Counts are kept for about 13 months. The only cookie is the sign-in cookie, set when you sign in to an account and removed when you sign out. It is needed for the account to work and is never used to follow you.</p>
       <p>The fonts are stored with the site and loaded from it, so opening a page does not send your address to a font service.</p>
       <p>Like any website, the server that delivers the pages may keep ordinary technical logs, such as the time of a request and an IP address, for operation and security. NORDAP does not use them to follow you.</p>
     </div>
@@ -209,7 +209,7 @@
   </section>
 </div>
 <script src="lab.js?v=60"></script>
-<script src="localdata.js?v=3"></script>
+<script src="localdata.js?v=4"></script>
 <script>
 (function(){
 'use strict';
@@ -305,7 +305,7 @@ LAB.add({'Sections':'Sections'},{
  "Accounts and sync":"Kontoer og synkronisering",
  "An account is optional. Without one, your progress and settings are stored in your own browser only.":"En konto er valgfri. Uten konto lagres progresjon, rang og innstillinger bare i din egen nettleser.",
  "With an account, your progress, briefing packs, routes and settings are also saved on NORDAP’s server, so they follow you to your other devices. You can delete the account at any time.":"Med konto lagres progresjon, briefingpakker, ruter og innstillinger også på NORDAPs server, så de følger deg til de andre enhetene dine. Du kan slette kontoen når som helst.",
- "No analytics, no tracking cookies and no advertising. The only cookie is the sign-in cookie, and only if you sign in.":"Ingen analyseverktøy, ingen sporingscookies og ingen reklame. Den eneste cookien er innloggingscookien, og bare hvis du logger inn.",
+ "No tracking, no tracking cookies and no advertising. Visits are only counted anonymously, without cookies. The only cookie is the sign-in cookie, and only if you sign in.":"Ingen sporing, ingen sporingscookies og ingen reklame. Besøk telles bare anonymt, uten cookies. Den eneste cookien er innloggingscookien, og bare hvis du logger inn.",
  "Without an account, nothing is stored on a NORDAP server, so NORDAP cannot see, recover or delete that data for you. Clearing it is in your hands, see below.":"Uten konto lagres ingenting på en NORDAP-server, så NORDAP kan ikke se, gjenopprette eller slette de dataene for deg. Det er du som sletter dem, se under.",
  'If you create an account, NORDAP stores what is needed to sign you in and to keep your data the same on all your devices. You sign in with your e-mail address and a password, and you can also switch on sign-in with Face ID or your fingerprint (a passkey).':'Lager du en konto, lagrer NORDAP det som trengs for å logge deg inn og holde dataene dine like på alle enhetene dine. Du logger inn med e-postadresse og passord, og du kan også slå på innlogging med Face ID eller fingeravtrykk (en passnøkkel).',
  'E-mail address':'E-postadresse','To sign you in, and to send you a link to choose a new password if you ask for one. NORDAP sends no newsletters or other e-mail. Reset e-mails are delivered by Resend (Resend, Inc.) once that is switched on.':'For å logge deg inn, og for å sende deg en lenke til å velge nytt passord hvis du ber om det. NORDAP sender ingen nyhetsbrev eller annen e-post. E-poster om nytt passord leveres av Resend (Resend, Inc.) når det er slått på.',
@@ -341,7 +341,7 @@ LAB.add({'Sections':'Sections'},{
  "Sign out.":"Logg ut.",
  "Signing out ends the session on the server. Your data stays in that browser until you clear it.":"Når du logger ut, avsluttes økten på serveren. Dataene blir liggende i den nettleseren til du sletter dem.",
  "Manage your account":"Administrer kontoen",
- "NORDAP does not use analytics or tracking tools and shows no advertising. No tracking pixels, no social media widgets. The only cookie is the sign-in cookie, set when you sign in to an account and removed when you sign out. It is needed for the account to work and is never used to follow you.":"NORDAP bruker ingen analyse- eller sporingsverktøy og viser ingen reklame. Ingen sporingspiksler, ingen widgeter fra sosiale medier. Den eneste cookien er innloggingscookien, som settes når du logger inn på en konto og fjernes når du logger ut. Den trengs for at kontoen skal virke, og brukes aldri til å følge deg.",
+ "NORDAP does not use tracking or third-party analytics tools and shows no advertising. No tracking pixels, no social media widgets. NORDAP counts visits itself, anonymously: to know how many people use the site and which pages, each page sends a small count when it opens and once a minute while it is open. Nothing is stored on your device for this. The server keeps only a code made from the day, your IP address and your browser type; the IP address itself is not kept, and the code changes every day, so you cannot be followed from one day to the next or to other sites. Counts are kept for about 13 months. The only cookie is the sign-in cookie, set when you sign in to an account and removed when you sign out. It is needed for the account to work and is never used to follow you.":"NORDAP bruker ingen sporing eller analyseverktøy fra andre og viser ingen reklame. Ingen sporingspiksler, ingen widgeter fra sosiale medier. NORDAP teller besøk selv, anonymt: for å vite hvor mange som bruker siden og hvilke sider, sender hver side en liten telling når den åpnes og én gang i minuttet mens den er åpen. Ingenting lagres på enheten din for dette. Serveren beholder bare en kode laget av dagen, IP-adressen din og nettlesertypen; selve IP-adressen beholdes ikke, og koden endres hver dag, så du kan ikke følges fra én dag til den neste eller til andre nettsteder. Tellingene beholdes i omtrent 13 måneder. Den eneste cookien er innloggingscookien, som settes når du logger inn på en konto og fjernes når du logger ut. Den trengs for at kontoen skal virke, og brukes aldri til å følge deg.",
  "Removes progress, settings, saved plans, setups and documents that NORDAP has stored in this browser. It cannot be undone. If you are signed in, you are signed out first, and the copy in your account is kept.":"Fjerner progresjon, innstillinger, lagrede planer, oppsett og dokumenter som NORDAP har lagret i denne nettleseren. Det kan ikke angres. Er du logget inn, logges du ut først, og kopien på kontoen beholdes.",
  "Data saved to your NORDAP account is removed by deleting the account on My page. Data kept with your Claude account, when NORDAP runs inside Claude, is removed by deleting the saved items inside NORDAP.":"Data som er lagret på NORDAP-kontoen, fjerner du ved å slette kontoen på Min side. Data som ligger hos Claude-kontoen din når NORDAP kjører inne i Claude, fjerner du ved å slette de lagrede elementene inne i NORDAP.",
  'School features or other new services would change what is stored and where. This page will be updated before any of that is switched on.':'Skolefunksjoner eller andre nye tjenester vil endre hva som lagres og hvor. Denne siden oppdateres før noe av det slås på.'

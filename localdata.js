@@ -3,14 +3,14 @@
    Loaded only on those pages. Never touches the server account (deleting that is a separate action on My page).
 
    What NORDAP stores on a device (found by searching the code for localStorage, sessionStorage and indexedDB):
-   - localStorage and sessionStorage keys starting with one of PREFIXES (bb-…, naeroson…, aeroson…, vlab-…, fi-…, birdbird-…)
+   - localStorage and sessionStorage keys starting with one of PREFIXES (bb-…, naeroson…, aeroson…, vlab-…, fi-…, birdbird-…, nordap.…)
    - IndexedDB databases in DBS: bb-flows (flow trainer cockpit pictures), birdbird-workspace (My Workspace items, notes, ink, settings, trashed files),
      naeroson-fi (Flight Intelligence / workspace documents and their files), naeroson-docs (older document store),
      naeroson-att (images attached to briefing packs and routes)
    tests/localdata.test.mjs fails if a new key or database appears in the code that this file does not cover. */
 (function (G) {
   'use strict';
-  const PREFIXES = ['bb-', 'naeroson', 'aeroson', 'vlab-', 'fi-', 'birdbird-'];
+  const PREFIXES = ['bb-', 'naeroson', 'aeroson', 'vlab-', 'fi-', 'birdbird-', 'nordap.'];
   const DBS = ['birdbird-workspace', 'naeroson-fi', 'naeroson-docs', 'naeroson-att', 'bb-flows'];
   const LANG = 'vlab-lang';
   const ours = k => typeof k === 'string' && PREFIXES.some(p => k.indexOf(p) === 0);
