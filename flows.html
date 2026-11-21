@@ -65,6 +65,13 @@
 .fsb:hover,.fsb:focus-visible{border-color:var(--ink);box-shadow:0 2px 0 var(--ink)}.fsb i{font-style:normal;font-size:20px;width:28px;text-align:center}.fsb b{display:block;font-size:15px}.fsb small{display:block;color:var(--ink-2);font-size:12.5px}
 .fsb.pri{background:var(--ink);color:#fff;border-color:var(--ink)}.fsb.pri small{color:#C9D1D8}
 .fmode button i{font-style:normal;font-weight:800;font-size:11px;display:inline-block;width:17px;height:17px;line-height:17px;border-radius:50%;border:1.5px solid currentColor;margin-right:6px;vertical-align:1px;text-align:center}
+.fvh{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;margin-bottom:10px}
+.fvh b{display:block;font-size:16px;line-height:1.25}.fvh small{font-size:12.5px;color:var(--ink-2)}.fvh .btn{min-width:40px;font-size:18px;padding:4px 10px}
+.fvr{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.fvr button{font:inherit;font-size:13px;font-weight:600;display:inline-flex;gap:6px;align-items:center;padding:6px 12px;min-height:36px;border:1px solid var(--rule);border-radius:18px;background:#fff;color:var(--ink);cursor:pointer}
+.fvr button i{width:10px;height:10px;border-radius:50%;background:var(--c)}.fvr button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.fvl .fs{cursor:pointer}
+.fmh{margin:-4px 0 12px;font-size:14px;color:var(--ink-2)}.fmh b{color:var(--ink)}
+.fvsrc{font-size:12.5px;color:var(--ink-2);margin:0 0 8px}.fvsrc summary{cursor:pointer}
 .fguide{list-style:none;margin:0 0 14px;padding:10px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:8px;background:var(--paper,#EEF1EF);border-radius:12px;align-items:center}
 .fguide li{display:flex;gap:9px;align-items:flex-start;cursor:pointer;padding:6px;border-radius:8px}.fguide li:hover{background:#fff}
 .fguide li>i{font-style:normal;font-weight:800;flex:0 0 26px;height:26px;line-height:26px;text-align:center;border-radius:50%;background:var(--ink);color:#fff;font-size:13px}
@@ -164,7 +171,7 @@ dialog.fd.wide{width:min(760px,96vw);max-width:min(760px,calc(100vw - 16px))}dia
  .fnow{padding:8px 10px;font-size:14px}
  .fzoom{right:6px;bottom:6px;gap:3px}.fzoom span{display:none}
 }
-@media (max-width:980px){#app[data-mode="practise"] .fstage,#app[data-mode="watch"] .fstage,#app[data-mode="together"] .fstage{max-height:64vh}}
+@media (max-width:980px){#app[data-mode="view"] .fstage,#app[data-mode="practise"] .fstage,#app[data-mode="watch"] .fstage,#app[data-mode="together"] .fstage{max-height:64vh}}
 @media (pointer:coarse){.fzoom button{width:42px;height:42px}.fi{width:38px;height:38px}.fsteps{gap:7px}.fly{padding:9px 14px}}
 .fwrap.full{position:fixed;inset:0;z-index:1000;border-radius:0;display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 .fwrap.full .fstage{max-height:none;flex:1 1 auto}
@@ -174,7 +181,7 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
 .fcrt{display:none;position:absolute;left:0;bottom:30px;width:max-content;max-width:min(320px,70vw);background:rgba(14,17,20,.92);color:#E9EEF2;font:12.5px/1.4 var(--f-body,sans-serif);padding:7px 10px;border-radius:6px}.fcrt a{color:#fff}
 .fcr:hover .fcrt,.fcr:focus-within .fcrt,.fcr.on .fcrt{display:block}
 @media print{.fcr{display:none!important}}
-.fstart:not([hidden]){display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}.fstart .fac{max-width:none;flex:1 1 220px}.fstart .fflow{flex:2 1 320px}#fgo2{flex:0 0 auto;padding:11px 22px;font-size:16px}
+.fstart:not([hidden]){display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}.fstart .fac{max-width:none;flex:1 1 220px;min-width:0}.fstart .fflow{flex:2 1 320px}#fgo2{flex:0 0 auto;padding:11px 22px;font-size:16px}
 @media (max-width:640px){.fstart .fac{flex:1 1 100%}.fstart .fac b{min-width:58px}#fgo2{flex:1 1 100%}}
 </style>
 </head>
@@ -191,7 +198,7 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
   </header>
   <nav class="snav" aria-label="Sections"><a href="#app">Trainer</a><a href="#how">How it works</a></nav>
 
-  <section class="card" id="app" data-mode="practise" aria-label="Flow trainer">
+  <section class="card" id="app" data-mode="view" aria-label="Flow trainer">
     <div class="fstart" id="fstart" hidden><label class="fac"><b>Aircraft</b><select id="sac"></select></label><label class="fac fflow"><b>Flow</b><select id="fsel" aria-label="Flow"></select></label><button class="btn pri" id="fgo2" type="button">▶ Practise</button></div>
     <div class="ftop">
       <button class="btn pri" id="fnew" type="button" aria-label="New flow">+ New</button>
@@ -201,8 +208,9 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
       </div></details>
       <input type="file" id="fimp" accept=".json,application/json" hidden>
       <input type="file" id="fpdf" accept="application/pdf,.pdf" hidden>
-      <div class="fmode" role="group" aria-label="Mode"><button data-m="practise" aria-pressed="true">Practise</button><button data-m="watch" aria-pressed="false">Watch</button><button data-m="build" aria-pressed="false">Build</button><button data-m="together" aria-pressed="false">Together</button></div>
+      <div class="fmode" role="group" aria-label="Mode"><button data-m="view" aria-pressed="true">See</button><button data-m="watch" aria-pressed="false">Play</button><button data-m="practise" aria-pressed="false">Practise</button><button data-m="together" aria-pressed="false">With a partner</button><button data-m="build" aria-pressed="false">Build</button></div>
     </div>
+    <p class="fmh" id="fmh"></p>
     <div class="fapp">
       <div>
         <div class="fwrap"><div class="fextag" id="fextag" hidden>Example · not an SOP</div>
@@ -256,7 +264,7 @@ LAB.add({},{
  'Flow trainer':'Flow-trener','Flow':'Flow','▶ Practise':'▶ Øv','Pick an aircraft and a flow, and practise it. NORDAP’s ready-made flows follow the manufacturer’s normal procedures for each type. Build your own over a NORDAP cockpit, your cockpit photo or your manual.':'Velg et fly og en flow, og øv på den. NORDAPs ferdige flows følger produsentens normalprosedyrer for hver type. Bygg dine egne over en NORDAP-cockpit, ditt eget cockpitbilde eller manualen din.','Build your own':'Bygg din egen','Trainer':'Trener','How it works':'Slik virker det',
  'Draw your cockpit flows over your own cockpit photo or PDF, a real photo of an A320, 737 or ATR 72 flight deck, or a NORDAP cockpit with every control named. One layer per pilot, checklist calls, playback, and practice from memory until the flow is in your hands. Free, and your pictures stay on your device.':'Tegn cockpit-flowene dine over ditt eget cockpitbilde eller PDF, et ekte foto av en A320-, 737- eller ATR 72-cockpit, eller en NORDAP-cockpit der hver bryter har navn. Ett lag per pilot, sjekklistekall, avspilling og øving fra hukommelsen til flowen sitter i hendene. Gratis, og bildene dine blir på enheten din.',
  '+ New flow':'+ Ny flow','+ New':'+ Ny','Share as a link':'Del som lenke','Save as file':'Lagre som fil','Flow library':'Flow-bibliotek','Open a flow file…':'Åpne en flowfil …','Flows from a manual (PDF)…':'Flows fra en manual (PDF) …','Save as picture (PNG)':'Lagre som bilde (PNG)','Save as video':'Lagre som video','Print':'Skriv ut','Duplicate':'Dupliser','Delete flow':'Slett flowen',
- 'Build':'Bygg','Watch':'Se','Practise':'Øv','Together':'Sammen','Pick a cockpit and tap its controls in the order you do them.':'Velg en cockpit og trykk bryterne i den rekkefølgen du gjør dem.','See the flow play, step by step.':'Se flowen spilles av, steg for steg.','Find the steps until you can do the whole flow from memory.':'Finn stegene til du kan hele flowen etter hukommelsen.','Got it':'Skjønner','Example · not an SOP':'Eksempel · ikke en SOP','Remove all steps':'Fjern alle steg','Pick a cockpit and tap its controls in the order your airline does them.':'Velg en cockpit og trykk bryterne i den rekkefølgen flyselskapet ditt gjør dem.',
+ 'Build':'Bygg','See':'Se','Play':'Spill av','With a partner':'Med partner','Watch':'Spill av','Practise':'Øv','Together':'Sammen','Pick a cockpit and tap its controls in the order you do them.':'Velg en cockpit og trykk bryterne i den rekkefølgen du gjør dem.','See the flow play, step by step.':'Se flowen spilles av, steg for steg.','Find the steps until you can do the whole flow from memory.':'Finn stegene til du kan hele flowen etter hukommelsen.','Got it':'Skjønner','Example · not an SOP':'Eksempel · ikke en SOP','Remove all steps':'Fjern alle steg','Pick a cockpit and tap its controls in the order your airline does them.':'Velg en cockpit og trykk bryterne i den rekkefølgen flyselskapet ditt gjør dem.',
  '1 · Build':'1 · Bygg','2 · Watch':'2 · Se','3 · Practise':'3 · Øv','4 · Together':'4 · Sammen',"Open a room and send the link or code to your partner on another device. One takes PF, the other PM. The flow runs in order across both roles: you find your steps, you see your partner's taps on your screen, and checklist calls pop up for both. Scores side by side at the end.":'Åpne et rom og send lenken eller koden til partneren din på en annen enhet. Én tar PF, den andre PM. Flowen går i rekkefølge på tvers av rollene: du finner stegene dine, du ser partnerens trykk på skjermen din, og sjekklistekall kommer opp hos begge. Resultatene side om side til slutt.',
  "Pick your cockpit: one of NORDAP's lifelike flight decks where every control has its name, or your own photo or PDF page. On your own picture you can give a control a name once (open the step with ⋯); after that it works like a built-in control: add it by name, a tap snaps to it, and you can drill finding it. Choose the PF or PM layer and tap the controls in order. Or let NORDAP do it: upload or drop your whole manual (FCTM, SOP) as a PDF and the flows are found, named and placed on the controls; paste an SOP and its items are placed the same way. What is left you place with a tap, and NORDAP remembers it for every later flow. Add checklist calls, outside events (ATC clearance, fuel figures, cabin secure), steps that wait for the other pilot, and notes on the panels.":'Velg cockpit: en av NORDAPs naturtro cockpiter der hver bryter har navn, eller ditt eget bilde eller en PDF-side. På eget bilde kan du gi en bryter navn én gang (åpne steget med ⋯); etterpå virker den som en innebygd bryter: legg den til etter navn, et trykk fester seg til den, og du kan øve på å finne den. Velg PF- eller PM-laget og trykk på bryterne i rekkefølge. Eller la NORDAP gjøre det: last opp eller slipp hele manualen (FCTM, SOP) som PDF, så blir flowene funnet, navngitt og plassert på bryterne; lim inn en SOP, og punktene plasseres på samme måte. Det som gjenstår plasserer du med et trykk, og NORDAP husker det for alle senere flows. Legg til sjekklistekall, hendelser utenfra (ATC-klarering, drivstofftall, kabin klar), steg som venter på den andre piloten, og notater på panelene.',
  'The flow plays step by step with its path drawn between the controls, one role or both, with the checklist calls on screen and the items read aloud if you like.':'Flowen spilles av steg for steg med banen tegnet mellom bryterne, én rolle eller begge, med sjekklistekallene på skjermen og punktene lest høyt hvis du vil.',
@@ -268,7 +276,7 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=47"></script>
+<script src="flows.js?v=48"></script>
 <script src="flowlib.js?v=6"></script>
 <script src="reqplane.js?v=3"></script>
 </body>

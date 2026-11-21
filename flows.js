@@ -8,7 +8,7 @@
 const F = window.BBFLOW, A = window.BBFLOWAC, L = o => LAB.L(o), $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const KEY = 'bb-flows', BEST = 'bb-flows-best';
-let FL = [], cur = null, ac = null, mode = 'practise', role = null, sel = null, zoom = 1, imgURL = null, imgFor = null, hidden = {}, placing = null, noteMode = false;
+let FL = [], cur = null, ac = null, mode = 'view', role = null, sel = null, zoom = 1, imgURL = null, imgFor = null, hidden = {}, placing = null, noteMode = false;
 
 /* ---------- storage ---------- */
 /* deleted flows are remembered (id -> when) so a flow deleted here does not come back from another device through the account */
@@ -204,7 +204,7 @@ function stepRow(s) { const other = cur.steps.filter(x => x.r !== s.r && x.k !==
       (cur.roles.length > 1 ? `<label>${L({ en: 'Layer', no: 'Lag' })} <select data-f="r">${cur.roles.map(r => `<option${r === s.r ? ' selected' : ''}>${r}</option>`).join('')}</select></label>` : '') +
       `<label class="fwide">${L({ en: 'Note (reference, limitation)', no: 'Notat (referanse, begrensning)' })} <input data-f="n" value="${esc(s.n || '')}" maxlength="400"></label>` +
       `<div class="fmb">${F.placed(s) ? `<button class="btn sm" data-a="unplace">${L({ en: 'Place again', no: 'Plasser på nytt' })}</button>` : ''}<button class="btn sm warn" data-a="del">${L({ en: 'Delete step', no: 'Slett steg' })}</button></div></div>` : '') + '</li>'; }
-function panel(scroll) { const p = $('fpanel'); $('app').classList.toggle('pon', !!P.on || W.on); $('fextag').hidden = !cur || !cur.ex; if (cur) $('fextag').textContent = cur.std ? L({ en: 'NORDAP · not an SOP', no: 'NORDAP · ikke en SOP' }) : L({ en: 'Example · not an SOP', no: 'Eksempel · ikke en SOP' }); if (!cur) { p.innerHTML = ''; return; } const ex = cur.ex; 
+function panel(scroll) { modeHint(); const p = $('fpanel'); $('app').classList.toggle('pon', !!P.on || W.on); $('fextag').hidden = !cur || !cur.ex; if (cur) $('fextag').textContent = cur.std ? L({ en: 'NORDAP · not an SOP', no: 'NORDAP · ikke en SOP' }) : L({ en: 'Example · not an SOP', no: 'Eksempel · ikke en SOP' }); if (!cur) { p.innerHTML = ''; return; } const ex = cur.ex; 
   const cockpitOpts = `<option value="img"${cur.ac === 'img' ? ' selected' : ''}>${esc(L({ en: 'My own photo or PDF', no: 'Mitt eget bilde eller PDF' }))}${cur.img && cur.img.name ? ' (' + esc(cur.img.name.slice(0, 24)) + ')' : ''}</option>` + `<optgroup label="${esc(L({ en: 'Real photos (free licence)', no: 'Ekte foto (fri lisens)' }))}">` + A.photos.map(a => `<option value="${a.id}"${cur.ac === a.id ? ' selected' : ''}>${esc(a.name)} · ${esc(L({ en: 'photo', no: 'foto' }))}</option>`).join('') + '</optgroup>' + acOpts(cur.ac);
   if (mode === 'build') {
     const R = cur.roles, unp = cur.steps.filter(s => s.r === role && !F.placed(s) && s.k === 'act').length;
@@ -241,6 +241,19 @@ function panel(scroll) { const p = $('fpanel'); $('app').classList.toggle('pon',
     { const sim = ac && ({ c172: 'c172.html', da42: 'cockpit.html', b200s: 'b200.html', b200: 'b200.html' })[ac.id]; if (sim) p.insertAdjacentHTML('beforeend', `<p class="fsaved"><a href="${sim}">${L({ en: 'Fly this cockpit in the simulator', no: 'Fly denne cockpiten i simulatoren' })} →</a></p>`); }
     if (ac && !ac.own) p.insertAdjacentHTML('beforeend', `<details class="ffix"><summary>${L({ en: 'Wrong name or missing control?', no: 'Feil navn eller mangler en bryter?' })}</summary><textarea id="ffixt" rows="3" maxlength="1500" placeholder="${L({ en: 'e.g. “HDG SEL should be HDG”, or “the APU bleed switch is missing”', no: 'f.eks. «HDG SEL skal hete HDG», eller «APU bleed-bryteren mangler»' })}"></textarea><button class="btn sm" id="ffixs">${L({ en: 'Send correction', no: 'Send rettelse' })}</button></details>`);
     if (scroll) inPanel(p.querySelector('.fs.on'));
+  } else if (mode === 'view') {
+    const fo = [...$('fsel').options].filter(o => o.value && !o.disabled), vi = fo.findIndex(o => o.value === $('fsel').value), R = cur.roles, one = R.filter(r => !hidden[r]), all = one.length === R.length;
+    const S = cur.steps.filter(s => !hidden[s.r]), ph = cur.phase && F.PHASES.find(x => x[0] === cur.phase);
+    p.innerHTML = `<div class="fvh"><button class="btn sm" id="vprev"${vi > 0 ? '' : ' disabled'} aria-label="${esc(L({ en: 'Previous flow', no: 'Forrige flow' }))}">‹</button><div><b>${esc(cur.name)}</b><small>${ph ? esc(L({ en: ph[1], no: ph[2] })) + ' · ' : ''}${cur.steps.length} ${L({ en: 'steps', no: 'steg' })}${fo.length > 1 && vi >= 0 ? ` · ${vi + 1} / ${fo.length}` : ''}</small></div><button class="btn sm" id="vnext"${vi >= 0 && vi < fo.length - 1 ? '' : ' disabled'} aria-label="${esc(L({ en: 'Next flow', no: 'Neste flow' }))}">›</button></div>` +
+      (R.length > 1 ? `<div class="fvr" role="group" aria-label="${esc(L({ en: 'Show', no: 'Vis' }))}"><button data-vr=""${all ? ' class="on"' : ''}>${L({ en: 'Both pilots', no: 'Begge pilotene' })}</button>${R.map(r => `<button data-vr="${r}" style="--c:${col(r)}"${!all && one[0] === r ? ' class="on"' : ''}><i></i>${r}</button>`).join('')}</div>` : '') +
+      `<div class="frow"><button class="btn sm" id="vwatch">▶ ${L({ en: 'Play step by step', no: 'Spill av steg for steg' })}</button><button class="btn sm" id="vprint">${L({ en: 'Print', no: 'Skriv ut' })}</button></div>` +
+      (cur.std ? `<details class="fvsrc"><summary>NORDAP · ${L({ en: 'not your operator’s SOP', no: 'ikke operatørens SOP' })}</summary>${L({ en: 'From: ', no: 'Fra: ' })}${esc(cur.stdSrc || '')}.</details>` : '') +
+      `<ol class="fsteps ro fvl">${S.map(s => `<li class="fs${sel === s.id ? ' on' : ''}" data-s="${s.id}" style="--c:${col(s.r)}"><span class="fbdg${s.k === 'call' ? ' call' : s.k === 'event' ? ' ev' : ''}">${s.k === 'event' ? '⚑' : esc(F.badge(cur, s))}</span><span class="fx">${R.length > 1 ? `<b>${s.r}</b> ` : ''}${esc(s.t || '…')}</span></li>`).join('')}</ol>`;
+    const go = d => { const o = fo[vi + d]; if (!o) return; $('fsel').value = o.value; $('fsel').dispatchEvent(new Event('change')); };
+    $('vprev').onclick = () => go(-1); $('vnext').onclick = () => go(1);
+    p.querySelectorAll('[data-vr]').forEach(b => b.onclick = () => { const r = b.dataset.vr; hidden = {}; if (r) R.forEach(x => { if (x !== r) hidden[x] = true; }); sel = null; draw(); panel(); });
+    $('vwatch').onclick = () => { setMode('watch'); wPlay(); }; $('vprint').onclick = () => { const b = document.querySelector('#fmenu [data-a=print]'); if (b) b.click(); };
+    p.querySelectorAll('.fvl .fs').forEach(li => li.onclick = () => { sel = sel === li.dataset.s ? null : li.dataset.s; draw(); p.querySelectorAll('.fvl .fs').forEach(x => x.classList.toggle('on', x.dataset.s === sel)); });
   } else if (mode === 'watch') {
     p.innerHTML = `<div class="frow"><button class="btn pri" id="wplay">${W.on ? '❚❚ ' + L({ en: 'Pause', no: 'Pause' }) : '▶ ' + L({ en: 'Play', no: 'Spill av' })}</button><button class="btn" id="wrst">↺ ${L({ en: 'From the start', no: 'Fra start' })}</button>` +
       `<label>${L({ en: 'Show', no: 'Vis' })} <select id="wrole"><option value="">${L({ en: 'All roles', no: 'Alle roller' })}</option>${cur.roles.map(r => `<option${W.role === r ? ' selected' : ''}>${r}</option>`).join('')}</select></label>` +
@@ -523,7 +536,8 @@ function roomForm() { const h = (location.hash.match(/room=([\w-]+)/) || [])[1] 
 
 /* ---------- modes ---------- */
 function stopAll() { wPause(); P.on = false; P.res = null; pq(); banner(); now(); $('ov').classList.remove('chk'); }
-function setMode(m) { if (P.live && m !== 'together') { P.live = false; RM.live = false; } stopAll(); mode = m; document.querySelectorAll('#fguide li[data-m]').forEach(li => li.classList.toggle('on', li.dataset.m === m)); document.querySelectorAll('.fmode button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === m))); $('app').dataset.mode = m;
+function modeHint() { const h = $('fmh'), T = { view: [{ en: 'See', no: 'Se' }, { en: 'the whole flow at once. Tap a step to find it. ‹ › goes to the next flow.', no: 'hele flowen på én gang. Trykk på et steg for å finne det. ‹ › går til neste flow.' }], watch: [{ en: 'Play', no: 'Spill av' }, { en: 'the flow step by step, in order.', no: 'flowen steg for steg, i rekkefølge.' }], practise: [{ en: 'Practise', no: 'Øv' }, { en: 'tap where each step is until you know the flow by heart.', no: 'trykk der hvert steg er til du kan flowen utenat.' }], together: [{ en: 'With a partner', no: 'Med partner' }, { en: 'one of you is PF, the other PM, each on your own phone.', no: 'én er PF, den andre PM, hver på sin telefon.' }], build: [{ en: 'Build', no: 'Bygg' }, { en: 'make your own flow or change a copy.', no: 'lag din egen flow eller endre en kopi.' }] }[mode]; if (h && T) h.innerHTML = `<b>${L(T[0])}:</b> ${L(T[1])}`; }
+function setMode(m) { if (P.live && m !== 'together') { P.live = false; RM.live = false; } stopAll(); if (mode === 'view' && m !== 'view') { hidden = {}; sel = null; } mode = m; document.querySelectorAll('#fguide li[data-m]').forEach(li => li.classList.toggle('on', li.dataset.m === m)); document.querySelectorAll('.fmode button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === m))); $('app').dataset.mode = m; modeHint();
   if (m === 'watch') { W.i = 0; draw({ upto: 0 }); } else if (m === 'practise') draw({ hideAll: true }); else draw(); panel(); }
 const RMX = { RM, rJoin };
 
