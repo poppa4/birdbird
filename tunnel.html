@@ -3181,7 +3181,7 @@ const SEC=window.SEC=(function(){
   const ps={alpha:6, logRe:6.7, link:true, contam:0, press:false, flow:true, field:true, fm:'cp'};
   const LOW2D=(window.innerWidth<=640)||((navigator.hardwareConcurrency||4)<=4);
   let g=null, inv=null, vis=null, pol=null, polKey='', dirty=true, W=0, H=0, dpr=1;
-  const XR=[-0.7,2.1], YR=[-0.7,0.7], GX=72, GY=38;
+  const XR=[-0.48,1.62], YR=[-0.525,0.525], GX=72, GY=38;
   const el=id=>document.getElementById(id);
   const aIn=el('p_alpha'), reIn=el('p_re'), link=el('p_link');
 
@@ -3440,9 +3440,9 @@ const SEC=window.SEC=(function(){
       for(let k=0;k<q.length;k++){ const o=k*4; if(!Number.isFinite(q[k])){ img.data[o+3]=0; continue; }
         const t=fieldT(q[k],R2), col=cmapJS(t);
         // Turbo: heldekkende felt; kjølig–varm: som før, gjennomsiktig nær fri strøm så bare avvikene farges
-        img.data[o]=col[0]*255; img.data[o+1]=col[1]*255; img.data[o+2]=col[2]*255; img.data[o+3]= cmFor(ps.fm==='v'?'lines':'surf')!==0? 255 : 255*Math.min(0.55,0.03+0.62*Math.abs(2*t-1)); }
+        img.data[o]=col[0]*255; img.data[o+1]=col[1]*255; img.data[o+2]=col[2]*255; img.data[o+3]= cmFor(ps.fm==='v'?'lines':'surf')!==0? 255 : 255*Math.min(0.68,0.08+0.8*Math.abs(2*t-1)); }
       const tmp=document.createElement('canvas'); tmp.width=F.nx; tmp.height=F.ny; tmp.getContext('2d').putImageData(img,0,0);
-      withFoilT(c,()=>{ c.imageSmoothingEnabled=true; c.globalAlpha=0.85; c.drawImage(tmp,AX0-GD/2,AY0-GD/2,F.nx*GD,F.ny*GD); c.globalAlpha=1;
+      withFoilT(c,()=>{ c.imageSmoothingEnabled=true; c.imageSmoothingQuality='high'; c.globalAlpha=0.95; c.drawImage(tmp,AX0-GD/2,AY0-GD/2,F.nx*GD,F.ny*GD); c.globalAlpha=1;
         // isolinjer (marsjerende kvadrater): tynne mørke streker hver 0,25 (Cp) / 0,1 (V/V∞), tydeligere på hele tall / 0,5
         const nx=F.nx, step=vm?0.1:0.25, lv=[]; for(let v=R2[0];v<=R2[1]+1e-6;v+=step){ const qq=+v.toFixed(2); if(!vm&&Math.abs(qq)<1e-6) continue; if(vm&&Math.abs(qq-1)<1e-6) continue; lv.push(qq); }
         for(const major of [false,true]){
@@ -3462,7 +3462,7 @@ const SEC=window.SEC=(function(){
     // røyklinjer: mykt, fotografisk – bred svak glød + tynn kjerne, sprer seg og blekner nedstrøms
     if(ps.flow){
       c.lineCap='round'; c.lineJoin='round';
-      for(const pass of [[5.5,0.035],[2.6,0.075],[1.05,0.42]]){
+      for(const pass of [[5.5,0.03],[2.6,0.06],[1.1,0.34]]){
         c.lineWidth=pass[0];
         for(const L of SL2){ const end=L.turb>=0? Math.min(L.n,L.turb+14) : L.n;
           for(let a=0;a<end-1;a+=10){ const b=Math.min(end-1,a+10), age=a/Math.max(1,L.n), fade=L.turb>=0&&a>L.turb? Math.max(0,1-(a-L.turb)/14) : 1;
@@ -3492,7 +3492,7 @@ const SEC=window.SEC=(function(){
     if(g.flapEff&&!HLE){ const h=TP(0.75,upperY(0.75)), l=TP(0.75,lowerY(0.75)); ctx.strokeStyle='rgba(30,38,46,.6)'; ctx.beginPath(); ctx.moveTo(h[0],h[1]); ctx.lineTo(l[0],l[1]); ctx.stroke(); }
     ctx.setLineDash([4,4]); ctx.strokeStyle='rgba(226,232,238,.28)'; ctx.beginPath(); let p=TP(-0.15,0); ctx.moveTo(p[0],p[1]); p=TP(1.15,0); ctx.lineTo(p[0],p[1]); ctx.stroke(); ctx.setLineDash([]);
     // angrepsvinkelen: mellom relativ vind (vannrett) og kordelinjen, tegnet foran forkanten
-    { const L0=TP(0,0), R=Math.min(W*0.2,(0.42/(XR[1]-XR[0]))*W), a=ps.alpha*DEG, ca=Math.cos(a), sa=Math.sin(a);
+    { const L0=TP(0,0), R=Math.min(W*0.16,(0.3/(XR[1]-XR[0]))*W), a=ps.alpha*DEG, ca=Math.cos(a), sa=Math.sin(a);
       ctx.strokeStyle='rgba(127,203,232,.55)'; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(L0[0],L0[1]); ctx.lineTo(L0[0]-R*1.15,L0[1]); ctx.stroke(); ctx.setLineDash([]);
       ctx.strokeStyle='rgba(226,232,238,.5)'; ctx.beginPath(); ctx.moveTo(L0[0],L0[1]); ctx.lineTo(L0[0]-R*1.15*ca,L0[1]-R*1.15*sa); ctx.stroke();
       if(Math.abs(ps.alpha)>0.4){ ctx.strokeStyle=C.smoke; ctx.lineWidth=1.6; ctx.beginPath(); ctx.arc(L0[0],L0[1],R*0.8,Math.PI,Math.PI+a,a<0); ctx.stroke(); ctx.lineWidth=1; }
@@ -3544,14 +3544,14 @@ const SEC=window.SEC=(function(){
     arrow(c0[0],c0[1],c0[0],c0[1]-L,C.green,2.2);
     ctx.fillStyle=C.green; ctx.beginPath(); ctx.arc(c0[0],c0[1],4,0,Math.PI*2); ctx.fill();
     label('CP '+Math.round(vis.cp*100)+' %',c0[0]+10,c0[1]-L*0.3,C.green,'left');
-    const wy=sy(0)+H*0.32, wx=sx(-0.62);
+    const wy=sy(0)+H*0.32, wx=Math.max(14,sx(XR[0]+0.06));
     arrow(wx,wy,wx+W*0.09,wy,C.smoke,1.8);
     label('Relativ vind',wx,wy+16,C.smoke,'left');
     if(ps.alpha>pol.alphaCrit) label('α > kritisk α: stall',sx(-0.62),sy(0)-H*0.36,C.red,'left');
     if(HLE){ HLE.js=HLE.jets.map(j=>{ const f=new Float32Array(j.length*2); j.forEach((q,i)=>{ const t=TP(q[0],q[1]); f[2*i]=t[0]; f[2*i+1]=t[1]; }); return f; }); }
     if(HLE&&W>420){ const lb=(k,xp,up,dy)=>{ const q=HLE.at(xp,up), t=TP(q[0],q[1]); label(k,t[0],t[1]+dy,'#d4dbe2','center'); };
       if(g.slat>0){ const q=HLE.at(0.02,false), t=TP(q[0],q[1]); label('Lamell (slat)',t[0]-18,t[1]+40,'#d4dbe2','right'); } if(g.fowler) lb('Fowler-klaff',0.9,false,26);
-      if(HLE.jets.length){ const j=HLE.jets[HLE.jets.length-1], q=j[j.length-1], t=TP(q[0],q[1]); label('Spalte: luft fra undersiden',t[0]+6,t[1]-30,'#9ff0ff','left'); } }
+      if(HLE.jets.length){ const j=HLE.jets[HLE.jets.length-1], q=j[j.length-1], t=TP(q[0],q[1]); label('Spalte: luft fra undersiden',t[0]-18,t[1]-4,'#9ff0ff','right'); } }
     // fargeskala: loddrett, med tittel, enhet og streker (som i Fluent/ParaView), nederst til høyre
     if(ps.field){ const vm=ps.fm==='v', R2=FR2(), sm=W<520, bh=Math.round(Math.min(sm?96:150,H*0.5)), bw=sm?8:10, tw=sm?30:36;
       const bx=W-(sm?10:16)-tw-bw, by=H-(sm?12:18)-bh, pad=sm?6:8;
@@ -3620,8 +3620,9 @@ const SEC=window.SEC=(function(){
   function arrow(x0,y0,x1,y1,col,w){ ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=w||1.4; ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke();
     const a=Math.atan2(y1-y0,x1-x0), hl=Math.min(8,Math.hypot(x1-x0,y1-y0)*0.45); ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x1-hl*Math.cos(a-0.45),y1-hl*Math.sin(a-0.45)); ctx.lineTo(x1-hl*Math.cos(a+0.45),y1-hl*Math.sin(a+0.45)); ctx.closePath(); ctx.fill(); }
   function label(t,x,y,col,align){ t=T(t); ctx.font='600 11px "Public Sans", system-ui, sans-serif'; ctx.textAlign=align||'left'; ctx.textBaseline='middle';
-    const w=ctx.measureText(t).width; const x0=align==='right'?x-w-4:align==='center'?x-w/2-4:x-4;
-    ctx.fillStyle='rgba(13,19,25,.78)'; ctx.fillRect(x0,y-8,w+8,16); ctx.fillStyle=col; ctx.fillText(t,x,y); }
+    const w=ctx.measureText(t).width; let x0=align==='right'?x-w-4:align==='center'?x-w/2-4:x-4;
+    x0=Math.max(4,Math.min(W-w-12-(ps.field?Math.round(W<520?52:70):0),x0)); y=Math.max(12,Math.min(H-12,y));   // labels stay inside the picture
+    ctx.fillStyle='rgba(13,19,25,.78)'; ctx.fillRect(x0,y-8,w+8,16); ctx.fillStyle=col; ctx.textAlign='left'; ctx.fillText(t,x0+4,y); }
   const TP=(ax,ay)=>{ const [x,y]=rotD(ax,ay); return [sx(x),sy(y)]; };
 
   function draw(){
