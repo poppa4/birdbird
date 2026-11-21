@@ -1,4 +1,4 @@
-/* My Workspace map in 3D: a cloud of points, a soft ball per group.  node --test tests/wsgraph3d.test.mjs */
+/* My Workspace map in 3D: a brain, a region per section.  node --test tests/wsgraph3d.test.mjs */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
@@ -53,12 +53,17 @@ test('own maps: a ball per aircraft plus Unsorted, points apart; a large map is 
   const t0 = performance.now(); const g6 = OWN(600), L6 = B.layout3d(g6); assert.ok(performance.now() - t0 < 1500); check(g6, L6, 'own 600');
 });
 
-test('the cloud follows the plate; the soft light sits on the groups', () => {
-  const g = SAMPLE(), wide = B.layout3d(g, { aspect: 2 }), tall = B.layout3d(g, { aspect: 0.6 });
-  assert.equal(wide.cols, 3); assert.ok(tall.cols < 3); check(g, tall, 'tall');
-  const P = B.puffs(wide.clusters); assert.equal(P.length % 5, 0); assert.ok(P.length / 5 >= wide.clusters.length * 7);
-  for (let k = 0; k < P.length; k += 5) { const c = wide.clusters[P[k + 4]]; assert.ok(dist([P[k], P[k + 1], P[k + 2]], c.c) <= c.r + B.D, 'puff on its group'); }
-  assert.deepEqual([...P], [...B.puffs(B.layout3d(SAMPLE(), { aspect: 2 }).clusters)], 'deterministic');
+test('the brain: every item on its surface, each section a region of the upper cerebrum; the particles are deterministic', () => {
+  const g = SAMPLE(), L = B.layout3d(g);
+  assert.ok(L.brain && L.S >= 70);
+  /* items sit just above the surface of a hemisphere: inside the brain's bounding box, outside its core */
+  g.nodes.forEach((n, i) => { const p = at(L, i).map(x => x / L.S); assert.ok(Math.abs(p[0]) < 0.75 && p[1] < 0.66 && p[1] > -0.5 && Math.abs(p[2]) < 0.9, 'on the brain: ' + n.id); assert.ok(Math.hypot(p[0] * 1.6, p[1] * 1.6, p[2]) > 0.45, 'on the surface: ' + n.id); });
+  L.clusters.forEach(c => assert.ok(c.nrm && c.c[1] / L.S > -0.05, 'region on the upper half: ' + c.key));
+  const S1 = B.shell(L, 4000), S2 = B.shell(B.layout3d(SAMPLE()), 4000);
+  assert.equal(S1.n, 4000); assert.deepEqual([...S1.P.slice(0, 300)], [...S2.P.slice(0, 300)], 'deterministic');
+  assert.ok([...S1.reg].some(r => r >= 0) && new Set([...S1.reg].filter(r => r >= 0)).size === L.clusters.length, 'every section tints a region');
+  const P = B.puffs(L.clusters); assert.equal(P.length % 5, 0);
+  for (let k = 0; k < P.length; k += 5) { const c = L.clusters[P[k + 4]]; assert.ok(dist([P[k], P[k + 1], P[k + 2]], c.c) <= c.r + B.D, 'puff on its group'); }
 });
 
 test('growth runs from the middle of the cloud outwards', () => {

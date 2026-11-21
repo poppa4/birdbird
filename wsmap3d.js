@@ -1,5 +1,8 @@
 /* NORDAP – My Workspace map in 3D (the full Map page only; the mini maps stay 2D in wsmap.js).
-   A calm cloud drawn by three.js (r128, lazy-loaded with this file): each group (an aircraft, then 'Unsorted') a soft
+   A brain drawn by three.js: tens of thousands of small particles on a folded surface (one draw call), each section
+   (an aircraft, a group of your own, then 'Unsorted') a tinted region of the cerebrum with its items on it. The side
+   facing you is bright with a brighter rim, the far side faint; seen from above, the cerebellum hides under the cerebrum.
+   Earlier this was a calm cloud drawn by three.js (r128, lazy-loaded with this file): each group (an aircraft, then 'Unsorted') a soft
    ball of glowing points inside a few large puffs of light (one draw call for all puffs, one for all points), the groups
    side by side at slightly different depths so the cloud has parallax when it turns. Links are faint hairlines inside a
    group; a point's links light up when you point at it. Every group has a clear name and count ('DA42 · 6') as an
@@ -15,7 +18,10 @@
   'use strict';
   const GW = window.WSGRAPH, G3 = window.WSGRAPH3D, UI = window.WSMAP.ui, COL = window.WSMAP.COL;
   /* node size (world units, glow included) and brightness by type */
-  const SZ = { aircraft: 5.6, doc: 3.1, page: 1.7, note: 2.3, notebook: 2.4, pack: 2.7, route: 2.6, desk: 2.6 };
+  const SZ = { aircraft: 4.4, doc: 2.5, page: 1.4, note: 1.9, notebook: 2, pack: 2.2, route: 2.1, desk: 2.1 };
+  /* the brain's regions: one calm tint per section (aircraft or group), in the order they are laid out */
+  const REG = ['#5AA9FF', '#B48CFF', '#3FD0C9', '#FF8FB8', '#F2C46B', '#7FD67A', '#8EA2FF', '#FF9F6B', '#62D2F0', '#E58CF0'];
+  const regCol = k => k < 0 ? null : hex(REG[k % REG.length]);
   const BR = { aircraft: 1.1, doc: 0.88, page: 0.6, note: 0.76, notebook: 0.78, pack: 0.84, route: 0.82, desk: 0.66 };
   const reduced = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const stats = { pulseFrames: 0 };
@@ -57,6 +63,22 @@
     precision mediump float; uniform vec3 uColor; varying vec2 vC; varying float vA;
     void main() { float r2 = dot(vC, vC); if (r2 > 1.0 || vA < 0.002) discard; float f = max(0.0, exp(-r2 * 3.0) - 0.05);
       vec3 c = uColor * f * vA; gl_FragColor = vec4(c, max(c.r, max(c.g, c.b))); }`;
+  /* the brain's particles: small crisp dots; the side facing you bright, its outline brighter still (rim), the far side faint */
+  const SHELL_VS = `
+    attribute vec3 color; attribute float size; attribute float alpha; attribute float grow; attribute vec3 nrm; attribute float occ;
+    uniform float uScale, uGrow, uNear, uFar; uniform vec3 uCam; varying vec3 vC; varying float vA;
+    void main() {
+      vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
+      float k = smoothstep(grow * 0.86, grow * 0.86 + 0.14, uGrow), d = max(0.1, -mv.z);
+      vec3 tc = normalize(uCam - position); float f = dot(nrm, tc), front = smoothstep(-0.3, 0.3, f), rim = pow(1.0 - abs(f), 3.0);
+      gl_PointSize = clamp(size * uScale / d, 1.2, 7.0);
+      float above = smoothstep(0.05, 0.55, normalize(uCam).y) * occ; /* seen from above, the cerebrum hides the cerebellum */
+      vC = color * (1.0 + 1.6 * rim * front * (1.0 - occ)); vA = alpha * k * (0.16 + 0.84 * front) * (1.0 - 0.5 * smoothstep(uNear, uFar, d)) * (1.0 - 0.92 * above);
+    }`;
+  const SHELL_FS = `
+    precision mediump float; varying vec3 vC; varying float vA;
+    void main() { float r = length(gl_PointCoord - 0.5) * 2.0; if (r > 1.0 || vA < 0.004) discard; float a = smoothstep(1.0, 0.25, r);
+      vec3 c = vC * a * vA; gl_FragColor = vec4(c, max(c.r, max(c.g, c.b))); }`;
   const SEG = 10; /* segments per link arc */
   /* palettes: Ice (calm ice-blue and white, the default), Ember (warm), Mono (greys); subtle tints per type */
   const PAL = {
@@ -78,13 +100,14 @@
       <div class="wsm3-lbl"></div>
       <div class="wsm-top">
         <div class="wsm-q"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.2"/><path d="M12.6 12.6 17 17"/></svg><input type="search" class="wsm-qi" placeholder="${esc(t('Find on the map', 'Finn på kartet'))}" aria-label="${esc(t('Find on the map', 'Finn på kartet'))}" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-autocomplete="list"><ul class="wsm-sug" role="listbox" hidden></ul></div>
-        <span class="sp"></span>
+        <span class="sp"></span>${o.onEdit && !sample ? `<button type="button" class="wsm-ng" data-ng>${esc(t('+ New group', '+ Ny gruppe'))}</button>` : ''}
         <div class="wsm-zm"><button type="button" data-z="in" aria-label="${esc(t('Zoom in', 'Zoom inn'))}">+</button><button type="button" data-z="out" aria-label="${esc(t('Zoom out', 'Zoom ut'))}">−</button><button type="button" data-z="fit">${esc(t('Reset view', 'Tilbakestill'))}</button></div><div class="wsm-zm wsm-pal" role="group" aria-label="${esc(t('Colours', 'Farger'))}">${Object.keys(PAL).map(k => `<button type="button" data-pal="${k}" aria-pressed="false" title="${esc(t(PAL[k].name[0], PAL[k].name[1]))}" aria-label="${esc(t('Colours: ', 'Farger: ') + t(PAL[k].name[0], PAL[k].name[1]))}"><i class="sw sw-${k}"></i></button>`).join('')}</div>${UI.viewSwitch(o.view, t)}
       </div>
       <div class="wsm-card" hidden></div>
       <div class="wsm-leg" role="group" aria-label="${esc(t('Show on the map', 'Vis på kartet'))}"></div>`;
     const cv = host.querySelector('canvas'), card = host.querySelector('.wsm-card'), legEl = host.querySelector('.wsm-leg'), qi = host.querySelector('.wsm-qi'), sug = host.querySelector('.wsm-sug');
     const lblEl = host.querySelector('.wsm3-lbl');
+    { const ng = host.querySelector('[data-ng]'); if (ng) ng.addEventListener('click', () => o.onEdit('newgroup', null, ng)); }
     const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, powerPreference: 'high-performance' });
     renderer.setClearColor(0x000000, 0);
     const dprCap = phone ? 1.25 : 1.5;
@@ -98,10 +121,12 @@
     const lineMat = new THREE.ShaderMaterial({ uniforms: lineU, vertexShader: LINE_VS, fragmentShader: LINE_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
     const puffU = Object.assign({ uColor: { value: new THREE.Color(0.36, 0.56, 0.88) } }, U);
     const puffMat = new THREE.ShaderMaterial({ uniforms: puffU, vertexShader: PUFF_VS, fragmentShader: PUFF_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
+    const shellU = Object.assign({ uCam: { value: new THREE.Vector3() } }, U);
+    const shellMat = new THREE.ShaderMaterial({ uniforms: shellU, vertexShader: SHELL_VS, fragmentShader: SHELL_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
     const pulseMat = new THREE.ShaderMaterial({ uniforms: Object.assign({}, U, { uGrow: { value: 2 } }), vertexShader: NODE_VS, fragmentShader: NODE_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
 
     let g = null, L = null, N = 0, alive = true, raf = 0, W = 0, H = 0;
-    let nodes = null, links = null, cloud = null, pulsePts = null, curves = null, puffOf = null;
+    let nodes = null, links = null, cloud = null, pulsePts = null, curves = null, puffOf = null, brain = null, SH = null;
     let hover = -1, sel = -1, gsel = -1, hidden = new Set(), near = null, names2 = [];
     const scr = { x: new Float32Array(0), y: new Float32Array(0), d: new Float32Array(0), ok: false };
     /* camera: orbit round a target */
@@ -118,7 +143,7 @@
     const visible = i => !hidden.has(g.nodes[i].g);
 
     /* ---------- data -> buffers ---------- */
-    function disposeObjs() { [nodes, links, cloud, pulsePts].forEach(m => { if (m) { scene.remove(m); m.geometry.dispose(); } }); nodes = links = cloud = pulsePts = null; }
+    function disposeObjs() { [nodes, links, cloud, pulsePts, brain].forEach(m => { if (m) { scene.remove(m); m.geometry.dispose(); } }); nodes = links = cloud = pulsePts = brain = null; }
     const aspect = () => { const r = host.getBoundingClientRect(); return r.width && r.height ? Math.max(0.45, Math.min(3, (r.width - 32) / Math.max(120, r.height - padT() - padB()))) : 1.7; };
     function setGraph(ng, keep) {
       const before = g && keep ? new Set(g.nodes.map(n => n.id)) : null;
@@ -150,10 +175,20 @@
       const CO = [[-1, -1], [1, -1], [1, 1], [-1, -1], [1, 1], [-1, 1]]; puffOf = new Int32Array(np);
       for (let k = 0; k < np; k++) {
         const ck = PF[k * 5 + 4], core = !k || PF[k * 5 - 1] !== ck, gk = Math.min(1, Math.hypot(PF[k * 5], PF[k * 5 + 1], PF[k * 5 + 2]) / L.R) * 0.7; puffOf[k] = ck;
-        for (let v = 0; v < 6; v++) { pp.set([PF[k * 5], PF[k * 5 + 1], PF[k * 5 + 2]], (k * 6 + v) * 3); pc.set(CO[v], (k * 6 + v) * 2); pr2[k * 6 + v] = PF[k * 5 + 3]; pa[k * 6 + v] = core ? 0.2 : 0.13; pg[k * 6 + v] = before ? 0 : gk; }
+        for (let v = 0; v < 6; v++) { pp.set([PF[k * 5], PF[k * 5 + 1], PF[k * 5 + 2]], (k * 6 + v) * 3); pc.set(CO[v], (k * 6 + v) * 2); pr2[k * 6 + v] = PF[k * 5 + 3]; pa[k * 6 + v] = L.brain ? (core ? 0.09 : 0.05) : core ? 0.2 : 0.13; pg[k * 6 + v] = before ? 0 : gk; }
       }
       geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pp, 3)); geo.setAttribute('corner', new THREE.BufferAttribute(pc, 2)); geo.setAttribute('rad', new THREE.BufferAttribute(pr2, 1)); geo.setAttribute('alpha', new THREE.BufferAttribute(pa, 1)); geo.setAttribute('grow', new THREE.BufferAttribute(pg, 1));
       cloud = new THREE.Mesh(geo, puffMat); cloud.frustumCulled = false; cloud.renderOrder = 0; cloud.userData.base = pa.slice(); scene.add(cloud);
+      /* the brain itself: thousands of small particles on its folded surface, each section's region in its own tint */
+      if (L.brain && G3.shell) {
+        SH = G3.shell(L, phone ? 14000 : 26000); const M = SH.n, sz = new Float32Array(M), sa = new Float32Array(M), sg = new Float32Array(M);
+        SH.base = new Float32Array(M);
+        for (let j = 0; j < M; j++) { const med = SH.K[j] === 0 ? SH.N[j * 3] : SH.K[j] === 1 ? -SH.N[j * 3] : -1, u = Math.max(0, Math.min(1, (med + 0.1) / 0.6)); SH.base[j] = 1 - 0.92 * u * u * (3 - 2 * u);
+          if (SH.K[j] >= 2) { const out = Math.max(-SH.N[j * 3 + 1], -SH.N[j * 3 + 2], Math.abs(SH.N[j * 3]) * 0.8); SH.base[j] = 0.1 + 0.9 * Math.max(0, Math.min(1, (out - 0.15) / 0.5)); } /* the cerebellum's top lies under the cerebrum: only its back and underside show */ /* the inner faces by the fissure fade out: no seam through the middle */
+          sz[j] = L.S * (0.0062 + 0.004 * SH.F[j]); sa[j] = 0.85 * SH.base[j]; sg[j] = before ? 0 : SH.grow[j]; }
+        geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(SH.P, 3)); geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(M * 3), 3)); geo.setAttribute('size', new THREE.BufferAttribute(sz, 1)); geo.setAttribute('alpha', new THREE.BufferAttribute(sa, 1)); geo.setAttribute('grow', new THREE.BufferAttribute(sg, 1)); geo.setAttribute('nrm', new THREE.BufferAttribute(SH.N, 3)); geo.setAttribute('occ', new THREE.BufferAttribute(Float32Array.from(SH.K, k => k >= 2 ? 1 : 0), 1));
+        brain = new THREE.Points(geo, shellMat); brain.frustumCulled = false; brain.renderOrder = 1; scene.add(brain);
+      } else SH = null;
       /* pulses: up to 6 at once, a head and a short trail each */
       geo = new THREE.BufferGeometry(); const PM = 36;
       geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(PM * 3), 3)); geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(PM * 3).fill(0.9), 3));
@@ -172,6 +207,9 @@
       const p = PAL[pal] || PAL.ice, c = nodes.geometry.attributes.color;
       g.nodes.forEach((n, i) => { const h = hex(p.col[n.k] || p.col.note), b = BR[n.k] || 0.8; c.array.set([h[0] * b, h[1] * b, h[2] * b], i * 3); }); c.needsUpdate = true;
       lineU.uColor.value.setRGB(...p.line); puffU.uColor.value.setRGB(...p.cloud);
+      if (brain && SH) { const bc = brain.geometry.attributes.color, base = p.cloud;
+        for (let j = 0; j < SH.n; j++) { const r = regCol(SH.reg[j]), f = SH.F[j], b = SH.K[j] === 3 ? 0.07 : (SH.K[j] < 2 ? 0.2 : 0.15) + 0.5 * f * f, m = r && pal !== 'mono' ? 0.7 : 0, c = [0, 1, 2].map(a => (base[a] * (1 - m) + (r ? r[a] : 0) * m) * b);
+          bc.array.set(c, j * 3); } bc.needsUpdate = true; }
       const pc = pulsePts && pulsePts.geometry.attributes.color; if (pc) { for (let i = 0; i < pc.count; i++) pc.array.set(p.pulse, i * 3); pc.needsUpdate = true; }
       host.dataset.pal = pal;
       const pb = host.querySelector('.wsm-pal'); if (pb) pb.querySelectorAll('[data-pal]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.pal === pal)));
@@ -199,6 +237,7 @@
       const pa = cloud.geometry.attributes.alpha, base = cloud.userData.base;
       for (let k = 0; k < puffOf.length; k++) { const f = gsel < 0 ? 1 : puffOf[k] === gsel ? 1.25 : 0.4; for (let v = 0; v < 6; v++) pa.array[k * 6 + v] = base[k * 6 + v] * f; }
       pa.needsUpdate = true;
+      if (brain && SH) { const ba = brain.geometry.attributes.alpha; for (let j = 0; j < SH.n; j++) ba.array[j] = SH.base[j] * (gsel < 0 ? 0.85 : SH.reg[j] === gsel ? 1 : 0.3); ba.needsUpdate = true; }
       regEls.forEach((el, k) => { el.classList.toggle('on', k === gsel); el.classList.toggle('dim', gsel >= 0 && k !== gsel); });
       dbg.lit = lit ? lit.size : 0;
       labelSet(); request();
@@ -214,7 +253,7 @@
       lblEl.innerHTML = '';
       regEls = L.clusters.map((c, k) => {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'wsm3-reg' + (c.ac < 0 ? ' uns' : '');
-        b.innerHTML = `<b>${esc(names2[k].toUpperCase())}</b><span>&nbsp;·&nbsp;${c.n}</span>`;
+        b.innerHTML = `${L.brain ? `<i class="rg" style="background:${REG[k % REG.length]}" aria-hidden="true"></i>` : ''}<b>${esc(names2[k].toUpperCase())}</b><span>&nbsp;·&nbsp;${c.n}</span>`;
         b.setAttribute('aria-label', t('Show the group ', 'Vis gruppen ') + names2[k] + ', ' + c.n);
         b.addEventListener('click', () => { if (gsel === k && sel < 0) back(); else flyToCluster(k); }); lblEl.appendChild(b); return b;
       });
@@ -243,21 +282,22 @@
     }
     /* home: the whole cloud, seen almost from the front and a little from above, names included */
     function homeView() {
-      const th = 0.16, ph = 1.4;
+      const th = L.brain ? -0.9 : 0.16, ph = L.brain ? 1.22 : 1.4;
       const dir = [Math.sin(ph) * Math.sin(th), Math.cos(ph), Math.sin(ph) * Math.cos(th)];
       const rt = [dir[2], 0, -dir[0]], rl = Math.hypot(rt[0], rt[2]); rt[0] /= rl; rt[2] /= rl;
       const up = [dir[1] * rt[2] - dir[2] * rt[1], dir[2] * rt[0] - dir[0] * rt[2], dir[0] * rt[1] - dir[1] * rt[0]];
       const dot = (a, p) => a[0] * p[0] + a[1] * p[1] + a[2] * p[2];
       let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, z1 = 0;
       L.clusters.forEach(c => { const x = dot(rt, c.c), y = dot(up, c.c), z = dot(dir, c.c), r = c.r + L.D * 0.8; x0 = Math.min(x0, x - r); x1 = Math.max(x1, x + r); y0 = Math.min(y0, y - r); y1 = Math.max(y1, y + r + L.D * 2.2); z1 = Math.max(z1, z + c.r); });
-      if (!L.clusters.length) { x0 = y0 = -10; x1 = y1 = 10; }
+      if (L.brain && SH) for (let j = 0; j < SH.n; j += 37) { const q = [SH.P[j * 3], SH.P[j * 3 + 1], SH.P[j * 3 + 2]], x = dot(rt, q), y = dot(up, q); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+      if (!L.clusters.length && !(L.brain && SH)) { x0 = y0 = -10; x1 = y1 = 10; }
       const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, c = [0, 1, 2].map(a => rt[a] * mx + up[a] * my);
       Object.assign(home, { tx: c[0], ty: c[1], tz: c[2], th, ph, d: fitDist((x1 - x0) / 2, (y1 - y0) / 2, z1 * 0.6) });
     }
     function place() {
       const sp = Math.sin(cam.ph);
       camera.position.set(cam.tx + cam.d * sp * Math.sin(cam.th), cam.ty + cam.d * Math.cos(cam.ph), cam.tz + cam.d * sp * Math.cos(cam.th));
-      camera.lookAt(cam.tx, cam.ty, cam.tz); camera.updateMatrixWorld();
+      camera.lookAt(cam.tx, cam.ty, cam.tz); camera.updateMatrixWorld(); shellU.uCam.value.copy(camera.position);
       const c0 = L.center, dc = Math.hypot(camera.position.x - c0[0], camera.position.y - c0[1], camera.position.z - c0[2]);
       U.uNear.value = Math.max(1, dc - L.R * 0.6); U.uFar.value = dc + L.R * 1.25;
       U.uScale.value = H * dpr / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
@@ -278,7 +318,9 @@
       gsel = k; sel = -1; hover = -1; showCard(-1); states();
       /* the card on a phone sits at the foot of the plate: the group goes in the room above it */
       const low = !card.hidden && W < 600 && card.offsetTop + card.offsetHeight > H * 0.75, avail = low ? card.offsetTop - padT() - 16 : 0;
-      const th = home.th, ph = home.ph, d = Math.max(lim().min * 1.4, fitDist(c.r + L.D * 1.2, c.r + L.D * 1.3, c.r * 0.5, avail));
+      let th = home.th, ph = home.ph;
+      if (L.brain && c.nrm) { const v = [c.nrm[0], c.nrm[1] + 0.45, c.nrm[2] + 0.15], vl = Math.hypot(v[0], v[1], v[2]); th = Math.atan2(v[0] / vl, v[2] / vl); ph = Math.max(0.35, Math.min(1.75, Math.acos(v[1] / vl))); }
+      const d = Math.max(lim().min * 1.4, L.brain ? L.S * 1.25 : 0, fitDist(c.r + L.D * 1.2, c.r + L.D * 1.3, c.r * 0.5, avail));
       const dir = [Math.sin(ph) * Math.sin(th), Math.cos(ph), Math.sin(ph) * Math.cos(th)], rt = [dir[2], 0, -dir[0]], rl = Math.hypot(rt[0], rt[2]); rt[0] /= rl; rt[2] /= rl;
       const wpp = 2 * d * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / H; let dx = 0, dy = L.D * 0.8 / wpp; /* where the group should appear (px from the middle of the free part); a little low leaves room for its name */
       if (!card.hidden && W >= 600) dx = (card.offsetLeft + card.offsetWidth) / 2;
@@ -341,7 +383,8 @@
         if (!at) { el.hidden = true; return; }
         boxes.push({ x: at[0], y: at[1], w, h });
         el.style.transform = `translate(${at[0].toFixed(1)}px,${at[1].toFixed(1)}px)`;
-        el.style.opacity = op.toFixed(2);
+        let face = 1; if (L.brain && c.nrm) { const cp = camera.position, vx = cp.x - c.c[0], vy = cp.y - c.c[1], vz = cp.z - c.c[2], vl = Math.hypot(vx, vy, vz) || 1; const dd = (c.nrm[0] * vx + c.nrm[1] * vy + c.nrm[2] * vz) / vl; face = dd < -0.15 ? 0.38 : 1; el.classList.toggle('back', face < 1); }
+        el.style.opacity = (op * face).toFixed(2);
         dbg.groupLabels.push({ name: names2[k], text: el.textContent.replace(/ /g, ' '), x0: at[0], y0: at[1], x1: at[0] + w, y1: at[1] + h });
       });
       const focus = hover >= 0 ? hover : sel;
@@ -409,6 +452,7 @@
 
     function resize() {
       const r = cv.getBoundingClientRect(), w = Math.round(r.width), h = Math.round(r.height); if (!w || !h) return;
+      host.classList.toggle('narrow', w < 880);   /* a narrow plate leaves the colour choice out of the toolbar, so the rest fits on one row */
       dpr = Math.min(dprCap, window.devicePixelRatio || 1);
       if (w === W && h === H && renderer.getPixelRatio() === dpr) return;
       const first = !W, wasHome = !first && Math.abs(cam.d - home.d) / home.d < 0.01;
@@ -534,14 +578,14 @@
     setGraph(o.graph); resize();
     if (introP >= 1) { render(); }
     return (host.wsmap = {
-      is3d: true, setGraph: ng => setGraph(ng, true), fit: () => flyTo(Object.assign({}, home), 700), focus: i => select(i, true), flyToCluster, debug: dbg,
+      is3d: true, setGraph: ng => setGraph(ng, true), fit: () => flyTo(Object.assign({}, home), 700), focus: i => select(i, true), flyToCluster, focusKey: key => { const k = L.clusters.findIndex(c => c.key === key); if (k >= 0) flyToCluster(k); }, debug: dbg,
       pulseNow: () => { unschedule(); ambient(); }, stopAutoRotate: () => { stopRot(); },
       get graph() { return g; }, get camera() { return Object.assign({}, cam); }, get home() { return Object.assign({}, home); }, get layout() { return L; },
       screenOf: i => { if (!scr.ok) render(); return [scr.x[i], scr.y[i]]; },
       destroy() {
         alive = false; if (raf) cancelAnimationFrame(raf); raf = 0; stopRot(); unschedule(); clearTimeout(wheelT); if (io) io.disconnect(); document.removeEventListener('visibilitychange', onVis);
         if (ro) ro.disconnect(); else window.removeEventListener('resize', resize);
-        disposeObjs(); [nodeMat, puffMat, lineMat, pulseMat].forEach(m => m.dispose()); renderer.dispose(); try { renderer.forceContextLoss(); } catch (e) {}
+        disposeObjs(); [nodeMat, puffMat, lineMat, pulseMat, shellMat].forEach(m => m.dispose()); renderer.dispose(); try { renderer.forceContextLoss(); } catch (e) {}
         host.innerHTML = ''; host.classList.remove('wsm3'); host.wsmap = null;
       }
     });
