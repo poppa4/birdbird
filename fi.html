@@ -59,8 +59,18 @@
 .labgo{display:inline-flex;gap:8px;align-items:center;margin-top:8px;font-size:14px;background:#F2F6F4;border:1px solid #C9D9D2;border-radius:4px;padding:6px 10px}
 .labgo a{font-weight:600}
 .a .easy{margin-top:8px}
-.ansrow{display:flex;flex-direction:column;gap:8px}
-.ansrow textarea{min-height:84px}
+.ansrow{display:flex;flex-direction:column;gap:10px;background:#fff;border:1px solid var(--rule);border-top:3px solid var(--magenta);border-radius:6px;padding:14px 16px 14px;box-shadow:0 6px 18px rgba(19,32,42,.06)}
+.ansrow textarea{min-height:96px;font-size:16.5px;line-height:1.45;border:1.5px solid var(--ink-3);border-radius:4px;padding:12px 14px;background:#fff}
+.ansrow textarea:focus{outline:2px solid var(--magenta);outline-offset:1px;border-color:var(--magenta)}
+.ansrow .btns{justify-content:flex-end}
+.ansrow #tSend{min-width:120px}
+.anslbl{display:flex;align-items:center;gap:9px;font-family:var(--f-display);font-stretch:90%;font-weight:700;font-size:19px;color:var(--ink)}
+.anslbl i{width:8px;height:8px;border-radius:50%;background:var(--magenta);box-shadow:0 0 0 3px rgba(181,43,126,.15)}
+/* first the question box at the top; once a conversation runs it sits under the answers and stays in view */
+#ans.top{margin:0 0 4px}
+#ans.live{position:sticky;bottom:10px;z-index:12}
+#ans.live .anslbl{display:none}
+#ans.live textarea{min-height:64px}
 .btn.talk{min-width:150px}.btn.talk.on{background:var(--red);border-color:var(--red);color:#fff}
 .srcp{position:sticky;top:62px;display:flex;flex-direction:column;gap:10px;background:var(--sheet);border:1px solid var(--rule);padding:12px 14px;max-height:calc(100vh - 80px);overflow:auto}
 @media (max-width:900px){.srcp{position:static;max-height:none}}
@@ -200,7 +210,8 @@
         <div class="log" id="log"></div>
         <p class="note fipv" style="margin:10px 0 0"><b>Preview.</b> Flight Intelligence runs on a lighter AI model while NORDAP is in testing. Use answers as a study reference, and always check the official source.</p>
         <div class="ansrow" id="ans" hidden>
-          <textarea class="write" id="tA" placeholder="Type, or hold the talk button and speak…" aria-label="Your answer or question"></textarea>
+          <label class="anslbl" for="tA"><i aria-hidden="true"></i>Ask Flight Intelligence</label>
+          <textarea class="write" id="tA" placeholder="Type your question, or hold the talk button and speak…" aria-label="Your answer or question"></textarea>
           <div class="btns"><button class="btn talk" id="tTalk">Hold to talk</button><button class="btn pri" id="tSend">Send</button><button class="btn" id="tSkip" hidden>I don’t know</button><button class="btn" id="tStop" hidden>Stop</button></div>
         </div>
       </div>
@@ -676,7 +687,7 @@ LAB.add({},Object.assign({},NOI,{'Type rating':'Typerating','Type rating trainer
  'My aircraft and documents':'Mine fly og dokumenter','Ask anything about flying. Answers come from your own AFM, QRH and SOP, the EASA rules and general knowledge, and every answer shows its source.':'Spør om alt som har med flyging å gjøre. Svarene kommer fra din egen AFM, QRH og SOP, EASA-reglene og generell kunnskap, og hvert svar viser kilden.','Kept in My workspace with your notes and briefing packs. Flight Intelligence reads them there and here.':'Ligger i Mitt arbeidsområde sammen med notatene og briefingpakkene dine. Flight Intelligence leser dem både der og her.','open My workspace':'åpne Mitt arbeidsområde','Your aircraft and documents now live in':'Flyene og dokumentene dine ligger nå i','My workspace':'Mitt arbeidsområde',', together with your notes and briefing packs, with Flight Intelligence beside them. This page shows the same library.':', sammen med notatene og briefingpakkene dine, med Flight Intelligence ved siden av. Denne siden viser det samme biblioteket.','Aircraft profiles, your documents and the aircraft data you have checked.':'Flyprofiler, dokumentene dine og flydataene du har kontrollert.','your library':'ditt bibliotek',
  'Training progress':'Treningsfremgang','EASA rules library':'EASA-regelbibliotek','Curated references to EASA’s official rules: alternates, planning minima, fuel, approach and VMC rules, each linked to the official text.':'Utvalgte henvisninger til EASAs offisielle regelverk: alternativer, planleggingsminima, drivstoff, innflyging og VMC-regler, hver lenket til den offisielle teksten.','browse the rules':'bla i reglene','EASA rules library · Rev. 24 (March 2026)':'EASA-regelbibliotek · Rev. 24 (mars 2026)','Briefing trainer':'Briefingtrener','Results from the labs, briefings, radio and simulator:':'Resultater fra labbene, briefingene, radio og simulator:','Progress →':'Fremgang →','Past sessions, grades, the topics to revise, and your data.':'Tidligere økter, karakterer, temaer å repetere og dataene dine.','where you stand':'hvor du står',
  'Aircraft':'Fly','Mode':'Modus','Topic (optional)':'Tema (valgfritt)','Session':'Økt','Pause':'Pause','Start':'Start','End session and report':'Avslutt økten med rapport','Speak the answers':'Les svarene høyt',
- 'Type, or hold the talk button and speak…':'Skriv, eller hold inne snakkeknappen og snakk…','Preview.':'Forhåndsversjon.','Flight Intelligence runs on a lighter AI model while NORDAP is in testing. Use answers as a study reference, and always check the official source.':'Flight Intelligence bruker en lettere AI-modell mens NORDAP er i testfasen. Bruk svarene som studiereferanse, og sjekk alltid den offisielle kilden.','Hold to talk':'Hold for å snakke','Send':'Send','I don’t know':'Jeg vet ikke','Stop':'Stopp','Sources':'Kilder',
+ 'Type, or hold the talk button and speak…':'Skriv, eller hold inne snakkeknappen og snakk…','Type your question, or hold the talk button and speak…':'Skriv spørsmålet ditt, eller hold inne snakkeknappen og snakk…','Ask Flight Intelligence':'Spør Flight Intelligence','Preview.':'Forhåndsversjon.','Flight Intelligence runs on a lighter AI model while NORDAP is in testing. Use answers as a study reference, and always check the official source.':'Flight Intelligence bruker en lettere AI-modell mens NORDAP er i testfasen. Bruk svarene som studiereferanse, og sjekk alltid den offisielle kilden.','Hold to talk':'Hold for å snakke','Send':'Send','I don’t know':'Jeg vet ikke','Stop':'Stopp','Sources':'Kilder',
  'Every answer shows what it was built on. Click a citation to see the passage, and open the page to check it yourself. Verifying should never be a premium feature.':'Hvert svar viser hva det bygger på. Klikk på en kilde for å se avsnittet, og åpne siden for å sjekke selv. Å kunne verifisere skal aldri være en premiumfunksjon.',
  'No answer yet.':'Ikke noe svar ennå.',
  'Make one profile per aircraft variant and add its documents. Mark the type and revision of each document, and tick a document as superseded when a new revision arrives. Only add documents you are allowed to use.':'Lag én profil per flyvariant og legg til dokumentene. Merk type og revisjon på hvert dokument, og merk et dokument som erstattet når en ny revisjon kommer. Legg bare til dokumenter du har lov til å bruke.',
@@ -704,7 +715,13 @@ function drawOffline(){ const o=el('offline'); if(o.hidden) return; const q=el('
 el('offline').addEventListener('click',e=>{ const b=e.target.closest('[data-go]'); if(b){ show(b.dataset.go); el(b.dataset.go==='easa'?'vEasa':'vDocs').scrollIntoView({behavior:'smooth',block:'start'}); } });
 el('tA').addEventListener('input',()=>{ if(!NAI.mode&&!el('offline').hidden){ clearTimeout(window.__offT); window.__offT=setTimeout(drawOffline,300); } });
 NAI.onMode(m=>{ const a=el('aist'); a.classList.toggle('on',!!m); a.textContent= m? L({en:'Instructor on',no:'Instruktør på'}) : ''; el('vTrain').classList.toggle('noai',!m); el('offline').hidden=!!m; if(!m) drawOffline(); });
-el('ans').hidden=false; LAB.start('fi'); LAB.onLang(()=>{ drawTrain(); drawDocs(); drawProg(); drawWelcome(); drawOffline(); if(!el('vEasa').hidden) drawEasa(); });
+el('ans').hidden=false;
+(function(){ const ans=el('ans'), log=el('log'), set=el('vTrain').querySelector('.setrow'), fipv=el('vTrain').querySelector('.fipv');
+  const place=()=>{ const live=log.children.length>0;
+    if(live){ if(ans.previousElementSibling!==fipv) fipv.after(ans); } else if(ans.nextElementSibling!==set) set.before(ans);
+    ans.classList.toggle('live',live); ans.classList.toggle('top',!live); };
+  new MutationObserver(place).observe(log,{childList:true}); place(); })();
+LAB.start('fi'); LAB.onLang(()=>{ drawTrain(); drawDocs(); drawProg(); drawWelcome(); drawOffline(); if(!el('vEasa').hidden) drawEasa(); });
 Promise.all([loadDocs(),NSTORE.ready.then(loadProfile)]).then(async()=>{ await loadPacks(); try{ if(!localStorage.getItem('fi-imp-ck')){ localStorage.setItem('fi-imp-ck','1'); await autoImport(); } }catch(e){}
   const qs=new URLSearchParams(location.search); if(qs.get('mode')&&MODES[qs.get('mode')]){ MODE=qs.get('mode'); modeSeg.set(MODE); } if(qs.get('topic')&&MODES.rev){ MODE='rev'; modeSeg.set('rev'); setTimeout(()=>{ el('tTopic').value=qs.get('topic').slice(0,200); try{ drawUsed(); }catch(e){} },0); } if(qs.get('pack')&&PACKS.some(p=>p.id===qs.get('pack'))){ el('flSel').value=qs.get('pack'); } drawTrain(); drawWelcome(); let v=null; try{ v=sessionStorage.getItem('fi-view'); }catch(e){} const h=(location.hash||'').slice(1); show(['aircraft','sop','aviation','docs','progress','easa'].includes(h)?h:(v||'aircraft')); fiHold();
   window.FI_ASK=q=>{ show('aircraft'); MODE='learn'; modeSeg.set('learn'); drawTrain(); el('tA').value=q; NAI.probe().then(()=>{ if(NAI.mode) send(); else drawOffline(); el('vTrain').scrollIntoView({block:'start'}); }); };
