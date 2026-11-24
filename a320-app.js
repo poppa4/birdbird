@@ -379,14 +379,97 @@ function defs(){
   CT.push({id:'RUD TRIM|RUD TRIM',t:'knob',turn:d=>{ A.sw.rudTrim=clamp(+(A.sw.rudTrim+d*0.1).toFixed(1),-20,20); },push:()=>{},pull:()=>{},tip:()=>'Rudder trim'});
   act('RUD TRIM|RUD TRIM RESET',()=>{ A.sw.rudTrim=0; });
   CT.push({id:'RUD TRIM|RUD TRIM IND',t:'seg',txt:()=>A.dc?(A.sw.rudTrim===0?' 0.0':(A.sw.rudTrim<0?'L':'R')+Math.abs(A.sw.rudTrim).toFixed(1)):''});
-  CT.push({id:'ATC / TCAS|XPDR CODE',t:'seg',txt:()=>A.dc?A.sw.xpdr:''});
-  sel('ATC / TCAS|XPDR MODE','xpdrMd',['STBY','AUTO','ON'],[-45,0,45]);
-  sel('ATC / TCAS|TCAS MODE','tcas',['STBY','TA','TA/RA'],[-45,0,45]);
+  radioDefs();
   // ---- MCDU keys (both) ----
   mcduKeys(0); mcduKeys(1);
   // ---- side consoles: sidestick (drag) ----
   CT.push({id:'CPT SIDE CONSOLE|SIDESTICK CPT',t:'stick'}); CT.push({id:'F/O SIDE CONSOLE|SIDESTICK F/O',t:'stick'});
   CT.push({id:'CPT SIDE CONSOLE|TILLER CPT',t:'tiller'});
+}
+/* ---- radios, audio, transponder / TCAS and weather radar (pedestal, and the third audio panel on the overhead).
+   There is no ATC to talk to yet: the panels work as in the aircraft (tuning, transfer, transmit and reception selection,
+   squawk entry), and the state is kept with the aircraft (A.com), so a restart gives the defaults back. ---- */
+const COMK=['VHF 1','VHF 2','VHF 3','HF 1','HF 2'], NAVK=['VOR','ILS','MLS','ADF'];
+function com(){ return A.com||(A.com={
+  f:{'VHF 1':[118.7,121.5],'VHF 2':[121.5,124.35],'VHF 3':['DATA',136.975],'HF 1':[8.891,5.616],'HF 2':[5.616,8.891]}, am:{'HF 1':0,'HF 2':0},
+  rmp:[0,1].map(i=>({on:1,view:i?'VHF 2':'VHF 1',nav:0,bfo:0,n:{VOR:{a:113.3,s:113.3,c:0,cm:0},ILS:{a:110.3,s:110.3,c:0,cm:0},MLS:{a:500,s:500,c:0,cm:0},ADF:{a:320,s:320,c:0,cm:0}}})),
+  acp:[0,1,2].map(i=>({tx:i===1?'VHF 2':'VHF 1',ir:1,voice:0,rx:Object.fromEntries(['VHF 1','VHF 2','VHF 3','HF 1','HF 2','INT','CAB','PA','VOR 1','VOR 2','MKR','ILS','MLS','ADF 1','ADF 2'].map(k=>[k,[(k==='VHF 1'||k==='VHF 2'||k==='INT')?1:0,0.6]]))})),
+  wx:{gain:0,tilt:0,multi:1,gcs:1,sys:0,pws:1,mode:0}, atc:{sys:1,thrt:0,abv:1,ident:0,ed:0}}); }
+const fq=(k,v)=>typeof v==='string'?v:k.startsWith('HF')?v.toFixed(3).padStart(6,' '):k==='ADF'?v.toFixed(1):k==='MLS'?String(Math.round(v)):k==='VOR'||k==='ILS'?v.toFixed(2):v.toFixed(3);
+/* VHF: 8.33 kHz channel names (.000 .005 .010 .015 in each 25 kHz block), 118.000 to 136.990 */
+function stepF(k,v,d,big){ if(typeof v==='string') v=k==='VHF 3'?118:0; const sg=Math.sign(d); let n=Math.abs(d);
+  if(k.startsWith('VHF')){ let q=Math.round(v*1000); if(big) q+=sg*1000*n; else while(n-->0){ q+=sg*5; if(((q%25)+25)%25===20) q+=sg*5; }
+    const lo=118000, hi=136990, span=hi-lo+10; q=lo+((((q-lo)%span)+span)%span); if(((q%25)+25)%25===20) q-=5; return q/1000; }
+  if(k.startsWith('HF')){ let q=Math.round(v*1000)+sg*n*(big?100:1); q=Math.max(2800,Math.min(23999,q)); return q/1000; }
+  if(k==='VOR'||k==='ILS'){ let q=Math.round(v*100)+sg*n*(big?100:5); const lo=10800, hi=k==='ILS'?11195:11795, span=hi-lo+5; q=lo+((((q-lo)%span)+span)%span); return q/100; }
+  if(k==='ADF'){ let q=Math.round(v*2)+sg*n*(big?200:1); q=Math.max(380,Math.min(3500,q)); return q/2; }
+  return Math.max(500,Math.min(699,Math.round(v)+sg*n*(big?10:1))); }
+function parseF(k,str){ const v=parseFloat(String(str).replace(',','.')); if(!isFinite(v)) return null;
+  if(k.startsWith('VHF')){ if(v<118||v>136.99) return null; let q=Math.round(v*1000/5)*5; if(((q%25)+25)%25===20) q+=5; return Math.min(136990,q)/1000; }
+  if(k.startsWith('HF')) return v>=2.8&&v<=23.999?Math.round(v*1000)/1000:null;
+  if(k==='VOR') return v>=108&&v<=117.95?Math.round(v*20)/20:null; if(k==='ILS') return v>=108&&v<=111.95?Math.round(v*20)/20:null;
+  if(k==='ADF') return v>=190&&v<=1750?Math.round(v*2)/2:null; return v>=500&&v<=699?Math.round(v):null; }
+function radioDefs(){
+  const T2=(c,t)=>{ c.say=t; }; /* shown by tipText() right after the press */
+  const C=com, lit=i=>A.dc&&C().rmp[i].on;
+  for(const i of [0,1]){ const P='RMP '+(i+1)+'|', sf=i?' F/O':'', R=()=>C().rmp[i], isNav=()=>NAVK.includes(R().view), slot=()=>isNav()?R().n[R().view]:null;
+    const act_=()=>{ const r=R(), n=slot(); return n?fq(r.view,n.a):fq(r.view,C().f[r.view][0]); };
+    const sby=()=>{ const r=R(), n=slot(); return n?(n.cm&&r.view!=='ADF'&&r.view!=='MLS'?'C-'+String(Math.round(n.c)).padStart(3,'0'):fq(r.view,n.s)):fq(r.view,C().f[r.view][1]); };
+    CT.push({id:P+'RMP '+(i+1)+' ACTIVE',t:'seg',txt:()=>lit(i)?act_():''});
+    CT.push({id:P+'RMP '+(i+1)+' STBY/CRS',t:'seg',txt:()=>lit(i)?sby():''});
+    const turnK=(d)=>{ if(!lit(i)) return; const r=R(), n=slot(), big=Math.abs(d)>=10, dd=big?Math.round(d/10):d;
+      if(n){ if(n.cm&&r.view!=='ADF'&&r.view!=='MLS') n.c=(((Math.round(n.c)+dd*(big?10:1))%360)+360)%360; else n.s=stepF(r.view,n.s,dd,big); }
+      else { const f=C().f[r.view]; f[1]=stepF(r.view,f[1],dd,big); } };
+    CT.push({id:P+'RMP '+(i+1)+' FREQ',t:'knob',ang:()=>0,turn:turnK,pull:()=>turnK(10),push:()=>turnK(-10),
+      tip:()=>lit(i)?R().view+' standby '+sby()+'  ·  scroll or drag = small steps, Shift or click top / bottom = big steps, click the window to type':'RMP '+(i+1)+' is off'});
+    const xfer={id:P+'XFER'+sf,t:'act',on:()=>{ if(!lit(i)) return; const r=R(), n=slot();
+      if(n){ if(n.cm){ n.cm=0; } else { n.a=n.s; n.cm=(r.view==='VOR'||r.view==='ILS')?1:0; } T2(xfer,r.view+' active '+fq(r.view,n.a)+(n.cm?'  ·  now set the course':'')); }
+      else { const f=C().f[r.view]; f.reverse(); T2(xfer,r.view+' active '+fq(r.view,f[0])); } }}; CT.push(xfer);
+    /* the standby window: click to type a frequency (the aircraft has no keypad here; this is a trainer shortcut) */
+    const wr=RECT[P+'RMP '+(i+1)+' STBY/CRS']; if(wr) CT.push({id:P+'TYPE STBY'+sf,t:'act',rect:[wr[1],wr[2],wr[3],wr[4]],on:()=>{ if(!lit(i)) return; const r=R(), n=slot();
+      const s0=window.prompt(r.view+' standby frequency'+(r.view.startsWith('HF')?' (MHz, 2.800 to 23.999)':r.view.startsWith('VHF')?' (MHz, 118.000 to 136.990)':r.view==='ADF'?' (kHz, 190 to 1750)':' (MHz)'),''); if(s0==null||s0==='') return;
+      const v=parseF(r.view,s0); if(v==null){ say('Not a valid '+r.view+' frequency: '+s0,'warn'); return; } if(n){ n.s=v; n.cm=0; } else C().f[r.view][1]=v; say(r.view+' standby '+fq(r.view,v)); }});
+    for(const k of COMK){ const c={id:P+k+sf,t:'bar',lit:()=>lit(i)&&R().view===k,on:()=>{ if(!lit(i)) return; R().view=k; T2(c,k+': active '+fq(k,C().f[k][0])+', standby '+fq(k,C().f[k][1])); }}; CT.push(c); }
+    const am={id:P+'AM'+sf,t:'bar',lit:()=>lit(i)&&R().view.startsWith('HF')&&!!C().am[R().view],on:()=>{ if(!lit(i)) return; const k=R().view; if(!k.startsWith('HF')){ T2(am,'AM: select HF 1 or HF 2 first'); return; } C().am[k]=C().am[k]?0:1; T2(am,k+' AM '+(C().am[k]?'ON':'OFF')); }}; CT.push(am);
+    const nav={id:P+'NAV'+sf,t:'bar',lit:()=>lit(i)&&!!R().nav,on:()=>{ if(!lit(i)) return; const r=R(); r.nav=r.nav?0:1; if(!r.nav&&NAVK.includes(r.view)) r.view=i?'VHF 2':'VHF 1'; T2(nav,'Standby NAV '+(r.nav?'ON: tune VOR, ILS or ADF here (backup when both FMGCs are lost)':'OFF')); }}; CT.push(nav);
+    for(const k of NAVK){ const c={id:P+k+sf,t:'bar',lit:()=>lit(i)&&R().view===k,on:()=>{ if(!lit(i)) return; const r=R(); if(!r.nav){ T2(c,k+': switch NAV on first'); return; } r.view=k; r.n[k].cm=0; T2(c,k+': active '+fq(k,r.n[k].a)+', standby '+fq(k,r.n[k].s)); }}; CT.push(c); }
+    const bfo={id:P+'BFO'+sf,t:'bar',lit:()=>lit(i)&&!!R().bfo,on:()=>{ if(!lit(i)) return; const r=R(); if(r.view!=='ADF'){ T2(bfo,'BFO: select ADF first'); return; } r.bfo=r.bfo?0:1; T2(bfo,'BFO '+(r.bfo?'ON':'OFF')); }}; CT.push(bfo);
+    CT.push({id:P+'RMP '+(i+1)+' ON/OFF',t:'tog',k:null,vals:[1,0],lab:['ON','OFF'],get:()=>R().on,set:v=>{ R().on=v; }});
+  }
+  /* audio control panels: captain, first officer, third (overhead) */
+  ['',' F/O',' OVHD'].forEach((sf,i)=>{ const P='ACP '+(i+1)+'|', Q=()=>C().acp[i];
+    for(const k of ['VHF 1','VHF 2','VHF 3','HF 1','HF 2','INT','CAB']){ const c={id:P+k+' TX'+sf,t:'bar',lit:()=>Q().tx===k,on:()=>{ const q=Q(); q.tx=q.tx===k?null:k; if(q.tx) q.rx[k][0]=1; T2(c,q.tx?'Transmit on '+k+(COMK.includes(k)?' ('+fq(k,C().f[k][0])+')':''):'No transmit channel selected'); }}; CT.push(c); }
+    for(const k of ['VHF 1','VHF 2','VHF 3','HF 1','HF 2','INT','CAB','PA','VOR 1','VOR 2','MKR','ILS','MLS','ADF 1','ADF 2']){
+      const tg=()=>{ const x=Q().rx[k]; x[0]=x[0]?0:1; };
+      CT.push({id:P+k+' VOL'+sf,t:'knob',ang:()=>{ const x=Q().rx[k]; return x[0]?-135+270*x[1]:-150; },turn:d=>{ const x=Q().rx[k]; x[1]=clamp(+(x[1]+d*0.05).toFixed(2),0,1); if(d>0) x[0]=1; },pull:tg,push:tg,
+        tip:()=>{ const x=Q().rx[k]; return k+' reception '+(x[0]?'ON, volume '+Math.round(x[1]*100)+' %':'OFF')+'  ·  click = on / off, scroll or drag = volume'; }}); }
+    CT.push({id:P+'INT/RAD'+sf,t:'tog',k:null,vals:[2,1,0],lab:['INT','neutral','RAD'],get:()=>Q().ir,set:v=>{ Q().ir=v; }});
+    const vo={id:P+'VOICE'+sf,t:'bar',lit:()=>!!Q().voice,on:()=>{ Q().voice=Q().voice?0:1; T2(vo,'VOICE '+(Q().voice?'ON: the idents of VOR and ADF are filtered out':'OFF')); }}; CT.push(vo);
+    const rs={id:P+'RESET'+sf,t:'act',on:()=>{ T2(rs,'RESET: call lights cancelled'); }}; CT.push(rs);
+    const pa={id:P+'PA TX'+sf,t:'bar',lit:()=>Q().tx==='PA',on:()=>{ const q=Q(); q.tx=q.tx==='PA'?null:'PA'; T2(pa,q.tx?'Passenger address: keyed while held in the aircraft':'PA released'); }}; CT.push(pa);
+  });
+  /* transponder and TCAS (the combined panel in this flight deck) */
+  CT.push({id:'ATC / TCAS|XPDR CODE',t:'seg',txt:()=>A.dc?String(A.sw.xpdr||''):''});
+  const md=['STBY','ALT RPTG OFF','XPNDR','TA ONLY','TA/RA'];
+  CT.push({id:'ATC / TCAS|TCAS MODE',t:'selF',pos:md,ang:[-60,-30,0,30,60],get:()=>A.sw.atcMd!=null?A.sw.atcMd:(A.sw.tcas?A.sw.tcas+2:2),set:v=>{ A.sw.atcMd=v; A.sw.tcas=v>=3?v-2:0; A.sw.xpdrMd=v===0?0:2; }});
+  CT.push({id:'ATC / TCAS|XPDR MODE',t:'tog',k:null,vals:[0,1],lab:['THRT','ALL'],get:()=>C().atc.thrt,set:v=>{ C().atc.thrt=v; }});
+  CT.push({id:'ATC / TCAS|ATC 1/2',t:'tog',k:null,vals:[1,2],lab:['SYS 1','SYS 2'],get:()=>C().atc.sys,set:v=>{ C().atc.sys=v; }});
+  CT.push({id:'ATC / TCAS|ALT RPTG',t:'tog',k:null,vals:[2,1,0],lab:['ABV','N','BLW'],get:()=>C().atc.abv,set:v=>{ C().atc.abv=v; }});
+  CT.push({id:'ATC / TCAS|TCAS TRAFFIC',t:'ann',up:null,dn:['FAIL','a',()=>false]});
+  const idn={id:'ATC / TCAS|IDENT',t:'act',on:()=>{ if(!A.dc) return; C().atc.ident=UI.t+18; T2(idn,(A.sw.atcMd===0?'IDENT: the transponder is in STBY':'IDENT: squawk '+A.sw.xpdr+' ident for 18 s')); }}; CT.push(idn);
+  const kp=RECT['ATC / TCAS|XPDR KEYPAD']; if(kp){ const [,x0,y0,w,h]=kp, keys=['1','2','3','4','5','6','7','0','CLR'];
+    keys.forEach((k,j)=>{ const c={id:'ATC / TCAS|KEY '+k,t:'act',rect:[x0+(j%3)*w/3+0.6,y0+Math.floor(j/3)*h/3+0.6,w/3-1.2,h/3-1.2],on:()=>{ if(!A.dc) return; const a=C().atc; let s=String(A.sw.xpdr||'');
+      if(k==='CLR'){ s=s.slice(0,-1); a.ed=1; } else { if(!a.ed||s.length>=4) s=''; s+=k; a.ed=s.length<4?1:0; }
+      A.sw.xpdr=s; T2(c,s.length===4?'Squawk '+s:'Squawk '+s.padEnd(4,'-')); }}; CT.push(c); }); }
+  /* weather radar */
+  const W=()=>C().wx;
+  CT.push({id:'WX RADAR|GAIN',t:'knob',ang:()=>W().gain*11,turn:d=>{ W().gain=clamp(W().gain+Math.sign(d),-12,12); },pull:()=>{ W().gain=0; },push:()=>{ W().gain=0; },tip:()=>'Gain '+(W().gain===0?'CAL':(W().gain>0?'+':'')+W().gain)+'  ·  click = CAL'});
+  CT.push({id:'WX RADAR|TILT',t:'knob',ang:()=>-W().tilt*8,turn:d=>{ W().tilt=clamp(+(W().tilt+Math.sign(d)*0.5).toFixed(1),-15,15); },pull:()=>{ W().tilt=0; },push:()=>{ W().tilt=0; },tip:()=>'Tilt '+(W().tilt===0?'0°':Math.abs(W().tilt)+'° '+(W().tilt>0?'UP':'DN'))+'  ·  click = 0°'});
+  CT.push({id:'WX RADAR|WX MODE',t:'selF',pos:['WX','WX+T','TURB','MAP'],ang:[-75,-35,0,45],get:()=>W().mode,set:v=>{ W().mode=v; }});
+  CT.push({id:'WX RADAR|MULTISCAN',t:'tog',k:null,vals:[0,1],lab:['MAN','AUTO'],horiz:true,get:()=>W().multi,set:v=>{ W().multi=v; }});
+  CT.push({id:'WX RADAR|GCS',t:'tog',k:null,vals:[0,1],lab:['OFF','AUTO'],horiz:true,get:()=>W().gcs,set:v=>{ W().gcs=v; }});
+  CT.push({id:'WX RADAR|WX SYS',t:'tog',k:null,vals:[2,0,1],lab:['2','OFF','1'],horiz:true,get:()=>W().sys,set:v=>{ W().sys=v; }});
+  CT.push({id:'WX RADAR|PWS',t:'tog',k:null,vals:[0,1],lab:['OFF','AUTO'],horiz:true,get:()=>W().pws,set:v=>{ W().pws=v; }});
 }
 function autolandWarn(){ const a=M.ap; return !M.gnd&&M.ra/FT<200&&(a.vert==='LAND'||a.vert==='FLARE')&&!(a.ap1||a.ap2); }
 function mcduKeys(side){
@@ -796,6 +879,7 @@ function lever(c,fy){
 /* tooltips: what a control is and what it is set to */
 const TIP=$('tip'); let tipT=0;
 function tipText(c){ const n=c.id.split('|')[1];
+  if(c.say){ const t=c.say; c.say=null; return t; }
   if(c.t==='sel') return n+': '+c.pos[A.sw[c.k]];
   if(c.t==='selF') return n+': '+c.pos[c.get()];
   if(c.t==='tog'){ const v=c.get?c.get():A.sw[c.k]; return n+': '+(c.lab?c.lab[c.vals.indexOf(v)]:v); }
