@@ -39,7 +39,7 @@ def build(skip=()):
         if oi in skip or hidden(o) or o['name'] in LEVER: continue
         for fi, (mi, idx, uvs, flags) in enumerate(o['faces']):
             if len(set(idx)) < 3 or mats[mi].get('trans', 0) > 0.3: continue
-            for i_, j_, k_ in ac3d.tris(V[-1][idx]): F.append([base + idx[i_], base + idx[j_], base + idx[k_]]); src.append((oi, fi))   # not a fan: concave plates would get fins
+            for ti_, (i_, j_, k_) in enumerate(ac3d.tris(V[-1][idx])): F.append([base + idx[i_], base + idx[j_], base + idx[k_]]); src.append((oi, fi, ti_))   # not a fan: concave plates would get fins
     M = trimesh.Trimesh(np.concatenate(V), np.array(F), process=False)
     return M, trimesh.ray.ray_pyembree.RayMeshIntersector(M), np.array(src)
 # ---- proud parts (as before): small objects that stand 6.5 to 90 mm above the face around them ----
@@ -84,22 +84,6 @@ for k in VIEWS:
         if big and f < 0.42: continue            # structure seen edge-on: stays in the shell
         if t not in best or f > best[t][0]: best[int(t)] = (float(f), k)
     print(k, 'rays', nx * ny, 'triangles reached', len(tri))
-# A face is given to a panel only whole. A structural plate that crosses the edge of a panel's picture used to be taken out of the
-# shell entirely but drawn only where the picture is: the rest of it was a hole (gaps round the overhead panel and along the
-# glareshield), and the piece inside showed as a dark fin. Such a plate now stays in the shell, as one piece.
-def _inside(t, k):
-    c, n, up, W, H, near, low = VIEWS[k]; c, n, up, x = frame(c, n, up); d = TV[TF[t]] - c
-    return bool((np.abs(d @ x) <= W / 2 + 0.002).all() and (np.abs(d @ up) <= H / 2 + 0.002).all())
-for t in [t for t, (f, k) in best.items() if not _inside(t, k)]: del best[t]
-_per = collections.Counter(map(tuple, SRC)); _got = collections.defaultdict(set)
-for t, (f, k) in best.items(): _got[tuple(SRC[t])].add((t, k))
-for key, st in _got.items():
-    if len(st) < _per[key] or len({k for _, k in st}) > 1:
-        for t, _ in st: del best[t]
-taken = collections.defaultdict(list)
-for t, (f, k) in best.items(): taken[k].append(t)
-json.dump({'taken': sorted({(int(SRC[t][0]), int(SRC[t][1])) for t in best})}, open(os.path.join(HERE, 'taken.json'), 'w'))
-# ---- write ----
 def clip(poly, uvw):
     """clip a triangle (list of (u, t, h, flatflag...)) to the picture's rectangle"""
     for ax, lim, sgn in ((0, uvw[0] / 2, 1), (0, -uvw[0] / 2, -1), (1, uvw[1] / 2, 1), (1, -uvw[1] / 2, -1)):
@@ -111,6 +95,31 @@ def clip(poly, uvw):
         poly = out
         if len(poly) < 3: return []
     return poly
+# A plate that crosses the edge of a panel's picture. The panel can only draw the part inside the picture. If most of the plate is
+# inside, the panel draws that part and the shell draws the rest (shell.py clips it at the picture's edge: taken.json 'part'), so
+# the plate is whole and its buttons and lettering are there. If most of it is outside (a piece of lining that only reaches into
+# the picture), the plate stays in the shell in one piece. Before, such plates were taken out of the shell whole but drawn only
+# inside the picture: gaps round the overhead panel and along the glareshield.
+def _uvt(t, k):
+    c, n, up, W, H, near, low = VIEWS[k]; c, n, up, x = frame(c, n, up); d = TV[TF[t]] - c; return np.stack([d @ x, d @ up], 1), W, H
+_ar = lambda q: 0.0 if len(q) < 3 else abs(sum(q[i][0] * q[(i + 1) % len(q)][1] - q[(i + 1) % len(q)][0] * q[i][1] for i in range(len(q)))) / 2
+_by = collections.defaultdict(list)
+for t, (f, k) in best.items(): _by[(int(SRC[t][0]), int(SRC[t][1]), k)].append(t)
+PART = []
+for (oi, fi, k), ts in _by.items():
+    tot = ins = 0.0; crossing = False
+    for t in ts:
+        q, W, H = _uvt(t, k); tot += _ar(list(q)); ins += _ar(clip(list(q), (W, H)))
+        if (np.abs(q[:, 0]) > W / 2).any() or (np.abs(q[:, 1]) > H / 2).any(): crossing = True
+    if not crossing: continue
+    if ins < 0.5 * tot:
+        for t in ts: del best[t]
+    else: PART.append([oi, fi, list(VIEWS).index(k)])
+print('plates crossing a picture edge: split', len(PART))
+json.dump({'taken': sorted({(int(SRC[t][0]), int(SRC[t][1]), int(SRC[t][2])) for t in best}), 'part': PART}, open(os.path.join(HERE, 'taken.json'), 'w'))
+taken = collections.defaultdict(list)
+for t, (f, k) in best.items(): taken[k].append(t)
+
 hdr = {'hs': 10000, 'ps': 20000, 'views': {}}; blob = b''
 pad = lambda b: b + b'\0' * ((-len(b)) % 4)
 for k, (c, n, up, W, H, near, low) in VIEWS.items():

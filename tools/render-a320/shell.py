@@ -164,7 +164,7 @@ def header(p0, p1, R=0.17, NR=24):
         q = lines.reshape(-1, 3) - c; fo = np.repeat(OFOa[fidx], 2); near = np.linalg.norm(q, axis=1) < R
         for oi in np.unique(fo[near]):
             qq = q[near & (fo == oi)]
-            if len(qq) >= 4: per[int(oi)].append((t, np.percentile(qq @ u, 2), np.percentile(qq @ u, 98), np.percentile(qq @ v, 2), np.percentile(qq @ v, 98)))
+            if len(qq) >= 4: per[int(oi)].append((t, np.percentile(qq @ u, 8), np.percentile(qq @ u, 92), np.percentile(qq @ v, 8), np.percentile(qq @ v, 92)))
     out = []
     for oi, rows in per.items():
         rows = np.array(rows)
@@ -173,7 +173,7 @@ def header(p0, p1, R=0.17, NR=24):
         if min(w_, h_) < 0.012 or max(w_, h_) > 0.20: continue                      # a sheet passing by, or a wall: not a beam
         fit = [np.polyfit(rows[:, 0], rows[:, k], 1) for k in range(1, 5)]; rings = []
         for t in np.linspace(-0.05, 1.05, 12):
-            u0, u1, v0, v1 = (np.polyval(f, t) for f in fit); u0 -= 0.003; u1 += 0.003; v0 -= 0.003; v1 += 0.003
+            u0, u1, v0, v1 = (np.polyval(f, t) for f in fit)   # no padding: a fatter beam covered the lowest row of the overhead panel
             cu, cv, hw, hh = (u0 + u1) / 2, (v0 + v1) / 2, (u1 - u0) / 2, (v1 - v0) / 2; r = min(0.42 * min(hw, hh), 0.016); ring = []
             for k in range(NR):
                 th = 2 * np.pi * k / NR; cx, sx = np.cos(th), np.sin(th); ring.append(p0 + a * Lh * t + u * (cu + np.sign(cx) * (hw - r) + r * cx) + v * (cv + np.sign(sx) * (hh - r) + r * sx))
@@ -190,7 +190,9 @@ def header(p0, p1, R=0.17, NR=24):
         out.append(b); print('  header part', o['name'], 'size mm', int(w_ * 1000), int(h_ * 1000), 'colour', b['col'].astype(int).tolist())
     return out
 HEADS = []
-for p0, p1 in (((-0.77, 0.88, 0.0), (0.0, 0.88, -0.41)), ((-0.77, 0.88, 0.0), (-0.99, 0.88, 0.36)), ((-0.99, 0.88, 0.36), (-1.0, 0.88, 0.95))):
+# (not the beam over the windshield: its section is slanted, and the rounded box around it reached over the lowest row of the
+# overhead panel; the model's own beam is kept there)
+for p0, p1 in (((-0.77, 0.88, 0.0), (-0.99, 0.88, 0.36)), ((-0.99, 0.88, 0.36), (-1.0, 0.88, 0.95))):
     HEADS += header(p0, p1); HEADS += header((-p0[0],) + p0[1:], (-p1[0],) + p1[1:])
 def in_post(pt, oi=None):   # pt in the page's frame
     for b in HEADS:
@@ -205,7 +207,8 @@ def in_post(pt, oi=None):   # pt in the page's frame
         u0, u1, v0, v1 = (np.polyval(f, t) for f in b['fit']); pu, pv = d @ b['u'], d @ b['v']
         if u0 - 0.012 < pu < u1 + 0.012 and v0 - 0.012 < pv < v1 + 0.012: return True
     return False
-TAKEN = set(map(tuple, json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'taken.json')))['taken']))  # faces the panels carry (panels.py)
+_tj = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'taken.json'))); PARTV = {(a_, b_): k_ for a_, b_, k_ in _tj['part']}
+TAKEN = set(map(tuple, _tj['taken']))  # faces the panels carry (panels.py)
 for oi, o in enumerate(O):
     if o['tex'] not in TEX: continue
     v = o['v']; diag = np.linalg.norm(v.max(0) - v.min(0))
@@ -233,7 +236,8 @@ for oi, o in enumerate(O):
             if diag < 0.30: continue
             fine = True   # a large, finely modelled part: its tiny faces are left out as before
     for fi, (mat, idx, uvs, flags) in enumerate(o['faces']):
-        if (oi, fi) in TAKEN: continue
+        TR_ = ac3d.tris(v[idx]); tk_ = [(oi, fi, ti_) in TAKEN for ti_ in range(len(TR_))]
+        if TR_ and all(tk_) and (oi, fi) not in PARTV: continue
         P = v[idx]; ctr = P.mean(0); inside = False
         if PSH is None and in_post(np.array([-ctr[2], ctr[1], ctr[0]]), oi): continue
         # (the bright green lamp / marking areas of the textures are painted over in the saved pictures below: skipping those
@@ -266,8 +270,22 @@ for oi, o in enumerate(O):
         for j in range(len(qk)):
             ek = tuple(sorted((qk[j], qk[(j + 1) % len(qk)]))); ed.append((ek, float(np.linalg.norm(P[j] - P[(j + 1) % len(P)])))); EDGE[ek].append(fid)
         FEDG.append(ed)
-        for i_, j_, k_ in ac3d.tris(P):   # not a fan: concave plates would get fins
-            g['F'] += split([(T[i_], UVs[i_]), (T[j_], UVs[j_]), (T[k_], UVs[k_])], nT)
+        for ti_, (i_, j_, k_) in enumerate(TR_):   # not a fan: concave plates would get fins
+            if not tk_[ti_]: g['F'] += split([(T[i_], UVs[i_]), (T[j_], UVs[j_]), (T[k_], UVs[k_])], nT); continue
+            if (oi, fi) not in PARTV: continue
+            # a triangle the panel draws only inside its picture: the part outside the picture is drawn here
+            c_, n_, up_, x_, W_, H_ = B[PARTV[(oi, fi)]]; rest = [P[i_], P[j_], P[k_]]
+            for ax_, lim_, sg_ in ((x_, W_ / 2, 1), (x_, W_ / 2, -1), (up_, H_ / 2, 1), (up_, H_ / 2, -1)):
+                outp, inp = [], []
+                for a_ in range(len(rest)):
+                    p_, q_ = rest[a_], rest[(a_ + 1) % len(rest)]; dp, dq = sg_ * ((p_ - c_) @ ax_) - lim_, sg_ * ((q_ - c_) @ ax_) - lim_
+                    (outp if dp > 0 else inp).append(p_)
+                    if (dp > 0) != (dq > 0): m_ = p_ + (q_ - p_) * (dp / (dp - dq)); outp.append(m_); inp.append(m_)
+                for b_ in range(1, len(outp) - 1):
+                    tt = [np.array([-w_[2], w_[1], w_[0]]) + (PSH if PSH is not None else 0) for w_ in (outp[0], outp[b_], outp[b_ + 1])]
+                    if np.linalg.norm(np.cross(tt[1] - tt[0], tt[2] - tt[0])) > 1e-10: g['F'] += split([(tt[0], UVs[0]), (tt[1], UVs[0]), (tt[2], UVs[0])], nT)
+                rest = inp
+                if len(rest) < 3: break
 POST_OI = next(i for i, o in enumerate(O) if o['name'] == 'WindowCpt')
 for b in POSTS + HEADS:
     rg = b['rings']; NR = len(rg[0])
