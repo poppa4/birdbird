@@ -75,7 +75,7 @@ for t, im_ in TXP.items():
     a_[bad] = (58, 66, 78); TXA[t] = a_
 _r = np.random.default_rng(3).random((16, 4)); SAMP = _r ** 1.5
 FCOL, FAREA, FOBJ = [], [], []
-FTEX = []; FY = []; FEDG = []; EDGE = collections.defaultdict(list)
+FTEX = []; FY = []; FXZ = {}; FEDG = []; EDGE = collections.defaultdict(list)
 G = collections.defaultdict(lambda: {'F': []})
 EMAX = 0.30  # m: faces are first cut to 30 cm; refine() then cuts further only where the baked light changes across them
 def split(tri, n, d=0):
@@ -265,7 +265,7 @@ for oi, o in enumerate(O):
         # source textures drop out and what is left is the material's colour
         w = SAMP[:, :len(idx)] if len(idx) <= 4 else np.full((1, len(idx)), 1 / len(idx)); w = w / w.sum(1, keepdims=True); q = (w @ UVs) % 1
         px = tim[np.minimum(511, (q[:, 1] * 512).astype(int)), np.minimum(511, (q[:, 0] * 512).astype(int))].astype(float)
-        fid = len(FCOL); FCOL.append(np.median(px, 0)); FAREA.append(area); FOBJ.append(oi); FTEX.append(o['tex']); FY.append(float(ctr[1])); UVs = [(fid, 0)] * len(idx)
+        fid = len(FCOL); FCOL.append(np.median(px, 0)); FAREA.append(area); FOBJ.append(oi); FTEX.append(o['tex']); FY.append(float(ctr[1])); FXZ[fid] = (-float(ctr[2]), float(ctr[0])); UVs = [(fid, 0)] * len(idx)
         qk = [tuple(np.round(p_ * 2000).astype(int)) for p_ in P]; ed = []
         for j in range(len(qk)):
             ek = tuple(sorted((qk[j], qk[(j + 1) % len(qk)]))); ed.append((ek, float(np.linalg.norm(P[j] - P[(j + 1) % len(P)])))); EDGE[ek].append(fid)
@@ -400,6 +400,11 @@ for _ in range(6):
 # Small black parts (sidestick grips, tiller, belts, handles, knobs) stay black: they get a palette entry of their own.
 _dk = int(np.argmin(cen[:K - 3].sum(1))); _small = np.array([DIAGO.get(int(o_), 1.0) < 0.45 for o_ in FO[:len(lab)]]) if len(FO) >= len(lab) else np.zeros(len(lab), bool)
 cen = np.vstack([cen, cen[_dk]]); lab[(lab == _dk) & _small[:len(lab)]] = len(cen) - 1; cen[_dk] = np.array([52.0, 60.0, 73.0])
+# The seats' shells, backs, headrests and armrests are part of the lining object and had its pale paint, so the seats looked like
+# unpainted casts. Inside the two seat volumes that paint becomes the seats' blue-grey cover.
+_lt = int(np.argmin(np.linalg.norm(cen[:K - 3] - np.array([71.0, 85.0, 104.0]), axis=1))); cen = np.vstack([cen, [54.0, 67.0, 90.0]])
+for f_, (x_, z_) in FXZ.items():
+    if f_ < len(lab) and lab[f_] == _lt and 0.24 < abs(x_) < 0.84 and 0.22 < z_ < 1.15 and FY[f_] < 0.80: lab[f_] = len(cen) - 1
 PAL = cen / 255.0; print('materials', np.round(cen).astype(int).tolist(), 'area share', np.round(np.bincount(lab, weights=FA, minlength=K) / FA.sum(), 2).tolist())
 hdr = {'S': 16000, 'groups': [], 'lmax': LMAX}; blob = b''
 COS = np.cos(np.radians(72))
