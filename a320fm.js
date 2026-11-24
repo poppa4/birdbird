@@ -104,30 +104,33 @@ function apLogic(M,dt,sys,sp,nav){
   if(onG&&!toga&&!flxmct&&A.vert==='SRS'&&M.gs<1) { A.vert=''; A.lat=''; A.vertArm=''; A.athrArm=false; }
   // go-around: TOGA in flight with flaps out
   const togaEdge=toga&&!A.togaPrev; A.togaPrev=toga;
-  if(!onG&&togaEdge&&M.conf>0&&!A.gaMode&&A.vert!=='SRS'){ A.gaMode=true; A.vert='SRS'; A.lat='GA TRK'; A.chiGa=M.chi; A.vertArm='CLB'; A.athrArm=true; A.athr=false; A.appr=false; A.loc=false; A.landStage=''; A.latArm=''; }
+  if(!onG&&togaEdge&&M.conf>0&&!A.gaMode&&A.vert!=='SRS'){ A.gaMode=true; A.vert='SRS'; A.lat='GA TRK'; A.chiGa=M.chi; A.vertArm='CLB'; A.athrArm=true; A.athr=false; A.appr=false; A.loc=false; A.landStage=''; A.latArm=nav.fp?'NAV':''; }
   // ----- thrust reduction: at THR RED altitude "LVR CLB" flashes until the levers are in CL; then A/THR becomes active
   const red=A.athrArm&&!onG&&ra>A.thrRed;
   A.lvrClb=red&&(tla[0]>TLA.CL+0.5||tla[1]>TLA.CL+0.5);
   if(A.athrArm&&!onG&&tla.every(x=>x<=TLA.CL+0.5&&x>0.5)){ A.athr=true; A.athrArm=false; M.flxLatched=false; }
   // ----- acceleration altitude: SRS -> CLB (or OP CLB), speed target to managed climb speed
   if(A.vert==='SRS'&&!onG&&ra>A.acc){ A.vert=A.lat==='NAV'&&M.vnavFn?'CLB':'OP CLB'; A.vertArm='ALT'; if(A.gaMode){ A.gaMode=false; } A.toga=false; }
-  if(A.vert==='SRS'&&!onG&&A.lat.startsWith('RWY')&&ra>30) A.lat='HDG';
-  if(A.latArm==='NAV'&&nav.fp&&!onG&&ra>30){ A.lat='NAV'; A.latArm=''; }
+  if(A.vert==='SRS'&&!onG&&A.lat==='RWY'&&ra>30){ A.lat='RWY TRK'; A.srsHdg=M.chi; }
+  if(A.latArm==='NAV'&&nav.fp&&!onG&&ra>(A.gaMode?100:30)){ A.lat='NAV'; A.latArm=''; }
   if(A.lat==='NAV'&&!nav.fp) A.lat='HDG';
   // ----- managed vertical (CLB / DES): constraints from the flight plan limit the altitude target
   const managedV=A.vert==='CLB'||A.vert==='DES'||A.vert.startsWith('ALT CST');
   const climbingM=A.vert==='CLB'||(A.vert.startsWith('ALT CST')&&A.cstClimb);
   const vn=managedV&&M.vnavFn?M.vnavFn(M,climbingM,A.alt.v):null; A.vn=vn;
   if(managedV&&A.lat!=='NAV'&&!onG){ A.vert=A.vert==='DES'||(!A.cstClimb&&A.vert.startsWith('ALT CST'))?'V/S':(A.vert==='CLB'?'OP CLB':'V/S'); if(A.vert==='V/S'){ A.vs.v=Math.round(vs/100)*100; A.vs.dash=false; } }
-  if(A.vert==='ALT CST'&&vn&&Math.abs(vn.alt-(A.altHold||vn.alt))>60){ A.vert=A.cstClimb?'CLB':'DES'; } // constraint passed: climb / descend on
-  if(A.vert==='ALT CST'&&!vn&&Math.abs(A.alt.v-h)>250){ A.vert=A.cstClimb?'CLB':'DES'; }
+  if(A.vert==='ALT CST'&&vn&&Math.abs(vn.alt-(A.altHold||vn.alt))>60){ A.vert=A.cstClimb?'CLB':'DES'; A.vertArm=A.vertArm.replace(/^(CLB|DES)/,'ALT'); } // constraint passed: climb / descend on
+  if(A.vert==='ALT CST'&&!vn&&Math.abs(A.alt.v-h)>250){ A.vert=A.cstClimb?'CLB':'DES'; A.vertArm=A.vertArm.replace(/^(CLB|DES)/,'ALT'); }
   // ----- altitude capture logic
   const altT=(A.vert==='CLB'||A.vert==='DES')&&vn?vn.alt:A.alt.v, dAlt=altT-h, cstCap=(A.vert==='CLB'||A.vert==='DES')&&vn&&vn.alt!==A.alt.v;
   if(['OP CLB','CLB','OP DES','DES','V/S','FPA','EXPED CLB','EXPED DES'].includes(A.vert)){
     const climbing=A.vert.includes('CLB')||(A.vert==='V/S'&&A.vs.v>0)||((A.vert==='FPA')&&A.vs.fpaV>0);
     const capt=Math.max(150,Math.abs(vs)*0.18);
-    if((climbing&&dAlt>0&&dAlt<capt)||(!climbing&&dAlt<0&&-dAlt<capt)){ if(cstCap){ A.cstClimb=climbing; A.vert='ALT CST*'; A.cstAlt=altT; } else A.vert='ALT*'; A.capT=0; }
+    if((climbing&&dAlt>0&&dAlt<capt)||(!climbing&&dAlt<0&&-dAlt<capt)){ const gsA=/G\/S|FINAL/.exec(A.vertArm); if(cstCap){ A.cstClimb=climbing; A.vert='ALT CST*'; A.cstAlt=altT; A.vertArm=((climbing?'CLB':'DES')+(gsA?' '+gsA[0]:'')); } else { A.vert='ALT*'; A.vertArm=gsA?gsA[0]:''; } A.capT=0; }
   }
+  /* second line: ALT armed (blue) whenever a climb or descent mode is heading for the FCU altitude, with G/S or FINAL kept */
+  if(['OP CLB','CLB','OP DES','DES','V/S','FPA','EXPED CLB','EXPED DES'].includes(A.vert)){ const up=A.vert.includes('CLB')||(A.vert==='V/S'&&A.vs.v>0)||(A.vert==='FPA'&&A.vs.fpaV>0), tow=up?dAlt>0:dAlt<0, g=/G\/S|FINAL/.exec(A.vertArm);
+    if(!/^(CLB|DES)/.test(A.vertArm)) A.vertArm=((tow?'ALT':'')+(g?' '+g[0]:'')).trim(); }
   if(A.vert==='ALT*'&&Math.abs(dAlt)<25&&Math.abs(vs)<150){ A.vert='ALT'; A.altHold=altT; }
   if(A.vert==='ALT CST*'){ const e=(A.cstAlt||h)-h; if(Math.abs(e)<25&&Math.abs(vs)<150){ A.vert='ALT CST'; A.altHold=A.cstAlt; } }
   if(A.vert==='ALT'&&Math.abs(altT-(A.altHold||altT))>0&&A.altHold!=null&&false){}
@@ -185,23 +188,37 @@ function apLogic(M,dt,sys,sp,nav){
   // ----- A/THR -----
   let thrMode='';
   const active=A.athr&&!onG||A.athr&&A.vert==='ROLL OUT';
+  /* FMA column 1, as in the APS FMA manual: an engine out moves the active limit from CL to MCT. With A/THR active, levers set
+     beyond the limit put A/THR back to armed (MAN THR / MAN MCT / MAN TOGA). TOGA LK after alpha floor holds TOGA thrust until
+     A/THR is disconnected. */
+  const eo=sys?sys.eng.filter(e=>e.n1>15).length===1:false, lmt=eo?TLA.MCT:TLA.CL, tMax=Math.max(tla[0],tla[1]);
+  if(A.athr&&!onG&&!A.alphaFloor&&!A.thrLk&&tMax>lmt+0.5){ A.athr=false; A.athrArm=true; }
   if(A.athr){
     if(['OP CLB','CLB','SRS','EXPED CLB'].includes(A.vert)) thrMode='THR CLB';
     else if(A.vert==='DES') thrMode=A.desSpd?(A.spd.mach?'MACH':'SPEED'):'THR IDLE';
     else if(['OP DES','EXPED DES'].includes(A.vert)) thrMode='THR IDLE';
     else thrMode=A.spd.mach?'MACH':'SPEED';
     if((A.vert==='FLARE'&&ra<30)||A.vert==='ROLL OUT') { thrMode='THR IDLE'; A.retard=true; } else A.retard=false;
+    // thrust modes with the levers below the active detent: thrust limited by the levers
+    if(thrMode==='THR CLB'&&tMax<lmt-0.5) thrMode='THR LVR';
+    else if(thrMode==='THR CLB'&&eo) thrMode='THR MCT';
+    if(A.thrLk) thrMode='TOGA LK';
     if(A.alphaFloor) thrMode='A.FLOOR';
-    if(tla.some(x=>x>TLA.CL+0.5)&&!A.alphaFloor) thrMode='THR LVR';
   }
-  else if(A.athrArm||(onG&&A.toga)){ thrMode=toga?'MAN TOGA':(flxmct&&M.flxLatched?'MAN FLX':'MAN MCT'); }
+  else if(A.athrArm||(onG&&A.toga)){ thrMode=toga?'MAN TOGA':flxmct&&M.flxLatched?'MAN FLX':flxmct?'MAN MCT':tMax>lmt+0.5?'MAN THR':''; }
+  // third line: lever requests
+  A.lvrMsg='';
+  if(A.athrArm&&!onG&&ra>A.thrRed&&!A.gaMode&&A.vert!=='SRS'||A.lvrClb) A.lvrMsg=eo?(Math.abs(tMax-TLA.MCT)>0.5?'LVR MCT':''):(tMax>TLA.CL+0.5?'LVR CLB':'');
+  else if(A.athr&&!eo&&!onG&&(Math.abs(tla[0]-TLA.CL)<=0.5)!==(Math.abs(tla[1]-TLA.CL)<=0.5)) A.lvrMsg='LVR ASYM';
+  if(A.thrLock){ A.lvrMsg='THR LK'; if(Math.abs(tla[0]-TLA.CL)>0.5||Math.abs(tla[1]-TLA.CL)>0.5) A.thrLock=null; }
   if(A.athr&&tla[0]<=0.5&&tla[1]<=0.5&&A.vert!=='ROLL OUT'&&A.vert!=='FLARE'&&!A.alphaFloor){ A.athr=false; A.athrArm=false; }
   A.thr=thrMode;
   const n1=[0,1].map(i=>{
     const lev=leverN1(M,tla[i]);
     if(tla[i]<0) return lev;
+    if(A.thrLock) return A.thrLock[i];
     if(!A.athr) return lev;
-    if(A.alphaFloor) return n1Rating(M,'toga');
+    if(A.alphaFloor||A.thrLk) return n1Rating(M,'toga');
     if(thrMode==='THR LVR') return lev;
     const lim=Math.max(N1I,Math.min(lev,leverN1(M,tla[i]<=TLA.CL+0.5?TLA.CL:tla[i])));
     if(thrMode==='THR CLB') return lim;
@@ -467,11 +484,11 @@ function fcu(M,k,v){
     case 'appr': if(A.appr){ A.appr=false; A.loc=false; A.latArm=''; A.vertArm=A.vertArm.replace('G/S','').trim(); } else { A.appr=true; A.loc=false; if(!A.lat.startsWith('LOC')) A.latArm='LOC'; A.vertArm=(A.vertArm.replace('G/S','').trim()+' G/S').trim(); } break;
     case 'exped': if(!M.gnd&&Math.abs(A.alt.v-h)>250){ A.vert=A.alt.v>h?'EXPED CLB':'EXPED DES'; A.spd.man=false; } break;
     case 'ap1': case 'ap2': { const on=!A[k]; if(on&&(M.gnd&&!(M.liftT>0))) return 'AP: not on the ground'; if(on&&!M.gnd&&M.ra/FT<100&&!A.appr) {} A[k]=on; if(on){ if(!A.appr) A[k==='ap1'?'ap2':'ap1']=false; if(!A.lat) A.lat='HDG'; if(!A.vert) { A.vert='V/S'; A.vs.v=Math.round(M.vs/FPM/100)*100; } } else { M.events.push('apdisc'); } break; }
-    case 'athr': if(A.athr||A.athrArm){ A.athr=false; A.athrArm=false; A.alphaFloor=false; M.events.push('athrdisc'); } else { if(M.gnd) A.athrArm=true; else if(M.tla.every(x=>x>0.5&&x<=TLA.CL+0.5)) A.athr=true; else A.athrArm=true; } break;
+    case 'athr': if(A.athr||A.athrArm){ if(A.athr&&!M.gnd&&M.tla.every(x=>Math.abs(x-TLA.CL)<=0.5)) A.thrLock=M.n1Cmd.slice(); A.athr=false; A.athrArm=false; A.alphaFloor=false; A.thrLk=false; M.events.push('athrdisc'); } else { if(M.gnd) A.athrArm=true; else if(M.tla.every(x=>x>0.5&&x<=TLA.CL+0.5)) A.athr=true; else A.athrArm=true; } break;
     case 'fd1': A.fd1=!A.fd1; if(!A.fd1&&!A.fd2&&!A.ap1&&!A.ap2){ A.lat=''; A.vert=''; } break;
     case 'fd2': A.fd2=!A.fd2; if(!A.fd1&&!A.fd2&&!A.ap1&&!A.ap2){ A.lat=''; A.vert=''; } break;
     case 'instDisc': if(A.ap1||A.ap2){ A.ap1=A.ap2=false; M.events.push('apinst'); } break;
-    case 'athrInst': if(A.athr){ A.athr=false; A.athrArm=false; M.events.push('athrinst'); } break;
+    case 'athrInst': if(A.athr||A.athrArm){ A.athr=false; A.athrArm=false; A.thrLk=false; A.alphaFloor=false; A.thrLock=null; M.events.push('athrinst'); } break;
   }
   return null;
 }

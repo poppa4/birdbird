@@ -75,7 +75,7 @@ function reset(kind){
   if(kind==='down'){ ap.athr=true; ap.alt.v=3000; ap.hdg.v=180; UI.tla=[25,25]; }
   if(kind==='air'){ ap.ap1=true; ap.athr=true; ap.vert='ALT'; ap.altHold=5000; ap.lat='HDG'; ap.hdg.v=360; ap.vapp=137; UI.tla=[25,25]; ap.clbPh=false; }
   if(kind==='appr'){ ap.ap1=true; ap.athr=true; ap.vert='ALT'; ap.altHold=3000; ap.lat='HDG'; ap.hdg.v=360; ap.vapp=137; UI.tla=[25,25]; UI.efis.mode=0; UI.efis.range=1; }
-  else if(kind!=='climb'&&kind!=='down') UI.tla=[0,0];
+  else if(kind!=='climb'&&kind!=='down'&&kind!=='air') UI.tla=[0,0];
   UI.efis.qnh=1013; UI.efis.std=false; UI.crashed=false; UI.paused=false; UI.t=0; UI.fmaPrev={}; UI.fmaT={};
   M.nav=F.navCalc(M); M.spds=F.speeds(M); M.ap.tgtSpd=M.ias;
   syncCtl(); for(let i=0;i<20;i++) sysStep(0.05);
@@ -591,18 +591,22 @@ function fma(){
   if(M.gnd&&!a.vert&&(a.fd1||a.fd2)&&K.d.v2){ F_.vert='SRS'; F_.lat='RWY'; F_.vertArm='CLB'; F_.latArm=K.fpln.length?'NAV':''; }
   if(a.vert==='ROLL OUT'){ F_.common='ROLL OUT'; F_.vert=F_.lat=''; }
   if(a.vert==='LAND'||a.vert==='FLARE'){ F_.common=a.vert; F_.vert=F_.lat=''; }
-  if(a.appr&&(a.ap1&&a.ap2)){ F_.cat='CAT 3'; F_.cat2='DUAL'; } else if(a.appr){ F_.cat='CAT '+(a.ap1||a.ap2?'3':'1'); F_.cat2=a.ap1||a.ap2?'SINGLE':''; }
+  /* approach capability (column 4): CAT 3 DUAL with both APs and A/THR, CAT 3 SINGLE with one AP and A/THR, CAT 2 with one AP, else CAT 1 */
+  if(a.appr){ const ap=(a.ap1?1:0)+(a.ap2?1:0), th=a.athr; if(ap===2&&th){ F_.cat='CAT 3'; F_.cat2='DUAL'; } else if(ap&&th){ F_.cat='CAT 3'; F_.cat2='SINGLE'; } else F_.cat=ap?'CAT 2':'CAT 1'; }
   const dh=K.d.dh, mda=K.d.mda; if(a.appr) F_.mins=dh!=null?(dh==='NO'?'NO DH':'DH '+dh):mda?'MDA '+mda:'';
   F_.ap=a.ap1&&a.ap2?'AP1+2':a.ap1?'AP1':a.ap2?'AP2':'';
   F_.fd=(a.fd1||a.fd2)&&(a.lat||a.vert||F_.vert)?((a.fd1?'1':'-')+' FD '+(a.fd2?'2':'-')):'';
   F_.athr=a.athr?'A/THR':a.athrArm?'A/THR':''; F_.athrArm=!a.athr&&a.athrArm;
-  if(a.lvrClb&&UI.t%1<0.6) F_.lvr='LVR CLB';
+  if(a.lvrMsg&&(a.lvrMsg==='LVR ASYM'||UI.t%1<0.6)) F_.lvr=a.lvrMsg; // LVR CLB / LVR MCT / THR LK flash
   if(a.retard&&M.ra/FT<40) F_.thr='THR IDLE';
   if(a.alphaFloor) F_.thr='A.FLOOR';
   // box around a mode for 10 s after it changes
   const t=UI.t; const chg=(k,v)=>{ if(UI.fmaPrev[k]!==v){ UI.fmaPrev[k]=v; UI.fmaT[k]=t; } return v&&t-UI.fmaT[k]<10; };
   F_.boxThr=chg('thr',F_.thr); F_.boxVert=chg('vert',F_.vert); F_.boxLat=chg('lat',F_.lat);
-  if(M.fbw.law==='ALTN'&&!M.gnd) F_.msg='MAN PITCH TRIM ONLY';
+  // special messages (columns 2 and 3, third line): direct law and mechanical backup
+  if(!M.gnd&&A.law==='DIRECT'){ F_.msg='USE MAN PITCH TRIM'; F_.msgC=COL.a; } else if(!M.gnd&&A.law==='MECH'){ F_.msg='MAN PITCH TRIM ONLY'; F_.msgC=COL.r; }
+  // ALT CRZ: altitude hold at the cruise flight level from INIT A
+  if(a.vert==='ALT'&&K.d.crzFl&&Math.abs((a.altHold||0)-K.d.crzFl*100)<50) F_.vert='ALT CRZ';
   return F_;
 }
 let dispFrame=0;

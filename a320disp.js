@@ -160,7 +160,7 @@ function fma(g,D){
   const box=(x,w,on)=>{ if(on) R(g,x+4,10,w-8,40,C.w,3); };
   const t=(s,x,row,col,al)=>{ if(s) T(g,s,x,ys[row],col||C.g,34,al||'center',600); };
   // col 1: A/THR
-  if(F.thr){ const col=F.thr.startsWith('MAN')||F.thr==='A.FLOOR'||F.thr==='TOGA LK'?C.w:C.g; t(F.thr==='MAN FLX'?'MAN':F.thr==='MAN TOGA'?'MAN':F.thr==='MAN MCT'?'MAN':F.thr,97,0,col); if(F.thr==='MAN FLX'){ t('FLX '+(F.flx>0?'+'+F.flx:''),97,1,C.w); } if(F.thr==='MAN TOGA') t('TOGA',97,1,C.w); if(F.thr==='MAN MCT') t('MCT',97,1,C.w); box(0,195,F.boxThr); }
+  if(F.thr){ const col=F.thr.startsWith('MAN')||F.thr==='A.FLOOR'||F.thr==='TOGA LK'?C.w:C.g; t(F.thr==='MAN FLX'?'MAN':F.thr==='MAN TOGA'?'MAN':F.thr==='MAN MCT'?'MAN':F.thr==='MAN THR'?'MAN':F.thr,97,0,col); if(F.thr==='MAN FLX'){ t('FLX '+(F.flx>0?'+'+F.flx:''),97,1,C.w); } if(F.thr==='MAN TOGA') t('TOGA',97,1,C.w); if(F.thr==='MAN MCT') t('MCT',97,1,C.w); if(F.thr==='MAN THR') t('THR',97,1,C.w); box(0,195,F.boxThr); }
   if(F.lvr) t(F.lvr,97,2,C.w); else if(F.athrArmMsg) {}
   // col 2: vertical
   t(F.vert,295,0,C.g); if(F.vertArm) t(F.vertArm,295,1,C.c); box(195,200,F.boxVert);
