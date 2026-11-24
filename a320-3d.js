@@ -189,14 +189,17 @@ function init(o){
   // how many screen pixels a display covers now (for its canvas size: sharp when zoomed in, cheap when far away)
   function pxSize(d,vh){ const x=disp.find(z=>z.d===d); if(!x) return 256; const dist=Math.max(0.2,x.c.distanceTo(cam.position)); return x.wm/dist/(2*Math.tan(cam.fov*D2R/2))*vh; }
   function visible(d){ const x=disp.find(z=>z.d===d); if(!x) return false; sph.center.copy(x.c); sph.radius=0.12; return frus.intersectsSphere(sph); }
-  function lookAt(p,fov,lean){ head.tEye.copy(EYE); if(lean!=null) head.tEye.x=lean; const asp=o.aspect(); if(fov&&asp>1.9&&fov<50) fov*=Math.max(0.6,1.9/asp); /* wide phone screens: closer, so the labels are big enough to read */ const dv=p.clone().sub(head.tEye).normalize(); head.tYaw=Math.atan2(-dv.x,-dv.z); head.tPitch=Math.asin(Math.max(-1,Math.min(1,dv.y))); if(fov) head.tFov=fov; }
+  /* which seat the views are taken from: 1 = left (captain), -1 = right (first officer). The flight deck is symmetric, so the
+     right seat's views are the left seat's mirrored: eye, lean and what each view looks at. */
+  let SEAT=1; const mir=wx=>SEAT>0?wx:1000-wx;
+  function lookAt(p,fov,lean){ head.tEye.copy(EYE); head.tEye.x*=SEAT; if(lean!=null) head.tEye.x=lean*SEAT; const asp=o.aspect(); if(fov&&asp>1.9&&fov<50) fov*=Math.max(0.6,1.9/asp); /* wide phone screens: closer, so the labels are big enough to read */ const dv=p.clone().sub(head.tEye).normalize(); head.tYaw=Math.atan2(-dv.x,-dv.z); head.tPitch=Math.asin(Math.max(-1,Math.min(1,dv.y))); if(fov) head.tFov=fov; }
   // the overhead and the pedestal: the pilot leans in towards the centre line (as in the aircraft), so the panel is seen square
   /* phones (short screens): the main view starts on the captain's PFD and ND, close enough to read; the whole panel is one pinch away */
   const phone=()=>Math.min(G.innerWidth||1e4,G.innerHeight||1e4)<520||(G.matchMedia&&G.matchMedia('(pointer:coarse)').matches&&Math.min(G.screen.width,G.screen.height)<600);
   const mainPh=CF3&&CF3.phoneMain||[300,955,44];
   /* the zoom follows the screen's shape: about 64° across, so the PFD and ND fill the width whichever way the phone is held */
-  const phMain=()=>{ lookAt(toP(mainPh[0],mainPh[1])); const asp=Math.max(0.5,o.aspect()); head.tFov=Math.max(28,Math.min(58,2*Math.atan(Math.tan(32*D2R)/asp)/D2R)); };
-  const LOOK=CF3?Object.fromEntries(Object.entries(CF3.look).map(([k,a])=>[k,k==='main'?()=>{ if(phone()){ phMain(); return; } head.tEye.copy(EYE); head.tYaw=CF3.yaw||-0.04; head.tPitch=P0; head.tFov=62; }:()=>lookAt(toP(a[0],a[1]),a[2],a[3])])):{main:()=>{ if(phone()){ phMain(); return; } head.tEye.copy(EYE); head.tYaw=-0.04; head.tPitch=-11*D2R; head.tFov=62; },all:()=>{ head.tEye.set(0,0.75,0.95); head.tYaw=0; head.tPitch=-0.25; head.tFov=Math.max(62,Math.min(86,80*Math.sqrt(1.5/Math.max(0.8,o.aspect())))); },ovhd:()=>lookAt(toP(500,610),62,-0.02),aft:()=>lookAt(toP(500,230),64,-0.02),ped:()=>lookAt(toP(500,1300),58,0),fcu:()=>lookAt(toP(500,845),26),ecam:()=>lookAt(toP(507,1000),32,-0.3),mcdu:()=>lookAt(toP(500,1196),33,0),pfd:()=>lookAt(toP(225,955),36)};
+  const phMain=()=>{ lookAt(toP(mir(mainPh[0]),mainPh[1])); const asp=Math.max(0.5,o.aspect()); head.tFov=Math.max(28,Math.min(58,2*Math.atan(Math.tan(32*D2R)/asp)/D2R)); };
+  const LOOK=CF3?Object.fromEntries(Object.entries(CF3.look).map(([k,a])=>[k,k==='main'?()=>{ if(phone()){ phMain(); return; } head.tEye.copy(EYE); head.tYaw=CF3.yaw||-0.04; head.tPitch=P0; head.tFov=62; }:()=>lookAt(toP(a[0],a[1]),a[2],a[3])])):{main:()=>{ if(phone()){ phMain(); return; } head.tEye.copy(EYE); head.tEye.x*=SEAT; head.tYaw=-0.04*SEAT; head.tPitch=-11*D2R; head.tFov=62; },all:()=>{ head.tEye.set(0,0.75,0.95); head.tYaw=0; head.tPitch=-0.25; head.tFov=Math.max(62,Math.min(86,80*Math.sqrt(1.5/Math.max(0.8,o.aspect())))); },ovhd:()=>lookAt(toP(500,610),62,-0.02),aft:()=>lookAt(toP(500,230),64,-0.02),ped:()=>lookAt(toP(500,1300),58,0),fcu:()=>lookAt(toP(500,845),26),ecam:()=>lookAt(toP(mir(507),1000),32,-0.3),mcdu:()=>lookAt(toP(500,1196),33,0),pfd:()=>lookAt(toP(mir(225),955),36)};
   /* ---- picking: ray from the eye through the pointer to the nearest panel ---- */
   const ray=new THREE.Ray(), hitP=new THREE.Vector3(), pl=new THREE.Plane(), rc=new THREE.Raycaster();
   function pick(nx,ny){ // nx, ny in -1..1
@@ -262,7 +265,7 @@ function init(o){
   function proj(wx,wy){ const p=toP(wx,wy,0.002); if(!p) return null; pv3.copy(p).applyMatrix4(cam.matrixWorldInverse); if(pv3.z>-0.02) return null; pv3.applyMatrix4(cam.projectionMatrix); return [pv3.x,pv3.y]; }
   /* look closer at a point (double click / double tap), and back */
   function focus(wx,wy){ const p=toP(wx,wy); if(!p) return; const fov=head.tFov>40?Math.max(22,head.tFov*0.45):null; if(fov){ lookAt(p,null); head.tFov=fov; } else head.tFov=Math.min(66,head.tFov/0.45); }
-  return {scene,cam,head,updCam,draw,pick,proj,focus,place,P,addLevers,relief:RELIEF,LOOK,visible,pxSize,setImage,repaint,K,disp,mobile,
+  return {scene,cam,head,updCam,draw,pick,proj,focus,place,P,addLevers,relief:RELIEF,LOOK,setSeat:s=>{ SEAT=s<0?-1:1; },get seat(){ return SEAT; },visible,pxSize,setImage,repaint,K,disp,mobile,
     drag(dx,dy){ const s=head.fov/62*0.0042; head.tYaw+=dx*s; head.tPitch=Math.max(-80*D2R,Math.min(85*D2R,head.tPitch+dy*s)); head.yaw=head.tYaw; head.pitch=head.tPitch; },
     zoom(f){ head.tFov=Math.max(8,Math.min(80,head.tFov*f)); },
     qHead(){ return q; }, fov(){ return cam.fov; }};

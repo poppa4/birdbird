@@ -9,7 +9,7 @@
 const $=id=>document.getElementById(id);
 const LB=window.LAB||{}, T=s=>LB.T?LB.T(s):s;
 if(LB.add) LB.add({},{'NORDAP · Simulators':'NORDAP · Simulatorer','Airbus A320 cockpit procedure trainer':'Airbus A320 prosedyretrener for cockpit','Overhead':'Takpanel','Panel':'Panel','Pedestal':'Pedestal',
-  'Cockpit':'Cockpit','Whole cockpit':'Hele cockpiten','Flight controls':'Flykontroller','How it works':'Slik virker det','Sidestick':'Sidestikke','Thrust levers':'Gasshendler','Hold for brakes':'Hold for bremser',
+  'Cockpit':'Cockpit','Whole cockpit':'Hele cockpiten','Left seat':'Venstre sete','Right seat':'Høyre sete','Seat':'Sete','Flight controls':'Flykontroller','How it works':'Slik virker det','Sidestick':'Sidestikke','Thrust levers':'Gasshendler','Hold for brakes':'Hold for bremser',
   'Fast ADIRS alignment':'Rask ADIRS-oppretting','On ground':'På bakken','Flying':'Flyr','Paused':'Pause','Crashed':'Havarert','Cold and dark':'Kald og mørk','Ready for take-off':'Klar for avgang'});
 const D3=document.body.hasAttribute('data-d3');
 const F=A320FM, Y=A320SYS, DSP=A320DISP, MC=A320MCDU, SH=window.SIMSHELL;
@@ -852,7 +852,7 @@ const Z={s:1,tx:0,ty:0,reg:'main',free:false}; let VPW=1,VPH=1, OTWH=0, cockpitV
 function layout(instant){
   const W=ST.clientWidth, H=ST.clientHeight; if(!W||!H) return;
   if(D3){ OTWH=H; ST.style.setProperty('--vpt','0px'); ST.style.setProperty('--otwh','100%'); ST.classList.remove('noout'); ST.classList.toggle('zoomed',Z.reg!=='main'&&Z.reg!=='all'); VPW=W; VPH=H; Z.s=3;
-    document.querySelectorAll('.vseg .cb').forEach(b=>b.classList.toggle('on',b.dataset.v===Z.reg)); const zs=$('zoomSel'); if(zs&&zs.value!==Z.reg) zs.value=Z.reg; return; }
+    document.querySelectorAll('.vseg:not(.sseg) .cb').forEach(b=>b.classList.toggle('on',b.dataset.v===Z.reg)); const zs=$('zoomSel'); if(zs&&zs.value!==Z.reg) zs.value=Z.reg; return; }
   const r=REG[Z.reg]||REG.main;
   let otwH=0;
   if(Z.reg==='main'&&UI.otw!==false){ const s=Math.min(W/r[2],(H*0.68)/r[3]); otwH=Math.max(0,Math.round(H-r[3]*s)); Z.s=s; Z.tx=(W-r[2]*s)/2-r[0]*s; Z.ty=-r[1]*s; }
@@ -861,7 +861,7 @@ function layout(instant){
   ST.classList.toggle('noout',otwH<8); Z.free=false; ST.classList.toggle('zoomed',Z.reg!=='main');
   VPW=W; VPH=H-otwH; apply(instant);
   if(window.OTW&&OTW.frame&&otwH>8) OTW.frame({lip:otwH,nose:6,cx:W*((236-0)*Z.s+Z.tx)/W});
-  document.querySelectorAll('.vseg .cb').forEach(b=>b.classList.toggle('on',b.dataset.v===Z.reg));
+  document.querySelectorAll('.vseg:not(.sseg) .cb').forEach(b=>b.classList.toggle('on',b.dataset.v===Z.reg));
   const zs=$('zoomSel'); if(zs&&zs.value!==Z.reg) zs.value=Z.reg;
 }
 function apply(instant){ WORLD.classList.toggle('anim',!instant); WORLD.style.transform=`translate(${Z.tx.toFixed(1)}px,${Z.ty.toFixed(1)}px) scale(${Z.s.toFixed(4)})`; hiRes(); fitSoon(); }
@@ -872,7 +872,7 @@ function view(r){ if(!REG[r]) return; Z.reg=r; if(D3&&CK&&CK.LOOK[r]) CK.LOOK[r]
 new ResizeObserver(()=>layout(true)).observe(ST);
 /* a phone turned on its side: aim the 3D view again for the new shape, so the instruments stay readable */
 { let lastAsp=0; new ResizeObserver(()=>{ const a=ST.clientWidth/Math.max(1,ST.clientHeight); if(D3&&CK&&CK.LOOK[Z.reg]&&Math.abs(a-lastAsp)>0.3&&(lastAsp===0||(a>1)!==(lastAsp>1)||Math.abs(a-lastAsp)>0.6)){ CK.LOOK[Z.reg](); } lastAsp=a; }).observe(ST); }
-document.querySelectorAll('.vseg .cb').forEach(b=>b.onclick=()=>view(b.dataset.v));
+document.querySelectorAll('.vseg:not(.sseg) .cb').forEach(b=>b.onclick=()=>view(b.dataset.v));
 $('zBack').onclick=()=>view('main');
 { const zs=$('zoomSel'); Object.keys(REGN).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=T(REGN[k]); zs.appendChild(o); }); zs.onchange=()=>view(zs.value); }
 // free zoom: wheel (not on a control) and pinch; drag to pan when zoomed
@@ -1281,8 +1281,10 @@ let CK=null;
 (window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=!!(window.OTW&&window.THREE&&hasWebGL()&&OTW.init($('otw'))); }catch(e){ otwReady=false; } otwLiveSync();
   if(D3){ if(otwReady&&window.A3D){ try{ CK=A3D.init({R:OTW.renderer(),displays:DISP.filter(d=>d.cv),aspect:()=>ST.clientWidth/Math.max(1,ST.clientHeight)});
       const im=new Image(); im.decoding='async'; im.src=CK.mobile?IMG[0]:IMG[1]; im.decode().then(()=>{ CK.setImage(im); paint3d(true); }).catch(()=>{}); (CK.relief||Promise.resolve()).then(()=>{ try{ buildCtl3D(); }catch(err){ console.warn('3D controls',err); CTL=null; } });
-      /* the page opens on the whole flight deck, seen from between the seats (small screens open on the captain's panel) */
-      if(!CF&&CK.LOOK.all&&ST.clientWidth>=760) view('all'); else if(CK.LOOK[Z.reg]) CK.LOOK[Z.reg](); }catch(err){ console.warn('A320 3D',err); CK=null; } }
+      /* the page opens in the seat last used (left the first time); the Cockpit view shows the whole flight deck from between the seats */
+      if(CK.setSeat){ let st=1; try{ st=localStorage.getItem('bb-a320-seat')==='R'?-1:1; }catch(e){} CK.setSeat(st);
+        document.querySelectorAll('.sseg .cb').forEach(b=>{ b.classList.toggle('on',(b.dataset.seat==='R'?-1:1)===st); b.onclick=()=>{ const v=b.dataset.seat==='R'?-1:1; CK.setSeat(v); try{ localStorage.setItem('bb-a320-seat',v<0?'R':'L'); }catch(e){} document.querySelectorAll('.sseg .cb').forEach(x=>x.classList.toggle('on',x===b)); view(Z.reg==='all'?'main':Z.reg); }; }); }
+      if(CK.LOOK[Z.reg]) CK.LOOK[Z.reg](); }catch(err){ console.warn('A320 3D',err); CK=null; } }
     if(!CK){ $('otwMsg')&&($('otwMsg').hidden=false); } }
   layout(true); },{timeout:500});
 const otwS={N:0,E:0,h:0,th:0,phi:0,psi:0};
