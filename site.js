@@ -44,6 +44,8 @@
   const seal='<img src="logo-seal.webp" width="64" height="64" alt="" class="seal" loading="lazy">';
   /* the header carries the same seal as the footer */
   const sealHead='<img src="logo-seal.webp" width="42" height="42" alt="" class="seal">';
+  /* the NORDAP logo (2026-11-24): the N with its swoosh and the wordmark, navy on light pages, white on navy (front page) */
+  const brand=(c)=>`<span class="lgx ${c||''}"><img class="lg lg-n" src="img/brand/nordap-logo-navy.svg" width="136" height="19" alt=""><img class="lg lg-w" src="img/brand/nordap-logo-white.svg" width="136" height="19" alt=""><small>Nordic Aviation Platform</small></span>`;
 
   /* ---------- rang og progresjon (lokalt; klar for synk mot konto senere) ---------- */
   const PK='naeroson-prog';
@@ -134,7 +136,7 @@
   const foot=document.createElement('footer'); foot.className='sitefoot';
   function render(){
     const keep=head.querySelector('.hright')||Object.assign(document.createElement('div'),{className:'hright'});
-    head.innerHTML=`<div class="in"><a class="logo" href="index.html" aria-label="NORDAP">${sealHead}<span>NORDAP<small>Nordic Aviation Platform</small></span></a>
+    head.innerHTML=`<div class="in"><a class="logo" href="index.html" aria-label="NORDAP · Nordic Aviation Platform">${brand()}</a>
       <button class="menu" aria-expanded="false" aria-controls="sitenav"><i aria-hidden="true"></i>${t('Menu')}</button>
       <nav id="sitenav" aria-label="${t('Main')}"><a href="index.html" class="${page==='index.html'?'on':''}"${page==='index.html'?' aria-current="page"':''}>${t('Home')}</a><a href="lab.html" class="${lab?'on':''}">${t('Virtual Labs')}</a><a href="flows.html" class="${page==='flows.html'?'on':''}"${page==='flows.html'?' aria-current="page"':''}>${t('Flows')}</a><a href="training.html" class="${trn?'on':''}">${t('Training')}</a><a href="prep.html" class="${pln?'on':''}">${t('Briefing pack')}</a><a href="route.html" class="${page==='route.html'?'on':''}">${t('Route Explorer')}</a><a href="fi.html" class="nfi${(page==='fi.html'&&!checkMode)?' on':''}">${t('Flight Intelligence')}</a><a href="workspace.html" class="mob ${page==='workspace.html'?'on':''}">${t('My workspace')}</a><a href="profile.html" class="mob ${page==='profile.html'?'on':''}">${t('My page')}</a></nav></div>`;
     head.querySelectorAll('nav a').forEach(a=>{ a.dataset.l=a.textContent; });
@@ -181,7 +183,7 @@
     head.querySelector('.menu').onclick=()=>{ const o=head.classList.toggle('open'); head.querySelector('.menu').setAttribute('aria-expanded',o); };
     if(head.classList.contains('open')) head.querySelector('.menu').setAttribute('aria-expanded','true');
     { const sk=document.querySelector('a.skip'); if(sk) sk.textContent=t('Skip to content'); const si=document.querySelector('.nsearch input'); if(si) si.setAttribute('aria-label',t('Search or ask')); }
-    foot.innerHTML=`<div class="fb"><a class="logo" href="index.html">${seal}<span>NORDAP<small>Nordic Aviation Platform</small></span></a><p>${t('From aviation theory and regulations to interactive training and flight preparation.')}</p><p>${t('Built in Norway by Daniel Nilsson.')}</p><a href="workspace.html">${t('My workspace')}</a><a href="profile.html">${t('My page')}</a><a href="about.html">${t('About')}</a><a href="privacy.html">${t('Privacy')}</a><a href="about.html#contact" data-contactform>${t('Contact')}</a><a href="about.html#contact" data-contactform data-topic="content">${t('Report an error')}</a><a href="sources.html">${t('Data sources')}</a><a href="rules.html">${t('Rules we link to')}</a><a href="models.html">${t('Model profiles')}</a><a href="quality.html">${t('How content is checked')}</a></div>
+    foot.innerHTML=`<div class="fb"><a class="logo" href="index.html" aria-label="NORDAP · Nordic Aviation Platform">${brand('ft')}</a><p>${t('From aviation theory and regulations to interactive training and flight preparation.')}</p><p>${t('Built in Norway by Daniel Nilsson.')}</p><a href="workspace.html">${t('My workspace')}</a><a href="profile.html">${t('My page')}</a><a href="about.html">${t('About')}</a><a href="privacy.html">${t('Privacy')}</a><a href="about.html#contact" data-contactform>${t('Contact')}</a><a href="about.html#contact" data-contactform data-topic="content">${t('Report an error')}</a><a href="sources.html">${t('Data sources')}</a><a href="rules.html">${t('Rules we link to')}</a><a href="models.html">${t('Model profiles')}</a><a href="quality.html">${t('How content is checked')}</a></div>
       <nav aria-label="${t('Footer')} · ${t('Virtual Labs')}"><b>${t('Virtual Labs')}</b><a href="lab.html">${t('Subject areas')}</a><a href="lab.html#all">${t('All topics')}</a><a href="tunnel.html">${t('Wind tunnel')}</a><a href="performance.html">${t('Performance')}</a><a href="jetsystems.html">${t('Aircraft systems')}</a><a href="holding.html">${t('Holding and approach')}</a></nav>
       <nav aria-label="${t('Footer')} · ${t('Flows')}"><b>${t('Flows')}</b><a href="flows.html">${t('Flow trainer')}</a><a href="flows.html#how">${t('How it works')}</a><a href="flows.html#lib">${t('Flow library')}</a></nav>
       <nav aria-label="${t('Footer')} · ${t('Training')}"><b>${t('Training')}</b>${TRN.map(([h,l])=>`<a href="${h}">${t(l)}</a>`).join('')}</nav>
