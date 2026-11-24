@@ -122,7 +122,7 @@ function init(o){
     for(const sg of [-1,1]){ t4(v3(sg*0.82,TY,TZ),v3(sg*TX,TY,TZ),v3(sg*TX,gy-0.42,TZ),v3(sg*0.82,gy-0.26,TZ));          // outboard of it (the sill drops)
       t4(v3(sg*TX,TY,TZ),v3(sg*TX,TY,zB+0.03),v3(sg*TX,wS-0.12,zB+0.03),v3(sg*TX,gy-0.42,TZ)); }                      // side walls below the side windows
     t4(v3(-TX,TY,TZ),v3(TX,TY,TZ),v3(TX,TY,zB+0.03),v3(-TX,TY,zB+0.03));                                              // under the floor
-    const tg=new THREE.BufferGeometry(), ta=new Float32Array(tp.length*3); tp.forEach((v,i)=>{ ta[i*3]=v.x; ta[i*3+1]=v.y; ta[i*3+2]=v.z; }); tg.setAttribute('position',new THREE.BufferAttribute(ta,3)); BACK.add(new THREE.Mesh(tg,new THREE.MeshBasicMaterial({color:0x23282f,side:THREE.DoubleSide}))); }
+    const tg=new THREE.BufferGeometry(), ta=new Float32Array(tp.length*3); tp.forEach((v,i)=>{ ta[i*3]=v.x; ta[i*3+1]=v.y; ta[i*3+2]=v.z; }); tg.setAttribute('position',new THREE.BufferAttribute(ta,3)); BACK.add(new THREE.Mesh(tg,new THREE.MeshBasicMaterial({color:0x2f3742,side:THREE.DoubleSide}))); }
   // windshield: centre post, two side posts, the frame along the sill and along the top
   for(const x of [0,-0.80,0.80]) bar(v3(x,gy,gz),v3(x*1.08,yT,zF),x?0.05:0.04,C_.frame);
   for(const sg of [-1,1]) bar(v3(sg*XW*0.98,gy,gz),v3(sg*XW*0.98,yT,zF),0.06,C_.frame);
@@ -131,7 +131,7 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=15').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=16').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);

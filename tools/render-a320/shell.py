@@ -395,6 +395,11 @@ for _ in range(6):
         if c != lab[f] and w >= 0.6 * per: lab[f] = c; ch += 1
     print('  islands', ch)
     if not ch: break
+# the dark paint of the consoles, pedestal sides and floor fittings: the source texture has it near black, and whole areas (side
+# consoles, sidestick surround, rudder pedals) were a shapeless dark mass. On the aircraft it is a dark slate blue.
+# Small black parts (sidestick grips, tiller, belts, handles, knobs) stay black: they get a palette entry of their own.
+_dk = int(np.argmin(cen[:K - 3].sum(1))); _small = np.array([DIAGO.get(int(o_), 1.0) < 0.45 for o_ in FO[:len(lab)]]) if len(FO) >= len(lab) else np.zeros(len(lab), bool)
+cen = np.vstack([cen, cen[_dk]]); lab[(lab == _dk) & _small[:len(lab)]] = len(cen) - 1; cen[_dk] = np.array([52.0, 60.0, 73.0])
 PAL = cen / 255.0; print('materials', np.round(cen).astype(int).tolist(), 'area share', np.round(np.bincount(lab, weights=FA, minlength=K) / FA.sum(), 2).tolist())
 hdr = {'S': 16000, 'groups': [], 'lmax': LMAX}; blob = b''
 COS = np.cos(np.radians(72))
@@ -415,7 +420,7 @@ for t, g in G.items():
             I.append(key[k])
     P = np.array(Pl, np.int16); UV = np.array(UVl, np.float64); N = np.array(Nl, np.int8); I = np.array(I)
     Pf = P.astype(np.float64) / 16000; Nf = N.astype(np.float64); Nf /= np.maximum(1e-6, np.linalg.norm(Nf, axis=1, keepdims=True))
-    b = list(bake(Pf, Nf, 0)); KEY = np.array([0.0, 0.55, -0.83]); b[2] = np.clip(Nf @ KEY, 0, 1) * 0.30 + np.clip(Nf[:, 1], 0, 1) * 0.12
+    b = list(bake(Pf, Nf, 0)); KEY = np.array([0.0, 0.55, -0.83]); b[2] = np.clip(Nf @ KEY, 0, 1) * 0.30 + np.clip(Nf[:, 1], 0, 1) * 0.42 - np.clip(-Nf[:, 1], 0, 1) * 0.10   # tops lighter, undersides darker: form reads where little window light reaches
     # smooth the bake over the mesh (neighbours through the triangles): less ray noise, no blotches across cut-up faces
     tri = I.reshape(-1, 3); nb = len(P)
     for it in range(3):
