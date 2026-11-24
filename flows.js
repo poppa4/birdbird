@@ -189,7 +189,7 @@ function flowSel() { const s = $('fsel'), S = acKey(cur), mineS = FL.filter(f =>
 /* the flight as a timeline: every flow of this aircraft under its phase, in the order of a flight, with its step count and
    the open one marked; abnormal and memory items last. One tap opens a flow. The short starter is marked "Start here". */
 const short = (n, ph) => { const t = n.split(' · '); return t.length > 1 && ph.toLowerCase().startsWith(t[0].toLowerCase().slice(0, 12)) ? t.slice(1).join(' · ').replace(/^./, c => c.toUpperCase()) : n; };
-function phaseBar(stdS, mineS, no) { let bar = $('fphase'); if (!bar) { bar = document.createElement('nav'); bar.id = 'fphase'; bar.className = 'fph'; $('fstart').after(bar);
+function phaseBar(stdS, mineS, no) { let bar = $('fphase'); if (!bar) { bar = document.createElement('nav'); bar.id = 'fphase'; bar.className = 'fph'; document.querySelector('.ftop').after(bar);
     bar.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; const s = $('fsel'); s.value = b.dataset.v; s.dispatchEvent(new Event('change')); }); }
   bar.setAttribute('aria-label', L({ en: 'Flows through the flight', no: 'Flows gjennom flygingen' }));
   const st = stdS.length ? starter(stdS[0].ac) : null, curV = cur ? (cur.std ? 'std:' + cur.std : cur.ex ? 'ex:' + cur.ac : cur.id) : '';
@@ -753,7 +753,7 @@ function init() { load(); wirePanel(); manWire();
   $('zin').onclick = () => setZoom(zoom * 1.4); $('zout').onclick = () => setZoom(zoom / 1.4); $('zfit').onclick = fit; $('zfull').onclick = () => focusMode();
   pinch(); stickTop(); addEventListener('resize', stickTop, { passive: true }); addEventListener('orientationchange', () => setTimeout(stickTop, 300));
   document.querySelectorAll('.fmode button').forEach(b => b.onclick = () => { if (b.dataset.k) { if (mode !== 'practise') setMode('practise'); pStart(b.dataset.k); toStage(); return; } setMode(b.dataset.m); if (b.dataset.m === 'watch' && cur && cur.steps.length) wPlay(); });
-  $('fmenu').addEventListener('click', e => { const b = e.target.closest('button[data-mm]'); if (!b) return; $('fmenu').closest('details').open = false; setMode(b.dataset.mm); });
+  $('fmenu').addEventListener('click', e => { const b = e.target.closest('button[data-mm]'); if (!b) return; $('fmenu').closest('details').open = false; if (b.dataset.mm === 'new') return newDialog(); setMode(b.dataset.mm); });
   $('fsel').onchange = e => { const v = e.target.value; if (mode === 'build' || mode === 'together') setMode('practise'); if (v.startsWith('std:')) return open(stdGet(v.slice(4))); if (v.startsWith('ex:')) open(F.example(v.slice(3), A)); else open(FL.find(f => f.id === v)); };
   $('fnew').onclick = newDialog; $('dnew').addEventListener('close', () => { if ($('dnew').returnValue === 'ok') createFlow(); });
   $('dsop').addEventListener('close', () => { if ($('dsop').returnValue !== 'ok' || !cur) return; const S = F.parseSop($('soptxt').value); if (!S.length) return; if (cur.ex) adoptExample();
