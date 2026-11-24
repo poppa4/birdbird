@@ -110,6 +110,13 @@ function init(o){
   for(const sg of [-1,1]) bar(v3(sg*XW*0.98,gy,gz),v3(sg*XW*0.98,yT,zF),0.06,C_.frame);
   bar(v3(-XW,gy+0.01,gz),v3(XW,gy+0.01,gz),0.03,C_.frame); bar(v3(-XW,yT-0.01,zF),v3(XW,yT-0.01,zF),0.05,C_.frame);
   for(const k in quads){ const q=quads[k], g=new THREE.BufferGeometry(), arr=new Float32Array(q.p.length*3); q.p.forEach((v,i)=>{ arr[i*3]=v.x; arr[i*3+1]=v.y; arr[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(arr,3)); ROOM.add(new THREE.Mesh(g,q.mat)); }
+  /* ---- gap patches (models/a320-holes.json, built by tools/render-a320/holes.py): every direction from the pilot's eye that
+     leaves the cockpit through a gap between the FlightGear pieces (not through a window) gets a patch 2.6 m out, shaded like
+     the structure around it. They sit behind all of the cockpit, so they only show where there was nothing. ---- */
+  if(!CF3) fetch('models/a320-holes.json').then(r=>r.ok?r.json():Promise.reject(r.status)).then(h=>{ const n=h.p.length/3, g=new THREE.BufferGeometry(), cl=new Float32Array(n*3);
+    for(let i=0;i<n;i++){ const b=h.c[Math.floor(i/6)], k=0.42+0.5*b; cl[i*3]=0.60*k; cl[i*3+1]=0.66*k; cl[i*3+2]=0.75*k; }
+    g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(h.p),3)); g.setAttribute('color',new THREE.BufferAttribute(cl,3));
+    const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide})); m.frustumCulled=false; m.renderOrder=-1; scene.add(m); }).catch(e=>console.warn('A320 gaps',e));
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
@@ -125,7 +132,8 @@ function init(o){
     if(hdr.panels) for(const k in hdr.panels){ const pb=hdr.panels[k], p=P[k]; if(!p) continue; const col=p.mesh.geometry.attributes.color, n=24;
       for(let j=0;j<=n;j++) for(let i=0;i<=n;i++){ const x=i/n*pb.nx, y=j/n*pb.ny, x0=Math.min(pb.nx-1,Math.floor(x)), y0=Math.min(pb.ny-1,Math.floor(y)), fx=x-x0, fy=y-y0, at=(a,b)=>pb.v[b*(pb.nx+1)+a];
         const L=(at(x0,y0)*(1-fx)+at(x0+1,y0)*fx)*(1-fy)+(at(x0,y0+1)*(1-fx)+at(x0+1,y0+1)*fx)*fy, c=Math.min(1,0.12+0.9*L); col.setXYZ(j*(n+1)+i,c,c,c*1.01); } col.needsUpdate=true; }
-    scene.add(grp); ROOM.visible=false; for(const k of ['sideL','sideR']) if(P[k]){ P[k].mesh.visible=false; if(P[k].ov) P[k].ov.visible=false; } if(o.onShell) o.onShell();
+    scene.add(grp);
+    ROOM.visible=false; for(const k of ['sideL','sideR']) if(P[k]){ P[k].mesh.visible=false; if(P[k].ov) P[k].ov.visible=false; } if(o.onShell) o.onShell();
   }).catch(e=>console.warn('A320 shell',e));
 
   /* ---- screens: canvas textures on the panels ---- */
