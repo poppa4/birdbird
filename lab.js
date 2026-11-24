@@ -260,7 +260,7 @@
     let meta=brand.querySelector('.lmeta'); if(!meta){ meta=document.createElement('div'); meta.className='lmeta'; brand.appendChild(meta); }
     /* learning goal: the page's own p.goal, else one built from GOAL; always right after the purpose paragraph */
     let goal=brand.querySelector('.goal'), goalOwn=!!goal;
-    if(!goal&&GOAL[page]){ goal=document.createElement('p'); goal.className='goal'; goal.id='goal'; }
+    /* learning goals are not shown (removed from the header, Nov 2026) */
     if(goal&&goal.nextElementSibling!==meta) brand.insertBefore(goal,meta);
     const st=hd.querySelector('.hright .status');
     let stw=null; if(st){ stw=document.createElement('span'); stw.className='mi mst'; stw.innerHTML='<span class="k"></span>'; stw.appendChild(st); }

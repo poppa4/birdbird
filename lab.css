@@ -325,11 +325,5 @@ body.depth-instructor .xcard .rrow{font-size:16px;padding:7px 0}
 @media (max-width:640px){.vlprac .pl{grid-template-columns:1fr}}
 @media print{.vlprac,.glpop{display:none!important}}
 
-/* Compact header on wide screens: purpose and learning goal side by side, so the first picture starts higher */
-@media (min-width:1200px){
- .page.atlas .lhead .brand{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);column-gap:44px;align-items:start}
- .page.atlas .lhead .brand>*{grid-column:1/-1}
- .page.atlas .lhead .brand>p:not(.goal):not(.lmeta){grid-column:1;margin-bottom:0}
- .page.atlas .lhead .brand>p.goal{grid-column:2;grid-row:auto;margin-top:6px;font-size:14.5px}
- .page.atlas .lhead .brand>p:not(.goal)+p.goal{grid-row:span 1}
-}
+/* No learning goal and no aircraft line in the lab header: title, purpose, meta row */
+.lhead .goal,.lhead #acFull{display:none!important}
