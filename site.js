@@ -182,6 +182,7 @@
           const shut=()=>{ if(!open) return; open.b.setAttribute('aria-expanded','false'); open.m.hidden=true; open=null; };
           sn.addEventListener('click',e=>{ const b=e.target.closest('button.tg'); if(!b) return; e.stopPropagation(); const m=sn.querySelector(`.tgm[data-m="${b.dataset.g}"]`), was=open&&open.b===b; shut(); if(was) return;
             const r=b.getBoundingClientRect(); m.hidden=false; const w=m.offsetWidth; m.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px'; m.style.top=(r.bottom+4)+'px'; b.setAttribute('aria-expanded','true'); open={b,m}; const f=m.querySelector('a'); if(f&&e.detail===0) f.focus(); });
+          sn.addEventListener('click',e=>{ if(e.target.closest('.tgm a')) setTimeout(shut,0); });
           sn.addEventListener('keydown',e=>{ if(e.target.closest('.tgm')) return menuKeys(e); const b=e.target.closest('button.tg'); if(b&&e.key==='ArrowDown'){ e.preventDefault(); if(!(open&&open.b===b)) b.click(); const f=open&&open.m.querySelector('a'); if(f) f.focus(); } });
           sn.addEventListener('focusout',e=>{ if(open&&e.relatedTarget&&!open.m.contains(e.relatedTarget)&&e.relatedTarget!==open.b) shut(); });
           document.addEventListener('click',e=>{ if(open&&!open.m.contains(e.target)) shut(); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&open){ const b=open.b; shut(); b.focus(); } });

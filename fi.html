@@ -23,7 +23,8 @@
 .welcome[hidden]{display:none}
 .lhead{margin-bottom:0}
 .lhead .brand p{max-width:62ch}
-.fitabs{position:sticky;top:0;z-index:15;background:var(--paper,#EDF1EF);margin:18px 0 22px;border-bottom:1px solid var(--rule)}
+.page>.lhead{margin-bottom:26px}
+.fitabs{display:none!important;position:sticky;top:0;z-index:15;background:var(--paper,#EDF1EF);margin:18px 0 22px;border-bottom:1px solid var(--rule)}
 .hub{display:flex;gap:0 26px;overflow-x:auto;scrollbar-width:none}
 .hub::-webkit-scrollbar{display:none}
 .hc{flex:0 0 auto;display:block;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:12px 0 10px;font:inherit;color:var(--ink-2);cursor:pointer;text-decoration:none;white-space:nowrap}
@@ -169,11 +170,11 @@
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
 <body data-title="Flight Intelligence">
-<script src="site.js?v=137"></script>
+<script src="site.js?v=138"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">NORDAP · Flight Intelligence</div>
+      <div class="eyebrow">Flight Intelligence</div>
       <h1>Flight Intelligence</h1>
       <p>Ask anything about flying. Answers come from your own AFM, QRH and SOP, the EASA rules and general knowledge, and every answer shows its source.</p>
     </div>
@@ -451,6 +452,11 @@ function show(h){ if(h==='sop'||h==='aviation') h='aircraft'; el('hub').querySel
   if(INST[h]){ if(S&&S.inst!==h&&!window.confirm(L({en:'End the current session?',no:'Avslutte økten som pågår?'}))) { show(S.inst); return; } if(S&&S.inst!==h) endSession(false); INSTK=h; drawTrain(); }
   if(h==='docs') drawDocs(); if(h==='progress') drawProg(); if(h==='easa') drawEasa();
   try{ sessionStorage.setItem('fi-view',h); }catch(e){} }
+/* the Flight Intelligence sub-nav (site.js) switches the views by #hash; the page's own tab row is hidden, and the title follows the view */
+addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(['aircraft','progress','easa','docs'].includes(h)) show(h); });
+{ let cur='aircraft'; const head=()=>{ const T={aircraft:['Instructor training','Instruktørtrening'],progress:['Training progress','Treningsprogresjon'],easa:['EASA rules library','EASA-regelbibliotek'],docs:['My aircraft and documents','Mine fly og dokumenter']}[cur]||['Instructor training','Instruktørtrening']; const h1=document.querySelector('.lhead h1'); if(h1) h1.textContent=L({en:T[0],no:T[1]});
+    const P={aircraft:['Lessons and questions on your aircraft, from your own documents.','Leksjoner og spørsmål om flyet ditt, fra dine egne dokumenter.'],progress:['What you have covered, and what to revise next.','Hva du har gått gjennom, og hva du bør repetere.'],easa:['Planning minima, alternates, fuel and VMC rules, each with the official source.','Planleggingsminima, alternativer, drivstoff og VMC-regler, hver med offisiell kilde.'],docs:['Your aircraft and the documents the instructor reads.','Flyene dine og dokumentene instruktøren leser.']}[cur]; const lp=document.querySelector('.lhead .brand p'); if(lp&&P) lp.textContent=L({en:P[0],no:P[1]}); };
+  const _show=show; show=function(h){ _show(h); cur=(h==='sop'||h==='aviation')?'aircraft':h; head(); }; LAB.onLang(()=>setTimeout(head,0)); }
 el('hub').addEventListener('click',e=>{ const b=e.target.closest('button.hc'); if(b){ show(b.dataset.h); try{ history.replaceState(null,'','#'+b.dataset.h); }catch(_){} } });
 
 function drawTrain(){ el('instName').textContent=L({en:INST[INSTK].name,no:NOI[INST[INSTK].name]||INST[INSTK].name});
