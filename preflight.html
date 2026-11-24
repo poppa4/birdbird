@@ -434,8 +434,8 @@
    above (.tv, .th) so both hubs look and work the same. The two halves get the two big tiles side by side: the pack on a
    navy stage with the text over its dark left side, the route in 3D with the text in a fade at the foot. */
 .pf .th-feat img{object-position:100% 30%}
-.pf .th-feat.th-route{grid-column:1/3;grid-row:1}
-.pf .th-feat:not(.th-route){grid-column:3/5;grid-row:1}
+.pf .th-feat:not(.th-route){grid-column:1/3;grid-row:1}
+.pf .th-feat.th-route{grid-column:3/5;grid-row:1}
 .pf .th-grid{grid-template-rows:380px 214px}
 .pf .th-feat.th-route img{object-position:50% 55%}
 .pf .th-feat.th-route::after{background:linear-gradient(180deg,rgba(9,16,26,0) 0%,rgba(9,16,26,.15) 24%,rgba(9,16,26,.78) 50%,rgba(9,16,26,.95) 100%)}
@@ -513,26 +513,26 @@
   <div class="th">
     <header class="th-head">
       <h1 data-tx="h1">Preflight</h1>
-      <p data-tx="lede">Prepare the flight on the ground, from the first look at the route to the pack you take with you.</p>
+      <p data-tx="lede">The briefing pack for every flight, with Route Explorer when you want to see the route first.</p>
     </header>
     <ol class="pf-flow" aria-label="How a preparation goes" data-aria-no="Slik går en forberedelse">
-      <li><a href="route.html"><i>1</i><span><b data-tx="s1">See the route</b><small data-tx="s1s">Terrain, airspace and profile</small></span></a></li>
-      <li><a href="prep.html"><i>2</i><span><b data-tx="s2">Build the pack</b><small data-tx="s2s">NOTAM, minima, fuel and M&amp;B</small></span></a></li>
+      <li><a href="prep.html"><i>1</i><span><b data-tx="s1">Start a pack</b><small data-tx="s1s">VFR or IFR, one per flight</small></span></a></li>
+      <li><a href="prep.html"><i>2</i><span><b data-tx="s2">Fill it in</b><small data-tx="s2s">NOTAM, minima, fuel and M&amp;B</small></span></a></li>
       <li><a href="weather.html"><i>3</i><span><b data-tx="s3">Check the weather</b><small data-tx="s3s">METAR, TAF and SIGMET</small></span></a></li>
       <li><a href="prep.html"><i>4</i><span><b data-tx="s4">Brief and print</b><small data-tx="s4s">Brief it, then print or save</small></span></a></li>
     </ol>
     <div class="th-grid">
-      <div class="th-t th-feat th-route"><picture><source media="(max-width:600px)" srcset="img/preflight/route-m-900.webp"><img src="img/preflight/route-1400.webp" srcset="img/preflight/route-1000.webp 1000w, img/preflight/route-1400.webp 1400w" sizes="(max-width:1100px) 100vw, 640px" alt="Simulate the flight in Route Explorer: the route in 3D over satellite imagery, across the mountains towards Sogndal." data-alt-no="Simuler flygingen i Route Explorer: ruten i 3D over satellittbilder, over fjellet mot Sogndal." decoding="async"></picture>
-        <a class="stretch" href="route.html" tabindex="-1" aria-hidden="true"></a>
-        <div class="th-tx"><span class="k" data-tx="rK">Step 1 · See the route</span><b data-tx="rH">Route Explorer</b><span class="l" data-tx="rP">See what lies along the line, before you fly it.</span>
-          <ul class="pf-ok"><li data-tx="rB1">Highest terrain under the route</li><li data-tx="rB2">Fly it in 3D over satellite imagery</li><li data-tx="rB3">One button sends it to the pack</li></ul>
-          <div class="th-go"><a class="th-btn" href="route.html" data-tx="rGo2">Open the map</a></div></div>
-      </div>
       <div class="th-t th-feat"><picture><source media="(max-width:600px)" srcset="img/preflight/pack-m-900.webp"><img src="img/preflight/pack-1600.webp" srcset="img/preflight/pack-1000.webp 1000w, img/preflight/pack-1600.webp 1600w" sizes="(max-width:1100px) 100vw, 760px" alt="An IFR briefing pack from Oslo to Stockholm: the cover page with the contents, on a stack of pages." data-alt-no="En IFR-briefingpakke fra Oslo til Stockholm: forsiden med innholdet, på en bunke med sider." fetchpriority="high" decoding="async"></picture>
         <a class="stretch" href="prep.html" tabindex="-1" aria-hidden="true"></a>
-        <div class="th-tx"><span class="k" data-tx="fK">Step 2 · The paperwork</span><b data-tx="fH">Briefing pack</b><span data-tx="fP">Everything for one flight, page by page.</span>
+        <div class="th-tx"><span class="k" data-tx="fK">For every flight</span><b data-tx="fH">Briefing pack</b><span data-tx="fP">Everything for one flight, page by page.</span>
           <ul class="pf-ok"><li data-tx="fB1">VFR or IFR, ready to fill in</li><li data-tx="fB2">NOTAM, weather, fuel, mass and balance</li><li data-tx="fB3">Prints as a booklet or a PDF</li></ul>
           <div class="th-go"><a class="th-btn" href="prep.html" data-tx="fGo">Open the pack</a><a class="th-lk" href="sheets.html" data-tx="fAlt">Kneeboard sheets</a></div></div>
+      </div>
+      <div class="th-t th-feat th-route"><picture><source media="(max-width:600px)" srcset="img/preflight/route-m-900.webp"><img src="img/preflight/route-1400.webp" srcset="img/preflight/route-1000.webp 1000w, img/preflight/route-1400.webp 1400w" sizes="(max-width:1100px) 100vw, 640px" alt="Simulate the flight in Route Explorer: the route in 3D over satellite imagery, across the mountains towards Sogndal." data-alt-no="Simuler flygingen i Route Explorer: ruten i 3D over satellittbilder, over fjellet mot Sogndal." decoding="async"></picture>
+        <a class="stretch" href="route.html" tabindex="-1" aria-hidden="true"></a>
+        <div class="th-tx"><span class="k" data-tx="rK">Optional · See the route</span><b data-tx="rH">Route Explorer</b><span class="l" data-tx="rP">See what lies along the line, before you fly it.</span>
+          <ul class="pf-ok"><li data-tx="rB1">Highest terrain under the route</li><li data-tx="rB2">Fly it in 3D over satellite imagery</li><li data-tx="rB3">One button sends it to the pack</li></ul>
+          <div class="th-go"><a class="th-btn" href="route.html" data-tx="rGo2">Open the map</a></div></div>
       </div>
       <a class="th-t th-s1" href="weather.html"><img src="img/preflight/wx-640.webp" srcset="img/preflight/wx-640.webp 640w, img/preflight/wx-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The METAR and TAF for Oslo Gardermoen, with a VFR status badge." data-alt-no="METAR og TAF for Oslo Gardermoen, med et VFR-merke." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tWx">Weather</b><span data-tx="tWxL">METAR, TAF and forecast.</span></div></a>
       <a class="th-t th-s2" href="sun.html"><img src="img/preflight/sun-640.webp" srcset="img/preflight/sun-640.webp 640w, img/preflight/sun-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="Civil twilight, sunrise and sunset at Torp, and the day as a bar from night to daylight." data-alt-no="Sivilt tussmørke, soloppgang og solnedgang på Torp, og døgnet som en stolpe fra natt til dagslys." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tSu">Sun and twilight</b><span data-tx="tSuL">When night begins.</span></div></a>
@@ -542,11 +542,11 @@
         <section class="th-cont"><h2 data-tx="cC">Continue</h2><div id="pfCont"><a href="prep.html"><img src="img/preflight/pack-thumb.webp" alt=""><div><b data-tx="cN">Briefing pack</b><span data-tx="cS">New here? Start a pack for your next flight.</span></div><em data-tx="cGo">Start →</em></a></div></section>
         <section><h2 data-tx="wH">Weather now</h2><form class="th-wx" action="weather.html" method="get" role="search"><label class="vh" for="pfWx" data-tx="wL">ICAO code</label><input id="pfWx" name="icao" type="text" maxlength="4" autocomplete="off" spellcheck="false" placeholder="ICAO code, e.g. ENGM" data-ph-no="ICAO-kode, f.eks. ENGM" pattern="[A-Za-z]{4}" required><button type="submit" data-tx="wGo">Show</button></form><p class="th-wxh" data-tx="wP">METAR, TAF, SIGMET and the freezing level.</p></section>
         <section><h2 data-tx="qH">Quick start</h2><ul class="th-qs">
-          <li><a href="route.html"><span class="tg t1" data-tx="qRt">Route</span><b data-tx="q1">Check the terrain</b></a></li>
           <li><a href="prep.html#minima"><span class="tg t2">IFR</span><b data-tx="q2">Planning minima</b></a></li>
           <li><a href="prep.html#fuel"><span class="tg t5" data-tx="qFu">Fuel</span><b data-tx="q3">Fuel plan</b></a></li>
           <li><a href="prep.html#mb"><span class="tg t3">M&amp;B</span><b data-tx="q4">Mass and balance</b></a></li>
           <li><a href="sheets.html#risk"><span class="tg t4" data-tx="qRk">Risk</span><b data-tx="q5">Risk assessment</b></a></li>
+          <li><a href="route.html"><span class="tg t1" data-tx="qRt">Route</span><b data-tx="q1">Check the terrain</b></a></li>
         </ul></section>
         <section><h2>Flight Intelligence</h2><form class="th-ask" action="fi.html" method="get" role="search"><label class="vh" for="pfAsk" data-tx="aL">Ask Flight Intelligence</label><input id="pfAsk" name="q" type="text" maxlength="500" autocomplete="off" placeholder="Ask about a rule or a minimum" data-ph-no="Spør om en regel eller et minimum"><button type="submit" data-tx="aGo">Ask</button></form></section>
       </aside>
@@ -656,12 +656,12 @@
 (function(){
 'use strict';
 LAB.tx({
- h1:'Preflight', lede:'Forbered flygingen på bakken, fra første blikk på ruten til pakken du tar med deg.',
- s1:'Se ruten', s1s:'Terreng, luftrom og profil', s2:'Lag pakken', s2s:'NOTAM, minima, drivstoff og M&B', s3:'Sjekk været', s3s:'METAR, TAF og SIGMET', s4:'Brief og skriv ut', s4s:'Brief, så skriv ut eller lagre',
+ h1:'Preflight', lede:'Briefingpakken for hver flyging, med Route Explorer når du vil se ruten først.',
+ s1:'Start en pakke', s1s:'VFR eller IFR, én per flyging', s2:'Fyll den ut', s2s:'NOTAM, minima, drivstoff og M&B', s3:'Sjekk været', s3s:'METAR, TAF og SIGMET', s4:'Brief og skriv ut', s4s:'Brief, så skriv ut eller lagre',
  fB1:'VFR eller IFR, klar til utfylling', fB2:'NOTAM, vær, drivstoff, masse og balanse', fB3:'Skrives ut som hefte eller PDF',
  rB1:'Høyeste terreng under ruten', rB2:'Fly den i 3D over satellittbilder', rB3:'Én knapp sender den til pakken',
- fK:'Steg 2 · Papirarbeidet', fH:'Briefingpakke', fP:'Alt for én flyging, side for side.', fGo:'Åpne pakken', fAlt:'Kneeboard-ark',
- rK:'Steg 1 · Se ruten', rH:'Route Explorer', rP:'Se hva som ligger langs linjen, før du flyr den.', rGo2:'Åpne kartet',
+ fK:'For hver flyging', fH:'Briefingpakke', fP:'Alt for én flyging, side for side.', fGo:'Åpne pakken', fAlt:'Kneeboard-ark',
+ rK:'Valgfritt · Se ruten', rH:'Route Explorer', rP:'Se hva som ligger langs linjen, før du flyr den.', rGo2:'Åpne kartet',
  tWx:'Vær', tWxL:'METAR, TAF og varsel.', tNl:'Navigasjonslogg', tNlL:'Kurser, tider, drivstoff.', tSu:'Sol og tussmørke', tSuL:'Når natten begynner.', tKb:'Kneeboards', tKbL:'VFR-, IFR- og risikoark.',
  cC:'Fortsett', cN:'Briefingpakke', cS:'Ny her? Start en pakke for neste flyging.', cGo:'Start →',
  wH:'Været nå', wL:'ICAO-kode', wGo:'Vis', wP:'METAR, TAF, SIGMET og frysenivået.',
