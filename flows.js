@@ -185,7 +185,18 @@ function flowSel() { const s = $('fsel'), S = acKey(cur), mineS = FL.filter(f =>
   const stdO = F.PHASES.map(p => { const l = stdS.filter(x => x.phase === p[0]); return l.length ? `<optgroup label="NORDAP · ${esc(L({ en: p[1], no: p[2] }))}">` + l.map(x => `<option value="std:${x.id}">${esc(x.name[no ? 'no' : 'en'])}</option>`).join('') + '</optgroup>' : ''; }).join('');
   s.innerHTML = stdO + grp(mine, mineS.filter(f => !f.phase)) + F.PHASES.map(p => grp(mine + ' · ' + L({ en: p[1], no: p[2] }), mineS.filter(f => f.phase === p[0]))).join('') +
     exH;
-  s.value = cur ? (cur.std ? 'std:' + cur.std : cur.ex ? 'ex:' + cur.ac : cur.id) : ''; }
+  s.value = cur ? (cur.std ? 'std:' + cur.std : cur.ex ? 'ex:' + cur.ac : cur.id) : ''; phaseBar(stdS, mineS, no); }
+/* the flight as a timeline: every flow of this aircraft under its phase, in the order of a flight, with its step count and
+   the open one marked; abnormal and memory items last. One tap opens a flow. The short starter is marked "Start here". */
+function phaseBar(stdS, mineS, no) { let bar = $('fphase'); if (!bar) { bar = document.createElement('nav'); bar.id = 'fphase'; bar.className = 'fph'; $('fstart').after(bar);
+    bar.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; const s = $('fsel'); s.value = b.dataset.v; s.dispatchEvent(new Event('change')); }); }
+  bar.setAttribute('aria-label', L({ en: 'Flows through the flight', no: 'Flows gjennom flygingen' }));
+  const st = stdS.length ? starter(stdS[0].ac) : null, curV = cur ? (cur.std ? 'std:' + cur.std : cur.ex ? 'ex:' + cur.ac : cur.id) : '';
+  const chip = (v, name, n, extra) => `<button type="button" data-v="${esc(v)}"${v === curV ? ' aria-current="true"' : ''}>${extra || ''}<span>${esc(name)}</span><i>${n}</i></button>`;
+  const cols = F.PHASES.map(p => { const S = stdS.filter(x => x.phase === p[0]), M = mineS.filter(f => f.phase === p[0]); if (!S.length && !M.length) return '';
+    return `<li class="${p[0] === 'abn' ? 'abn' : ''}"><b>${esc(L({ en: p[1], no: p[2] }))}</b>` + S.map(x => chip('std:' + x.id, x.name[no ? 'no' : 'en'], x.n, st && x.id === st.id ? `<em>${esc(L({ en: 'Start here', no: 'Start her' }))}</em>` : '')).join('') + M.map(f => chip(f.id, f.name, f.steps.length, `<em class="me">${esc(L({ en: 'Mine', no: 'Min' }))}</em>`)).join('') + '</li>'; }).join('');
+  bar.hidden = !cols; bar.innerHTML = cols ? `<ol>${cols}</ol>` : '';
+  const on = bar.querySelector('[aria-current]'); if (on) { const li = on.closest('li'), ol = bar.querySelector('ol'); if (li && ol && (li.offsetLeft < ol.scrollLeft || li.offsetLeft + li.offsetWidth > ol.scrollLeft + ol.clientWidth)) ol.scrollLeft = li.offsetLeft - 12; } }
 const phIx = p => { const i = F.PHASES.findIndex(x => x[0] === p); return i < 0 ? 99 : i; }, phN = p => { const x = F.PHASES.find(y => y[0] === p); return x ? L({ en: x[1], no: x[2] }) : ''; };
 /* a NORDAP flow opens as read-only, like an example: practise it at once; Build offers a copy to change */
 /* the flow a first visit opens: a short one everybody knows (before take-off, 6-8 steps), not the long cockpit preparation

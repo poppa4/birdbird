@@ -183,6 +183,23 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
 @media print{.fcr{display:none!important}}
 .fstart:not([hidden]){display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}.fstart .fac{max-width:none;flex:1 1 220px;min-width:0}.fstart .fflow{flex:2 1 320px}#fgo2{flex:0 0 auto;padding:11px 22px;font-size:16px}
 @media (max-width:640px){.fstart .fac{flex:1 1 100%}.fstart .fac b{min-width:58px}#fgo2{flex:1 1 100%}}
+/* the flight as a timeline of flows */
+.fph{margin:4px 0 14px}
+.fph ol{list-style:none;margin:0;padding:2px 2px 10px;display:flex;align-items:flex-start;gap:10px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin}
+.fph li{flex:0 0 auto;width:178px;display:flex;flex-direction:column;gap:6px;padding:10px;border:1px solid var(--rule-2,#DCE3E4);border-radius:10px;background:var(--sheet,#fff);scroll-snap-align:start;position:relative}
+.fph li::before{content:"";position:absolute;left:-11px;top:21px;width:10px;height:2px;background:var(--rule,#C6D0D3)}
+.fph li:first-child::before{display:none}
+.fph li.abn{background:#FFF7F5;border-color:#F0D4CC}.fph li.abn::before{display:none}.fph li.abn{margin-left:12px}
+.fph b{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2,#4C5B66);font-weight:700}
+.fph button{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px 8px;width:100%;min-height:34px;padding:6px 9px;border:1px solid var(--rule,#C6D0D3);border-radius:7px;background:#fff;color:var(--ink,#13202A);font:inherit;font-size:13.5px;text-align:left;cursor:pointer;flex-wrap:wrap}
+.fph button span{min-width:0;line-height:1.25}
+.fph button i{font-style:normal;font-size:12px;font-weight:700;color:var(--ink-2,#4C5B66);background:#EEF2F4;border-radius:999px;padding:1px 7px}
+.fph button em{grid-column:1/-1;font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#1E7D4E}
+.fph button em.me{color:var(--accent,#1F5A8F)}
+.fph button:hover{border-color:var(--accent,#1F5A8F)}
+.fph button[aria-current]{background:var(--navy,#0B1E34);border-color:var(--navy,#0B1E34);color:#fff}
+.fph button[aria-current] i{background:rgba(255,255,255,.18);color:#fff}.fph button[aria-current] em{color:#8FE3B5}
+@media (max-width:640px){.fph li{min-width:140px}.fph button{font-size:13px}}
 </style>
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
@@ -277,7 +294,7 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=52"></script>
+<script src="flows.js?v=53"></script>
 <script src="flowlib.js?v=6"></script>
 <script src="reqplane.js?v=3"></script>
 </body>
