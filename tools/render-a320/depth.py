@@ -7,6 +7,12 @@ plane, towards the viewer (metres; negative = behind it). Missed rays get the pl
 Output: little-endian uint32 header length, JSON header {views:{k:{nx,ny,off}}, scale}, then int16 heights (1/10 mm) row by row,
 top row first (the picture's top)."""
 import sys, os, json, struct, numpy as np, trimesh
+def ped_flat(h):
+    """The pedestal view looks straight down on a face that is steep at the front (the MCDUs) and stepped further aft, so the
+    ray-cast heights there are large walls (up to 9 cm) that stretched the picture into slanted slabs around the MCDUs. Keep
+    only the local relief (knobs, keys, bezels): the height minus its 21-sample median, limited to -6 .. +12 mm."""
+    from scipy.ndimage import median_filter
+    return np.clip(h - median_filter(h, size=21, mode='nearest'), -0.006, 0.012)
 sys.path.insert(0, os.path.dirname(__file__)); import ac3d
 RES, OUT = sys.argv[1].rstrip('/') + '/', sys.argv[2]
 mats, objs = ac3d.load(RES + 'fd_complete.ac')
@@ -48,6 +54,7 @@ for k, (c, n, up, W, H) in VIEWS.items():
     if k == 'front':  # the outermost strips are the window posts seen end-on: carry the panel's edge out to them instead
         e = int(nx * 0.03); h[:, :e] = h[:, e:e + 1]; h[:, -e:] = h[:, -e - 1:-e]
         lo = int(ny * 0.40); h[lo:] = np.clip(h[lo:], -0.085, 0.0)   # below the glareshield nothing comes forward (the pedestal top seen from the front has its own panel)
+    if k == 'ped': h = ped_flat(h)
     h = h.reshape(-1)
     hdr['views'][k] = {'nx': nx, 'ny': ny, 'off': off}; q = np.round(h * hdr['scale']).astype('<i2'); blobs.append(q.tobytes()); off += q.nbytes
     print(k, nx, ny, 'hits', len(ri), 'of', len(O), 'height range', round(h.min(), 3), round(h.max(), 3))

@@ -148,7 +148,7 @@ function init(o){
     const m=new THREE.Mesh(new THREE.PlaneGeometry(w/v.r[2]*v.W,h/v.r[3]*v.H),new THREE.MeshBasicMaterial({map:tex,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-14}));
     m.matrixAutoUpdate=false; m.matrix.copy(basis(v)).setPosition(c); scene.add(m); m.geometry.computeBoundingSphere(); disp.push({d,tex,m,c,wm:w/v.r[2]*v.W}); d.tex=tex; d.mesh=m; }
   /* ---- the panels' depth: height fields from models/a320-relief.bin (see HM above); the screens move onto their surface ---- */
-  const RELIEF=CF3?Promise.resolve(false):fetch('models/a320-relief.bin?v=4').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  const RELIEF=CF3?Promise.resolve(false):fetch('models/a320-relief.bin?v=5').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl;
     for(const k in hdr.views){ const p=P[k], hv=hdr.views[k]; if(!p) continue; const n=hv.nx*hv.ny, raw=new Int16Array(buf.slice(base+hv.off,base+hv.off+n*2)), a=new Float32Array(n), cl=HCL[k]||[-0.05,0.05];
       for(let i=0;i<n;i++) a[i]=Math.max(cl[0],Math.min(cl[1],raw[i]/hdr.scale));
