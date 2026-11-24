@@ -33,6 +33,16 @@
 .otwmsg{position:absolute;left:0;right:0;top:10px;text-align:center;font-size:12px;color:#9fb0bd}
 /* panel materials */
 .psvg .frame{fill:#0c0e10}
+/* 3D model loaded: the display units' knobs are pieces of the model; their flat drawings are hidden, labels and touch stay */
+.stage.d3glb .gdu .kn .ko,.stage.d3glb .gdu .kn .ki{opacity:0}
+/* time of day: panel face, lettering and the white card follow the cabin light (set from todTick) */
+.stage.d3 #gNG stop:nth-child(1){stop-color:var(--f1,#a9acae)}.stage.d3 #gNG stop:nth-child(2){stop-color:var(--f2,#989b9e)}.stage.d3 #gNG stop:nth-child(3){stop-color:var(--f3,#86898c)}
+.stage.d3 .psvg.ng .pl{fill:var(--lb,#0d0f11)}.stage.d3 .psvg.ng .pl.red{fill:var(--lbr,#a8231a)}.stage.d3 .psvg.ng .grpl{stroke:var(--lbs,#0d0f11)}
+.stage.d3 .psvg .card{fill:var(--card,#e9e6da)}
+.d3v button.tod{margin-left:6px}
+.xp{position:absolute;z-index:9;pointer-events:none;max-width:min(300px,calc(100% - 16px));background:rgba(10,12,15,.96);color:#e8eef3;border:1px solid #ffcf3a;border-radius:9px;padding:9px 11px;font:500 12.5px/1.4 system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.xp b{display:block;font-weight:700;font-size:13px;color:#ffcf3a;letter-spacing:.03em}.xp i{display:block;font-style:normal;color:#9fb0bd;font-size:11.5px;margin:1px 0 4px}.xp span{display:block}
+.stage.xpon .psvg g.ctl,.stage.xpon .psvg .hit{cursor:help}.stage.xpon .psvg g.ctl .hlr{opacity:.5;stroke:#ffcf3a;stroke-opacity:1;stroke-width:1.4;visibility:visible}.stage.xpon .psvg g.ctl.xph .hlr{opacity:1;stroke-opacity:1;stroke-width:3.5}
 .psvg .sub{fill:url(#gSub);stroke:#15181b;stroke-width:1.2}
 .psvg .sub2{fill:#2a2e33;stroke:#15181b;stroke-width:1}
 .psvg .plc{fill:#1b1e22;stroke:#3b4249;stroke-width:.8}
@@ -335,13 +345,13 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="glass.js?v=6"></script>
 <script src="avx.js?v=7"></script>
 <script src="panellayers.js?v=2"></script>
-<script src="da42panel.js?v=9"></script>
+<script src="da42panel.js?v=10"></script>
 <script src="da42procs.js?v=5"></script>
 <script src="ownck.js?v=5"></script>
-<script src="otw.js?v=17"></script>
+<script src="otw.js?v=18"></script>
 <script src="panelzoom.js?v=7"></script>
-<script src="cockpit3d.js?v=10"></script>
-<script src="da42-3d.js?v=7"></script>
+<script src="cockpit3d.js?v=11"></script>
+<script src="da42-3d.js?v=8"></script>
 <script src="lab.js?v=62"></script>
 <script src="simshell.js?v=11"></script>
 <script>
@@ -515,7 +525,7 @@ function sysDefault(cold){
   if(cold){ S.eng.forEach(e=>{ e.thr=0; e.load=0; e.rpm=0; e.oilP=0; }); }
 }
 const PST=el('stage');
-const IO={get:k=>ioGet(k),set:(k,v)=>ioSet(k,v),toWorld:e=>toWorld(e),scale:()=>Z.s,intercept:(e,g)=>overviewTap(e)};
+const IO={get:k=>ioGet(k),set:(k,v)=>ioSet(k,v),toWorld:e=>toWorld(e),scale:()=>Z.s,intercept:(e,g)=>explainTap(e,g)||overviewTap(e)};
 const P=DA42P.build(PST,IO);
 const D3=window.DA42_3D; let D3on=false; /* 3D cockpit: set up after the outside world (below) */
 const cbName=n=>P.CBS.indexOf(n);
@@ -614,9 +624,42 @@ const SH=SIMSHELL;
 function flash(t){ SH.say(t,'',1800); }
 /* hover tooltip */
 const tip=document.createElement('div'); tip.className='tip'; tip.hidden=true; PST.appendChild(tip);
+/* Explain mode: with it on, a tap (or the pointer) on a control does not move it but says what it is, what it does and how it is set.
+   The texts are learning notes on this type of aircraft, not a substitute for the flight manual. */
+const WHAT={hornMute:'Silences the gear warning horn. The warning comes back if the condition returns.',dimInst:'Brightness of the instrument and placard lighting.',dimFlood:'Flood light under the glareshield that lights the whole panel at night.',
+land:'Landing light. On for take-off and landing, and whenever you want to be seen.',taxi:'Taxi light for moving on the ground.',nav:'Position lights: red left, green right, white aft. On at night.',strobe:'Anti-collision strobes. On from entering the runway until clear of it.',
+emer:'Guarded emergency switch. It feeds the standby attitude indicator and flood light from a separate battery if the electrical system fails.',elt:'Emergency locator transmitter. ARMED is normal: it fires on impact. ON transmits at once.',
+ventL:'Fresh-air vent.',ventR:'Fresh-air vent.',voterL:'Chooses which engine control unit runs the left engine. AUTO lets the system pick the healthy one.',voterR:'Chooses which engine control unit runs the right engine. AUTO lets the system pick the healthy one.',
+ecuL:'ECU test for the left engine, done before flight: both control units are checked in turn and the engine runs rough for a moment.',ecuR:'ECU test for the right engine, done before flight.',
+altL:'Left alternator. Off takes it off the bus; the other alternator and the battery carry the load.',altR:'Right alternator.',altStatic:'Opens the alternate static source in the cabin if the static ports are blocked. Altimeter and airspeed then read slightly off.',
+oxy:'Oxygen supply (if fitted).',deice:'Fluid de-icing system (if fitted): NORM or HIGH flow to wings, tail and propellers.',wshield:'Sprays de-icing fluid on the windshield.',iceLight:'Lights the left wing leading edge so ice can be seen at night.',deiceTest:'Tests the de-icing annunciations.',
+pitot:'Heats the pitot probe so it does not ice up. On before entering visible moisture near or below freezing.',engL:'Left engine master. It powers the engine control unit and glow plugs; off shuts the engine down.',engR:'Right engine master.',
+start:'Starter key: turn towards L or R to crank that engine. Release when it fires.',elec:'Electric master. Connects the battery, and the alternators once the engines run, to the electrical system.',avio:'Avionic master. Powers the avionic bus: radios, autopilot, audio panel.',
+fireTest:'Tests the engine fire detection: both fire warnings and the aural alert should come on.',gear:'Landing gear lever. Three greens mean down and locked. Mind the gear speed limits before moving it.',
+pumpL:'Second fuel pump for the left engine. On for take-off and landing as a backup.',pumpR:'Second fuel pump for the right engine.',flaps:'Flap lever: UP, APP (approach) and LDG (landing). Each position has a maximum speed.',
+audVol:'Audio volume.',audBackup:'Display backup: puts the flight instruments and engine data on both screens if one fails.',rudTrim:'Rudder trim. Takes away the pedal force, most of all with one engine out.',
+park:'Parking brake. Press the toe brakes, then pull to set.',pwr:'Power levers, one per engine. The engine control unit sets propeller speed and fuel by itself, so there are no propeller or mixture levers.',
+trim:'Elevator trim wheel. Trim away the stick force after every change of speed, power or configuration.',fselL:'Fuel selector, left engine: ON (own tank), CROSSFEED (from the other side) or OFF. OFF is guarded.',fselR:'Fuel selector, right engine: ON, CROSSFEED or OFF.',
+auxPumpL:'Transfers fuel from the left auxiliary tank to the left main tank (if fitted).',auxPumpR:'Transfers fuel from the right auxiliary tank to the right main tank (if fitted).',heat:'Cabin heat.',defrost:'Sends the warm air to the canopy.',
+altAir:'Alternate air: lets the engines breathe from inside the cowling if the air filters ice up or block.',gearEmer:'Emergency gear extension. Releases the hydraulic pressure so the gear falls and locks by gravity.',stickL:'Control stick: pitch and roll.',stickR:'Control stick: pitch and roll.'};
+let explainOn=false, xpG=null; const xp=document.createElement('div'); xp.className='xp'; xp.hidden=true; xp.setAttribute('role','status'); PST.appendChild(xp);
+function whatIs(g){ const id=g.dataset.id, o=P.byId[id], c=o&&o.c, n=CTL_NAME[id]||g.getAttribute('aria-label')||id; let w=WHAT[id];
+  if(!w&&c&&c.t==='cb') w='Circuit breaker. It pops out to protect its circuit. Pull it to take the power away, push to reset once.';
+  if(!w&&c&&c.t==='abtn') w='Audio panel key: selects what you hear or transmit on.';
+  const v=g.getAttribute('aria-valuetext')||(g.getAttribute('aria-checked')==null?'':g.getAttribute('aria-checked')==='true'?'ON':'OFF'); return {n,w:w||'',v}; }
+function explainShow(g,e){ const d=whatIs(g); xpG=g; xp.textContent=''; const h=document.createElement('b'); h.textContent=d.n; xp.appendChild(h);
+  if(d.v){ const s=document.createElement('i'); s.textContent=T('Now')+': '+d.v; xp.appendChild(s); } if(d.w){ const p=document.createElement('span'); p.textContent=T(d.w); xp.appendChild(p); }
+  xp.hidden=false; const r=PST.getBoundingClientRect(), w=xp.offsetWidth, hh=xp.offsetHeight; let x=e.clientX-r.left+16, y=e.clientY-r.top-hh-14; if(x+w>r.width-8) x=e.clientX-r.left-w-16; if(y<8) y=e.clientY-r.top+18;
+  xp.style.left=Math.max(8,x)+'px'; xp.style.top=Math.max(8,Math.min(r.height-hh-8,y))+'px'; P.svg.querySelectorAll('g.ctl.xph').forEach(q=>q.classList.remove('xph')); g.classList.add('xph'); }
+function explainHide(){ if(xpG){ xpG.classList.remove('xph'); xpG=null; } xp.hidden=true; }
+function explainTap(e,g){ if(!explainOn) return false; e.preventDefault(); e.stopPropagation(); explainShow(g,e); return true; }
+function setExplain(on){ explainOn=on; PST.classList.toggle('xpon',on); const b=el('bXp'); if(b){ b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); } if(!on) explainHide(); else tip.hidden=true; }
+PST.addEventListener('pointerover',e=>{ if(!explainOn||e.pointerType==='touch'||(D3on&&D3.frozen)) return; const g=DA42P.ctlFrom(P,e.target); if(g) explainShow(g,e); });
+PST.addEventListener('pointerdown',e=>{ if(explainOn&&!e.target.closest('g.ctl,.hit,#bXp')) explainHide(); });
+
 function tipText(g){ const n=g.getAttribute('aria-label'); const v=g.getAttribute('aria-valuetext')||(g.getAttribute('aria-checked')==null?'':g.getAttribute('aria-checked')==='true'?'ON':'OFF'); return n+(v?' · '+v:''); }
 let tipG=null;
-PST.addEventListener('pointerover',e=>{ if(D3on&&D3.frozen) return; const g=DA42P.ctlFrom(P,e.target); if(!g||e.pointerType==='touch'){ tip.hidden=true; tipG=null; return; } tipG=g; tip.textContent=tipText(g); tip.hidden=false; });
+PST.addEventListener('pointerover',e=>{ if(D3on&&D3.frozen) return; const g=DA42P.ctlFrom(P,e.target); if(!g||e.pointerType==='touch'){ tip.hidden=true; tipG=null; return; } tipG=g; tip.textContent=tipText(g); tip.hidden=explainOn; });
 PST.addEventListener('pointermove',e=>{ if(!tipG) return; const r=PST.getBoundingClientRect(); tip.style.left=Math.min(r.width-180,e.clientX-r.left+14)+'px'; tip.style.top=Math.max(4,e.clientY-r.top-34)+'px'; });
 PST.addEventListener('pointerout',e=>{ if(tipG&&!(e.relatedTarget&&tipG.contains(e.relatedTarget))){ tipG=null; tip.hidden=true; } });
 new ResizeObserver(()=>zoomTo(Z.reg,true,true)).observe(PST);
@@ -654,7 +697,20 @@ function sysTick(dt){
   if(!avOn()&&(AP.on||AP.fd)){ AP.on=false; AP.fd=false; }
   if(!cbIn('AUTOPILOT')&&AP.on){ AP.on=false; X.msg('AP circuit breaker pulled'); }
   { const bl=(0.35+0.62*(pw?SYS.dimInst:0.1)).toFixed(2); if(bl!==sysTick._bl){ sysTick._bl=bl; document.documentElement.style.setProperty('--bl',bl); } }
+  todTick(pw);
 }
+/* time of day: the outside world (OTW.tod), the baked cabin (D3.cabin) and the drawn panel face follow it. After dark the flood
+   light knob lights the panel from under the glareshield and the instrument light knob sets how bright the lettering is. */
+let TODK='day'; const TODN=['day','dusk','night'], TODL={day:'Day',dusk:'Dusk',night:'Night'}, TODA={day:[1,1,1],dusk:[0.64,0.52,0.47],night:[0.085,0.095,0.13]};
+function todTick(pw){ const a=TODA[TODK], fl=TODK==='day'?0:(pw?SYS.dimFlood:0)*(TODK==='night'?0.36:0.18), il=pw?SYS.dimInst:0;
+  const r=Math.min(1,a[0]+fl), g=Math.min(1,a[1]+fl*0.93), b=Math.min(1,a[2]+fl*0.8), k=TODK+r.toFixed(3)+g.toFixed(3)+b.toFixed(3)+il.toFixed(2);
+  if(k===todTick._k) return; todTick._k=k; if(D3on) D3.cabin(r,g,b);
+  const st=PST.style, c=h=>'rgb('+Math.round(h[0]*r)+','+Math.round(h[1]*g)+','+Math.round(h[2]*b)+')', dark=(r+g+b)/3<0.42;
+  st.setProperty('--f1',c([169,172,174])); st.setProperty('--f2',c([152,155,158])); st.setProperty('--f3',c([134,137,140])); st.setProperty('--card',c([233,230,218]));
+  st.setProperty('--lb',dark?'#eceff4':'#0d0f11'); st.setProperty('--lbr',dark?'#ff8b7d':'#a8231a'); st.setProperty('--lbs',dark?'#eceff4':'#0d0f11'); }
+function setTod(k){ if(!TODA[k]) k='day'; TODK=k; try{ OTW.tod(k); }catch(e){} PST.classList.toggle('tod-dark',k!=='day'); todTick._k=''; todTick(power()); if(D3on) D3.wake();
+  const b=el('bTod'); if(b){ b.textContent=T('Light')+': '+T(TODL[k]); b.setAttribute('aria-label',T('Time of day')+': '+T(TODL[k])); } try{ localStorage.setItem('bb-da42-tod',k); }catch(e){} }
+
 const ecuWarned=[0,0];
 function sysAlerts(o,L){
   if(!power()) return L;
@@ -709,6 +765,7 @@ function d3Toast(){ if(PST.querySelector('.d3t')) return; const t=document.creat
 setTimeout(()=>{
   if(D3&&D3.supported()){ try{ otwReady=OTW.init(el('otw')); }catch(e){ otwReady=false; } }
   if(otwReady){ try{ D3on=D3.init({io:IO,stage:PST,world:P.world,svg:P.svg,T,onTap:()=>{ Z.reg='overview'; },canWheel:e=>!e.target.closest('.hit.hitw,g.ctl.t-rot,g.ctl.t-rotsel,g.ctl.t-vwheel,g.ctl.t-hwheel,g.ctl.t-power,g.ctl.t-flap,g.ctl.t-slide,g.ctl.t-fsel,.gdu .kn,#mfd,.more,.d3t,.d3v,.ctop,.pill,.tip,.drawer'),canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v')&&!SH.touchOwns(e),onStick:v=>{ inp.stick=v; },onScale:s=>{ Z.s=s; sizeScreens(); },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
+  if(D3on){ const bar=PST.querySelector('.d3v'), b=document.createElement('button'); b.type='button'; b.id='bTod'; b.className='tod'; b.onclick=()=>setTod(TODN[(TODN.indexOf(TODK)+1)%3]); (bar||PST).appendChild(b); const x=document.createElement('button'); x.type='button'; x.id='bXp'; x.textContent=T('Explain'); x.title=T('Tap a control to see what it does'); x.setAttribute('aria-pressed','false'); x.onclick=()=>setExplain(!explainOn); (bar||PST).appendChild(x); let k='day'; try{ k=localStorage.getItem('bb-da42-tod')||'day'; }catch(e){} setTod(k); }
   if(D3on){ Z.lock=false; Z.reg='overview'; IO.toWorld=e=>D3.toWorld(e); setOtw(true); el('bOtw').hidden=true; el('bAhead').hidden=false; D3.lookAhead(true); Z.s=D3.scale(); sizeScreens(); syncAreaUI(); LAB.onLang(()=>D3.relabel()); }
   else { el('otwMsg').textContent=T('3D needs WebGL, which this browser does not offer. Showing the classic panel.'); el('otwMsg').hidden=false; if(!otwReady) setOtw(false); }
   PST.classList.remove('d3wait'); zoomTo(Z.reg,true,true);

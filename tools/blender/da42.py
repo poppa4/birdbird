@@ -131,6 +131,8 @@ MATS = {
     'rubber':    dict(color=(0.03, 0.03, 0.03), rough=0.92),
     'knob_black': dict(color=(0.060, 0.062, 0.066), rough=0.38),
     'red':       dict(color=(0.70, 0.12, 0.08), rough=0.4),
+    'rocker_white': dict(color=(0.80, 0.80, 0.78), rough=0.42),
+    'rocker_red': dict(color=(0.72, 0.14, 0.09), rough=0.42),
     'white':     dict(color=(0.88, 0.88, 0.86), rough=0.35),
     'pedal':     dict(color=(0.16, 0.17, 0.18), rough=0.5, metal=0.4),
     'strap':     dict(color=(0.30, 0.32, 0.36), rough=0.9, tex='fabric', tile=0.12, nstr=0.8),
@@ -389,6 +391,123 @@ def propeller(sd):
     return g
 
 
+# ---- panel hardware: every switch, knob and bezel as its own piece standing on the panel ----------------------------------
+HW = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'da42_controls.json')))   # da42panel.js controls + display-unit knobs
+SUB_OF = {'rudTrim': 'rt', 'park': 'sl', 'heat': 'sl', 'defrost': 'sl', 'pwr': 'pw', 'fselL': 'fs', 'fselR': 'fs', 'trim': 'tw',
+          'auxPumpL': 'ax', 'auxPumpR': 'ax', 'gearEmer': 'emg', 'altAir': 'alt'}
+SEL_ANG = {'voterL': [-50, 0, 50], 'voterR': [-50, 0, 50], 'deice': [-60, -20, 20, 60], 'fselL': [-80, 0, 80], 'fselR': [-80, 0, 80]}
+
+
+def ring(g, pl, pts_uv, half_w, height, mat, sides=8):
+    """a raised rim along a closed path of drawing points (a bezel): half_w drawing units wide each side, height metres"""
+    P = [pl.p(u, v, -height * 0.45) for (u, v) in pts_uv]
+    tube(g, P + [P[0], P[1]], height * 0.55, mat, sides=sides, ry=half_w * pl.ps, up=-pl.pn)
+
+
+def rrect(x, y, w, h, r, n=5):
+    out = []
+    for (cx, cy, a0) in ((x + w - r, y + r, -90), (x + w - r, y + h - r, 0), (x + r, y + h - r, 90), (x + r, y + r, 180)):
+        out += [(cx + r * math.cos((a0 + 90 * i / n) * D2R), cy + r * math.sin((a0 + 90 * i / n) * D2R)) for i in range(n + 1)]
+    return out
+
+
+def hardware(root, objs, ctrl):
+    stat = {}                                # static pieces, one mesh per plane (each is cut off behind its own plane in the app)
+    def st(pl):
+        key = getattr(pl, 'sid', 'main'); return stat.setdefault(key, (Geo(), pl))[0]
+    def unit(name, g, pivot, **spec):
+        objs[name] = C.to_object(name, g, pivot=pivot, parent=root); ctrl[name] = dict(pivot=pivot, fg=1, **spec)
+    for c in HW['ctl']:
+        cid, t, x, y = c['id'], c['t'], c['x'], c['y']
+        pl = SUBS[SUB_OF[cid]] if cid in SUB_OF else MAIN
+        k = pl.ps; mm = 0.001 * k / PS; F = pl.frame(x, y, 0.0); S_ = st(pl)
+        axn = [round(float(v), 6) for v in pl.pn]; down = [round(float(v), 6) for v in nrm(pl.ey)]
+        if t in ('tog', 'tog3', 'guard'):
+            lathe(S_, [(0, 0), (8.6 * k, 0), (8.6 * k, 2.4 * mm), (6.0 * k, 3.0 * mm), (5.2 * k, 3.0 * mm), (4.6 * k, 6.0 * mm), (0, 6.0 * mm)], 'alu', seg=6, m=F)
+            g = Geo(); piv = pl.p(x, y, -3 * mm)
+            lathe(g, [(0, 0), (2.3 * mm, 0), (2.6 * mm, 8 * mm), (3.3 * mm, 13.5 * mm), (3.2 * mm, 15.5 * mm), (2.0 * mm, 16.8 * mm), (0, 16.8 * mm)], 'chrome', seg=12, m=pl.frame(x, y, -3 * mm))
+            unit('sw_' + cid, g, piv, rotate=dict(axis=[1, 0, 0], unit='deg', min=-24, max=24), io=dict(id=cid, k='tog3' if t == 'tog3' else 'tog'))
+            if t == 'guard':                # red cover over the emergency switch, hinged at its top edge
+                g = Geo(); piv = pl.p(x, y - 32, -2 * mm)
+                rbox(g, (28 * k, 15 * mm, 46 * k), (2.5 * mm, 3 * mm, 2.5 * mm), 'red', m=M(pl.frame(x, y - 9, 0.0), T(0, 12 * mm, 0)), seg=3, flat=1)
+                unit('gd_' + cid, g, piv, rotate=dict(axis=[1, 0, 0], unit='deg', min=-100, max=0), io=dict(id=cid, k='guard'))
+        elif t == 'rocker':
+            w, h = (24, 40) if c['big'] else (20, 34)
+            rbox(S_, ((w + 6) * k, 2.4 * mm, (h + 6) * k), 1.2 * mm, 'black', m=M(F, T(0, 1.2 * mm, 0)), seg=2, flat=1)
+            g = Geo(); L = h * k
+            def dish(q, n, L=L, mm=mm):
+                px, py, pz = q; return (px, py + (1.5 * mm * (2 * pz / L) ** 2 if py > 0 else 0), pz)
+            rbox(g, (w * k, 5 * mm, L), (1.4 * mm, 1.8 * mm, 1.4 * mm), 'rocker_red' if c['red'] else 'rocker_white', m=M(F, T(0, 3.2 * mm, 0)), seg=3, flat=(1, 1, 6), deform=dish)
+            unit('sw_' + cid, g, pl.p(x, y, -1.6 * mm), rotate=dict(axis=[1, 0, 0], unit='deg', min=-11, max=11), io=dict(id=cid, k='rocker'))
+        elif t in ('rot', 'rotsel') and cid != 'audVol':
+            r = (c['r'] or 13) * k
+            prof = [(0, 0), (r + 3 * k, 0), (r + 3 * k, 1.2 * mm), (r, 2.0 * mm), (r * 0.93, 11 * mm), (r * 0.78, 12.5 * mm), (0, 12.5 * mm)]
+            if cid == 'oxy':
+                lathe(S_, prof, 'knob_black', seg=20, m=F); continue
+            g = Geo(); lathe(g, prof, 'knob_black', seg=24, m=F)
+            if t == 'rot':
+                rbox(g, (1.5 * mm, 0.9 * mm, r * 0.62), 0.3 * mm, 'white', m=M(F, T(0, 12.6 * mm, -r * 0.5)), seg=1, flat=1)
+                unit('kn_' + cid, g, pl.p(x, y, 0.0), rotate=dict(axis=axn, unit='deg', min=-135, max=135), io=dict(id=cid, k='rot'))
+            else:
+                rbox(g, (2.4 * mm, 3.0 * mm, r * 1.86), 0.8 * mm, 'white', m=M(F, T(0, 12.4 * mm, 0)), seg=2, flat=1)
+                rbox(g, (2.6 * mm, 3.2 * mm, r * 0.5), 0.8 * mm, 'knob_black', m=M(F, T(0, 12.4 * mm, r * 0.7)), seg=2, flat=1)
+                a = SEL_ANG[cid]; unit('kn_' + cid, g, pl.p(x, y, 0.0), rotate=dict(axis=axn, unit='deg', min=min(a), max=max(a)), io=dict(id=cid, k='sel', ang=a))
+        elif t == 'push':
+            r = (c['r'] or 10) * k
+            lathe(S_, [(0, 0), (r + 3 * k, 0), (r + 3 * k, 1.6 * mm), (r, 2.2 * mm), (r, 3.6 * mm), (r * 0.8, 4.6 * mm), (0, 4.8 * mm)], 'knob_black', seg=18, m=F)
+        elif t == 'key':
+            lathe(S_, [(0, 0), (15 * k, 0), (15 * k, 1.6 * mm), (12 * k, 2.6 * mm), (12 * k, 4.2 * mm), (0, 4.2 * mm)], 'alu', seg=22, m=F)
+            g = Geo(); rbox(g, (6 * k, 12 * mm, 30 * k), (1.6 * mm, 3 * mm, 3 * mm), 'black', m=M(F, T(0, 10 * mm, 0)), seg=3, flat=1)
+            unit('kn_' + cid, g, pl.p(x, y, 0.0), rotate=dict(axis=axn, unit='deg', min=-45, max=45), io=dict(id=cid, k='key'))
+        elif t == 'cb':
+            lathe(S_, [(0, 0), (6.4 * k, 0), (6.4 * k, 1.5 * mm), (5.0 * k, 2.0 * mm), (5.0 * k, 5.0 * mm), (4.3 * k, 5.8 * mm), (0, 5.8 * mm)], 'black', seg=12, m=F)
+        elif t == 'pull' and not c['lever']:
+            lathe(S_, [(0, 0), (4 * k, 0), (4 * k, 6 * mm), (8.5 * k, 7 * mm), (8.5 * k, 11 * mm), (7 * k, 12.5 * mm), (0, 12.5 * mm)], 'knob_black', seg=18, m=F)
+        elif t == 'pull':
+            rbox(S_, (8 * k, 8 * mm, 6 * k), 1 * mm, 'alu', m=M(F, T(0, 4 * mm, 0)), seg=1, flat=1)
+            rbox(S_, (40 * k, 9 * mm, 12 * k), 3 * mm, 'red' if c['red'] else 'knob_black', m=M(F, T(0, 11 * mm, 0)), seg=3, flat=(3, 1, 1))
+        elif t == 'slide':
+            g = Geo(); rbox(g, (4 * k, 6 * mm, 4 * k), 0.8 * mm, 'alu', m=M(F, T(0, 3 * mm, 0)), seg=1, flat=1)
+            rbox(g, (22 * k, 7 * mm, 12 * k), 2.2 * mm, 'knob_black', m=M(F, T(0, 8 * mm, 0)), seg=3, flat=1)
+            unit('sl_' + cid, g, pl.p(x, y, 0.0), translate=dict(axis=down, min=-22 * k, max=22 * k), io=dict(id=cid, k='slide', s=44 * k))
+        elif t == 'park':
+            g = Geo(); Fk = pl.frame(x, y - 23.5, 0.0)
+            rbox(g, (5 * k, 8 * mm, 5 * k), 0.8 * mm, 'alu', m=M(Fk, T(0, 4 * mm, 0)), seg=1, flat=1)
+            rbox(g, (32 * k, 10 * mm, 13 * k), 3 * mm, 'red', m=M(Fk, T(0, 11 * mm, 0)), seg=3, flat=(3, 1, 1))
+            unit('sl_' + cid, g, pl.p(x, y - 23.5, 0.0), translate=dict(axis=down, positions={'REL': 0, 'SET': 47 * k}), io=dict(id=cid, k='park', s=47 * k))
+        elif t == 'fsel':
+            lathe(S_, [(0, 0), (20 * k, 0), (20 * k, 1.2 * mm), (18 * k, 1.8 * mm), (0, 1.8 * mm)], 'black', seg=24, m=F)
+            g = Geo(); lathe(g, [(0, 0), (6 * k, 0), (6 * k, 5 * mm), (4.5 * k, 6 * mm), (0, 6 * mm)], 'steel_dark', seg=14, m=F)
+            rbox(g, (8 * k, 5 * mm, 30 * k), (1.5 * mm, 1.5 * mm, 2 * mm), 'steel_dark', m=M(F, T(0, 4.4 * mm, -3 * k)), seg=2, flat=1)
+            rbox(g, (9 * k, 5.6 * mm, 8 * k), 1.4 * mm, 'red', m=M(F, T(0, 4.6 * mm, -14 * k)), seg=2, flat=1)
+            a = SEL_ANG[cid]; unit('kn_' + cid, g, pl.p(x, y, 0.0), rotate=dict(axis=axn, unit='deg', min=-80, max=80), io=dict(id=cid, k='sel', ang=a))
+        elif t == 'vent':
+            r = c['r'] * k
+            lathe(S_, [(0, 0.8 * mm), (r * 0.99, 0.8 * mm), (r, 4.0 * mm), (r + 1.5 * k, 5.4 * mm), (r + 6 * k, 3.4 * mm), (r + 6 * k, 0), (0, 0)], 'black', seg=36, m=F)
+            lathe(S_, [(0, 0.8 * mm), (r * 0.94, 0.8 * mm), (r * 0.90, 3.4 * mm), (r * 0.62, 6.4 * mm), (r * 0.24, 7.4 * mm), (r * 0.20, 9.4 * mm), (0, 9.6 * mm)], 'knob_black', seg=28, m=F)
+            for i in range(6):
+                rbox(S_, (r * 0.62, 2.0 * mm, 1.4 * mm), 0.5 * mm, 'steel_dark', m=M(F, RY(i * math.pi / 3 + 0.3), T(r * 0.56, 5.4 * mm, 0), RZ(-0.42)), seg=1, flat=1)
+    # backup instruments: raised bezel rings; compass housing
+    for (x, y) in ((673, 296), (803, 296), (933, 296)):
+        ring(st(MAIN), MAIN, [(x + 53 * math.cos(2 * math.pi * i / 40), y + 53 * math.sin(2 * math.pi * i / 40)) for i in range(40)], 3.6, 0.0045, 'black', sides=8)
+    lathe(st(MAIN), [(0, 0), (6 * PS, 0), (6 * PS, 6e-3), (4.6 * PS, 7e-3), (0, 7e-3)], 'knob_black', seg=14, m=MAIN.frame(933 - 40, 296 + 40, 0.0))      # altimeter setting knob
+    lathe(st(MAIN), [(0, 0), (5 * PS, 0), (5 * PS, 5e-3), (3.8 * PS, 6e-3), (0, 6e-3)], 'knob_black', seg=14, m=MAIN.frame(803 + 40, 296 + 40, 0.0))      # attitude: caging / pitch knob
+    ring(st(MAIN), MAIN, rrect(1054 - 46, 296 - 30, 92, 64, 14), 3.4, 0.0075, 'black', sides=8)
+    # display units and the audio panel: raised rim round the unit, a step round the screen, the bezel knobs
+    for gid in ('bzP', 'bzM'):
+        d = HW['gdu'][gid]; r = d['rect']; sc = d['screen']
+        ring(st(MAIN), MAIN, rrect(r[0] + 3, r[1] + 3, r[2] - 6, r[3] - 6, 9), 3.0, 0.0042, 'black', sides=8)
+        ring(st(MAIN), MAIN, rrect(sc[0] - 2.5, sc[1] - 2.5, sc[2] + 5, sc[3] + 5, 3), 2.2, 0.0022, 'black', sides=6)
+        for kn in d['knobs']:
+            b = kn['r']; cx, cy, rr = b[0] + b[2] / 2, b[1] + b[3] / 2, b[2] / 2 * PS
+            lathe(st(MAIN), [(0, 0), (rr, 0), (rr, 6.5e-3), (rr * 0.9, 8e-3), (rr * 0.66, 8e-3), (rr * 0.66, 13e-3), (rr * 0.56, 14.5e-3), (0, 14.5e-3)], 'knob_black', seg=22, m=MAIN.frame(cx, cy, 0.0))
+    ring(st(MAIN), MAIN, rrect(686 + 2.5, 383 + 2.5, 74 - 5, 287 - 5, 5), 2.4, 0.0036, 'black', sides=8)
+    for key, (g, pl) in stat.items():
+        if g.n:
+            r = pl.rect; piv = pl.p(r[0] + r[2] / 2, r[1] + r[3] / 2, -0.004)
+            unit('hw_' + key, g, piv, translate=dict(axis=[0, 1, 0], positions={'FIXED': 0}), note='does not move')
+
+
 def build():
     C.reset(); C.material_specs(MATS, TEX)
     root = C.empty('da42_cockpit'); objs = {}; ctrl = {}
@@ -423,7 +542,8 @@ def build():
     # padded glareshield edge: static, but in front of the live panel, so its own unit (foreground pass in the app)
     lp = MAIN.p(800, 144, -LIP_H)
     objs['glare_lip'] = C.to_object('glare_lip', glare_lip(), pivot=lp, parent=root)
-    ctrl['glare_lip'] = dict(pivot=lp, translate=dict(axis=[0, 1, 0], positions={'FIXED': 0}), note='does not move')
+    ctrl['glare_lip'] = dict(pivot=lp, fg=1, translate=dict(axis=[0, 1, 0], positions={'FIXED': 0}), note='does not move')
+    hardware(root, objs, ctrl)
     # power levers on the engine-control console (pivot behind the face at the slot centre)
     pw = SUBS['pw']
     for nm, u, sd in (('power_L', 720, -1), ('power_R', 790, 1)):

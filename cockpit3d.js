@@ -158,7 +158,7 @@ function packGLB(gltf,side,cfg){
   const root=gltf.scene; root.updateMatrixWorld(true);
   const C=side.controls||{}, units=[{name:'',fg:false}], byName={};
   const addUnit=(name,info)=>{ const n=root.getObjectByName(name); if(!n) return; const p=new THREE.Vector3().setFromMatrixPosition(n.matrixWorld);
-    byName[name]=units.length; units.push(Object.assign({name,pivot:p,fg:(cfg.fg||[]).includes(name),grab:(cfg.grab||[]).includes(name),min:new THREE.Vector3(1e9,1e9,1e9),max:new THREE.Vector3(-1e9,-1e9,-1e9)},info)); };
+    byName[name]=units.length; units.push(Object.assign({name,pivot:p,fg:(cfg.fg||[]).includes(name)||!!(C[name]&&C[name].fg),grab:(cfg.grab||[]).includes(name),min:new THREE.Vector3(1e9,1e9,1e9),max:new THREE.Vector3(-1e9,-1e9,-1e9)},info)); };
   const ax=a=>a?new THREE.Vector3(...a).normalize():null;
   for(const k in C){ const c=C[k];
     if(c.children){ for(const ch in c.children) addUnit(ch,{tAx:null,rAx:ax(c.children[ch].axis||(c.rotate&&c.rotate.axis)),rAx2:null,maxRot:c.rotate?Math.max(Math.abs(c.rotate.min||0),Math.abs(c.rotate.max||0)):90,range:[[0,0],c.rotate?[c.rotate.min||0,c.rotate.max||0]:[0,0],[0,0]]}); continue; }
@@ -359,14 +359,15 @@ function bakeLight(A,eye,cfg){ const out=!A.aoMap, n=A.n, lit=new Float32Array(n
   A.lit=lit; A.spec=sp; }
 function ckMat(lo,A,U,N,cut){
   const m=new THREE.MeshBasicMaterial({vertexColors:true,map:lo?null:A.map||null,aoMap:lo?null:A.aoMap||null});
-  m.onBeforeCompile=sh=>{ sh.uniforms.uCtl=U.uCtl; if(cut) sh.uniforms.uPl=U.uPl;
-    sh.vertexShader='attribute float ctl;\nuniform mat4 uCtl['+N+'];\n'+(cut?'uniform vec4 uPl['+N+'];\nvarying float vPd;\n':'')+(lo?'':'attribute vec3 spec;\nvarying vec3 vSpec;\n')+sh.vertexShader
-      .replace('#include <begin_vertex>','#include <begin_vertex>\n\tint ci=int(ctl+0.5);\n\ttransformed=(uCtl[ci]*vec4(transformed,1.0)).xyz;'+(cut?'\n\tvPd=dot(uPl[ci].xyz,transformed)+uPl[ci].w;':'')+(lo?'':'\n\tvSpec=spec;'));
+  m.onBeforeCompile=sh=>{ sh.uniforms.uCtl=U.uCtl; sh.uniforms.uTod=U.uTod;
+    sh.vertexShader='attribute float ctl;\nuniform mat4 uCtl['+N+'];\n'+(cut?'attribute vec4 pln;\nvarying float vPd;\n':'')+(lo?'':'attribute vec3 spec;\nvarying vec3 vSpec;\n')+sh.vertexShader
+      .replace('#include <begin_vertex>','#include <begin_vertex>\n\tint ci=int(ctl+0.5);\n\ttransformed=(uCtl[ci]*vec4(transformed,1.0)).xyz;'+(cut?'\n\tvPd=dot(pln.xyz,transformed)+pln.w;':'')+(lo?'':'\n\tvSpec=spec;'));
     if(cut) sh.fragmentShader='varying float vPd;\n'+sh.fragmentShader.replace('void main() {','void main() {\n\tif(vPd>0.0) discard;');
     if(!lo) sh.fragmentShader='varying vec3 vSpec;\n'+sh.fragmentShader
       .replace('#include <aomap_fragment>','float sAO=1.0;\n'+THREE.ShaderChunk.aomap_fragment.replace('reflectedLight.indirectDiffuse *= ambientOcclusion;','reflectedLight.indirectDiffuse *= ambientOcclusion; sAO=ambientOcclusion;'))
-      .replace('vec3 outgoingLight = reflectedLight.indirectDiffuse;','vec3 outgoingLight = reflectedLight.indirectDiffuse + vSpec*sAO;'); };
-  m.customProgramCacheKey=()=>'ck3d'+N+(lo?'L':'H')+(cut?'c':''); return m; }
+      .replace('vec3 outgoingLight = reflectedLight.indirectDiffuse;','vec3 outgoingLight = reflectedLight.indirectDiffuse + vSpec*sAO;');
+    sh.fragmentShader='uniform vec3 uTod;\n'+sh.fragmentShader.replace('#include <envmap_fragment>','outgoingLight*=uTod;\n#include <envmap_fragment>'); };
+  m.customProgramCacheKey=()=>'ck3dt'+N+(lo?'L':'H')+(cut?'c':''); return m; }
 /* low tier: one geometry for a pass, the tint texture's mean colour and the ambient occlusion folded into the vertex colours
    (all display values, as above) */
 function texPixels(t,w){ const im=t&&t.image; if(!im) return null; try{ const c=document.createElement('canvas'); c.width=c.height=w; const x=c.getContext('2d'); x.drawImage(im,0,0,w,w); return x.getImageData(0,0,w,w).data; }catch(e){ return null; } }
@@ -396,6 +397,10 @@ function css(){ if(cssDone) return; cssDone=true; const s=document.createElement
 /* ---------- one cockpit per page ---------- */
 CK.make=function(def){
 const D3={on:false,dragging:false,supported:CK.supported,def};
+/* cabin light: one colour the whole baked cockpit is multiplied by (1,1,1 = the daylight it was baked for). The page sets it
+   for dusk and night, and with the flood light. */
+const TODC=new THREE.Color(1,1,1);
+D3.cabin=(r,g,b)=>{ if(TODC.r!==r||TODC.g!==g||TODC.b!==b){ TODC.setRGB(r,g,b); needs=3; fgDirty=true; } };
 const EYE=V3(...def.eye);
 const PNL=def.panel, PS=PNL.ps, TILT=(PNL.tilt||0)*D2R, PW=PNL.w, PH=PNL.h;
 const EX=V3(PS,0,0), EY=V3(0,-PS*Math.cos(TILT),PS*Math.sin(TILT));
@@ -472,8 +477,11 @@ function hideCss(){ const h=def.glb.hide||[]; if(!h.length) return; const s=docu
    a pause between them, so the page stays responsive while it is put together */
 const pause=()=>new Promise(r=>setTimeout(r,0));
 async function glbBuild(pk,side){ loading(0.9); await pause();
-  const cfg=def.glb, N=pk.units.length, U={uCtl:{value:pk.units.map(()=>new THREE.Matrix4())}};
-  const mk=(A,lo,cut)=>{ const m=new THREE.Mesh(accGeo(A,lo?true:'hq'),ckMat(lo,A,U,N,cut)); m.frustumCulled=false; m.matrixAutoUpdate=false; return m; };
+  const cfg=def.glb, N=pk.units.length, U={uCtl:{value:pk.units.map(()=>new THREE.Matrix4())},uTod:{value:TODC}};
+  /* a foreground control's cut plane rides on its vertices (one vec4 each), not in a uniform array: a panel with every switch
+     in 3D has some fifty units, and a second array of that size would pass the vertex-uniform limit of many phones */
+  const mk=(A,lo,cut)=>{ const g=accGeo(A,lo?true:'hq'); if(cut){ const pv=U.uPl.value, a=new Float32Array(A.n*4); for(let i=0;i<A.n;i++){ const v=pv[Math.round(A.ctl[i])]||pv[0]; a[i*4]=v.x; a[i*4+1]=v.y; a[i*4+2]=v.z; a[i*4+3]=v.w; } g.setAttribute('pln',new THREE.BufferAttribute(a,4)); }
+    const m=new THREE.Mesh(g,ckMat(lo,A,U,N,cut)); m.frustumCulled=false; m.matrixAutoUpdate=false; return m; };
   // the panel planes: dark matte backing in the main pass (seen through gaps of the drawing and when a plane is parked)
   const F=pk.faces, fc=new THREE.Color(cfg.face||0x0b0c0e);
   for(let i=0;i<F.n;i++){ F.col[i*3]=fc.r; F.col[i*3+1]=fc.g; F.col[i*3+2]=fc.b; F.rmn[i*3]=0.8; F.rmn[i*3+1]=0; F.rmn[i*3+2]=1; F.ctl[i]=0; }

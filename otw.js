@@ -63,12 +63,13 @@ function init(canvas){
   scene=new THREE.Scene(); scene.fog=new THREE.Fog(0xbfd3e6,6000,62000);
   cam=new THREE.PerspectiveCamera(58,2,1.2,140000); cam.rotation.order='YXZ';
   // himmel: drawn last of the opaque objects, at the far plane, so it is only shaded where no terrain covers it
-  const skyMat=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,uniforms:{},
+  const skyMat=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:false,uniforms:{top:{value:new THREE.Color(0.20,0.42,0.78)},hor:{value:new THREE.Color(0.76,0.84,0.92)},gnd:{value:new THREE.Color(0.55,0.62,0.66)},star:{value:0}},
     vertexShader:'varying vec3 vP; void main(){ vP=normalize(position); vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.0); gl_Position=vec4(p.xy,p.w*0.999999,p.w); }',
-    fragmentShader:'varying vec3 vP; void main(){ float y=vP.y; vec3 top=vec3(0.20,0.42,0.78), hor=vec3(0.76,0.84,0.92), gnd=vec3(0.55,0.62,0.66); vec3 c= y>0.0 ? mix(hor,top,pow(clamp(y,0.0,1.0),0.55)) : mix(hor,gnd,clamp(-y*6.0,0.0,1.0)); gl_FragColor=vec4(c,1.0); }'});
+    fragmentShader:'uniform vec3 top; uniform vec3 hor; uniform vec3 gnd; uniform float star; varying vec3 vP; void main(){ float y=vP.y; vec3 c= y>0.0 ? mix(hor,top,pow(clamp(y,0.0,1.0),0.55)) : mix(hor,gnd,clamp(-y*6.0,0.0,1.0)); if(star>0.0&&y>0.02){ vec3 d=normalize(vP)*190.0; vec3 q=floor(d); float h=fract(sin(dot(q,vec3(12.9898,78.233,37.719)))*43758.5453); vec3 f=fract(d)-0.5; c+=vec3(star*step(0.9965,h)*smoothstep(0.42,0.0,length(f))*clamp(y*6.0,0.0,1.0)*(0.5+h*0.5)); } gl_FragColor=vec4(c,1.0); }'});
   const sky=new THREE.Mesh(new THREE.SphereGeometry(120000,32,16),skyMat); sky.renderOrder=100; sky.frustumCulled=false; scene.add(sky); scene.userData.sky=sky;
-  scene.add(new THREE.HemisphereLight(0xe6f0ff,0x4a5a3a,0.85));
+  const hemi=new THREE.HemisphereLight(0xe6f0ff,0x4a5a3a,0.85); scene.add(hemi);
   const sun=new THREE.DirectionalLight(0xfff4e0,0.75); sun.position.set(0.4,1,0.35); scene.add(sun);
+  scene.userData.lit={skyMat,hemi,sun};
   // terreng: one shared vertex buffer, drawn as 4×4 tiles with their own bounds so the ones outside the view are culled
   const T=G.TERRAIN, SZ=170000, SEG=220;
   const tg=new THREE.PlaneGeometry(SZ,SZ,SEG,SEG); tg.rotateX(-Math.PI/2);
@@ -138,9 +139,9 @@ function init(canvas){
     [[-0.5,-0.5],[0.5,-0.5],[0.5,0.5],[-0.5,0.5]].forEach(([a,b],q)=>{ cP.set([x,y,z],(i*4+q)*3); cC.set([a*s,b*s*0.45],(i*4+q)*2); cU.set([a+0.5,b+0.5],(i*4+q)*2); }); }
   const cg=new THREE.BufferGeometry(); cg.setAttribute('position',new THREE.BufferAttribute(cP,3)); cg.setAttribute('crn',new THREE.BufferAttribute(cC,2)); cg.setAttribute('uv',new THREE.BufferAttribute(cU,2));
   cg.setIndex(new THREE.BufferAttribute(cloudIdx,1)); cg.index.setUsage(THREE.DynamicDrawUsage);
-  const cm=new THREE.ShaderMaterial({transparent:true,depthWrite:false,fog:true,uniforms:THREE.UniformsUtils.merge([THREE.UniformsLib.fog,{map:{value:cloudT}}]),
+  const cm=new THREE.ShaderMaterial({transparent:true,depthWrite:false,fog:true,uniforms:THREE.UniformsUtils.merge([THREE.UniformsLib.fog,{map:{value:cloudT},tint:{value:new THREE.Color(1,1,1)}}]),
     vertexShader:'attribute vec2 crn; varying vec2 vUv; varying float vFogF; uniform float fogNear; uniform float fogFar; void main(){ vUv=uv; vec4 mv=modelViewMatrix*vec4(position,1.0); mv.xy+=crn; gl_Position=projectionMatrix*mv; vFogF=smoothstep(fogNear,fogFar,-mv.z); }',
-    fragmentShader:'uniform sampler2D map; uniform vec3 fogColor; varying vec2 vUv; varying float vFogF; void main(){ vec4 t=texture2D(map,vUv); if(t.a<0.002) discard; gl_FragColor=vec4(mix(t.rgb,fogColor,vFogF),t.a); }'});
+    fragmentShader:'uniform sampler2D map; uniform vec3 fogColor; uniform vec3 tint; varying vec2 vUv; varying float vFogF; void main(){ vec4 t=texture2D(map,vUv); if(t.a<0.002) discard; gl_FragColor=vec4(mix(t.rgb*tint,fogColor,vFogF),t.a); }'});
   cloudMesh=new THREE.Mesh(cg,cm); cloudMesh.frustumCulled=false; scene.add(cloudMesh); sortClouds();
   scene.traverse(o=>{ if(o.material&&o.material.polygonOffset) offM.push([o.material,o.material.polygonOffsetFactor]); });
   ok=true; watch(); return true;
@@ -393,5 +394,17 @@ function hud(on){ if(on===false){ if(hudEl){ hudEl.remove(); hudEl=null; } try{ 
   requestAnimationFrame(f); }
 /* ?perf=1 (or the … menu's Performance meter, remembered in this browser) */
 if(/[?&]perf=1(&|$)/.test(location.search)) hud(); else { try{ if(localStorage.getItem('bb-perfhud')==='1') hud(); }catch(e){} }
-G.OTW={init,render,render3d,quality,frame,hud,hudOn:()=>!!hudEl,get fov(){ return cam?{h:2*HF,v:cam.fov,w:W,h_:H}:null; },low:false,lvl:0,renderer:()=>R};
+/* time of day ('day' | 'dusk' | 'night'): sky, haze, sun and sky light, cloud tint, stars, and how strongly the runway lights stand out.
+   Pages that never call it keep the daylight they always had. */
+const TOD={day:{top:[0.20,0.42,0.78],hor:[0.76,0.84,0.92],gnd:[0.55,0.62,0.66],fog:[0.749,0.827,0.902],hemi:0.85,hs:0xe6f0ff,hg:0x4a5a3a,sun:0.75,sc:0xfff4e0,sp:[0.4,1,0.35],cl:[1,1,1],star:0,ls:1.1,lo:0.85,ps:2.4},
+  dusk:{top:[0.10,0.16,0.36],hor:[0.93,0.52,0.30],gnd:[0.30,0.24,0.26],fog:[0.62,0.42,0.36],hemi:0.42,hs:0xb8a6c8,hg:0x3a2e2a,sun:0.42,sc:0xff9a55,sp:[-0.9,0.16,-0.4],cl:[0.95,0.62,0.50],star:0.25,ls:1.9,lo:1,ps:3.2},
+  night:{top:[0.008,0.012,0.035],hor:[0.035,0.05,0.10],gnd:[0.012,0.016,0.03],fog:[0.025,0.035,0.07],hemi:0.10,hs:0x7088c0,hg:0x0a0c12,sun:0.05,sc:0x9fb4e0,sp:[0.3,1,0.2],cl:[0.10,0.12,0.18],star:1,ls:2.6,lo:1,ps:3.8}};
+let todK='day';
+function tod(k){ if(k===undefined) return todK; const t=TOD[k]; if(!t||!scene) return todK; todK=k; const L=scene.userData.lit, u=L.skyMat.uniforms;
+  u.top.value.setRGB(...t.top); u.hor.value.setRGB(...t.hor); u.gnd.value.setRGB(...t.gnd); u.star.value=t.star; scene.fog.color.setRGB(...t.fog);
+  L.hemi.intensity=t.hemi; L.hemi.color.setHex(t.hs); L.hemi.groundColor.setHex(t.hg); L.sun.intensity=t.sun; L.sun.color.setHex(t.sc); L.sun.position.set(...t.sp);
+  if(cloudMesh&&cloudMesh.material.uniforms.tint) cloudMesh.material.uniforms.tint.value.setRGB(...t.cl);
+  if(rwyLights){ rwyLights.material.size=t.ls; rwyLights.material.opacity=t.lo; } if(papi) papi.material.size=t.ps;
+  return todK; }
+G.OTW={init,render,render3d,quality,frame,hud,tod,hudOn:()=>!!hudEl,get fov(){ return cam?{h:2*HF,v:cam.fov,w:W,h_:H}:null; },low:false,lvl:0,renderer:()=>R};
 })(window);

@@ -187,7 +187,7 @@ function panelSVG(){
 <!-- top strip -->
 ${lab(470,279,'LIGHTS',{s:6,c:'gp'})}<path d="M326 281h118M496 281h56" class="grpl"/>
 ${plate(1168,266,62,84,5,'ngp')}
-<rect x="1108" y="296" width="46" height="26" rx="2" fill="#e9e6da" stroke="#555" stroke-width=".8"/><path d="M1112 303h38M1112 309h38M1112 315h38M1124 298v22M1138 298v22" stroke="#777" stroke-width=".5"/>
+<rect class="card" x="1108" y="296" width="46" height="26" rx="2" fill="#e9e6da" stroke="#555" stroke-width=".8"/><path d="M1112 303h38M1112 309h38M1112 315h38M1124 298v22M1138 298v22" stroke="#777" stroke-width=".5"/>
 ${standby()}
 <!-- left of the PFD -->
 <!-- right of the MFD: de-ice panel -->

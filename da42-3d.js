@@ -123,15 +123,24 @@ G.DA42_3D=CK.make({
   snaps:[['panel','Panel'],['left','Left',-78,-14,1],['right','Right',78,-14,1],['ped','Console',16,-62,0.85],['out','Outside',0,-3,1]],
   /* glTF cockpit (models/da42-cockpit.glb): power levers, flap switch, gear handle and trim wheel sit on the panel, so on the
      foreground pass; the sticks and pedals are below it. The flat drawn levers they replace are hidden (touch zones stay) */
-  glb:{id:'da42',v:3,
+  glb:{id:'da42',v:4,
     fg:['glare_lip','power_L','power_R','flap_switch','gear_handle','trim_wheel'],
     grab:['stick_L','stick_R'], blades:['prop'], propDisc:true, direct:['stick_L','stick_R','pedal_L_l','pedal_L_r','pedal_R_l','pedal_R_r'],
-    hide:['g.ctl[data-id="pwr"] .lv0','g.ctl[data-id="pwr"] .lv1','g.ctl[data-id="gear"] .mv','g.ctl[data-id="flaps"] .mv','g.ctl[data-id="trim"] .mv.wr'],
+    /* every switch, knob and bezel is a piece of the model standing on the panel (tools/blender/da42.py hardware()); the flat
+       drawings they replace are hidden, their labels, lights and touch zones stay */
+    hide:['g.ctl[data-id="pwr"] .lv0','g.ctl[data-id="pwr"] .lv1','g.ctl[data-id="gear"] .mv','g.ctl[data-id="flaps"] .mv','g.ctl[data-id="trim"] .mv.wr',
+      'g.ctl.t-tog .mv','g.ctl.t-tog .nut','g.ctl.t-tog .nut2','g.ctl.t-tog3 .mv','g.ctl.t-tog3 .nut','g.ctl.t-guard .mv','g.ctl.t-guard .gd','g.ctl.t-guard .nut',
+      'g.ctl.t-rocker .bezel1','g.ctl.t-rocker .mv','g.ctl.t-rotsel .mv','g.ctl.t-rotsel .ring0','g.ctl.t-push .mv','g.ctl.t-push .ring0',
+      'g.ctl[data-id="dimInst"] .mv','g.ctl[data-id="dimInst"] .ring0','g.ctl[data-id="dimFlood"] .mv','g.ctl[data-id="dimFlood"] .ring0','g.ctl[data-id="oxy"] .mv','g.ctl[data-id="oxy"] .ring0',
+      'g.ctl.t-key .mv','g.ctl.t-key .ring0','g.ctl.t-key .keyb','g.ctl.t-cb .mv','g.ctl.t-pull .mv','g.ctl.t-pull .ring0','g.ctl.t-pull .slot',
+      'g.ctl.t-slide .mv','g.ctl.t-park .mv','g.ctl.t-fsel .mv','g.ctl.t-fsel .quad','g.ctl.t-vent .bezel1','g.ctl.t-vent .ventb','g.ctl.t-vent .mv'],
     drive(get,st,C){ const sx=st.stick?st.stick.x:0, sy=st.stick?st.stick.y:0, r=st.ctl?st.ctl.rud||0:0, n=v=>+v||0;
       const bl=i=>{ const e=st.eng&&st.eng[i], r=e?+e.rpm||0:0; return [r>250?1:0,r]; }, pw=p=>-Math.atan((854-(906-104*Math.max(0,Math.min(1,n(p)))))*0.000605/0.10)/D2R, fl=C.flap_switch.translate.positions, gr=C.gear_handle.translate.positions;
-      return {stick_L:[0,sy*18,sx*17], stick_R:[0,sy*18,sx*17], power_L:[0,pw(get('pwrL'))], power_R:[0,pw(get('pwrR'))],
+      const out={}; for(const k in C){ const d=C[k].io; if(!d) continue; const v=n(get(d.id));
+        out[k]=d.k==='tog'?[0,v?-22:22]:d.k==='tog3'?[0,v<0?-22:v>0?22:0]:d.k==='rocker'?[0,v?-14:14]:d.k==='guard'?[0,n(get('emerG'))?-100:0]:d.k==='rot'?[0,-135+v*270]:d.k==='sel'?[0,d.ang[v]||0]:d.k==='key'?[0,v*40]:d.k==='slide'?[-(v-0.5)*d.s]:d.k==='park'?[v?d.s:0]:[0]; }
+      return Object.assign(out,{stick_L:[0,sy*18,sx*17], stick_R:[0,sy*18,sx*17], power_L:[0,pw(get('pwrL'))], power_R:[0,pw(get('pwrR'))],
         flap_switch:[fl[['UP','APP','LDG'][n(get('flaps'))]]], gear_handle:[gr[n(get('gear'))?'DOWN':'UP']], trim_wheel:[0,n(get('trim'))*540],
-        pedal_L_l:[0,r*16], pedal_L_r:[0,-r*16], pedal_R_l:[0,r*16], pedal_R_r:[0,-r*16], blade_L:bl(0), blade_R:bl(1)}; }},
+        pedal_L_l:[0,r*16], pedal_L_r:[0,-r*16], pedal_R_l:[0,r*16], pedal_R_r:[0,-r*16], blade_L:bl(0), blade_R:bl(1)}); }},
   /* the engine-control console as in the aircraft: the drawing lays its groups out flat below the panel; here each group is
      its own plane, where it sits on the console (same numbers as tools/blender/da42.py: SUBS). Small console, sloping down
      and aft from the bottom edge of the panel: rudder trim (rt), parking brake with cabin heat and defrost (sl). Large console
