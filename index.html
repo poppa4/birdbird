@@ -16,7 +16,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#EDF1EE">
-<link rel="preload" as="image" href="img/front/sim-a320-panel-1400.webp" imagesrcset="img/front/sim-a320-panel-760.webp 760w, img/front/sim-a320-panel-1400.webp 1400w, img/front/sim-a320-panel-2100.webp 2100w" imagesizes="(max-width:800px) 100vw, 75vw" type="image/webp">
+<link rel="preload" as="image" href="img/front/sunset2-2560.webp" imagesrcset="img/front/sunset2-760.webp 760w, img/front/sunset2-1400.webp 1400w, img/front/sunset2-1672.webp 1672w, img/front/sunset2-2560.webp 2560w, img/front/sunset2-3344.webp 3344w, img/front/sunset2-3840.webp 3840w" imagesizes="100vw" type="image/webp">
 <link rel="stylesheet" href="lab.css?v=15">
 <link rel="stylesheet" href="site.css?v=37">
 <style>
@@ -40,21 +40,22 @@
 .fp-btn.pri{background:var(--nv);color:#fff}.fp-btn.pri:hover{background:var(--nv2)}
 .fp-btn.sec{background:var(--sh);color:var(--nv)}.fp-btn.sec:hover{background:#F1F4F7}
 
-/* ---------- 1. Hero: the A320 flight deck from NORDAP's own simulator, on navy ---------- */
-.fp-hero{position:relative;margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl));padding:0 var(--gr) 0 var(--gl);background:var(--nv);overflow:hidden;color:#fff}
-.fp-plate{position:absolute;top:0;bottom:0;right:0;left:30%;margin:0}
-.fp-plate img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 38%;filter:saturate(.9) brightness(.9)}
-.fp-plate::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--nv) 0%,rgba(11,30,52,.88) 18%,rgba(11,30,52,.35) 52%,rgba(11,30,52,.05) 100%),linear-gradient(180deg,rgba(11,30,52,.35) 0%,transparent 30%,transparent 70%,rgba(11,30,52,.45) 100%)}
-.fp-hero .fp-wrap{min-height:clamp(500px,44vw,640px);display:flex;align-items:center;padding:64px 0}
-.fp-copy{position:relative;max-width:520px}
-.fp-hero h1{font-size:clamp(48px,5.6vw,84px);font-weight:750;font-stretch:84%;line-height:.96;letter-spacing:-.03em;color:#fff}
-.fp-lede{margin-top:22px!important;font-size:18.5px;line-height:1.5;color:#C9D6E2;max-width:25em}
-.fp-act{display:flex;flex-wrap:wrap;align-items:center;gap:14px 28px;margin-top:32px}
-.fp-hero .fp-btn.pri{background:#A9D3EE;border-color:#A9D3EE;color:var(--nv)}
-.fp-hero .fp-btn.pri:hover{background:#C6E3F5;border-color:#C6E3F5}
+/* ---------- 1. Hero: Daniel's own photo, sunset over the wing above southern Norway, full width and full sharpness ---------- */
+.fp-hero{position:relative;margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl));padding:0 var(--gr) 0 var(--gl);background:#1A1C22;overflow:hidden;color:#fff}
+.fp-plate{position:absolute;inset:0;margin:0}
+.fp-plate img{display:block;width:100%;height:100%;object-fit:cover;object-position:58% 50%}
+.fp-plate::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,16,28,.72) 0%,rgba(10,16,28,.45) 30%,rgba(10,16,28,0) 58%),linear-gradient(180deg,rgba(10,16,28,.25) 0%,rgba(10,16,28,0) 22%)}
+.fp-hero .fp-wrap{min-height:clamp(540px,50vw,760px);display:flex;align-items:center;padding:72px 0}
+.fp-copy{position:relative;max-width:540px;text-shadow:0 1px 24px rgba(0,0,0,.25)}
+.fp-hero h1{font-size:clamp(48px,5.8vw,88px);font-weight:750;font-stretch:84%;line-height:.96;letter-spacing:-.03em;color:#fff}
+.fp-lede{margin-top:22px!important;font-size:19px;line-height:1.5;color:#EEF2F6;max-width:25em}
+.fp-act{display:flex;flex-wrap:wrap;align-items:center;gap:14px 28px;margin-top:34px;text-shadow:none}
+.fp-hero .fp-btn.pri{background:#fff;border-color:#fff;color:var(--nv)}
+.fp-hero .fp-btn.pri:hover{background:#E6EEF5;border-color:#E6EEF5}
 .fp-hero a:focus-visible{outline:2px solid #fff;outline-offset:3px}
-.fp-link{display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:600;font-size:15.5px;text-decoration:underline;text-underline-offset:5px;text-decoration-color:rgba(255,255,255,.5)}
+.fp-link{display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:600;font-size:15.5px;text-decoration:underline;text-underline-offset:5px;text-decoration-color:rgba(255,255,255,.6)}
 .fp-link:hover{text-decoration-color:#fff}
+.fp-credit{position:absolute;right:0;bottom:14px;margin:0!important;font-size:12px;color:rgba(255,255,255,.75)}
 
 /* ---------- 2. Explore the platform: four pictures, one line each ---------- */
 .fp-sec{padding:72px 0 0}
@@ -168,14 +169,13 @@
 
 @media (max-width:1100px){
   .fp-fi .fp-wrap{grid-template-columns:minmax(0,1fr)}
-  .fp-plate{left:18%}
   .fp-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:800px){
-  .fp-plate{position:relative;left:auto;margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl))}
-  .fp-plate img{height:auto;aspect-ratio:16/10;object-position:50% 40%}
-  .fp-plate::after{background:linear-gradient(180deg,rgba(11,30,52,.25) 0%,transparent 35%,rgba(11,30,52,.6) 80%,var(--nv) 100%)}
-  .fp-hero .fp-wrap{min-height:0;margin-top:-56px;padding:0 0 44px}
+  .fp-hero .fp-wrap{min-height:max(560px,78svh);align-items:flex-end;padding:48px 0 56px}
+  .fp-plate img{object-position:84% 50%}
+  .fp-plate::after{background:linear-gradient(180deg,rgba(10,16,28,.1) 0%,rgba(10,16,28,0) 35%,rgba(10,16,28,.55) 70%,rgba(10,16,28,.8) 100%)}
+  .fp-credit{bottom:auto;top:12px}
 }
 @media (max-width:700px){
   .fp{font-size:16px}
@@ -211,7 +211,7 @@
   <!-- 1. Hero: the A320 flight deck from NORDAP's own simulator -->
   <section class="fp-hero" aria-labelledby="fp-h1">
     <figure class="fp-plate">
-      <img src="img/front/sim-a320-panel-1400.webp" srcset="img/front/sim-a320-panel-760.webp 760w, img/front/sim-a320-panel-1400.webp 1400w, img/front/sim-a320-panel-2100.webp 2100w" sizes="(max-width:800px) 100vw, 75vw" width="2100" height="1312" fetchpriority="high" decoding="async" alt="The A320 flight deck in NORDAP's cockpit trainer, seen from between the seats." data-alt-no="A320-cockpiten i NORDAPs cockpittrener, sett mellom setene.">
+      <img src="img/front/sunset2-2560.webp" srcset="img/front/sunset2-760.webp 760w, img/front/sunset2-1400.webp 1400w, img/front/sunset2-1672.webp 1672w, img/front/sunset2-2560.webp 2560w, img/front/sunset2-3344.webp 3344w, img/front/sunset2-3840.webp 3840w" sizes="100vw" width="3840" height="2161" fetchpriority="high" decoding="async" alt="Sunset over the wing of a light aircraft, above lakes and snow-capped mountains in southern Norway." data-alt-no="Solnedgang over vingen på et småfly, over innsjøer og snødekte fjell på Østlandet.">
     </figure>
     <div class="fp-wrap">
       <div class="fp-copy">
@@ -219,6 +219,7 @@
         <p class="fp-lede" data-tx="lede">Explore flight theory, practise cockpit procedures and prepare for your next flight.</p>
         <div class="fp-act"><a class="fp-btn pri" href="#platform" data-tx="b1">Explore NORDAP</a><a class="fp-link" href="a320.html"><span data-tx="b2">Open the A320 simulator</span><svg class="ar" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a></div>
       </div>
+      <p class="fp-credit" data-tx="cred">Photo: Daniel Nilsson</p>
     </div>
   </section>
 
@@ -300,7 +301,7 @@ LAB.add({},{'Examples':'Eksempler','Ask Flight Intelligence':'Spør Flight Intel
 LAB.tx({
  h1:'Den nordiske luftfartsplattformen',
  lede:'Utforsk flyteori, øv på cockpitprosedyrer og forbered deg til neste flyging.',
- b1:'Utforsk NORDAP', b2:'Åpne A320-simulatoren',
+ b1:'Utforsk NORDAP', b2:'Åpne A320-simulatoren', cred:'Foto: Daniel Nilsson',
  hPl:'Utforsk plattformen',
  c1:'Interaktive modeller i EASA ATPL-teorifagene.',
  c2n:'Flows og sjekklister', c2:'Øv på flyselskapets flows i den ekte cockpiten, med dine egne sjekklister.',
