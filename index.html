@@ -274,8 +274,8 @@
       </div>
       <figure class="fp-devs">
         <div class="dv-lap"><div class="scr"><img class="" src="img/front/dv-a320-1600.webp" srcset="img/front/dv-a320-1000.webp 1000w, img/front/dv-a320-1600.webp 1600w, img/front/dv-a320-2400.webp 2400w" sizes="(max-width:1100px) 92vw, 760px" width="1600" height="1000" decoding="async" fetchpriority="high" alt="The main instrument panel of the A320 in NORDAP's cockpit trainer: PFDs, NDs, ECAM and the FCU." data-alt-no="Hovedinstrumentpanelet i A320 i NORDAPs cockpittrener: PFD-er, ND-er, ECAM og FCU."></div><div class="base"></div></div>
-        <div class="dv-tab"><div class="ft" id="ftDemo" aria-label="The flow trainer playing the A320 preliminary cockpit preparation, step by step." data-aria-no="Flow-treneren spiller av forberedende cockpitklargjøring for A320, steg for steg." role="img">
-          <div class="ft-top"><b>Flow trainer</b><span>A320 · Cockpit preparation</span></div>
+        <div class="dv-tab"><div class="ft" id="ftDemo" aria-label="The flow trainer playing the A320 before-takeoff flow, step by step." data-aria-no="Flow-treneren spiller av flowen før avgang for A320, steg for steg." role="img">
+          <div class="ft-top"><b>Flow trainer</b><span>A320 · Before takeoff</span></div>
           <svg class="ft-svg" viewBox="300 1150 400 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><image href="img/cockpits/a320-deck-1500.webp" x="0" y="0" width="1000" height="1678"/><g class="ft-lines"></g><g class="ft-dots"></g></svg>
           <div class="ft-cap" aria-hidden="true"><i>1</i><span>ENG MASTER 1 and 2 – OFF</span></div>
         </div></div>
@@ -414,7 +414,7 @@ function all(){ const no=LAB.lang==='no'; areas();
 }
 LAB.start('home');
 (function flowDemo(){ const box=document.getElementById('ftDemo'); if(!box) return;
-  const P=[[485, 1411, "ENG MASTER 1 and 2 – OFF"], [500, 1436, "ENG MODE selector – NORM"], [372, 1440, "Weather radar – OFF"], [406, 1440, "PWS – OFF"], [588, 1018, "Landing gear lever – DOWN"], [370, 744, "Wipers – OFF"], [467, 571, "Battery voltage – CHECK"], [488, 568, "BAT 1 – AUTO"], [500, 568, "BAT 2 – AUTO"], [526, 606, "EXT PWR – ON"], [419, 1319, "RMP – CHECK ON and SET"], [500, 436, "APU FIRE pb – IN and guarded"], [516, 455, "APU FIRE TEST – PERFORM"], [500, 739, "APU MASTER SW – ON"], [500, 763, "APU START – ON"], [500, 680, "Air conditioning panel – SET"], [526, 606, "EXT PWR – AS RQRD"], [329, 465, "IR 1 MODE – NAV"], [384, 465, "IR 2 MODE – NAV"], [356, 465, "IR 3 MODE – NAV"], [563, 736, "Cockpit lights – AS RQRD"], [508, 1065, "Oxygen, hydraulic and oil – CHECK"], [549, 1453, "Flaps – CHECK position"], [451, 1455, "Speed brake – RETRACTED"], [509, 1556, "Parking brake – ON"], [630, 1036, "ACCU PRESS – CHECK"], [498, 146, "Emergency equipment – CHECK"]];
+  const P=[[508, 1065, "Brake temperature – CHECK", "PM", 1], [630, 1434, "TCAS – TA/RA", "PM", 2], [421, 736, "Exterior lights – SET, STROBE ON", "PF", 1], [417, 662, "Packs 1 and 2 – AS RQRD", "PM", 3], [474, 766, "Cleared for take-off: NOSE light – T.O", "PF", 2], [439, 766, "Landing lights – ON", "PF", 3]];
   const svg=box.querySelector('svg'), gl=box.querySelector('.ft-lines'), gd=box.querySelector('.ft-dots'), capN=box.querySelector('.ft-cap i'), capT=box.querySelector('.ft-cap span');
   const NS='http://www.w3.org/2000/svg', W=1000, H=1678, VW=400, VH=520;
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -422,11 +422,11 @@ LAB.start('home');
   const view=i=>{ const [x,y]=P[i]; return [Math.min(W-VW,Math.max(0,x-VW/2)),Math.min(H-VH,Math.max(0,y-VH*0.55)),VW,VH]; };
   const full=[0,0,W,H*1.0];
   const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-  function dot(i){ const [x,y]=P[i]; const g=document.createElementNS(NS,'g'); g.innerHTML=`<circle cx="${x}" cy="${y}" r="13"/><text x="${x}" y="${y+.5}">${i+1}</text>`; gd.appendChild(g); }
+  function dot(i){ const [x,y]=P[i]; const g=document.createElementNS(NS,'g'); g.innerHTML=`<circle cx="${x}" cy="${y}" r="13" style="fill:${P[i][3]==='PF'?'#3CCB7F':'#F2C230'}"/><text x="${x}" y="${y+.5}">${P[i][4]}</text>`; gd.appendChild(g); }
   function line(i){ const [a,b]=P[i-1],[c,d]=P[i]; const l=document.createElementNS(NS,'line'); l.setAttribute('x1',a);l.setAttribute('y1',b);l.setAttribute('x2',c);l.setAttribute('y2',d);
-    const len=Math.hypot(c-a,d-b); l.style.strokeDasharray=len; l.style.strokeDashoffset=len; gl.appendChild(l); return [l,len]; }
-  function cap(i){ capT.style.opacity=0; setTimeout(()=>{ capN.textContent=i+1; capT.textContent='PM '+P[i][2]; capT.style.opacity=1; },180); }
-  if(reduce){ vb(...full); P.forEach((_,i)=>{ if(i) line(i)[0].style.strokeDashoffset=0; dot(i); }); capN.textContent=P.length; capT.textContent='27 steps · cockpit preparation'; return; }
+    const len=Math.hypot(c-a,d-b); l.style.strokeDasharray=len; l.style.stroke=P[i][3]==='PF'?'#3CCB7F':'#F2C230'; l.style.strokeDashoffset=len; gl.appendChild(l); return [l,len]; }
+  function cap(i){ capT.style.opacity=0; setTimeout(()=>{ capN.textContent=P[i][4]; capN.style.background=P[i][3]==='PF'?'#3CCB7F':'#F2C230'; capT.textContent=P[i][3]+' '+P[i][2]; capT.style.opacity=1; },180); }
+  if(reduce){ vb(...full); P.forEach((_,i)=>{ if(i) line(i)[0].style.strokeDashoffset=0; dot(i); }); capN.textContent='✓'; capT.textContent='Before takeoff · 6 steps'; return; }
   let cur=view(0), i=0, visible=true, timer=0;
   new IntersectionObserver(e=>{ visible=e[0].isIntersecting; if(visible&&!timer) step(); },{threshold:.15}).observe(box);
   function move(to,ms,onT,done){ const from=cur.slice(), t0=performance.now();
@@ -436,7 +436,7 @@ LAB.start('home');
     if(i>=P.length){ move(full,1400,null,()=>{ timer=setTimeout(()=>{ reset(); move(view(0),1400,null,()=>{ dot(0); cap(0); i=1; timer=setTimeout(step,1100); }); },2600); }); return; }
     if(i===0){ vb(...cur); dot(0); cap(0); i=1; timer=setTimeout(step,1100); return; }
     const [l,len]=line(i), k0=i; cap(k0);
-    move(view(k0),950,k=>{ l.style.strokeDashoffset=len*(1-k); },()=>{ dot(k0); i++; timer=setTimeout(step,650); });
+    move(view(k0),1300,k=>{ l.style.strokeDashoffset=len*(1-k); },()=>{ dot(k0); i++; timer=setTimeout(step,1100); });
   }
 })();
 (function tabs(){ const T=[...document.querySelectorAll('.fp-tab')], I=[...document.querySelectorAll('#sw-scr .scr>img')]; if(!T.length) return;

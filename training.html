@@ -387,10 +387,10 @@
         <div class="th-tx"><span class="k" data-tx="fK">Cockpit trainer</span><b data-tx="fH">Fly the A320</b><span data-tx="fP">The systems behind every switch and your checklist beside the panel. It starts in the air.</span>
           <div class="th-go"><a class="th-btn" href="a320.html" data-tx="fGo">Start</a><a class="th-lk" href="#simulators" data-tx="fAlt">Other aircraft</a></div></div>
       </div>
-      <a class="th-t th-flow" href="flows.html" id="ftDemo" aria-label="Flow trainer: the A320 preliminary cockpit preparation, played step by step." data-aria-no="Flow-trener: forberedende cockpitklargjøring for A320, spilt av steg for steg.">
+      <a class="th-t th-flow" href="flows.html" id="ftDemo" aria-label="Flow trainer: the A320 before-takeoff flow, played step by step." data-aria-no="Flow-trener: flowen før avgang for A320, spilt av steg for steg.">
         <svg class="ft-svg" viewBox="145 1200 680 478" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><image href="img/cockpits/a320-deck-1500.webp" x="0" y="0" width="1000" height="1678"/><g class="ft-lines"></g><g class="ft-dots"></g></svg>
-        <span class="ft-tag" data-tx="ftTag">A320 · Cockpit preparation</span>
-        <div class="th-tx"><b data-tx="tFl">Flow trainer</b><div class="ft-now" aria-hidden="true"><i>1</i><span>PM ENG MASTER 1 and 2 – OFF</span></div><small data-tx="tFlM">13 aircraft</small></div>
+        <span class="ft-tag" data-tx="ftTag">A320 · Before takeoff</span>
+        <div class="th-tx"><b data-tx="tFl">Flow trainer</b><div class="ft-now" aria-hidden="true"><i>1</i><span>PM Brake temperature – CHECK</span></div><small data-tx="tFlM">13 aircraft</small></div>
       </a>
       <a class="th-t th-s1" href="ifr.html"><img src="img/training/hub-ifr-640.webp" srcset="img/training/hub-ifr-640.webp 640w, img/training/hub-ifr-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="Exercises in the IFR trainer: track to the station, intercept, NDB, DME arc, holds and the ILS." data-alt-no="Øvelser i IFR-treneren: til stasjonen, avskjæring, NDB, DME-bue, venteoppsett og ILS." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tIf">IFR trainer</b><span data-tx="tIfL">One procedure at a time.</span><small data-tx="tIfM">46 exercises</small></div></a>
       <a class="th-t th-s2" href="radio.html"><img src="img/training/hub-radio-640.webp" srcset="img/training/hub-radio-640.webp 640w, img/training/hub-radio-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="Gate to gate: a whole flight with ATC, from the planning room to the apron." data-alt-no="Gate to gate: en hel flyging med ATC, fra planleggingsrommet til oppstillingsplassen." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tRa">Radio</b><span data-tx="tRaL">Out loud, gate to gate.</span><small data-tx="tRaM">Gate to gate · drills</small></div></a>
@@ -672,7 +672,7 @@ LAB.add({},{'Training':'Trening'});
 LAB.tx({
  h1:'Treningshub', lede:'Cockpiter, flows, IFR, radio og briefing på ett sted. Alt kjører i nettleseren.',
  fK:'Cockpittrener', fH:'Fly A320', fP:'Systemene bak hver bryter og sjekklisten ved siden av panelet. Starter i luften.', fGo:'Start', fAlt:'Andre fly',
- tFl:'Flow-trener', ftTag:'A320 · Cockpitklargjøring', tFlL:'Hver flow tegnet i den ekte cockpiten.', tFlM:'13 flytyper',
+ tFl:'Flow-trener', ftTag:'A320 · Før avgang', tFlL:'Hver flow tegnet i den ekte cockpiten.', tFlM:'13 flytyper',
  tIf:'IFR-trener', tIfL:'Én prosedyre om gangen.', tIfM:'46 øvelser',
  tRa:'Radio', tRaL:'Høyt, fra gate til gate.', tRaM:'Gate to gate · driller',
  tAv:'Avionikktrenere', tAvL:'MCDU, FMC og GNS 530.', tAvM:'A320 · 737 · GNS 530',
@@ -757,7 +757,7 @@ function attrs(){ const no=LAB.lang==='no';
   const x=document.querySelector('.tv-idx'); if(x) x.setAttribute('aria-label',no?'På denne siden':'On this page'); }
 LAB.start('training');
 (function flowDemo(){ const box=document.getElementById('ftDemo'); if(!box) return;
-  const P=[[485, 1411, "ENG MASTER 1 and 2 – OFF"], [500, 1436, "ENG MODE selector – NORM"], [372, 1440, "Weather radar – OFF"], [406, 1440, "PWS – OFF"], [588, 1018, "Landing gear lever – DOWN"], [370, 744, "Wipers – OFF"], [467, 571, "Battery voltage – CHECK"], [488, 568, "BAT 1 – AUTO"], [500, 568, "BAT 2 – AUTO"], [526, 606, "EXT PWR – ON"], [419, 1319, "RMP – CHECK ON and SET"], [500, 436, "APU FIRE pb – IN and guarded"], [516, 455, "APU FIRE TEST – PERFORM"], [500, 739, "APU MASTER SW – ON"], [500, 763, "APU START – ON"], [500, 680, "Air conditioning panel – SET"], [526, 606, "EXT PWR – AS RQRD"], [329, 465, "IR 1 MODE – NAV"], [384, 465, "IR 2 MODE – NAV"], [356, 465, "IR 3 MODE – NAV"], [563, 736, "Cockpit lights – AS RQRD"], [508, 1065, "Oxygen, hydraulic and oil – CHECK"], [549, 1453, "Flaps – CHECK position"], [451, 1455, "Speed brake – RETRACTED"], [509, 1556, "Parking brake – ON"], [630, 1036, "ACCU PRESS – CHECK"], [498, 146, "Emergency equipment – CHECK"]];
+  const P=[[508, 1065, "Brake temperature – CHECK", "PM", 1], [630, 1434, "TCAS – TA/RA", "PM", 2], [421, 736, "Exterior lights – SET, STROBE ON", "PF", 1], [417, 662, "Packs 1 and 2 – AS RQRD", "PM", 3], [474, 766, "Cleared for take-off: NOSE light – T.O", "PF", 2], [439, 766, "Landing lights – ON", "PF", 3]];
   const svg=box.querySelector('svg'), gl=box.querySelector('.ft-lines'), gd=box.querySelector('.ft-dots'), capN=box.querySelector('.ft-now i'), capT=box.querySelector('.ft-now span');
   const NS='http://www.w3.org/2000/svg', W=1000, H=1678, VW=680, VH=510;
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -765,11 +765,11 @@ LAB.start('training');
   const view=i=>{ const [x,y]=P[i]; return [Math.min(W-VW,Math.max(0,x-VW/2)),Math.min(H-VH,Math.max(0,y-VH*0.42)),VW,VH]; };
   const full=[0,0,W,H*1.0];
   const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-  function dot(i){ const [x,y]=P[i]; const g=document.createElementNS(NS,'g'); g.innerHTML=`<circle cx="${x}" cy="${y}" r="13"/><text x="${x}" y="${y+.5}">${i+1}</text>`; gd.appendChild(g); }
+  function dot(i){ const [x,y]=P[i]; const g=document.createElementNS(NS,'g'); g.innerHTML=`<circle cx="${x}" cy="${y}" r="13" style="fill:${P[i][3]==='PF'?'#3CCB7F':'#F2C230'}"/><text x="${x}" y="${y+.5}">${P[i][4]}</text>`; gd.appendChild(g); }
   function line(i){ const [a,b]=P[i-1],[c,d]=P[i]; const l=document.createElementNS(NS,'line'); l.setAttribute('x1',a);l.setAttribute('y1',b);l.setAttribute('x2',c);l.setAttribute('y2',d);
-    const len=Math.hypot(c-a,d-b); l.style.strokeDasharray=len; l.style.strokeDashoffset=len; gl.appendChild(l); return [l,len]; }
-  function cap(i){ capT.style.opacity=0; setTimeout(()=>{ capN.textContent=i+1; capT.textContent='PM '+P[i][2]; capT.style.opacity=1; },180); }
-  if(reduce){ vb(...full); P.forEach((_,i)=>{ if(i) line(i)[0].style.strokeDashoffset=0; dot(i); }); capN.textContent=P.length; capT.textContent='27 steps · cockpit preparation'; return; }
+    const len=Math.hypot(c-a,d-b); l.style.strokeDasharray=len; l.style.stroke=P[i][3]==='PF'?'#3CCB7F':'#F2C230'; l.style.strokeDashoffset=len; gl.appendChild(l); return [l,len]; }
+  function cap(i){ capT.style.opacity=0; setTimeout(()=>{ capN.textContent=P[i][4]; capN.style.background=P[i][3]==='PF'?'#3CCB7F':'#F2C230'; capT.textContent=P[i][3]+' '+P[i][2]; capT.style.opacity=1; },180); }
+  if(reduce){ vb(...full); P.forEach((_,i)=>{ if(i) line(i)[0].style.strokeDashoffset=0; dot(i); }); capN.textContent='✓'; capT.textContent='Before takeoff · 6 steps'; return; }
   let cur=view(0), i=0, visible=true, timer=0;
   new IntersectionObserver(e=>{ visible=e[0].isIntersecting; if(visible&&!timer) step(); },{threshold:.15}).observe(box);
   function move(to,ms,onT,done){ const from=cur.slice(), t0=performance.now();
@@ -779,7 +779,7 @@ LAB.start('training');
     if(i>=P.length){ move(full,1400,null,()=>{ timer=setTimeout(()=>{ reset(); move(view(0),1400,null,()=>{ dot(0); cap(0); i=1; timer=setTimeout(step,1100); }); },2600); }); return; }
     if(i===0){ vb(...cur); dot(0); cap(0); i=1; timer=setTimeout(step,1100); return; }
     const [l,len]=line(i), k0=i; cap(k0);
-    move(view(k0),950,k=>{ l.style.strokeDashoffset=len*(1-k); },()=>{ dot(k0); i++; timer=setTimeout(step,650); });
+    move(view(k0),1300,k=>{ l.style.strokeDashoffset=len*(1-k); },()=>{ dot(k0); i++; timer=setTimeout(step,1100); });
   }
 })();
 (function cont(){ let v=null; try{ v=JSON.parse(localStorage.getItem('bb-last-trn')||'null'); }catch(e){}
