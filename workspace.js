@@ -358,8 +358,8 @@
   function visit(tp, id) { M.recent = W.pushRecent(M.recent, { t: tp, id }); saveMeta(); }
   /* one platform: Flight Intelligence and your own library in the same rail. Entries: [path, label, count] for views here,
      [null, label, null, href] for the Flight Intelligence pages, a string for a group heading, null for a gap */
-  const RAIL = () => [t('Flight Intelligence', 'Flight Intelligence'), ['fi', t('Ask a question', 'Still et spørsmål'), null], [null, t('Instructor training', 'Instruktørtrening'), null, 'fi.html#aircraft'], [null, t('Training progress', 'Treningsprogresjon'), null, 'fi.html#progress'], [null, t('EASA rules library', 'EASA-regelbibliotek'), null, 'fi.html#easa'],
-    t('Workspace', 'Workspace'), ['library', t('Home', 'Hjem'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
+  const RAIL = () => [t('Ask and learn', 'Spør og lær'), ['fi', t('Ask a question', 'Still et spørsmål'), null], [null, t('Instructor training', 'Instruktørtrening'), null, 'fi.html#aircraft'], [null, t('Training progress', 'Treningsprogresjon'), null, 'fi.html#progress'], [null, t('EASA rules library', 'EASA-regelbibliotek'), null, 'fi.html#easa'],
+    t('Your library', 'Biblioteket ditt'), ['library', t('Home', 'Hjem'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
   let railMap = null;
   function drawRailMap(cur) {
     const rl = el('wsRail'); if (!rl || !window.WSMAP || !GW || !window.WS_RAILMAP) return;
@@ -562,7 +562,7 @@
     const tile = (h, n, c) => `<a class="hlib-t" href="${h}"><span>${esc(n)}</span><b>${c}</b></a>`;
     main.innerHTML = `
       ${nb ? `<div class="ws-remind"><span>${t(`<b>${plural(nb, 'document file exists', 'document files exist', '', '')} only on this device.</b> Files are not uploaded, so a backup file is their only copy elsewhere.`, `<b>${nb} ${nb === 1 ? 'dokumentfil finnes' : 'dokumentfiler finnes'} bare på denne enheten.</b> Filer lastes ikke opp, så en sikkerhetskopi er den eneste kopien et annet sted.`)}</span><button type="button" class="btn sm" data-act="export">${t('Export everything', 'Eksporter alt')}</button></div>` : ''}
-      ${setup ? `<section class="hset" aria-labelledby="hsetH"><h2 id="hsetH">${t('Set up your workspace', 'Sett opp arbeidsområdet')}</h2><ol>${steps.map((x, i) => `<li class="${x[0] ? 'done' : ''}"><span class="n" aria-hidden="true">${x[0] ? '✓' : i + 1}</span><div><b>${esc(x[1])}</b><small>${esc(x[2])}</small></div>${x[0] ? `<span class="ok">${t('Done', 'Ferdig')}</span>` : x[3]}</li>`).join('')}</ol></section>` : ''}
+      ${setup ? `<section class="hset" aria-labelledby="hsetH"><h2 id="hsetH">${t('Get started', 'Kom i gang')}</h2><ol>${steps.map((x, i) => `<li class="${x[0] ? 'done' : ''}"><span class="n" aria-hidden="true">${x[0] ? '✓' : i + 1}</span><div><b>${esc(x[1])}</b><small>${esc(x[2])}</small></div>${x[0] ? `<span class="ok">${t('Done', 'Ferdig')}</span>` : x[3]}</li>`).join('')}</ol></section>` : ''}
       ${ac.length ? `<section class="hsec"><header><h2>${t('My aircraft', 'Mine fly')}</h2><button type="button" class="lk" data-act="ac-new">+ ${t('Add aircraft', 'Legg til fly')}</button></header><div class="hac-g">${ac.map(card).join('')}</div></section>` : ''}
       ${rec.length ? `<section class="hsec"><header><h2>${t('Recent', 'Nylig')}</h2></header><ul class="hrec">${rec.slice(0, 6).map(r => `<li><a href="${r.h}"${r.v ? ` data-visit="${esc(r.v)}"` : ''}><span class="k">${esc(r.k)}</span><b>${esc(r.n)}</b><small>${esc(ago(r.at))}</small></a></li>`).join('')}</ul></section>` : ''}
       <section class="hsec"><header><h2>${t('Library', 'Bibliotek')}</h2></header><nav class="hlib" aria-label="${esc(t('Library', 'Bibliotek'))}">
@@ -1277,7 +1277,7 @@
   /* search box: the site's bar (same box, same place), wired to the workspace. Short placeholder on a phone, like the site's */
   let beforeSearch = '', qT = 0;
   const qIn = el('wsQ');
-  const qPh = () => { qIn.placeholder = window.innerWidth < 640 ? t('Search your workspace…', 'Søk i arbeidsområdet ditt …') : t('Search your workspace: aircraft, documents, notes, packs, routes', 'Søk i arbeidsområdet ditt: fly, dokumenter, notater, pakker, ruter'); };
+  const qPh = () => { qIn.placeholder = window.innerWidth < 640 ? t('Search your documents…', 'Søk i dokumentene dine …') : t('Search your aircraft, documents, notes, packs and routes', 'Søk i fly, dokumenter, notater, pakker og ruter'); };
   window.addEventListener('resize', qPh, { passive: true });
   qIn.addEventListener('input', () => { clearTimeout(qT); qT = setTimeout(() => {
     const q = qIn.value.trim(), r = route();
@@ -1289,12 +1289,12 @@
 
   /* ---------- language ---------- */
   function drawChrome() {
-    el('wsH1').textContent = t('Workspace', 'Workspace');
+    el('wsH1').textContent = 'Flight Intelligence';
     el('wsHomeT').textContent = t('Open the desk', 'Åpne arbeidsflaten');
-    el('wsLede').textContent = t('Flight Intelligence and your aircraft, documents, notes, briefing packs and routes in one place.', 'Flight Intelligence og flyene, dokumentene, notatene, briefingpakkene og rutene dine på ett sted.');
-    qIn.setAttribute('aria-label', t('Search your workspace', 'Søk i arbeidsområdet ditt'));
+    el('wsLede').textContent = t('Ask the AI, work in your own documents and take notes, with your aircraft, briefing packs and routes in one place.', 'Spør AI-en, jobb i dine egne dokumenter og ta notater, med flyene, briefingpakkene og rutene dine på ett sted.');
+    qIn.setAttribute('aria-label', t('Search your documents, notes, packs and routes', 'Søk i dokumenter, notater, pakker og ruter'));
     qPh();
-    document.title = t('Workspace · NORDAP', 'Workspace · NORDAP');
+    document.title = 'Flight Intelligence · NORDAP';
   }
 
   /* ---------- start ---------- */
@@ -1340,5 +1340,5 @@
     notebooksAll, useInTrainer, ockCan, OCK_TR, commit, visit, toast, openDlg, confirmDlg, download, go, route, findAll, recentList, catName, kindName, acName, noteTitle, packTitle, routeTitle, itemName, TRAINER, speedRow, linkLabel,
     doTrash, doRestore, pickFiles, addFiles, linkDoc, aircraftDlg, newPack, statusShort, saveMeta, render, deskMode, noteFormats, mapGraph, mapAny, mapSig, placeChip, placeMenu, groupOf, groupList, get M() { return M; } };
   if (window.WSDESK_INIT) window.WSDESK_INIT(window.WS.api);
-  start().catch(e => { console.error('workspace start', e); main.innerHTML = `<div class="ws-empty"><p><b>${t('Workspace could not open.', 'Workspace kunne ikke åpnes.')}</b> ${t('Reload the page. If it keeps happening, the browser may be blocking storage for this site.', 'Last inn siden på nytt. Hvis det fortsetter, kan nettleseren blokkere lagring for dette nettstedet.')}</p></div>`; });
+  start().catch(e => { console.error('workspace start', e); main.innerHTML = `<div class="ws-empty"><p><b>${t('Flight Intelligence could not open.', 'Flight Intelligence kunne ikke åpnes.')}</b> ${t('Reload the page. If it keeps happening, the browser may be blocking storage for this site.', 'Last inn siden på nytt. Hvis det fortsetter, kan nettleseren blokkere lagring for dette nettstedet.')}</p></div>`; });
 })();

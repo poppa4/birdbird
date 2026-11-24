@@ -308,7 +308,7 @@
         <span class="sp"></span>
         ${stA}
         <button type="button" class="dk-ib" data-b="split-h" title="${esc(t('Split right', 'Del til høyre'))}" aria-label="${esc(t('Split right', 'Del til høyre'))}"${D.panes(L).length >= maxPanes() ? ' disabled' : ''}>${ic('splith')}</button>
-        <a class="dk-ib dk-mapb" href="#/library" title="${esc(t('Workspace: Flight Intelligence and your library', 'Workspace: Flight Intelligence og biblioteket ditt'))}" aria-label="${esc(t('Workspace home', 'Workspace, hjem'))}">${ic('lib')}<span>${esc(t('Workspace', 'Arbeidsområdet'))}</span></a>`;
+        <a class="dk-ib dk-mapb" href="#/library" title="${esc(t('Flight Intelligence: home and your library', 'Flight Intelligence: hjem og biblioteket ditt'))}" aria-label="${esc(t('Flight Intelligence home', 'Flight Intelligence, hjem'))}">${ic('lib')}<span>${esc(t('Workspace', 'Arbeidsområdet'))}</span></a>`;
     }
     function status() { if (!mounted) return; const st = A.statusShort(); host.querySelectorAll('.dk-st').forEach(s => { s.title = st.title || ''; s.innerHTML = `<i class="kept ${st.c}"></i><span>${esc(st.s)}</span>`; }); }
     const railCollapsed = () => !!(A.M.deskRail && A.M.deskRail.c);
@@ -949,7 +949,7 @@
         { c: 'note', n: t('New note', 'Nytt notat'), i: 'note' }, { c: 'nb', n: t('New notebook', 'Ny notatbok'), i: 'pen' }, { c: 'ask', n: 'Flight Intelligence', i: 'ask' }, { c: 'add', n: t('Add documents…', 'Legg til dokumenter …'), i: 'plus' },
         !isPhone() && D.panes(L).length < maxPanes() ? { c: 'split-h', n: t('Split right', 'Del til høyre'), i: 'splith' } : null,
         canDown() && D.panes(L).length < maxPanes() ? { c: 'split-v', n: t('Split down', 'Del nedover'), i: 'splitv' } : null,
-        { c: 'desk', n: t('New desk…', 'Ny arbeidsflate …'), i: 'tabs' }, { c: 'lib', n: t('Workspace home: Flight Intelligence and your library', 'Arbeidsområdet: Flight Intelligence og biblioteket'), i: 'lib' }].filter(Boolean);
+        { c: 'desk', n: t('New desk…', 'Ny arbeidsflate …'), i: 'tabs' }, { c: 'lib', n: t('Flight Intelligence home and your library', 'Flight Intelligence: hjem og biblioteket'), i: 'lib' }].filter(Boolean);
       const name = { aircraft: t('Aircraft', 'Fly'), doc: t('Document', 'Dokument'), note: t('Note', 'Notat'), pack: t('Briefing pack', 'Briefingpakke'), route: t('Route', 'Rute'), notebook: t('Notebook', 'Notatbok') };
       let rows = [], sel = 0;
       function compute(q) {
@@ -971,7 +971,7 @@
         const inp = document.querySelector('#wsDlg .pal-q'); if (inp) inp.setAttribute('aria-activedescendant', rows.length ? 'palo' + sel : '');
         const on = ul.querySelector('.on'); if (on) on.scrollIntoView({ block: 'nearest' });
       }
-      const ttl = o.only === 'doc' ? t('Open a document', 'Åpne et dokument') : o.only === 'aircraft' ? t('Choose an aircraft', 'Velg et fly') : isPhone() ? t('Search your workspace', 'Søk i arbeidsområdet') : t('Open anything', 'Åpne hva som helst');
+      const ttl = o.only === 'doc' ? t('Open a document', 'Åpne et dokument') : o.only === 'aircraft' ? t('Choose an aircraft', 'Velg et fly') : isPhone() ? t('Search your documents', 'Søk i dokumentene') : t('Open anything', 'Åpne hva som helst');
       A.openDlg(`<div class="pal"><h3 id="wsDlgH" class="sr">${esc(ttl)}</h3><div class="pal-in">${ic('search')}<input class="pal-q" type="search" role="combobox" aria-expanded="true" aria-controls="palL" aria-label="${esc(ttl)}" placeholder="${esc(ttl + ' …')}" autocomplete="off" spellcheck="false" autofocus><button type="button" class="pal-x" data-close>${esc(t('Cancel', 'Avbryt'))}</button></div>
         <ul class="pal-l" id="palL" role="listbox"></ul><p class="pal-f"><span><kbd>↵</kbd> ${esc(t('open here', 'åpne her'))}</span>${isPhone() ? '' : `<span><kbd>⇧↵</kbd> ${esc(t('open beside', 'åpne ved siden av'))}</span>`}<span><kbd>esc</kbd> ${esc(t('close', 'lukk'))}</span></p></div>`, close => {
         const dlg = document.getElementById('wsDlg'); dlg.classList.add('pal-dlg');
