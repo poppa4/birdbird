@@ -95,6 +95,14 @@ function init(o){
     bar(v3(x-sg*0.01,wS,wZ0),v3(x-sg*0.01,wS,wZ1),0.045,C_.frame); bar(v3(x-sg*0.01,wT,wZ0),v3(x-sg*0.01,wT,wZ1),0.045,C_.frame);
     bar(v3(x-sg*0.01,wS,(wZ0+wZ1)/2),v3(x-sg*0.01,wT,(wZ0+wZ1)/2),0.035,C_.frame);
   }
+  /* ---- backstop: the ceiling and the upper walls once more, a few centimetres outside the real structure. It stays on after
+     the FlightGear shell has loaded and fills the gaps that model leaves between its pieces (the shell leaves out what sits on
+     the panel planes), so no sky shows through the roof or the corners. The windows stay open. ---- */
+  const BACK=new THREE.Group(); scene.add(BACK);
+  { const bm=new THREE.MeshBasicMaterial({color:0x2d3747,side:THREE.DoubleSide}), bp=[], q4=(a,b,c,d)=>bp.push(a,b,c,a,c,d), d=0.035, X2=XW+d, cy=(z)=>ceilAt(0,z)+d;
+    const XR=0.80; q4(v3(-XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zB),zB),v3(-XR,cy(zB),zB));   // roof (inboard of the side windows)
+    q4(v3(-X2,yF,zB+d),v3(X2,yF,zB+d),v3(X2,cy(zB),zB+d),v3(-X2,cy(zB),zB+d));                                      // back wall
+    const g=new THREE.BufferGeometry(), arr=new Float32Array(bp.length*3); bp.forEach((v,i)=>{ arr[i*3]=v.x; arr[i*3+1]=v.y; arr[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(arr,3)); BACK.add(new THREE.Mesh(g,bm)); }
   // windshield: centre post, two side posts, the frame along the sill and along the top
   for(const x of [0,-0.80,0.80]) bar(v3(x,gy,gz),v3(x*1.08,yT,zF),x?0.05:0.04,C_.frame);
   for(const sg of [-1,1]) bar(v3(sg*XW*0.98,gy,gz),v3(sg*XW*0.98,yT,zF),0.06,C_.frame);
@@ -111,7 +119,7 @@ function init(o){
       const uv=new Float32Array(gr.nv*2); for(let i=0;i<gr.nv;i++){ uv[i*2]=gr.uv[0]+UV[i*2]/65535*gr.uv[2]; uv[i*2+1]=gr.uv[1]+UV[i*2+1]/65535*gr.uv[3]; } g.setAttribute('uv',new THREE.BufferAttribute(uv,2));
       g.setAttribute('color',new THREE.InterleavedBufferAttribute(new THREE.InterleavedBuffer(new Uint8Array(buf,N.byteOffset,gr.nv*4),4),3,0,true)); g.setIndex(new THREE.BufferAttribute(I,1));
       const tex=gr.tex==='flat'?null:TL.load((CF3?CF3.shellTex:'models/a320-shell-')+gr.tex+'.jpg'); if(tex){ tex.anisotropy=Math.min(8,o_R.capabilities.getMaxAnisotropy()); tex.flipY=false; tex.wrapS=tex.wrapT=THREE.RepeatWrapping; if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding; }
-      const mat=new THREE.MeshBasicMaterial({map:gr.tex==='flat'?null:tex,vertexColors:true,side:hdr.double?THREE.DoubleSide:THREE.FrontSide}); mat.color.setScalar((hdr.lmax||1)*1.22); const mesh=new THREE.Mesh(g,mat); mesh.scale.setScalar(32767/hdr.S); if(hdr.o) mesh.position.set(...hdr.o); mesh.matrixAutoUpdate=false; mesh.updateMatrix(); mesh.frustumCulled=false; grp.add(mesh); }
+      const mat=new THREE.MeshBasicMaterial({map:gr.tex==='flat'?null:tex,vertexColors:true,side:THREE.DoubleSide /* the FlightGear surfaces are single-sided and many face outwards: seen from the seat they would vanish and leave holes */}); mat.color.setScalar((hdr.lmax||1)*1.22); const mesh=new THREE.Mesh(g,mat); mesh.scale.setScalar(32767/hdr.S); if(hdr.o) mesh.position.set(...hdr.o); mesh.matrixAutoUpdate=false; mesh.updateMatrix(); mesh.frustumCulled=false; grp.add(mesh); }
     if(hdr.panels) for(const k in hdr.panels){ const pb=hdr.panels[k], p=P[k]; if(!p) continue; const col=p.mesh.geometry.attributes.color, n=24;
       for(let j=0;j<=n;j++) for(let i=0;i<=n;i++){ const x=i/n*pb.nx, y=j/n*pb.ny, x0=Math.min(pb.nx-1,Math.floor(x)), y0=Math.min(pb.ny-1,Math.floor(y)), fx=x-x0, fy=y-y0, at=(a,b)=>pb.v[b*(pb.nx+1)+a];
         const L=(at(x0,y0)*(1-fx)+at(x0+1,y0)*fx)*(1-fy)+(at(x0,y0+1)*(1-fx)+at(x0+1,y0+1)*fx)*fy, c=Math.min(1,0.12+0.9*L); col.setXYZ(j*(n+1)+i,c,c,c*1.01); } col.needsUpdate=true; }
