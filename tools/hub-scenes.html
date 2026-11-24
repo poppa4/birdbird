@@ -1,0 +1,102 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0}
+body{background:#000;font-family:"Helvetica Neue",Arial,sans-serif}
+.sc{width:1200px;height:840px;position:relative;overflow:hidden;margin-bottom:10px}
+.vig::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 40%,transparent 45%,rgba(2,6,14,.85) 100%);pointer-events:none}
+.grain::before{content:"";position:absolute;inset:0;z-index:5;opacity:.07;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");mix-blend-mode:overlay;pointer-events:none}
+/* IFR: the ND on a dark flight deck */
+#ifr{background:radial-gradient(80% 70% at 50% 35%,#0E2238 0%,#050B14 70%)}
+#ifr .stage{position:absolute;left:50%;top:-1%;width:1150px;height:1150px;transform:translateX(-50%) perspective(1400px) rotateX(26deg) rotateZ(-4deg);transform-origin:50% 30%}
+#ifr .stage img{position:absolute;inset:0;width:100%;height:100%}
+#ifr .glow{filter:blur(10px) brightness(1.6);mix-blend-mode:screen;opacity:.8}
+#ifr .bez{position:absolute;inset:-30px;border-radius:40px;box-shadow:inset 0 0 0 30px #10161d,inset 0 0 60px 40px rgba(0,0,0,.8)}
+/* MCDU */
+#mcdu{background:radial-gradient(90% 80% at 40% 30%,#1B2430 0%,#070B10 75%)}
+#mcdu .unit{position:absolute;left:180px;top:-10px;width:820px;height:900px;border-radius:26px;background:linear-gradient(160deg,#4A5561 0%,#2B333C 45%,#1A1F26 100%);box-shadow:0 40px 80px rgba(0,0,0,.7),inset 0 2px 0 rgba(255,255,255,.18);transform:perspective(1600px) rotateX(24deg) rotateY(-14deg) rotateZ(-3deg);transform-origin:50% 0}
+#mcdu .scr{position:absolute;left:70px;top:60px;width:680px;height:560px;border-radius:10px;background:#020304;box-shadow:inset 0 0 0 6px #0b0e12,inset 0 0 40px rgba(0,0,0,.9);overflow:hidden}
+#mcdu .scr img{position:absolute;left:10px;top:4px;width:660px;height:660px}
+#mcdu .scr .gl{filter:blur(7px) brightness(1.5);mix-blend-mode:screen;opacity:.7}
+#mcdu .lsk{position:absolute;width:44px;height:30px;border-radius:5px;background:linear-gradient(#55606b,#2c333a);box-shadow:0 2px 0 #11151a}
+#mcdu .keys{position:absolute;left:120px;top:660px;display:grid;grid-template-columns:repeat(6,82px);gap:14px}
+#mcdu .keys i{display:block;height:46px;border-radius:7px;background:linear-gradient(#5d6873,#2e353d);box-shadow:0 3px 0 #0e1216,inset 0 1px 0 rgba(255,255,255,.2);color:#E8EDF2;font:600 15px/46px Arial;text-align:center;font-style:normal}
+/* Radio: tower at dusk */
+#radio canvas{position:absolute;inset:0}
+/* Briefing: the chart on the desk */
+#brief{background:radial-gradient(90% 90% at 60% 30%,#2A3A4E 0%,#0C141E 80%)}
+#brief .paper{position:absolute;left:90px;top:10px;width:1100px;height:1300px;background:#E9EDF0;box-shadow:0 60px 100px rgba(0,0,0,.6);transform:perspective(1500px) rotateX(40deg) rotateZ(-18deg);transform-origin:50% 0;padding:40px 46px;color:#1A2633;font-family:Arial,sans-serif}
+#brief .paper::after{content:"";position:absolute;inset:0;background:linear-gradient(170deg,rgba(60,90,130,.25),rgba(30,55,90,.55) 45%,rgba(8,16,30,.88) 75%);pointer-events:none}
+#brief h1{font-size:40px;white-space:nowrap;gap:20px;letter-spacing:1px;display:flex;justify-content:space-between;border-bottom:3px solid #1A2633;padding-bottom:12px}
+#brief h1 small{font-size:22px;font-weight:600}
+#brief .row{display:flex;gap:18px;margin-top:14px;font-size:20px}
+#brief .row div{flex:1;border:2px solid #1A2633;padding:8px 10px;line-height:1.3}
+#brief .row b{display:block;font-size:15px;letter-spacing:1px}
+#brief svg{display:block;margin-top:16px;border:2px solid #1A2633}
+#brief .note{position:absolute;right:46px;top:46px}
+</style></head><body>
+
+<div class="sc vig grain" id="ifr"><div class="stage"><div class="bez"></div><img src="disp_nd.png"><img class="glow" src="disp_nd.png"></div></div>
+
+<div class="sc vig grain" id="mcdu"><div class="unit">
+  <div class="scr"><img src="disp_mcdu.png"><img class="gl" src="disp_mcdu.png"></div>
+  <div class="keys"><i>DIR</i><i>PROG</i><i>PERF</i><i>INIT</i><i>DATA</i><i></i><i>F-PLN</i><i>RAD NAV</i><i>FUEL</i><i>SEC</i><i>ATC</i><i>MENU</i></div>
+</div></div>
+
+<div class="sc vig grain" id="radio"><canvas id="cv" width="1200" height="840"></canvas></div>
+
+<div class="sc vig grain" id="brief"><div class="paper">
+  <h1><span>ENRD · ILS RWY 36</span><small>NORDAP TRAINING CHART · NOT FOR NAVIGATION</small></h1>
+  <div class="row"><div><b>LOC</b>IRD 110.30</div><div><b>FINAL APCH CRS</b>360°</div><div><b>GS INTCP</b>3000 ft</div><div><b>DA(H)</b>420 (200)</div><div><b>APT ELEV</b>220</div></div>
+  <div class="row"><div><b>MISSED APPROACH</b>Climb straight ahead to 1500, then turn right direct HOLAN, climb to 4000 and hold.</div></div>
+  <svg width="1004" height="800" viewBox="0 0 1004 800">
+    <rect width="1004" height="800" fill="#EEF1F3"/>
+    <g fill="none" stroke="#9AA6B2" stroke-width="1.5"><circle cx="500" cy="560" r="180"/><circle cx="500" cy="560" r="360"/></g>
+    <path d="M500 760 L500 120" stroke="#1A2633" stroke-width="4"/>
+    <path d="M500 120 L500 70" stroke="#1A2633" stroke-width="4" stroke-dasharray="14 10"/>
+    <g stroke="#1A2633" stroke-width="3" fill="none"><path d="M500 300 L760 220 L860 340"/><ellipse cx="830" cy="300" rx="120" ry="46" transform="rotate(30 830 300)" stroke-dasharray="12 8"/></g>
+    <rect x="488" y="560" width="24" height="120" fill="#1A2633"/>
+    <g font-family="Arial" font-weight="700" font-size="24" fill="#1A2633"><text x="520" y="310">HOLAN</text><text x="770" y="210">OSVIK</text><text x="520" y="440">FAF 3000</text><text x="300" y="150">MSA 4600</text><text x="526" y="640">36</text></g>
+    <g fill="#fff" stroke="#1A2633" stroke-width="3"><path d="M500 290 l12 12 -12 12 -12 -12z"/><path d="M760 210 l12 12 -12 12 -12 -12z"/><circle cx="500" cy="430" r="9"/></g>
+    <path d="M60 740 C 200 700, 300 760, 420 720 S 700 690, 940 740" stroke="#7A8A9A" stroke-width="2" fill="none"/>
+  </svg>
+</div></div>
+
+<script>
+// Radio: a control tower at dusk, drawn from scratch
+const c=document.getElementById('cv').getContext('2d'), W=1200, H=840, HZ=600;
+let g=c.createLinearGradient(0,0,0,HZ); g.addColorStop(0,'#0A1730'); g.addColorStop(.45,'#273C63'); g.addColorStop(.72,'#7D5A6E'); g.addColorStop(.88,'#E2895A'); g.addColorStop(1,'#F6B26B');
+c.fillStyle=g; c.fillRect(0,0,W,HZ);
+// sun glow low on the horizon, right of the tower
+let s=c.createRadialGradient(840,HZ-6,4,840,HZ-6,360); s.addColorStop(0,'rgba(255,226,170,1)'); s.addColorStop(.08,'rgba(255,190,120,.9)'); s.addColorStop(.35,'rgba(240,130,80,.35)'); s.addColorStop(1,'rgba(240,130,80,0)');
+c.fillStyle=s; c.fillRect(0,0,W,HZ+40);
+// thin cloud bands
+c.globalAlpha=.5; for(let i=0;i<7;i++){ const y=HZ-80-i*46-Math.random()*20, x=Math.random()*W*0.8; const cg=c.createLinearGradient(x,0,x+700,0); cg.addColorStop(0,'rgba(40,30,60,0)'); cg.addColorStop(.5,i<3?'rgba(255,150,110,.55)':'rgba(70,60,100,.7)'); cg.addColorStop(1,'rgba(40,30,60,0)'); c.fillStyle=cg; c.beginPath(); c.ellipse(x+350,y,350+Math.random()*200,6+Math.random()*8,0,0,7); c.fill(); }
+c.globalAlpha=1;
+// ground
+g=c.createLinearGradient(0,HZ,0,H); g.addColorStop(0,'#1A1E2B'); g.addColorStop(1,'#05070B'); c.fillStyle=g; c.fillRect(0,HZ,W,H-HZ);
+// distant tree line / buildings
+c.fillStyle='#0C0F17'; c.beginPath(); c.moveTo(0,HZ); for(let x=0;x<=W;x+=12){ c.lineTo(x,HZ-4-Math.abs(Math.sin(x*.05))*6-(x>80&&x<300?14:0)); } c.lineTo(W,HZ+6); c.lineTo(0,HZ+6); c.fill();
+// runway edge lights in perspective
+for(const side of [-1,1]) for(let i=0;i<26;i++){ const t=i/25, y=HZ+8+Math.pow(t,1.8)*230, x=600+side*(20+Math.pow(t,1.8)*560)-200*t; const r=1+t*3.2; const lg=c.createRadialGradient(x,y,0,x,y,r*4); lg.addColorStop(0,'rgba(255,236,190,1)'); lg.addColorStop(.3,'rgba(255,200,120,.6)'); lg.addColorStop(1,'rgba(255,200,120,0)'); c.fillStyle=lg; c.beginPath(); c.arc(x,y,r*4,0,7); c.fill(); }
+// the tower: shaft, cab, roof, mast
+const tx=430;
+c.fillStyle='#0B0E16'; c.beginPath(); c.moveTo(tx-34,HZ+6); c.lineTo(tx-24,250); c.lineTo(tx+24,250); c.lineTo(tx+34,HZ+6); c.fill();
+// shaft edge light
+g=c.createLinearGradient(tx-30,0,tx+30,0); g.addColorStop(0,'rgba(255,255,255,0)'); g.addColorStop(.85,'rgba(255,170,120,.12)'); g.addColorStop(1,'rgba(255,170,120,0)'); c.fillStyle=g; c.fillRect(tx-30,250,60,HZ-244);
+// balcony
+c.fillStyle='#0E121B'; c.fillRect(tx-70,236,140,16);
+// cab: lit glass, slanted outward
+c.beginPath(); c.moveTo(tx-66,236); c.lineTo(tx-82,168); c.lineTo(tx+82,168); c.lineTo(tx+66,236); c.closePath();
+g=c.createLinearGradient(0,168,0,236); g.addColorStop(0,'#F7C98A'); g.addColorStop(.6,'#E39A5E'); g.addColorStop(1,'#9A5B3E'); c.fillStyle=g; c.fill();
+c.save(); c.shadowColor='rgba(255,190,120,.9)'; c.shadowBlur=40; c.fill(); c.restore();
+// mullions
+c.strokeStyle='#0B0E16'; c.lineWidth=4; for(let i=-3;i<=3;i++){ c.beginPath(); c.moveTo(tx+i*20,236); c.lineTo(tx+i*24.5,168); c.stroke(); }
+// controller silhouettes
+c.fillStyle='rgba(20,15,20,.8)'; c.beginPath(); c.arc(tx-22,214,7,0,7); c.fill(); c.fillRect(tx-30,220,16,16); c.beginPath(); c.arc(tx+30,212,7,0,7); c.fill(); c.fillRect(tx+22,218,16,18);
+// roof and mast
+c.fillStyle='#0B0E16'; c.beginPath(); c.moveTo(tx-90,170); c.lineTo(tx+90,170); c.lineTo(tx+60,150); c.lineTo(tx-60,150); c.fill();
+c.fillRect(tx-3,90,6,62); c.fillRect(tx-22,118,44,4); c.fillRect(tx+40,130,4,22);
+const rl=c.createRadialGradient(tx,88,0,tx,88,16); rl.addColorStop(0,'rgba(255,60,50,1)'); rl.addColorStop(1,'rgba(255,60,50,0)'); c.fillStyle=rl; c.beginPath(); c.arc(tx,88,16,0,7); c.fill();
+// a distant aircraft with landing lights on final
+const ax=980, ay=330; const al=c.createRadialGradient(ax,ay,0,ax,ay,26); al.addColorStop(0,'rgba(255,255,240,1)'); al.addColorStop(.2,'rgba(255,240,210,.7)'); al.addColorStop(1,'rgba(255,240,210,0)'); c.fillStyle=al; c.beginPath(); c.arc(ax,ay,26,0,7); c.fill();
+</script>
+</body></html>
