@@ -984,9 +984,6 @@ function buildCtl3D(){
       flaps:{p:[0.08696,-0.18768,-0.08],a:[0,0,1]},spd:{p:[0.08696,-0.20617,0.0811],a:[0,0,1],s:[1,0,-1]}},
     ang:{thr0:()=>UI.tla[0],thr1:()=>UI.tla[1],flaps:()=>14*A.sw.flapLv,spd:()=>45*A.sw.spdBrk},mv:{spd:()=>A.sw.spArm?-0.006:0}};
   const LV3=LD&&CK.addLevers?CK.addLevers(LD):null;
-  /* the controls stand out of the panels as real 3D parts (a320-3d.js addRelief) */
-  if(CK.addRelief&&!CF&&!/norelief/.test(location.search)){ const KIND={pb:'pb',mom:'pb',ann:'pb',sel:'knob',knob:'knob',tog:'tog',key:'key',mkey:'key'};
-    CK.addRelief(CT.filter(c=>c.r&&KIND[c.t]&&c.r[2]>2&&c.r[3]>2&&c.r[2]<60&&c.r[3]<60).map(c=>({r:c.r,k:KIND[c.t]}))); }
   function setLev3(){ if(!LV3) return; for(const k in LD.ang) LV3.set(k,Math.round(LD.ang[k]()*10)/10,LD.mv&&LD.mv[k]?LD.mv[k]():0); }
   function knobAng(c){ return c.t==='sel'?c.ang[A.sw[c.k]]:c.t==='selF'?c.ang[c.get()]:c.t==='cont'?c.ang(A.sw[c.k]):c.ang(); }
   function setKnob(i){ const o=knobs[i], a=knobAng(o.c); if(a==null||a===o.last) return false; o.last=a; KM.setMatrixAt(i,frame(o.pl,-a*Math.PI/180,ZA,o.r,o.r,o.r*0.9,0.0004)); return true; }
@@ -1022,7 +1019,7 @@ function buildCtl3D(){
   const capSets=[];
   for(const k in byP){ const L=byP[k], n=L.length, v=CK.P[k].v, r=v.r, g=new T.InstancedBufferGeometry(); g.index=box.index; g.attributes.position=box.attributes.position; g.attributes.normal=box.attributes.normal;
     const M0=new Float32Array(n*4), M1=new Float32Array(n*4), M2=new Float32Array(n*4), TX=new Float32Array(n*4), UP=new Float32Array(n*4), DN=new Float32Array(n*4), ST=new Float32Array(n*4);
-    L.forEach((cp,i)=>{ const pl=cp.pl, ht=cp.ann?0.0006:(cp.big?0.0032:0.0024), m=frame(pl,0,ZA,cp.w*0.92*pl.s,cp.h*0.96*pl.s,ht,0).elements;
+    L.forEach((cp,i)=>{ const pl=cp.pl, ht=cp.ann?0.0008:(cp.big?0.0055:0.0045), m=frame(pl,0,ZA,cp.w*0.92*pl.s,cp.h*0.96*pl.s,ht,0).elements;
       M0.set([m[0],m[4],m[8],m[12]],i*4); M1.set([m[1],m[5],m[9],m[13]],i*4); M2.set([m[2],m[6],m[10],m[14]],i*4);
       const x0=cp.x+cp.w*0.04, y0=cp.y+cp.h*0.02; TX.set([(x0-r[0])/r[2],1-(y0-r[1])/r[3],cp.w*0.92/r[2],cp.h*0.96/r[3]],i*4);
       if(cp.up&&cp.up.uv) UP.set(cp.up.uv,i*4); if(cp.dn&&cp.dn.uv) DN.set(cp.dn.uv,i*4); cp.i=i; cp.set=null; });
@@ -1070,7 +1067,7 @@ function hasWebGL(){ try{ const c=document.createElement('canvas'); return !!(c.
 let CK=null;
 (window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=!!(window.OTW&&window.THREE&&hasWebGL()&&OTW.init($('otw'))); }catch(e){ otwReady=false; } otwLiveSync();
   if(D3){ if(otwReady&&window.A3D){ try{ CK=A3D.init({R:OTW.renderer(),displays:DISP.filter(d=>d.cv),aspect:()=>ST.clientWidth/Math.max(1,ST.clientHeight)});
-      const im=new Image(); im.decoding='async'; im.src=CK.mobile?IMG[0]:IMG[1]; im.decode().then(()=>{ CK.setImage(im); paint3d(true); }).catch(()=>{}); try{ buildCtl3D(); }catch(err){ console.warn('3D controls',err); CTL=null; }
+      const im=new Image(); im.decoding='async'; im.src=CK.mobile?IMG[0]:IMG[1]; im.decode().then(()=>{ CK.setImage(im); paint3d(true); }).catch(()=>{}); (CK.relief||Promise.resolve()).then(()=>{ try{ buildCtl3D(); }catch(err){ console.warn('3D controls',err); CTL=null; } });
       if(CK.LOOK[Z.reg]) CK.LOOK[Z.reg](); }catch(err){ console.warn('A320 3D',err); CK=null; } }
     if(!CK){ $('otwMsg')&&($('otwMsg').hidden=false); } }
   layout(true); },{timeout:500});

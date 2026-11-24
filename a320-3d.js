@@ -28,8 +28,15 @@ for(const k in VIEWS){ const v=VIEWS[k]; const n=new THREE.Vector3(...v.n).norma
 const EYE=CF3?V(...CF3.eye):V(0.31,0.63,0.53); // captain's eye (model frame)
 const P0=(CF3&&CF3.pitch||-11)*D2R;
 
+/* the panels' real depth (models/a320-relief.bin, tools/render-a320/depth.py): for each view a grid of heights out of the panel
+   plane, cast from the same flight-deck model the pictures were rendered from. The panel planes become height fields with them,
+   so the glareshield stands out over the main panel, the screens sit back in their bezels and the knobs stand up. Clamped per view
+   (the pedestal levers and the window posts have their own 3D parts). */
+const HM={}, HCL={front:[-0.12,0.21],ovh:[-0.05,0.04],ped:[-0.05,0.035],sideL:[-0.04,0.04],sideR:[-0.04,0.04]};
+function hAt(k,u,t){ const m=HM[k]; if(!m) return 0; const x=Math.max(0,Math.min(m.nx-1,u*(m.nx-1))), y=Math.max(0,Math.min(m.ny-1,t*(m.ny-1))), x0=Math.floor(x), y0=Math.floor(y), x1=Math.min(m.nx-1,x0+1), y1=Math.min(m.ny-1,y0+1), fx=x-x0, fy=y-y0, a=m.a, n=m.nx;
+  return (a[y0*n+x0]*(1-fx)+a[y0*n+x1]*fx)*(1-fy)+(a[y1*n+x0]*(1-fx)+a[y1*n+x1]*fx)*fy; }
 function viewOf(wx,wy){ for(const k in VIEWS){ const r=VIEWS[k].r; if(wx>=r[0]&&wx<=r[0]+r[2]&&wy>=r[1]&&wy<=r[1]+r[3]) return k; } return null; }
-function toP(wx,wy,off){ const k=viewOf(wx,wy); if(!k) return null; const v=VIEWS[k], r=v.r, u=(wx-r[0])/r[2], t=(wy-r[1])/r[3];
+function toP(wx,wy,off){ const k=viewOf(wx,wy); if(!k) return null; const v=VIEWS[k], r=v.r, u=(wx-r[0])/r[2], t=(wy-r[1])/r[3]; off=(off||0)+hAt(k,u,t);
   return v.C.clone().addScaledVector(v.EX,(u-0.5)*v.W).addScaledVector(v.EY,(0.5-t)*v.H).addScaledVector(v.FN,off||0); }
 function basis(v){ const m=new THREE.Matrix4(); m.makeBasis(v.EX,v.EY,v.FN); return m; }
 
@@ -46,7 +53,7 @@ function init(o){
   for(const k in VIEWS){ const v=VIEWS[k], r=v.r, cv=document.createElement('canvas'); cv.width=Math.round(r[2]*K); cv.height=Math.round(r[3]*K);
     const tex=new THREE.CanvasTexture(cv); tex.anisotropy=o.R.capabilities.getMaxAnisotropy(); tex.minFilter=THREE.LinearMipmapLinearFilter; if(THREE.sRGBEncoding&&o.R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding;
     const pg=new THREE.PlaneGeometry(v.W,v.H,24,24); pg.setAttribute('color',new THREE.BufferAttribute(new Float32Array(pg.attributes.position.count*3).fill(1),3));
-    const cut=k.startsWith('side')||!!v.cut; const mesh=new THREE.Mesh(pg,new THREE.MeshBasicMaterial({map:tex,vertexColors:true,transparent:cut,alphaTest:cut?0.5:0}));
+    const cut=k.startsWith('side')||!!v.cut; const mesh=new THREE.Mesh(pg,new THREE.MeshBasicMaterial({map:tex,vertexColors:true,transparent:cut,alphaTest:cut?0.5:0,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-6}) /* the shell has its own faces where the panels really are: the panel wins */);
     mesh.matrixAutoUpdate=false; mesh.matrix.copy(basis(v)).setPosition(v.C); scene.add(mesh); P[k]={cv,g:cv.getContext('2d'),tex,mesh,v}; }
   /* ---- shell: one closed room around the panels (flat colours, double-sided, no gaps), with the windshield and side
      windows left open. Corners come from the panel planes themselves, so every piece meets its neighbour. ---- */
@@ -106,7 +113,7 @@ function init(o){
     q4(v3(-X2,yF,zB+d),v3(X2,yF,zB+d),v3(X2,cy(zB),zB+d),v3(-X2,cy(zB),zB+d));                                      // back wall
     // beside the main panel: the panel's own plane carried outboard to the side walls, from the panel's top edge down, a little
     // behind the picture. This closes the gap between the panel's outboard edge and the wall below the windshield sill.
-    const PP=(sx,ty)=>fv.C.clone().addScaledVector(fv.EX,sx).addScaledVector(fv.EY,ty).addScaledVector(fv.FN,-0.015);
+    const PP=(sx,ty)=>fv.C.clone().addScaledVector(fv.EX,sx).addScaledVector(fv.EY,ty).addScaledVector(fv.FN,-0.09);
     for(const sg of [-1,1]){ const a=sg*(fv.W/2-0.03), o=sg*(fv.W/2+0.45), tT=fv.H/2-0.005, tB=-fv.H/2-0.45;
       q4(PP(a,tB),PP(o,tB),PP(o,tT-0.22),PP(a,tT-0.05)); }   // the windshield sill drops outboard: keep below it
     const g=new THREE.BufferGeometry(), arr=new Float32Array(bp.length*3); bp.forEach((v,i)=>{ arr[i*3]=v.x; arr[i*3+1]=v.y; arr[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(arr,3)); BACK.add(new THREE.Mesh(g,bm)); }
@@ -140,6 +147,17 @@ function init(o){
     const tex=new THREE.CanvasTexture(d.cv); tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false;
     const m=new THREE.Mesh(new THREE.PlaneGeometry(w/v.r[2]*v.W,h/v.r[3]*v.H),new THREE.MeshBasicMaterial({map:tex}));
     m.matrixAutoUpdate=false; m.matrix.copy(basis(v)).setPosition(c); scene.add(m); m.geometry.computeBoundingSphere(); disp.push({d,tex,m,c,wm:w/v.r[2]*v.W}); d.tex=tex; d.mesh=m; }
+  /* ---- the panels' depth: height fields from models/a320-relief.bin (see HM above); the screens move onto their surface ---- */
+  const RELIEF=CF3?Promise.resolve(false):fetch('models/a320-relief.bin?v=4').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+    const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl;
+    for(const k in hdr.views){ const p=P[k], hv=hdr.views[k]; if(!p) continue; const n=hv.nx*hv.ny, raw=new Int16Array(buf.slice(base+hv.off,base+hv.off+n*2)), a=new Float32Array(n), cl=HCL[k]||[-0.05,0.05];
+      for(let i=0;i<n;i++) a[i]=Math.max(cl[0],Math.min(cl[1],raw[i]/hdr.scale));
+      HM[k]={nx:hv.nx,ny:hv.ny,a};
+      const g=new THREE.PlaneGeometry(p.v.W,p.v.H,hv.nx-1,hv.ny-1), pa=g.attributes.position.array; for(let i=0;i<n;i++) pa[i*3+2]=a[i];
+      g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(n*3).fill(1),3)); g.computeBoundingSphere();
+      const old=p.mesh.geometry; p.mesh.geometry=g; if(p.ov) p.ov.geometry=g; old.dispose(); }
+    for(const x of disp){ const [dx,dy,dw,dh]=x.d.r, c=toP(dx+dw/2,dy+dh/2,0.0015); if(c){ x.c=c; x.m.matrix.setPosition(c); } }
+    return true; }).catch(e=>{ console.warn('A320 panel depth',e); return false; });
   /* ---- camera ---- */
   const frus=new THREE.Frustum(), pm=new THREE.Matrix4(), sph=new THREE.Sphere();
   function updCam(dt){
@@ -158,11 +176,14 @@ function init(o){
   const phMain=()=>{ lookAt(toP(mainPh[0],mainPh[1])); const asp=Math.max(0.5,o.aspect()); head.tFov=Math.max(28,Math.min(58,2*Math.atan(Math.tan(32*D2R)/asp)/D2R)); };
   const LOOK=CF3?Object.fromEntries(Object.entries(CF3.look).map(([k,a])=>[k,k==='main'?()=>{ if(phone()){ phMain(); return; } head.tEye.copy(EYE); head.tYaw=CF3.yaw||-0.04; head.tPitch=P0; head.tFov=62; }:()=>lookAt(toP(a[0],a[1]),a[2],a[3])])):{main:()=>{ if(phone()){ phMain(); return; } head.tEye.copy(EYE); head.tYaw=-0.04; head.tPitch=-11*D2R; head.tFov=62; },ovhd:()=>lookAt(toP(500,610),62,-0.02),aft:()=>lookAt(toP(500,230),64,-0.02),ped:()=>lookAt(toP(500,1300),58,-0.18),fcu:()=>lookAt(toP(500,845),26),ecam:()=>lookAt(toP(507,1000),32,-0.3),mcdu:()=>lookAt(toP(500,1196),33,-0.16),pfd:()=>lookAt(toP(225,955),36)};
   /* ---- picking: ray from the eye through the pointer to the nearest panel ---- */
-  const ray=new THREE.Ray(), hitP=new THREE.Vector3(), pl=new THREE.Plane();
+  const ray=new THREE.Ray(), hitP=new THREE.Vector3(), pl=new THREE.Plane(), rc=new THREE.Raycaster();
   function pick(nx,ny){ // nx, ny in -1..1
     updCam(0); const dir=new THREE.Vector3(nx,ny,0.5).unproject(cam).sub(cam.position).normalize(); ray.set(cam.position,dir);
     let best=null, bt=1e9;
-    for(const k in VIEWS){ const v=VIEWS[k]; pl.setFromNormalAndCoplanarPoint(v.FN,v.C); if(!ray.intersectPlane(pl,hitP)) continue; const t=hitP.distanceTo(cam.position); if(t>=bt) continue;
+    if(Object.keys(HM).length){ rc.ray.copy(ray); const ms=[]; for(const k in P) if(P[k].mesh.visible&&HM[k]) ms.push(P[k].mesh);
+      const hit=rc.intersectObjects(ms,false)[0];
+      if(hit&&hit.uv){ const k=Object.keys(P).find(z=>P[z].mesh===hit.object), r=P[k].v.r; bt=hit.distance; best=[r[0]+hit.uv.x*r[2],r[1]+(1-hit.uv.y)*r[3]]; } }
+    for(const k in VIEWS){ if(HM[k]) continue; const v=VIEWS[k]; pl.setFromNormalAndCoplanarPoint(v.FN,v.C); if(!ray.intersectPlane(pl,hitP)) continue; const t=hitP.distanceTo(cam.position); if(t>=bt) continue;
       const d=hitP.clone().sub(v.C), u=d.dot(v.EX)/v.W+0.5, w=0.5-d.dot(v.EY)/v.H; if(u<0||u>1||w<0||w>1) continue; bt=t; best=[v.r[0]+u*v.r[2],v.r[1]+w*v.r[3]]; }
     return best; }
   /* ---- textures: picture + painter callback ---- */
@@ -188,9 +209,9 @@ function init(o){
             src=c; }
           const t=new THREE.Texture(src); t.anisotropy=o.R.capabilities.getMaxAnisotropy(); t.minFilter=THREE.LinearMipmapLinearFilter; if(THREE.sRGBEncoding&&o.R.outputEncoding===THREE.sRGBEncoding) t.encoding=THREE.sRGBEncoding; t.needsUpdate=true;
           // the light layer: same plane, a hair in front, transparent
-          const ov=new THREE.Mesh(p.mesh.geometry,new THREE.MeshBasicMaterial({map:p.tex,vertexColors:true,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
+          const ov=new THREE.Mesh(p.mesh.geometry,new THREE.MeshBasicMaterial({map:p.tex,vertexColors:true,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-10}));
           ov.matrixAutoUpdate=false; ov.matrix.copy(p.mesh.matrix); ov.renderOrder=1; ov.visible=p.mesh.visible; scene.add(ov);
-          p.mesh.material.map=t; p.mesh.material.needsUpdate=true; p.hi=true; p.ov=ov; addCapLight(p); if(lastPainter) repaint(lastPainter,k); res(); }).catch(()=>res()); })); } }
+          p.mesh.material.map=t; p.mesh.material.needsUpdate=true; p.hi=true; p.ov=ov; if(lastPainter) repaint(lastPainter,k); res(); }).catch(()=>res()); })); } }
   /* where a sheet point sits in 3D: position on the panel, the panel's frame (x right, y up, z out of the panel) and metres per sheet unit */
   function place(wx,wy){ const k=viewOf(wx,wy); if(!k) return null; const v=VIEWS[k]; return {k,p:toP(wx,wy,0),b:basis(v),s:v.W/v.r[2]}; }
   /* real 3D levers (thrust, flaps, speed brake, gear) from the flight-deck model; each turns about its own axis from the model.
@@ -205,39 +226,12 @@ function init(o){
         const ax=V(...d.a).normalize(), sh=d.s?V(...d.s).normalize():null; L[g.name]={grp,ax,sh,piv,deg:null,mv:null}; } });
     const qq=new THREE.Quaternion();
     return { ready, set(name,deg,mv){ const l=L[name]; if(!l) return; l.grp.visible=!!(P.ped&&P.ped.hi); /* the sheet picture still has the levers drawn in */ if(l.deg===deg&&l.mv===(mv||0)) return; l.deg=deg; l.mv=mv||0; qq.setFromAxisAngle(l.ax,-deg*D2R); l.grp.quaternion.copy(qq); l.grp.position.copy(l.piv); if(l.sh&&mv) l.grp.position.addScaledVector(l.sh,mv); } }; }
-  /* ---- relief: the controls stand out of the panel as real 3D parts. Each pushbutton, key and switch base becomes a box and each
-     rotary knob a cylinder, standing on its own spot of the panel. The top face shows the same picture as the panel (so lit
-     legends and pointer positions stay live, and the sharp desktop texture applies), the sides are the same picture's edge,
-     darkened. Heights in metres (A320: pushbuttons about 6 mm proud of the panel, knobs about 14 mm). items: {r:[x,y,w,h], k} ---- */
-  function addRelief(items){
-    const byP={};
-    for(const it of items){ const k=viewOf(it.r[0]+it.r[2]/2,it.r[1]+it.r[3]/2); if(!k||!P[k]) continue; (byP[k]=byP[k]||[]).push(it); }
-    for(const k in byP){ const p=P[k], v=p.v, r=v.r, pos=[], uv=[], col=[];
-      const L=(wx,wy)=>[((wx-r[0])/r[2]-0.5)*v.W,(0.5-(wy-r[1])/r[3])*v.H], U=(wx,wy)=>[(wx-r[0])/r[2],1-(wy-r[1])/r[3]];
-      const put=(x,y,z,u,w,c)=>{ pos.push(x,y,z); uv.push(u,w); col.push(c,c,c); };
-      for(const it of byP[k]){ const [x0,y0,w,h]=it.r, H=it.k==='knob'?0.014:it.k==='key'?0.004:it.k==='tog'?0.005:0.006, SD=it.k==='knob'?0.40:0.50;
-        // the outline of the part in sheet units: a polygon (box: 4 corners, knob: 20-gon inside the rectangle)
-        let poly;
-        if(it.k==='knob'){ const cx=x0+w/2, cy=y0+h/2, rr=Math.min(w,h)/2*0.92; poly=[]; for(let i=0;i<20;i++){ const a=i/20*Math.PI*2; poly.push([cx+Math.cos(a)*rr,cy+Math.sin(a)*rr]); } }
-        else { const m=Math.min(w,h)*0.04; poly=[[x0+m,y0+m],[x0+w-m,y0+m],[x0+w-m,y0+h-m],[x0+m,y0+h-m]]; }
-        const n=poly.length, cx=poly.reduce((s,q)=>s+q[0],0)/n, cy=poly.reduce((s,q)=>s+q[1],0)/n;
-        for(let i=0;i<n;i++){ const a=poly[i], b=poly[(i+1)%n], la=L(...a), lb=L(...b), lc=L(cx,cy), ua=U(...a), ub=U(...b), uc=U(cx,cy);
-          // top (a fan)
-          put(lc[0],lc[1],H,uc[0],uc[1],1); put(la[0],la[1],H,ua[0],ua[1],1); put(lb[0],lb[1],H,ub[0],ub[1],1);
-          // side: darker the more it faces down (light from above)
-          const ny=-(lb[0]-la[0]), sh=SD+0.25*Math.max(0,ny/Math.hypot(lb[0]-la[0],lb[1]-la[1]||1e-9));
-          put(la[0],la[1],0,ua[0],ua[1],sh*0.8); put(lb[0],lb[1],0,ub[0],ub[1],sh*0.8); put(lb[0],lb[1],H,ub[0],ub[1],sh);
-          put(la[0],la[1],0,ua[0],ua[1],sh*0.8); put(lb[0],lb[1],H,ub[0],ub[1],sh); put(la[0],la[1],H,ua[0],ua[1],sh); } }
-      const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
-      const m=new THREE.Mesh(g,p.mesh.material); m.matrixAutoUpdate=false; m.matrix.copy(p.mesh.matrix); m.visible=p.mesh.visible; scene.add(m); p.capG=g; p.cap=m;
-      if(p.ov) addCapLight(p); } }
-  function addCapLight(p){ if(!p.capG||p.capOv) return; const m=new THREE.Mesh(p.capG,p.ov.material); m.matrixAutoUpdate=false; m.matrix.copy(p.mesh.matrix); m.renderOrder=1; scene.add(m); p.capOv=m; }
   function draw(R){ R.render(scene,cam); }
   const pv3=new THREE.Vector3();
   function proj(wx,wy){ const p=toP(wx,wy,0.002); if(!p) return null; pv3.copy(p).applyMatrix4(cam.matrixWorldInverse); if(pv3.z>-0.02) return null; pv3.applyMatrix4(cam.projectionMatrix); return [pv3.x,pv3.y]; }
   /* look closer at a point (double click / double tap), and back */
   function focus(wx,wy){ const p=toP(wx,wy); if(!p) return; const fov=head.tFov>40?Math.max(22,head.tFov*0.45):null; if(fov){ lookAt(p,null); head.tFov=fov; } else head.tFov=Math.min(66,head.tFov/0.45); }
-  return {scene,cam,head,updCam,draw,pick,proj,focus,place,P,addLevers,addRelief,LOOK,visible,pxSize,setImage,repaint,K,disp,mobile,
+  return {scene,cam,head,updCam,draw,pick,proj,focus,place,P,addLevers,relief:RELIEF,LOOK,visible,pxSize,setImage,repaint,K,disp,mobile,
     drag(dx,dy){ const s=head.fov/62*0.0042; head.tYaw+=dx*s; head.tPitch=Math.max(-80*D2R,Math.min(85*D2R,head.tPitch+dy*s)); head.yaw=head.tYaw; head.pitch=head.tPitch; },
     zoom(f){ head.tFov=Math.max(8,Math.min(80,head.tFov*f)); },
     qHead(){ return q; }, fov(){ return cam.fov; }};
