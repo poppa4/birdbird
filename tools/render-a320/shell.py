@@ -119,6 +119,43 @@ def refine(F, emin=0.08, tol=0.10, levels=5):
     return F
 PROUDSET = {r[0] for r in json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'proud.json')))['proud']}
 LEVERS = {'rev_l', 'thr_l_body', 'thr_l_button', 'rev_r', 'thr_r_body', 'thr_r_button', 'FlapsLever', 'FlapsLever_low', 'SpdBrk', 'gear_lever'}
+# ---- window posts, rebuilt. The model's posts are a few flat plates meeting at hard angles. Each post is replaced by one clean
+# moulded part, as on the aircraft: a straight, slightly tapered loft with a rounded-rectangle section. Its size comes from the
+# model itself: the old post is cut at 12 stations along its axis and the new section is the smallest rounded rectangle that
+# holds it (5 mm clear), with the sizes smoothed to a straight taper. The old post's faces inside the new one are left out.
+PAD = 0.004
+def post(p0, p1, R=0.10, NR=28):
+    p0, p1 = np.array(p0, float), np.array(p1, float); a = p1 - p0; Lh = np.linalg.norm(a); a /= Lh; mid = (p0 + p1) / 2
+    v = np.array([0.0, 0.70, 0.40]) - mid; v -= (v @ a) * a; v /= np.linalg.norm(v); u = np.cross(a, v)          # v: towards the cockpit, u: across
+    ts, ext = [], []
+    for t in np.linspace(0.10, 0.90, 12):
+        c = p0 + a * Lh * t; sec = OCC.section(plane_origin=c, plane_normal=a)
+        if sec is None: continue
+        q = np.asarray(sec.vertices) - c; q = q[np.linalg.norm(q, axis=1) < R]
+        if len(q) < 6: continue
+        ts.append(t); ext.append([np.percentile(q @ u, 10), np.percentile(q @ u, 90), np.percentile(q @ v, 6), np.percentile(q @ v, 94)])
+    ts = np.array(ts); ext = np.array(ext); fit = [np.polyfit(ts, np.median(np.stack([ext[:, k], np.roll(ext[:, k], 1), np.roll(ext[:, k], -1)]), 0), 1) for k in range(4)]
+    rings = []; tt = np.linspace(-0.04, 1.04, 14)
+    for t in tt:
+        u0, u1, v0, v1 = (np.polyval(f, t) for f in fit); u0 -= PAD; u1 += PAD; v0 -= PAD; v1 += PAD
+        cu, cv, hw, hh = (u0 + u1) / 2, (v0 + v1) / 2, (u1 - u0) / 2, (v1 - v0) / 2; r = 0.42 * min(hw, hh); ring = []
+        for k in range(NR):
+            th = 2 * np.pi * k / NR; cx, sx = np.cos(th), np.sin(th)
+            # rounded rectangle: a circle of radius r pushed out to the corners
+            pu = cu + np.sign(cx) * (hw - r) + r * cx; pv = cv + np.sign(sx) * (hh - r) + r * sx; ring.append(p0 + a * Lh * t + u * pu + v * pv)
+        rings.append(ring)
+    return dict(p0=p0, a=a, L=Lh, u=u, v=v, fit=fit, rings=rings)
+POSTS = []
+for p0, p1 in (((-0.915, 0.40, -0.41), (-0.77, 0.88, 0.0)), ((-1.30, 0.40, 0.32), (-0.99, 0.88, 0.36))):
+    POSTS.append(post(p0, p1)); POSTS.append(post((-p0[0],) + p0[1:], (-p1[0],) + p1[1:]))
+POSTS.append(post((0, 0.45, -0.865), (0, 0.88, -0.41)))
+def in_post(pt):   # pt in the page's frame
+    for b in POSTS:
+        d = pt - b['p0']; t = (d @ b['a']) / b['L']
+        if t < -0.04 or t > 1.04: continue
+        u0, u1, v0, v1 = (np.polyval(f, t) for f in b['fit']); pu, pv = d @ b['u'], d @ b['v']
+        if u0 - 0.012 < pu < u1 + 0.012 and v0 - 0.012 < pv < v1 + 0.012: return True
+    return False
 TAKEN = set(map(tuple, json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'taken.json')))['taken']))  # faces the panels carry (panels.py)
 for oi, o in enumerate(O):
     if o['tex'] not in TEX: continue
@@ -129,6 +166,16 @@ for oi, o in enumerate(O):
     if SKIP.search(o['name']) and diag < 0.6: continue
     if re.search(r'(?i)^(hud|efb|headset|sfl)|glass', o['name']): continue  # HUD, EFBs, headsets, sun blinds, glass
     rep, off = o['rep'], o['off']; g = G['flat']; tim = TXA[o['tex']]
+    # a small fitting on a post (light panel, handle, clip) is kept and moved out onto the new post's surface
+    PSH = None
+    if diag < 0.30:
+        vt_ = np.stack([-v[:, 2], v[:, 1], v[:, 0]], 1); c_ = vt_.mean(0)
+        for b in POSTS:
+            d_ = c_ - b['p0']; t_ = (d_ @ b['a']) / b['L']
+            if not 0 <= t_ <= 1: continue
+            u0, u1, v0, v1 = (np.polyval(f, t_) for f in b['fit'])
+            if u0 - 0.02 < d_ @ b['u'] < u1 + 0.02 and v0 - 0.03 < d_ @ b['v'] < v1 + 0.03:
+                top = ((vt_ - b['p0']) @ b['v']).max(); PSH = b['v'] * max(0.0, v1 + PAD + 0.004 - top); break
     # a part is kept whole or left out whole: dropping only its tiny faces left chips and fragments hanging in the lining
     fine = False
     if len(o['faces']) > 80 and not WHOLE.search(o['name']):
@@ -139,6 +186,7 @@ for oi, o in enumerate(O):
     for fi, (mat, idx, uvs, flags) in enumerate(o['faces']):
         if (oi, fi) in TAKEN: continue
         P = v[idx]; ctr = P.mean(0); inside = False
+        if PSH is None and in_post(np.array([-ctr[2], ctr[1], ctr[0]])): continue
         # (the bright green lamp / marking areas of the textures are painted over in the saved pictures below: skipping those
         # faces left holes to the outside)
         tu = np.mean([uvs[j][0] * rep[0] + off[0] for j in range(len(idx))]) % 1; tv = 1 - (np.mean([uvs[j][1] * rep[1] + off[1] for j in range(len(idx))]) % 1)
@@ -158,7 +206,7 @@ for oi, o in enumerate(O):
         if ln < 1e-12: continue
         area = sum(np.linalg.norm(np.cross(P[j] - P[0], P[j + 1] - P[0])) for j in range(1, len(P) - 1)) / 2
         if area < 1e-9 or (fine and area < MINA and np.linalg.norm(P.max(0) - P.min(0)) < 0.03): continue  # tiny detail (bolts, edges of small parts): invisible at cockpit distance
-        nrm /= ln; T = np.stack([-P[:, 2], P[:, 1], P[:, 0]], 1); nT = np.array([-nrm[2], nrm[1], nrm[0]])
+        nrm /= ln; T = np.stack([-P[:, 2], P[:, 1], P[:, 0]], 1) + (PSH if PSH is not None else 0); nT = np.array([-nrm[2], nrm[1], nrm[0]])
         UVs = np.array([(uvs[j][0] * rep[0] + off[0], 1 - (uvs[j][1] * rep[1] + off[1])) for j in range(len(idx))])
         # the face's own colour: the median of the texture over the face (16 points), so marks, chips, grain and lettering in the
         # source textures drop out and what is left is the material's colour
@@ -171,6 +219,40 @@ for oi, o in enumerate(O):
         FEDG.append(ed)
         for j in range(1, len(idx) - 1):
             g['F'] += split([(T[0], UVs[0]), (T[j], UVs[j]), (T[j + 1], UVs[j + 1])], nT)
+POST_OI = next(i for i, o in enumerate(O) if o['name'] == 'WindowCpt')
+for b in POSTS:
+    rg = b['rings']; NR = len(rg[0])
+    for i in range(len(rg) - 1):
+        for k in range(NR):
+            q = [rg[i][k], rg[i][(k + 1) % NR], rg[i + 1][(k + 1) % NR], rg[i + 1][k]]; n_ = np.cross(q[1] - q[0], q[2] - q[0]); ln_ = np.linalg.norm(n_)
+            if ln_ < 1e-12: continue
+            n_ /= ln_; cc = sum(q) / 4 - (b['p0'] + b['a'] * ((sum(q) / 4 - b['p0']) @ b['a']))
+            if n_ @ cc < 0: q = q[::-1]; n_ = -n_
+            fid = len(FCOL); FCOL.append(np.array([71.0, 85.0, 104.0])); FAREA.append(ln_); FOBJ.append(POST_OI); FTEX.append('fd_other.png'); FY.append(0.0); FEDG.append([])
+            G['flat']['F'] += [([(q[0], (fid, 0)), (q[1], (fid, 0)), (q[2], (fid, 0))], n_), ([(q[0], (fid, 0)), (q[2], (fid, 0)), (q[3], (fid, 0))], n_)]
+# the reading-light panel on the two front posts (a part of the old post, so it went with it): a dark plate with rounded corners
+# on the face towards the cockpit, with the light's lens and its switch
+def _poly(b, t0, pts, lift, col, tex):
+    u0, u1, v0, v1 = (np.polyval(f, t0) for f in b['fit']); cu = (u0 + u1) / 2
+    P3 = [b['p0'] + b['a'] * (b['L'] * t0 + y_) + b['u'] * (cu + x_) + b['v'] * (v1 + PAD + lift) for x_, y_ in pts]; c3 = sum(P3) / len(P3)
+    for k in range(len(P3)):
+        q = [c3, P3[k], P3[(k + 1) % len(P3)]]; n_ = np.cross(q[1] - q[0], q[2] - q[0]); ln_ = np.linalg.norm(n_)
+        if ln_ < 1e-12: continue
+        n_ /= ln_
+        if n_ @ b['v'] < 0: q = q[::-1]; n_ = -n_
+        fid = len(FCOL); FCOL.append(np.array(col, float)); FAREA.append(ln_); FOBJ.append(POST_OI); FTEX.append(tex); FY.append(0.0); FEDG.append([])
+        G['flat']['F'].append(([(q[0], (fid, 0)), (q[1], (fid, 0)), (q[2], (fid, 0))], n_))
+def _rr(w, h, r, cx=0.0, cy=0.0, n=6):
+    out = []
+    for sx, sy, a0 in ((1, 1, 0), (-1, 1, 90), (-1, -1, 180), (1, -1, 270)):
+        for k in range(n + 1):
+            th = np.radians(a0 + 90 * k / n); out.append((cx + sx * (w / 2 - r) + r * np.cos(th), cy + sy * (h / 2 - r) + r * np.sin(th)))
+    return out
+for b in POSTS[:2]:
+    u0, u1, v0, v1 = (np.polyval(f, 0.74) for f in b['fit']); w = min(0.042, (u1 - u0) * 0.55)
+    _poly(b, 0.74, _rr(w, 0.105, 0.008), 0.0012, (30, 33, 37), 'fd_leather.png')
+    _poly(b, 0.74, [(0.011 * np.cos(a_), 0.022 + 0.011 * np.sin(a_)) for a_ in np.linspace(0, 2 * np.pi, 20, endpoint=False)], 0.0024, (71, 85, 104), 'fd_other.png')
+    _poly(b, 0.74, _rr(0.011, 0.018, 0.002, 0.0, -0.026, 3), 0.0024, (71, 85, 104), 'fd_other.png')
 # ---- materials: the face colours fall into a handful of clean ones (k-means, area-weighted); an object that is almost all one
 # material is given that material throughout ----
 FC = np.array(FCOL); FA = np.array(FAREA); FO = np.array(FOBJ); FT = np.array(FTEX); K = 5
