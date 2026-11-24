@@ -62,3 +62,30 @@ if __name__ == '__main__':
     m, o = load(sys.argv[1]); print(len(m), 'materials', len(o), 'meshes')
     V = np.concatenate([x['v'] for x in o]); print('bbox', V.min(0).round(3), V.max(0).round(3))
     print('faces', sum(len(x['faces']) for x in o))
+
+
+def tris(P):
+    """Triangles of a polygon as triples of corner numbers. A fan from the first corner is only right for convex polygons; the
+    model has several hundred concave ones (L and wedge shaped plates), and a fan there makes triangles that stick out of the
+    polygon as fins and cover what lies beside it. Ear clipping in the polygon's own plane (Newell normal) is right for both."""
+    P = np.asarray(P, float); n = len(P)
+    if n < 3: return []
+    if n == 3: return [(0, 1, 2)]
+    nrm = np.zeros(3)
+    for j in range(n): nrm += np.cross(P[j], P[(j + 1) % n])
+    ln = np.linalg.norm(nrm)
+    if ln < 1e-14: return [(0, j, j + 1) for j in range(1, n - 1)]
+    nrm /= ln; a = np.array([1.0, 0, 0]) if abs(nrm[0]) < 0.9 else np.array([0, 1.0, 0]); ex = np.cross(nrm, a); ex /= np.linalg.norm(ex); ey = np.cross(nrm, ex)
+    Q = np.stack([P @ ex, P @ ey], 1); cr = lambda o, a, b: (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+    if all(cr(Q[0], Q[j], Q[j + 1]) >= -1e-12 for j in range(1, n - 1)): return [(0, j, j + 1) for j in range(1, n - 1)]
+    idx = list(range(n)); out = []; guard = 0
+    while len(idx) > 3 and guard < 4 * n * n:
+        guard += 1; done = False
+        for k in range(len(idx)):
+            i0, i1, i2 = idx[k - 1], idx[k], idx[(k + 1) % len(idx)]
+            if cr(Q[i0], Q[i1], Q[i2]) <= 1e-14: continue                      # reflex or flat corner: not an ear
+            if any(j not in (i0, i1, i2) and cr(Q[i0], Q[i1], Q[j]) > 1e-12 and cr(Q[i1], Q[i2], Q[j]) > 1e-12 and cr(Q[i2], Q[i0], Q[j]) > 1e-12 for j in idx): continue
+            out.append((i0, i1, i2)); idx.pop(k); done = True; break
+        if not done: idx.pop(int(np.argmin([abs(cr(Q[idx[k - 1]], Q[idx[k]], Q[idx[(k + 1) % len(idx)]])) for k in range(len(idx))])))   # degenerate: drop the flattest corner
+    if len(idx) == 3: out.append(tuple(idx))
+    return out

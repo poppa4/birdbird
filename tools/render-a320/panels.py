@@ -39,7 +39,7 @@ def build(skip=()):
         if oi in skip or hidden(o) or o['name'] in LEVER: continue
         for fi, (mi, idx, uvs, flags) in enumerate(o['faces']):
             if len(set(idx)) < 3 or mats[mi].get('trans', 0) > 0.3: continue
-            for i in range(1, len(idx) - 1): F.append([base + idx[0], base + idx[i], base + idx[i + 1]]); src.append((oi, fi))
+            for i_, j_, k_ in ac3d.tris(V[-1][idx]): F.append([base + idx[i_], base + idx[j_], base + idx[k_]]); src.append((oi, fi))   # not a fan: concave plates would get fins
     M = trimesh.Trimesh(np.concatenate(V), np.array(F), process=False)
     return M, trimesh.ray.ray_pyembree.RayMeshIntersector(M), np.array(src)
 # ---- proud parts (as before): small objects that stand 6.5 to 90 mm above the face around them ----
@@ -84,6 +84,18 @@ for k in VIEWS:
         if big and f < 0.42: continue            # structure seen edge-on: stays in the shell
         if t not in best or f > best[t][0]: best[int(t)] = (float(f), k)
     print(k, 'rays', nx * ny, 'triangles reached', len(tri))
+# A face is given to a panel only whole. A structural plate that crosses the edge of a panel's picture used to be taken out of the
+# shell entirely but drawn only where the picture is: the rest of it was a hole (gaps round the overhead panel and along the
+# glareshield), and the piece inside showed as a dark fin. Such a plate now stays in the shell, as one piece.
+def _inside(t, k):
+    c, n, up, W, H, near, low = VIEWS[k]; c, n, up, x = frame(c, n, up); d = TV[TF[t]] - c
+    return bool((np.abs(d @ x) <= W / 2 + 0.002).all() and (np.abs(d @ up) <= H / 2 + 0.002).all())
+for t in [t for t, (f, k) in best.items() if not _inside(t, k)]: del best[t]
+_per = collections.Counter(map(tuple, SRC)); _got = collections.defaultdict(set)
+for t, (f, k) in best.items(): _got[tuple(SRC[t])].add((t, k))
+for key, st in _got.items():
+    if len(st) < _per[key] or len({k for _, k in st}) > 1:
+        for t, _ in st: del best[t]
 taken = collections.defaultdict(list)
 for t, (f, k) in best.items(): taken[k].append(t)
 json.dump({'taken': sorted({(int(SRC[t][0]), int(SRC[t][1])) for t in best})}, open(os.path.join(HERE, 'taken.json'), 'w'))

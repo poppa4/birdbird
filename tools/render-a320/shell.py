@@ -30,7 +30,7 @@ for _oi, o in enumerate(O):
     if o['tex'] == 'fd_glare.png' or re.search(r'(?i)glass|^sfl', o['name']): continue
     b = sum(len(x) for x in OV)
     for mat, idx, uvs, flags in o['faces']:
-        for j in range(1, len(idx) - 1): OF.append([b + idx[0], b + idx[j], b + idx[j + 1]]); OFO.append(_oi)
+        for i_, j_, k_ in ac3d.tris(np.asarray(o['v'], float).reshape(-1, 3)[idx]): OF.append([b + idx[i_], b + idx[j_], b + idx[k_]]); OFO.append(_oi)
     OV.append(o['v'])
 OVa = np.concatenate(OV); OCC = trimesh.Trimesh(vertices=np.stack([-OVa[:, 2], OVa[:, 1], OVa[:, 0]], 1), faces=np.array(OF), process=False)
 RAY = trimesh.ray.ray_pyembree.RayMeshIntersector(OCC)
@@ -253,7 +253,7 @@ for oi, o in enumerate(O):
         if inside: continue
         nrm = np.cross(P[1] - P[0], P[2] - P[0]); ln = np.linalg.norm(nrm)
         if ln < 1e-12: continue
-        area = sum(np.linalg.norm(np.cross(P[j] - P[0], P[j + 1] - P[0])) for j in range(1, len(P) - 1)) / 2
+        area = sum(np.linalg.norm(np.cross(P[j_] - P[i_], P[k_] - P[i_])) for i_, j_, k_ in ac3d.tris(P)) / 2
         if area < 1e-9 or (fine and area < MINA and np.linalg.norm(P.max(0) - P.min(0)) < 0.03): continue  # tiny detail (bolts, edges of small parts): invisible at cockpit distance
         nrm /= ln; T = np.stack([-P[:, 2], P[:, 1], P[:, 0]], 1) + (PSH if PSH is not None else 0); nT = np.array([-nrm[2], nrm[1], nrm[0]])
         UVs = np.array([(uvs[j][0] * rep[0] + off[0], 1 - (uvs[j][1] * rep[1] + off[1])) for j in range(len(idx))])
@@ -266,8 +266,8 @@ for oi, o in enumerate(O):
         for j in range(len(qk)):
             ek = tuple(sorted((qk[j], qk[(j + 1) % len(qk)]))); ed.append((ek, float(np.linalg.norm(P[j] - P[(j + 1) % len(P)])))); EDGE[ek].append(fid)
         FEDG.append(ed)
-        for j in range(1, len(idx) - 1):
-            g['F'] += split([(T[0], UVs[0]), (T[j], UVs[j]), (T[j + 1], UVs[j + 1])], nT)
+        for i_, j_, k_ in ac3d.tris(P):   # not a fan: concave plates would get fins
+            g['F'] += split([(T[i_], UVs[i_]), (T[j_], UVs[j_]), (T[k_], UVs[k_])], nT)
 POST_OI = next(i for i, o in enumerate(O) if o['name'] == 'WindowCpt')
 for b in POSTS + HEADS:
     rg = b['rings']; NR = len(rg[0])
