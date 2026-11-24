@@ -108,7 +108,7 @@ function init(o){
      the panel planes), so no sky shows through the roof or the corners. The windows stay open. ---- */
   const BACK=new THREE.Group(); scene.add(BACK);
   const wT0=0.90, wZa=-0.70; // top of the side windows, their front edge
-  { const bm=new THREE.MeshBasicMaterial({color:0x6d7a8a,side:THREE.DoubleSide}), bp=[], q4=(a,b,c,d)=>bp.push(a,b,c,a,c,d), d=0.035, X2=XW+d, cy=(z)=>ceilAt(0,z)+d;
+  { const bm=new THREE.MeshBasicMaterial({color:0x6d7a8a,side:THREE.DoubleSide}), bp=[], q4=(a,b,c,d)=>bp.push(a,b,c,a,c,d), d=0.14 /* well outside the structure: a backstop that lies in a wall of the model flickers through it */, X2=XW+d, cy=(z)=>ceilAt(0,z)+d;
     const XR=0.80; q4(v3(-XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zB),zB),v3(-XR,cy(zB),zB));   // roof (inboard of the side windows)
     q4(v3(-X2,yF,zB+d),v3(X2,yF,zB+d),v3(X2,cy(zB),zB+d),v3(-X2,cy(zB),zB+d));
     for(const sg of [-1,1]){ q4(v3(sg*XR,cy(zF-0.05),zF-0.05),v3(sg*X2,cy(zF-0.05),zF-0.05),v3(sg*X2,cy(zB),zB),v3(sg*XR,cy(zB),zB));      // roof, outboard part
@@ -130,7 +130,7 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=8').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=9').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
@@ -227,7 +227,7 @@ function init(o){
   /* ---- sharp panels (desktop): each panel rendered on its own at 4000 px per metre (img/cockpits/<ac>-3d-<panel>.webp) becomes a
      static texture, uploaded once; the lit legends and switch positions move to a transparent layer just in front of it, so a
      switch press repaints only that light layer. Phones and small-memory devices keep the sheet. ---- */
-  const HI=CF3?CF3.hi:{base:'img/cockpits/a320-3d-',keys:['ovh','front','ped'],v:2};
+  const HI=CF3?CF3.hi:{base:'img/cockpits/a320-3d-',keys:['ovh','front','ped'],v:3};
   let lastPainter=null;
   function loadHi(){ if(!HI||mobile||(navigator.deviceMemory&&navigator.deviceMemory<4)) return; const maxT=Math.min(o.R.capabilities.maxTextureSize||4096,phone()?4096:8192); /* phones: at most 4096 px a side (memory) */
     let chain=Promise.resolve();

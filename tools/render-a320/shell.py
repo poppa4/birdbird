@@ -127,6 +127,13 @@ for oi, o in enumerate(O):
     if SKIP.search(o['name']) and diag < 0.6: continue
     if re.search(r'(?i)^(hud|efb|headset|sfl)|glass', o['name']): continue  # HUD, EFBs, headsets, sun blinds, glass
     rep, off = o['rep'], o['off']; g = G['flat']; tim = TXA[o['tex']]
+    # a part is kept whole or left out whole: dropping only its tiny faces left chips and fragments hanging in the lining
+    fine = False
+    if len(o['faces']) > 80 and not WHOLE.search(o['name']):
+        ar_ = [sum(np.linalg.norm(np.cross(v[i_[j]] - v[i_[0]], v[i_[j + 1]] - v[i_[0]])) for j in range(1, len(i_) - 1)) / 2 for _, i_, _, _ in o['faces']]
+        if np.mean(np.array(ar_) < MINA) > 0.5:
+            if diag < 0.30: continue
+            fine = True   # a large, finely modelled part: its tiny faces are left out as before
     for fi, (mat, idx, uvs, flags) in enumerate(o['faces']):
         if (oi, fi) in TAKEN: continue
         P = v[idx]; ctr = P.mean(0); inside = False
@@ -145,7 +152,7 @@ for oi, o in enumerate(O):
         nrm = np.cross(P[1] - P[0], P[2] - P[0]); ln = np.linalg.norm(nrm)
         if ln < 1e-12: continue
         area = sum(np.linalg.norm(np.cross(P[j] - P[0], P[j + 1] - P[0])) for j in range(1, len(P) - 1)) / 2
-        if area < 1e-9 or (area < MINA and np.linalg.norm(P.max(0) - P.min(0)) < 0.03 and len(o['faces']) > 80 and not WHOLE.search(o['name'])): continue  # tiny detail (bolts, edges of small parts): invisible at cockpit distance
+        if area < 1e-9 or (fine and area < MINA and np.linalg.norm(P.max(0) - P.min(0)) < 0.03): continue  # tiny detail (bolts, edges of small parts): invisible at cockpit distance
         nrm /= ln; T = np.stack([-P[:, 2], P[:, 1], P[:, 0]], 1); nT = np.array([-nrm[2], nrm[1], nrm[0]])
         UVs = np.array([(uvs[j][0] * rep[0] + off[0], 1 - (uvs[j][1] * rep[1] + off[1])) for j in range(len(idx))])
         # the face's own colour: the median of the texture over the face (16 points), so marks, chips, grain and lettering in the
@@ -190,7 +197,7 @@ for oi in np.unique(FO):
         sh2 = sh.copy(); sh2[K - 3:] = 0
         if sh2.sum() > 0: lab[hi_] = sh2.argmax()
 hi_ = (lab == K - 3) & (np.array(FY) > 0.40)   # straps and patches in fabric above the cushions: the light cover colour
-if hi_.any(): lab[hi_] = int(np.argmin(np.linalg.norm(cen[:K - 3] - np.array([71, 85, 104]), axis=1)))
+DEAD = hi_.copy()   # they are decals lying on the seat covers: left out
 # lettering and placards: the near-white paint is the source textures' label strips and markings (rows of pale dashes on the
 # breaker panels, strips on the sills), and large red faces are placards whose text is gone. Both take the paint around them
 # (PLAC, resolved with the islands below); small red parts (the sidestick buttons) stay red.
@@ -201,9 +208,10 @@ plac = np.isin(lab, LIGHTS) | ((lab == PR) & (cen[PR][0] > cen[PR][1] + 80) & (F
 # a small part is one material: its dominant one (corner faces of brackets and clips mapped to another paint showed as chips)
 for oi in np.unique(FO):
     m = FO == oi
-    if DIAGO[oi] < 0.30:
+    if DIAGO[oi] < 0.85:
+        thr_ = 0.55 if DIAGO[oi] < 0.30 else 0.75
         sh = np.bincount(lab[m & ~plac], weights=FA[m & ~plac], minlength=K)
-        if sh.sum() > 0 and sh.max() >= 0.55 * sh.sum(): lab[m & ~plac & (lab != PR)] = sh.argmax()   # small red parts (buttons) keep their red
+        if sh.sum() > 0 and sh.max() >= thr_ * sh.sum(): lab[m & ~plac & (lab != PR)] = sh.argmax()   # small red parts (buttons) keep their red
 DARK = int(np.argmin(cen[:K - 3].sum(1)))
 for _ in range(40):
     todo = np.nonzero(plac)[0]
@@ -235,10 +243,10 @@ for _ in range(6):
     if not ch: break
 PAL = cen / 255.0; print('materials', np.round(cen).astype(int).tolist(), 'area share', np.round(np.bincount(lab, weights=FA, minlength=K) / FA.sum(), 2).tolist())
 hdr = {'S': 16000, 'groups': [], 'lmax': LMAX}; blob = b''
-COS = np.cos(np.radians(38))
+COS = np.cos(np.radians(52))
 for t, g in G.items():
     if not g['F']: continue
-    g['F'] = refine(g['F'])
+    g['F'] = refine([f_ for f_ in g['F'] if not DEAD[int(round(f_[0][0][1][0]))]])
     # smooth normals: at each position, the area-weighted mean of the face normals within 38° of this face's normal
     at = collections.defaultdict(list)
     for tri, n in g['F']:
@@ -253,7 +261,7 @@ for t, g in G.items():
             I.append(key[k])
     P = np.array(Pl, np.int16); UV = np.array(UVl, np.float64); N = np.array(Nl, np.int8); I = np.array(I)
     Pf = P.astype(np.float64) / 16000; Nf = N.astype(np.float64); Nf /= np.maximum(1e-6, np.linalg.norm(Nf, axis=1, keepdims=True))
-    b = list(bake(Pf, Nf, 0)); KEY = np.array([0.0, 0.55, -0.83]); b[2] = np.clip(Nf @ KEY, 0, 1) * 0.45 + np.clip(Nf[:, 1], 0, 1) * 0.15
+    b = list(bake(Pf, Nf, 0)); KEY = np.array([0.0, 0.55, -0.83]); b[2] = np.clip(Nf @ KEY, 0, 1) * 0.30 + np.clip(Nf[:, 1], 0, 1) * 0.12
     # smooth the bake over the mesh (neighbours through the triangles): less ray noise, no blotches across cut-up faces
     tri = I.reshape(-1, 3); nb = len(P)
     for it in range(3):
