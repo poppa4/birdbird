@@ -16,12 +16,13 @@
    0.0
   ]
  },
- "triangles": 49644,
+ "triangles": 74608,
  "nodes": [
   "da42_cockpit",
   "exterior",
   "flap_switch",
   "gear_handle",
+  "glare_lip",
   "glass",
   "glass_side",
   "panel_face",
@@ -32,6 +33,8 @@
   "pedestal_face",
   "power_L",
   "power_R",
+  "prop_L",
+  "prop_R",
   "rudder_pedals",
   "shell",
   "stick_L",
@@ -97,35 +100,35 @@
     220
    ],
    "origin": [
-    -0.592,
-    -0.01,
-    -0.79
+    -0.504,
+    -0.318181,
+    -1.092904
    ],
    "ex": [
-    0.00074,
+    0.00063,
     0.0,
     0.0
    ],
    "ey": [
     0.0,
-    -0.000728758,
-    0.0001285
+    -0.000333849,
+    0.00053427
    ],
    "pos": [
     0.0,
-    -0.644019,
-    -0.678205
+    -0.60863,
+    -0.628089
    ],
-   "pitch": -10,
+   "pitch": -58,
    "yaw": 0,
-   "ps": 0.00074,
+   "ps": 0.00063,
    "drawing": "da42panel.js 1600\u00d7980",
    "drawing_size": [
     1600,
     980
    ],
    "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)",
-   "note": "same plane as the panel (as in the app), 0.8 mm in front"
+   "note": "its own plane (da42-3d.js subs: ped), sloping down and aft from the bottom edge of the panel"
   }
  },
  "controls": {
@@ -187,11 +190,29 @@
     "note": "+ = top right; apply pitch then roll (Euler XZ, as da42-3d.js)"
    }
   },
+  "glare_lip": {
+   "pivot": [
+    0.0,
+    -0.06281,
+    -0.74007
+   ],
+   "translate": {
+    "axis": [
+     0,
+     1,
+     0
+    ],
+    "positions": {
+     "FIXED": 0
+    }
+   },
+   "note": "does not move"
+  },
   "power_L": {
    "pivot": [
-    -0.0592,
-    -0.64799,
-    -0.76889
+    -0.0504,
+    -0.72201,
+    -0.71083
    ],
    "rotate": {
     "axis": [
@@ -201,18 +222,18 @@
     ],
     "unit": "deg",
     "positions": {
-     "MAX": -23.15,
-     "IDLE": 23.15
+     "MAX": -13.17,
+     "IDLE": 13.17
     },
-    "value_to_angle": "angle = \u2212atan((854 \u2212 v)\u00b70.00074/0.09), v = 906 \u2212 104\u00b7power (panel units); \u2212 = knob up/forward",
+    "value_to_angle": "angle = \u2212atan((854 \u2212 v)\u00b70.00063/0.14), v = 906 \u2212 104\u00b7power (panel units); \u2212 = knob up/forward",
     "note": "modelled at mid travel (0\u00b0)"
    }
   },
   "power_R": {
    "pivot": [
-    -0.0074,
-    -0.64799,
-    -0.76889
+    -0.0063,
+    -0.72201,
+    -0.71083
    ],
    "rotate": {
     "axis": [
@@ -222,10 +243,10 @@
     ],
     "unit": "deg",
     "positions": {
-     "MAX": -23.15,
-     "IDLE": 23.15
+     "MAX": -13.17,
+     "IDLE": 13.17
     },
-    "value_to_angle": "angle = \u2212atan((854 \u2212 v)\u00b70.00074/0.09), v = 906 \u2212 104\u00b7power (panel units); \u2212 = knob up/forward",
+    "value_to_angle": "angle = \u2212atan((854 \u2212 v)\u00b70.00063/0.14), v = 906 \u2212 104\u00b7power (panel units); \u2212 = knob up/forward",
     "note": "modelled at mid travel (0\u00b0)"
    }
   },
@@ -268,9 +289,9 @@
   },
   "trim_wheel": {
    "pivot": [
-    0.10508,
-    -0.64014,
-    -0.70732
+    0.08946,
+    -0.62837,
+    -0.64934
    ],
    "rotate": {
     "axis": [

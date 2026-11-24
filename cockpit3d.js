@@ -509,7 +509,14 @@ async function glbBuild(pk,side){ loading(0.9); await pause();
       for(let t=0;t<I.length;t+=3){ if(facing(F,I[t],I[t+1],I[t+2],EYE)<0.3) continue; const x=(P[I[t]*3]+P[I[t+1]*3]+P[I[t+2]*3])/3, y=(P[I[t]*3+1]+P[I[t+1]*3+1]+P[I[t+2]*3+1])/3, z=(P[I[t]*3+2]+P[I[t+1]*3+2]+P[I[t+2]*3+2])/3, d=(x-c.x)**2+(y-c.y)**2+(z-c.z)**2; if(d<bd){ bd=d; g.userData.at=new THREE.Vector3(x,y,z); } } }
     const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({visible:false,side:THREE.DoubleSide})); h.add(m); h.userData.u=i; holders.push(h); proxies.push(m); u.proxy=m; u.holder=h; });
   const mainHolders=holders.filter(h=>!pk.units[h.userData.u].fg), fgHolders=holders.filter(h=>pk.units[h.userData.u].fg);
-  const b={meshes:[back,...hq.main,...(gl?[gl]:[]),...mainHolders],fg:[...hq.fg,...fgHolders],grab:proxies,glb:true,lod:0};
+  /* propeller discs (cfg.propDisc): once a propeller turns too fast for its blades to be seen (they are hidden then), a faint
+     blur where they sweep, as from the seat. One small textured circle each, drawn before the canopy glass */
+  const discs=[]; if(cfg.propDisc) pk.units.forEach(u=>{ if(!u.blade||!(u.min.x<=u.max.x)) return; const R=Math.max(u.max.x-u.min.x,u.max.y-u.min.y)/2;
+    const c=document.createElement('canvas'); c.width=c.height=128; const x=c.getContext('2d'), g=x.createRadialGradient(64,64,0,64,64,64), k='rgba(26,28,31,';
+    [[0,0],[0.17,0],[0.3,0.12],[0.7,0.07],[0.93,0.085],[0.985,0.035],[1,0]].forEach(([t,al])=>g.addColorStop(t,k+al+')')); x.fillStyle=g; x.fillRect(0,0,128,128);
+    const m=new THREE.Mesh(new THREE.CircleGeometry(R,48),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,side:THREE.DoubleSide}));
+    m.position.copy(u.pivot); m.renderOrder=4; m.visible=false; m.frustumCulled=false; u.disc=m; discs.push(m); });
+  const b={meshes:[back,...hq.main,...discs,...(gl?[gl]:[]),...mainHolders],fg:[...hq.fg,...fgHolders],grab:proxies,glb:true,lod:0};
   // level of detail: governor level 2 and below draw one mesh per pass
   b.setLod=function(l){ if(l===b.lod) return; const cur=b.lod?lo:hq; if(l&&!lo){ lo={main:[mk(loAcc([...pk.groups.main.values()]),true)],fg:pk.groups.fg.size?[mk(loAcc([...pk.groups.fg.values()]),true,true)]:[]}; }
     const nx=l?lo:hq; cur.main.forEach(m=>scene.remove(m)); cur.fg.forEach(m=>fgScene.remove(m)); nx.main.forEach(m=>scene.add(m)); nx.fg.forEach(m=>fgScene.add(m)); b.lod=l; needs=3; };
@@ -522,6 +529,7 @@ async function glbBuild(pk,side){ loading(0.9); await pause();
     pk.units.forEach((u,i)=>{ if(!i) return; const t=tg[u.name]; if(!t) return; const c=val[u.name]; let mv=false;
       for(let j=0;j<3;j++){ const want=+t[j]||0; if(!isFinite(want)) continue; const nv=direct.has(u.name)||u.blade?want:Math.abs(want-c[j])<1e-5?want:c[j]+(want-c[j])*k; if(Math.abs(nv-c[j])>1e-6){ c[j]=nv; mv=true; } }
       if(u.blade){ u.spin=((u.spin||0)+(+t[1]||0)*6*(dt||0.016))%360; if(!c[0]&&(+t[1]||0)>0) mv=true; }
+      if(u.disc&&u.disc.visible!==!!c[0]){ u.disc.visible=!!c[0]; mv=true; }
       if(!mv&&u.done) return; u.done=true; ch=true;
       if(u.blade){ if(c[0]) M.makeScale(0,0,0); else { M.makeTranslation(u.pivot.x,u.pivot.y,u.pivot.z).multiply(R1.makeRotationZ(-u.spin*D2)).multiply(Tb.makeTranslation(-u.pivot.x,-u.pivot.y,-u.pivot.z)); } U.uCtl.value[i].copy(M); return; }
       unitMatrix(u,c,M); U.uCtl.value[i].copy(M);

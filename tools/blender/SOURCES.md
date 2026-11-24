@@ -17,7 +17,7 @@ python3 tools/blender/check_glb.py c172 b200 da42                  # loads each 
 ```
 
 Environment: `COCKPIT_TEX` (texture dir, default /tmp/blender3d/tex), `COCKPIT_SHOTS` (preview dir, default
-/tmp/gltfshots), `AO_SAMPLES` (AO bake samples, default 48), `PREVIEW_SAMPLES` (Cycles preview, default 40),
+/tmp/gltfshots), `AO_SAMPLES` (AO bake samples, default 48; the DA42 in the repo was baked with 64), `AO_SIZE` (DA42 AO atlas, default 2048), `PREVIEW_SAMPLES` (Cycles preview, default 40),
 `PANEL_IMG_C172|B200|DA42` (a picture of the whole panel drawing, only used to dress the preview render).
 
 - `cocklib.py`: modelling kit (parametric sheets, rounded boxes with deformers, swept tubes, lathes, prisms),
@@ -42,6 +42,7 @@ exactly, or the `*_face` meshes can carry the panel as a texture).
 | B200 | two-piece windshield with centre post, power / propeller / condition levers on the pedestal (black / blue / red knobs), wheel-shaped gear handle, fuel panel on the left sidewall console, circuit breakers on the right | Wikipedia "Beechcraft Super King Air" (general description); the site's own b200panel.js layout |
 | DA42 | cabin width ≈1.20 m, cabin height ≈1.20 m, cabin length ≈2.6 m; span 14.55 m, length 9.19 m | aerocorner.com "Diamond DA42 Twin Star"; Diamond Aircraft DA42 tech specs page (diamondaircraft.com) |
 | DA42 | one-piece forward-hinged canopy with a roll-over bow, centre sticks, engine-control console below the panel centre | Wikipedia "Diamond DA42" (general description); the site's own da42panel.js layout |
+| DA42 | engine-control console sloping down and aft between the seats from the bottom edge of the panel (its own plane, `PED` in da42.py = sub-plane `ped` in da42-3d.js), padded glareshield edge over the top of the panel (`glare_lip`, drawn over the live panel), stowed three-point belts, engines in wing nacelles ahead of the leading edge with three-blade propellers (`prop_L`, `prop_R`: one mesh per side, so each turns about its own hub), winglets | Wikipedia "Diamond DA42" (general description); proportions are approximations, not manufacturer data |
 
 Control travels in the JSON sidecars (wheel rotation ±45°, column ±7.5–8 cm, pedals ±16°, sticks)
 are generic training-device values, not certified figures; the app may tune them.
