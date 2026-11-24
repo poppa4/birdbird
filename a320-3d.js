@@ -125,7 +125,7 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=2').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=3').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
@@ -153,8 +153,12 @@ function init(o){
     for(const k in hdr.views){ const p=P[k], hv=hdr.views[k]; if(!p) continue; const n=hv.nx*hv.ny, raw=new Int16Array(buf.slice(base+hv.off,base+hv.off+n*2)), a=new Float32Array(n), cl=HCL[k]||[-0.05,0.05];
       for(let i=0;i<n;i++) a[i]=Math.max(cl[0],Math.min(cl[1],raw[i]/hdr.scale));
       HM[k]={nx:hv.nx,ny:hv.ny,a};
-      const g=new THREE.PlaneGeometry(p.v.W,p.v.H,hv.nx-1,hv.ny-1), pa=g.attributes.position.array; for(let i=0;i<n;i++) pa[i*3+2]=a[i];
-      g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(n*3).fill(1),3)); g.computeBoundingSphere();
+      /* the drawn surface is coarser than the height field (every 2nd sample, every 3rd on small devices): a quarter of the
+         triangles, drawn twice (picture + light layer); clicks and the screens still use the full field */
+      const S=mobile||phone()?3:2, mx=Math.round((hv.nx-1)/S)+1, my=Math.round((hv.ny-1)/S)+1;
+      const g=new THREE.PlaneGeometry(p.v.W,p.v.H,mx-1,my-1), pa=g.attributes.position.array; for(let j=0;j<my;j++) for(let i=0;i<mx;i++) pa[(j*mx+i)*3+2]=hAt(k,i/(mx-1),j/(my-1));
+      const nv=mx*my;
+      g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(nv*3).fill(1),3)); g.computeBoundingSphere();
       const old=p.mesh.geometry; p.mesh.geometry=g; if(p.ov) p.ov.geometry=g; old.dispose(); }
     for(const x of disp){ const [dx,dy,dw,dh]=x.d.r, c=toP(dx+dw/2,dy+dh/2,0.0015); if(c){ x.c=c; x.m.matrix.setPosition(c); } }
     return true; }).catch(e=>{ console.warn('A320 panel depth',e); return false; });
@@ -180,9 +184,18 @@ function init(o){
   function pick(nx,ny){ // nx, ny in -1..1
     updCam(0); const dir=new THREE.Vector3(nx,ny,0.5).unproject(cam).sub(cam.position).normalize(); ray.set(cam.position,dir);
     let best=null, bt=1e9;
-    if(Object.keys(HM).length){ rc.ray.copy(ray); const ms=[]; for(const k in P) if(P[k].mesh.visible&&HM[k]) ms.push(P[k].mesh);
-      const hit=rc.intersectObjects(ms,false)[0];
-      if(hit&&hit.uv){ const k=Object.keys(P).find(z=>P[z].mesh===hit.object), r=P[k].v.r; bt=hit.distance; best=[r[0]+hit.uv.x*r[2],r[1]+(1-hit.uv.y)*r[3]]; } }
+    /* panels with depth: march the ray through each height field in the panel's own frame (a few hundred lookups; the
+       three.js raycaster against the full surfaces cost several milliseconds on every mouse move) */
+    for(const k in HM){ const p=P[k]; if(!p||!p.mesh.visible) continue; const v=p.v, cl=HCL[k]||[-0.05,0.05];
+      const o=ray.origin.clone().sub(v.C), oz=o.dot(v.FN), dz=ray.direction.dot(v.FN); if(dz>=-1e-4) continue; // only from the front
+      const ox=o.dot(v.EX), oy=o.dot(v.EY), dx=ray.direction.dot(v.EX), dy=ray.direction.dot(v.EY);
+      const t0=Math.max(0,(cl[1]+0.002-oz)/dz), t1=(cl[0]-0.002-oz)/dz; if(t1<=t0||t0>=bt) continue;
+      const below=t=>{ const u=(ox+dx*t)/v.W+0.5, w=0.5-(oy+dy*t)/v.H; if(u<0||u>1||w<0||w>1) return null; return oz+dz*t<=hAt(k,u,w); };
+      let a=t0, hitT=-1; const st=0.003;
+      for(let t=t0;t<=t1&&t<bt;t+=st){ const b=below(t); if(b){ hitT=t; break; } if(b===false) a=t; }
+      if(hitT<0) continue;
+      for(let i=0;i<8;i++){ const m=(a+hitT)/2; if(below(m)) hitT=m; else a=m; }
+      const u=(ox+dx*hitT)/v.W+0.5, w=0.5-(oy+dy*hitT)/v.H; bt=hitT; best=[v.r[0]+u*v.r[2],v.r[1]+w*v.r[3]]; }
     for(const k in VIEWS){ if(HM[k]) continue; const v=VIEWS[k]; pl.setFromNormalAndCoplanarPoint(v.FN,v.C); if(!ray.intersectPlane(pl,hitP)) continue; const t=hitP.distanceTo(cam.position); if(t>=bt) continue;
       const d=hitP.clone().sub(v.C), u=d.dot(v.EX)/v.W+0.5, w=0.5-d.dot(v.EY)/v.H; if(u<0||u>1||w<0||w>1) continue; bt=t; best=[v.r[0]+u*v.r[2],v.r[1]+w*v.r[3]]; }
     return best; }

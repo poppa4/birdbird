@@ -7,7 +7,7 @@ Output (a derived work, GPL-2.0 as well): models/a320-shell.bin and models/a320-
 Binary: 4-byte header length + JSON header, then per group: Int16 positions (x,y,z / S), Uint16 uv (normalised to the
 group's uv box), Uint8 baked light (r,g,b,0), Uint16 or Uint32 indices. Lighting is baked (embree, 96 rays a vertex): the share of
 sky each vertex sees through the windows, a contact shade from what lies within 25 cm (corners, gaps, under lips) and the
-sun through the windows with its shadows; big faces are cut to 10 cm first and normals are smoothed within 38°, and the
+sun through the windows with its shadows; faces are cut where the light changes across them (down to 8 cm) and normals are smoothed within 38°, and the
 bake is smoothed over the mesh, so the light runs across the surfaces instead of changing face by face. The header also carries the same bake on a grid over each rendered panel (hdr.panels). Frame: three.js (x right, y up, z aft) = (-z, y, x) of the model.
 Run: python3 shell.py /path/to/A320-family/Models/FlightDeck/res /path/to/birdbird/models"""
 import sys, re, json, struct, os, numpy as np, collections
@@ -68,13 +68,46 @@ def shade(b, sun=1.0):
     return np.clip(col, 0, LMAX)
 TXP = {t: Image.open(os.path.join(RES, t)).convert('RGB').resize((512, 512)) for t in TEX}
 G = collections.defaultdict(lambda: {'F': []})
-EMAX = 0.10  # m: big faces are cut up so the baked light can change across them (corners, sun patches)
+EMAX = 0.30  # m: faces are first cut to 30 cm; refine() then cuts further only where the baked light changes across them
 def split(tri, n, d=0):
     e = [np.linalg.norm(tri[(i + 1) % 3][0] - tri[i][0]) for i in range(3)]; i = int(np.argmax(e))
     if e[i] <= EMAX or d > 9: return [(tri, n)]
     a, b, c = tri[i], tri[(i + 1) % 3], tri[(i + 2) % 3]
     m = ((a[0] + b[0]) / 2, ((a[1][0] + b[1][0]) / 2, (a[1][1] + b[1][1]) / 2))
     return split([a, m, c], n, d + 1) + split([m, b, c], n, d + 1)
+def refine(F, emin=0.08, tol=0.10, levels=5):
+    # cut a face at the middle of its longest edge while the light there differs from the mean of the edge's ends by more
+    # than tol, or its corners differ by more than 3*tol (light value: the green channel of shade()); keeps the triangle count
+    # low where the light is even (most of the lining) and fine where it changes (corners, sun patches, shadow edges)
+    cache = {}
+    def L(pts):
+        ks = [(tuple((p * 4000).round().astype(int)), tuple((n * 50).round().astype(int))) for p, n in pts]
+        new = [i for i, k in enumerate(ks) if k not in cache]
+        if new:
+            P_ = np.array([pts[i][0] for i in new]); N_ = np.array([pts[i][1] for i in new])
+            v = shade(bake(P_, N_))[:, 1]
+            for i, x in zip(new, v): cache[ks[i]] = x
+        return np.array([cache[k] for k in ks])
+    for lev in range(levels):
+        cand = []
+        for fi, (tri, n) in enumerate(F):
+            e = [np.linalg.norm(tri[(i + 1) % 3][0] - tri[i][0]) for i in range(3)]; i = int(np.argmax(e))
+            if e[i] > emin: cand.append((fi, i))
+        if not cand: break
+        pts = []
+        for fi, i in cand:
+            tri, n = F[fi]; a, b = tri[i][0], tri[(i + 1) % 3][0]
+            pts += [(tri[0][0], n), (tri[1][0], n), (tri[2][0], n), ((a + b) / 2, n)]
+        v = L(pts).reshape(-1, 4); out = []; cs = dict(cand); ci = {fi: j for j, (fi, _) in enumerate(cand)}
+        for fi, (tri, n) in enumerate(F):
+            if fi not in cs: out.append((tri, n)); continue
+            i = cs[fi]; w = v[ci[fi]]; a, b, c = tri[i], tri[(i + 1) % 3], tri[(i + 2) % 3]
+            if abs(w[3] - (w[i] + w[(i + 1) % 3]) / 2) > tol or w[:3].max() - w[:3].min() > 3 * tol:
+                m = ((a[0] + b[0]) / 2, ((a[1][0] + b[1][0]) / 2, (a[1][1] + b[1][1]) / 2))
+                out += [([a, m, c], n), ([m, b, c], n)]
+            else: out.append((tri, n))
+        print('  refine', lev, len(F), '->', len(out)); F = out
+    return F
 for o in O:
     if o['tex'] not in TEX: continue
     v = o['v']; diag = np.linalg.norm(v.max(0) - v.min(0))
@@ -104,6 +137,7 @@ hdr = {'S': 16000, 'groups': [], 'lmax': LMAX}; blob = b''
 COS = np.cos(np.radians(38))
 for t, g in G.items():
     if not g['F']: continue
+    g['F'] = refine(g['F'])
     # smooth normals: at each position, the area-weighted mean of the face normals within 38° of this face's normal
     at = collections.defaultdict(list)
     for tri, n in g['F']:
