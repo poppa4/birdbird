@@ -148,14 +148,14 @@ function init(o){
     const m=new THREE.Mesh(new THREE.PlaneGeometry(w/v.r[2]*v.W,h/v.r[3]*v.H),new THREE.MeshBasicMaterial({map:tex,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-14}));
     m.matrixAutoUpdate=false; m.matrix.copy(basis(v)).setPosition(c); scene.add(m); m.geometry.computeBoundingSphere(); disp.push({d,tex,m,c,wm:w/v.r[2]*v.W}); d.tex=tex; d.mesh=m; }
   /* ---- the panels' depth: height fields from models/a320-relief.bin (see HM above); the screens move onto their surface ---- */
-  const RELIEF=CF3?Promise.resolve(false):fetch('models/a320-relief.bin?v=6').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  const RELIEF=CF3?Promise.resolve(false):fetch('models/a320-relief.bin?v=7').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl;
     for(const k in hdr.views){ const p=P[k], hv=hdr.views[k]; if(!p) continue; const n=hv.nx*hv.ny, raw=new Int16Array(buf.slice(base+hv.off,base+hv.off+n*2)), a=new Float32Array(n), cl=HCL[k]||[-0.05,0.05];
       for(let i=0;i<n;i++) a[i]=Math.max(cl[0],Math.min(cl[1],raw[i]/hdr.scale));
       HM[k]={nx:hv.nx,ny:hv.ny,a};
       /* the drawn surface is coarser than the height field (every 2nd sample, every 3rd on small devices): a quarter of the
          triangles, drawn twice (picture + light layer); clicks and the screens still use the full field */
-      const S=mobile||phone()?3:2, mx=Math.round((hv.nx-1)/S)+1, my=Math.round((hv.ny-1)/S)+1;
+      const S=mobile||phone()?3:(k==='front'?1:2) /* the glareshield's edges run at a slant across the grid: full resolution there keeps their steps under 4 mm */, mx=Math.round((hv.nx-1)/S)+1, my=Math.round((hv.ny-1)/S)+1;
       /* A height field cannot hold a step: a cell that spans one (the glareshield's edges, the panel's rim, a guard) used to be
          a slanted face with the picture smeared down it, and where the step runs across the grid the slants made a saw edge.
          Such a cell is now flat, at the level of its own middle, and the step is a wall along the cell's edge that carries the

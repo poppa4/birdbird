@@ -80,6 +80,18 @@ for k, (c, n, up, W, H) in VIEWS.items():
         from scipy.ndimage import distance_transform_edt
         hit = np.zeros(len(O), bool); hit[ri] = True; hit = hit.reshape(len(t), len(u))
         ii = distance_transform_edt(~hit, return_distances=False, return_indices=True); h = h.reshape(len(t), len(u))[ii[0], ii[1]].reshape(-1)
+        if k == 'front':
+            # the glareshield's top lip: its upper surface is seen almost edge-on from this view, so the rays there return
+            # heights that jump by centimetres from one sample to the next, and the outline became a row of little tabs and
+            # gaps against the windshield. From the picture's outline down to 2 cm below it, each column takes the height of
+            # the glareshield's front face just below (smoothed along the edge); the real top surface is in the shell.
+            h2 = h.reshape(len(t), len(u)); K = 5; first = np.where(hit.any(0), hit.argmax(0), 0); src = np.minimum(first + K, len(t) - 1)
+            face = h2[src, np.arange(len(u))]
+            from scipy.ndimage import median_filter as _mf, uniform_filter1d as _uf
+            face = _uf(_mf(face, size=9, mode='nearest'), size=7, mode='nearest')
+            for xi in range(len(u)):
+                if hit[:, xi].any() and first[xi] < len(t) * 0.45: h2[:src[xi] + 1, xi] = face[xi]
+            h = h2.reshape(-1)
     h = np.clip(h, -0.50, 0.75).reshape(ny, nx)
     # the panels' faces are flat: tiny plates and screw heads give a centimetre of noise that would show as streaks, so a
     # median filter keeps the real steps (glareshield, bezels, knobs) and drops the noise
