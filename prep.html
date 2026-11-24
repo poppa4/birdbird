@@ -16,7 +16,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="lab.css?v=15">
-<link rel="stylesheet" href="site.css?v=40">
+<link rel="stylesheet" href="site.css?v=41">
 <link rel="stylesheet" href="train.css?v=4">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
@@ -352,7 +352,7 @@ body:not(.nofab) #askbar{display:none}
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
 <body data-title="Briefing pack">
-<script src="site.js?v=130"></script>
+<script src="site.js?v=131"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -398,7 +398,7 @@ body:not(.nofab) #askbar{display:none}
 <script src="wxkit.js?v=3"></script>
 <script src="aip.js?v=7"></script>
 <script src="store.js?v=4"></script>
-<script src="flightlink.js?v=3"></script>
+<script src="flightlink.js?v=4"></script>
 <script>
 (function(){
 'use strict';
@@ -758,7 +758,7 @@ el('sel').onchange=()=>{ P=ALL.find(p=>p.id===el('sel').value); fill(); };
 function pickTpl(){ return new Promise(res=>{ const d=document.createElement('dialog'); d.className='pp'; d.innerHTML=`<b>${L({en:'New briefing pack',no:'Ny briefingpakke'})}</b><p class="note">${L({en:'Start from a template. You can add or remove pages on the cover.',no:'Start fra en mal. Du kan legge til eller fjerne sider på forsiden.'})}</p><div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">${['ifr','vfr','local','pc','cat','blank'].map(k=>[k,TPL[k]]).map(([k,t])=>`<button class="btn" data-k="${k}" style="text-align:left">${esc(L(t.n))}</button>`).join('')}</div><div class="btns" style="margin-top:12px"><button class="btn" data-no>${L({en:'Cancel',no:'Avbryt'})}</button></div>`;
   document.body.appendChild(d); d.showModal(); const done=v=>{ d.close(); d.remove(); res(v); }; d.querySelector('[data-no]').onclick=()=>done(null); d.addEventListener('cancel',()=>done(null)); d.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>done(b.dataset.k)); }); }
 /* A new pack starts with what does not change from flight to flight: the pilot's name from your latest pack and the default aircraft
-   in My workspace. The cover offers your aircraft's registrations and today's and tomorrow's date as suggestions. Nothing is forced. */
+   in Workspace. The cover offers your aircraft's registrations and today's and tomorrow's date as suggestions. Nothing is forced. */
 let WSAC=[];
 function wsAircraft(){ return new Promise(res=>{ try{ const r=indexedDB.open('birdbird-workspace',1); r.onupgradeneeded=()=>{ const db=r.result; db.createObjectStore('items',{keyPath:'id'}); db.createObjectStore('kv'); db.createObjectStore('trashdocs',{keyPath:'id'}); };
   r.onerror=r.onblocked=()=>res([]); r.onsuccess=()=>{ try{ const q=r.result.transaction('items').objectStore('items').getAll(); q.onsuccess=()=>{ const l=(q.result||[]).filter(it=>it&&it.kind==='aircraft'&&!it.deletedAt&&!it.gone); r.result.close(); res(l); }; q.onerror=()=>{ r.result.close(); res([]); }; }catch(e){ res([]); } }; }catch(e){ res([]); } }); }

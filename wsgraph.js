@@ -1,4 +1,4 @@
-/* NORDAP – My Workspace map, core logic (no DOM): runs in the browser (window.WSGRAPH) and in node tests.
+/* NORDAP – Workspace map, core logic (no DOM): runs in the browser (window.WSGRAPH) and in node tests.
    buildGraph   the workspace as nodes and links, only from relations already in the data:
                   document -> aircraft (acIds) · links made by hand (note, notebook, document, pack and route marks:
                   links, see addLink in workspacecore.js; m: 1 on the link) · note -> cited page

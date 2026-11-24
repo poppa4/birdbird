@@ -1,4 +1,4 @@
-/* NORDAP – My workspace (page styles; tokens and shared components from site.css and lab.css).
+/* NORDAP – Workspace (page styles; tokens and shared components from site.css and lab.css).
    One idea carries the page: every item says where it is kept. The custody band on Overview and the
    small "kept" marks on rows use the same three states: this device, your account, a backup file. */
 .ws{--rail:208px;
@@ -523,7 +523,7 @@ html.ws-deskmode .nsearch,html.ws-deskmode .ws-status{display:none}
 @media (pointer:coarse){.wsm-ng{height:44px}.wsm-card .gl .ux{width:40px;height:40px}.ws-pick label{min-height:44px}}
 @media (max-width:640px){.wsm-ng{padding:0 9px}}
 
-/* Flight Intelligence, always one click away in My workspace */
+/* Flight Intelligence, always one click away in Workspace */
 .ws-rail a[href="#/fi"]{color:var(--accent);font-weight:600}
 .ws-rail a[href="#/fi"]::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(42,107,163,.15);align-self:center;flex:none;margin-right:-2px;order:-1}
 .ws-rail a[href="#/fi"]{justify-content:flex-start;gap:10px}

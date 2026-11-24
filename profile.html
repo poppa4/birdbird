@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>My training · NORDAP</title>
-<meta name="description" content="My page on NORDAP: your briefing packs, saved routes, account and data.">
+<meta name="description" content="Your NORDAP account: sign-in, settings and your data.">
 <link rel="canonical" href="https://nordap.eu/profile">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NORDAP">
 <meta property="og:title" content="My training · NORDAP">
-<meta property="og:description" content="My page on NORDAP: your briefing packs, saved routes, account and data.">
+<meta property="og:description" content="Your NORDAP account: sign-in, settings and your data.">
 <meta property="og:url" content="https://nordap.eu/profile">
 <meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="lab.css?v=15">
-<link rel="stylesheet" href="site.css?v=40">
+<link rel="stylesheet" href="site.css?v=41">
 <style>
 /* ---------- My training (page-only styles; tokens from site.css) ---------- */
 .mt-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:24px 48px;align-items:end;margin:40px 0 0}
@@ -259,14 +259,14 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 </style>
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
-<body data-title="My page">
-<script src="site.js?v=130"></script>
+<body data-title="Account">
+<script src="site.js?v=131"></script>
 <div class="page">
   <header class="mt-head" id="top">
     <div class="brand">
-      <div class="eyebrow on">NORDAP · My page</div>
-      <h1>My page</h1>
-      <p>Your briefing packs, saved routes and account.</p>
+      <div class="eyebrow on">NORDAP · Account</div>
+      <h1>Account</h1>
+      <p>Sign-in, settings and your data.</p>
     </div>
     <div class="rankp" id="rank" aria-live="polite"></div>
   </header>
@@ -278,7 +278,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
   </div>
 
   <nav class="snav" aria-label="On this page">
-    <a href="#planning">Planning</a><a href="#account">Account</a><a href="#data">Your data</a>
+    <a href="#account">Sign-in and settings</a><a href="#data">Your data</a>
   </nav>
 
   <section class="card" id="next">
@@ -306,14 +306,6 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
     <div id="trBody"></div>
   </section>
 
-  <section class="card" id="planning">
-    <h2>Planning</h2>
-    <p class="lead">Your briefing packs and the routes you have drawn in Route Explorer.</p>
-    <div class="plan2">
-      <div class="plist"><h3><span>Briefing packs</span><a href="prep.html">Open →</a></h3><div id="packs"></div></div>
-      <div class="plist"><h3><span>Saved routes</span><a href="route.html">Open →</a></h3><div id="routes"></div></div>
-    </div>
-  </section>
 
   <section class="card" id="achievements">
     <div class="shead"><h2>Achievements</h2><span class="note" id="achSum"></span></div>
@@ -340,7 +332,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
     <h2>Your data</h2>
     <div class="callout info" id="dataNote"><span class="ct">Stored in this browser only</span>Your progress, briefing packs and routes live in this browser on this device. Nothing is sent to a server, and nothing syncs between devices yet. Clearing your browser data deletes it, so export a copy now and then.</div>
     <div class="dgrid">
-      <div class="box"><b class="t">Export</b><p>Download everything as one JSON file: your account (when you are signed in) and everything NORDAP keeps in this browser, from progress and flashcards to briefing packs, routes and My Workspace.</p><div class="btns"><button class="btn pri" id="exp">Download all my data</button></div><p class="dmsg" id="expMsg"></p></div>
+      <div class="box"><b class="t">Export</b><p>Download everything as one JSON file: your account (when you are signed in) and everything NORDAP keeps in this browser, from progress and flashcards to briefing packs, routes and Workspace.</p><div class="btns"><button class="btn pri" id="exp">Download all my data</button></div><p class="dmsg" id="expMsg"></p></div>
       <div class="box"><b class="t">Import</b><p>Load a progress file from another device or browser. Your best results are kept, and newer packs and routes win.</p><div class="btns"><button class="btn" id="impBtn">Choose a file…</button><input type="file" id="impFile" accept=".json,application/json,text/plain" hidden></div><p class="dmsg" id="impMsg"></p></div>
       <div class="box"><b class="t">Start over</b><p>Delete your training progress in this browser. You choose whether briefing packs and routes go too.</p><div class="btns"><button class="btn danger" id="rsBtn">Reset progress…</button></div><p class="dmsg" id="rsMsg"></p></div>
     </div>
@@ -358,14 +350,14 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 </div>
 <script src="lab.js?v=61"></script>
 <script src="store.js?v=4"></script>
-<script src="localdata.js?v=4"></script>
+<script src="localdata.js?v=5"></script>
 <script>
 (function(){
 'use strict';
 const {T,L,el}=LAB;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 LAB.add({},{
- 'My page':'Min side','NORDAP · My page':'NORDAP · Min side','Your briefing packs, saved routes and account.':'Briefingpakkene dine, lagrede ruter og konto.','NORDAP · My training':'NORDAP · Min trening','My training':'Min trening','My training · NORDAP':'Min trening · NORDAP',
+ 'Account':'Konto','NORDAP · Account':'NORDAP · Konto','Sign-in, settings and your data.':'Innlogging, innstillinger og dataene dine.','Sign-in and settings':'Innlogging og innstillinger','NORDAP · My training':'NORDAP · Min trening','My training':'Min trening','My training · NORDAP':'Min trening · NORDAP',
  'Your rank, what to do next, and everything you have done in the labs, the type rating trainer and your flight planning, in one place.':'Rangen din, hva du bør gjøre nå, og alt du har gjort i labbene, typeratingtreneren og flyplanleggingen, samlet på ett sted.',
  'Next up':'Neste','Learning path':'Læringsløp','Type rating':'Typerating','Planning':'Planlegging','Achievements':'Prestasjoner','Your data':'Dine data',
  'Open Virtual Labs':'Åpne Virtual Labs','Nine modules in the recommended order. A lab counts as done when you score 60 % or more on its quiz.':'Ni moduler i anbefalt rekkefølge. En lab regnes som ferdig når du får 60 % eller mer på quizen.',
@@ -374,14 +366,14 @@ LAB.add({},{
  'Every test, drill, simulator mission and radio scenario earns experience points toward your rank. Your best result counts, so you can always try again. An achievement is earned at 80 %.':'Hver test, drill, simulatoroppdrag og radioscenario gir erfaringspoeng mot rangen din. Det beste resultatet teller, så du kan alltid prøve igjen. En prestasjon er oppnådd ved 80 %.',
  'Stored in this browser only':'Lagret bare i denne nettleseren',
  'Your progress, briefing packs and routes live in this browser on this device. Nothing is sent to a server, and nothing syncs between devices yet. Clearing your browser data deletes it, so export a copy now and then.':'Progresjonen, briefingpakkene og rutene dine ligger i denne nettleseren på denne enheten. Ingenting sendes til en server, og ingenting synkroniseres mellom enheter ennå. Sletter du nettleserdataene, forsvinner de, så eksporter en kopi innimellom.',
- 'Export':'Eksporter','Download everything as one JSON file: your account (when you are signed in) and everything NORDAP keeps in this browser, from progress and flashcards to briefing packs, routes and My Workspace.':'Last ned alt som én JSON-fil: kontoen din (når du er logget inn) og alt NORDAP har i denne nettleseren, fra progresjon og flashkort til briefingpakker, ruter og Mitt arbeidsområde.','Download all my data':'Last ned alle dataene mine',
+ 'Export':'Eksporter','Download everything as one JSON file: your account (when you are signed in) and everything NORDAP keeps in this browser, from progress and flashcards to briefing packs, routes and Workspace.':'Last ned alt som én JSON-fil: kontoen din (når du er logget inn) og alt NORDAP har i denne nettleseren, fra progresjon og flashkort til briefingpakker, ruter og Workspace.','Download all my data':'Last ned alle dataene mine',
  'Import':'Importer','Load a progress file from another device or browser. Your best results are kept, and newer packs and routes win.':'Last inn en progresjonsfil fra en annen enhet eller nettleser. De beste resultatene beholdes, og nyeste pakker og ruter vinner.','Choose a file…':'Velg en fil …',
  'Start over':'Start på nytt','Delete your training progress in this browser. You choose whether briefing packs and routes go too.':'Slett treningsprogresjonen i denne nettleseren. Du velger selv om briefingpakker og ruter også skal slettes.','Reset progress…':'Nullstill progresjonen …',
  'Reset your progress?':'Nullstille progresjonen?',
  'This deletes your quiz and lab results, type rating statistics, flashcard boxes, instructor session history and your chosen track in this browser. It cannot be undone. Export a copy first if you might want it back.':'Dette sletter quiz- og labresultatene, typeratingstatistikken, flashkortboksene, økthistorikken med instruktøren og valgt løp i denne nettleseren. Det kan ikke angres. Eksporter en kopi først hvis du kanskje vil ha den tilbake.',
  'Also delete my briefing packs, saved routes, map library and saved aircraft':'Slett også briefingpakkene, de lagrede rutene, kartbiblioteket og de lagrede flyene mine',
  'Delete progress':'Slett progresjonen','Cancel':'Avbryt',
- 'Account':'Konto','Checking your account…':'Sjekker kontoen din …','Delete your account?':'Slette kontoen?'
+ 'Checking your account…':'Sjekker kontoen din …','Delete your account?':'Slette kontoen?'
 });
 
 /* ---------- storage helpers (read-only except track, import and reset) ---------- */
@@ -481,7 +473,7 @@ function packTitle(p){ const f=p.f||{}; return (p.title||'').trim()||(f.heading|
 function routeTitle(r){ const rw=(r.pts||[]).filter(x=>x.t==='rwy').map(x=>x.n); return (r.title||'').trim()||(rw.length?[rw[0],rw[rw.length-1]].filter((v,i,a)=>i===0||v!==a[0]).join(' – '):L({en:'Untitled route',no:'Rute uten navn'})); }
 const realPack=p=>{ const f=p&&p.f||{}; return !!(f.depapt||f.destapt||f.reg||f.type||(p.title||'').trim()||(f.heading||'').trim()); };
 const realRoute=r=>r&&(r.pts||[]).length>0;
-function drawPlan(){ const pk=PACKS.filter(realPack), rt=ROUTES.filter(realRoute);
+function drawPlan(){ if(!el('packs')||!el('routes')) return; const pk=PACKS.filter(realPack), rt=ROUTES.filter(realRoute);
   el('packs').innerHTML= pk.length? pk.slice(0,5).map(p=>{ const f=p.f||{}; const meta=[f.date,[f.type,f.reg].filter(Boolean).join(' '),f.rules].filter(Boolean).map(esc).join(' · ');
       return `<a class="pi" href="prep.html?id=${encodeURIComponent(p.id)}"><b>${esc(packTitle(p))}</b><small>${meta||L({en:'Briefing pack',no:'Briefingpakke'})}</small><span class="w">${esc(ago(p.updated||p.created))}</span></a>`; }).join('')+(pk.length>5?`<p class="pmore">${L({en:`and ${pk.length-5} more in the briefing pack`,no:`og ${pk.length-5} til i briefingpakken`})}</p>`:'')
     : `<div class="pempty"><p>${L({en:'A briefing pack collects the route, weather, NOTAM, minima, fuel and mass and balance for one flight, in a fixed order, ready to print. Start one for your next flight, real or practice.',no:'En briefingpakke samler rute, vær, NOTAM, minima, drivstoff og masse og balanse for én flytur, i fast rekkefølge, klar til utskrift. Start en for neste tur, ekte eller for øving.'})}</p><a class="btn pri" href="prep.html">${L({en:'Make a briefing pack',no:'Lag en briefingpakke'})}</a></div>`;
@@ -552,8 +544,8 @@ el('exp').onclick=async()=>{ const m=el('expMsg'), b=el('exp'); b.disabled=true;
     let account=null, accNote=null; const A=AC();
     if(A&&A.user){ try{ const r=await fetch('/api/me/export',{credentials:'same-origin',headers:{accept:'application/json'}}); const j=await r.json(); if(r.ok&&j&&j.ok){ delete j.ok; account=j; } else accNote=(j&&j.message)||('HTTP '+r.status); }catch(e){ accNote='The account could not be reached.'; } }
     const o={app:'birdbird',kind:'all-data',v:3,exported:new Date().toISOString(),
-      notes:{en:'Everything NORDAP stores about you: your account on the server (if you are signed in) and everything stored in this browser. Document and image files themselves are not included; their names, details and extracted text are. Import on My page reads the "keys" part.',
-             no:'Alt NORDAP lagrer om deg: kontoen på serveren (hvis du er logget inn) og alt som er lagret i denne nettleseren. Selve dokument- og bildefilene er ikke med; navn, detaljer og uttrukket tekst er med. Import på Min side leser «keys»-delen.'},
+      notes:{en:'Everything NORDAP stores about you: your account on the server (if you are signed in) and everything stored in this browser. Document and image files themselves are not included; their names, details and extracted text are. Import on the Account page reads the "keys" part.',
+             no:'Alt NORDAP lagrer om deg: kontoen på serveren (hvis du er logget inn) og alt som er lagret i denne nettleseren. Selve dokument- og bildefilene er ikke med; navn, detaljer og uttrukket tekst er med. Import på Konto-siden leser «keys»-delen.'},
       account, accountError:accNote, keys:loc.keys, sessionStorage:loc.sessionStorage, indexedDB:loc.indexedDB};
     const blob=new Blob([JSON.stringify(o,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='nordap-data-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
     const n=Object.keys(loc.keys).length, d=Object.keys(loc.indexedDB).length;
@@ -598,7 +590,7 @@ function takeVerify(){ const m=/^#verify=([A-Za-z0-9_-]{43})$/.exec(location.has
 takeReset(); takeVerify(); addEventListener('hashchange',()=>{ if(takeReset()||takeVerify()) { drawAcct(); runVerify(); } });
 function runVerify(){ const t=UI.verify; if(!t||!AC()) return; UI.verify=null; acRun(A=>A.verifyEmail(t),r=>L({en:'E-mail address confirmed: ',no:'E-postadressen er bekreftet: '})+(r&&r.email||'')); }
 const AC=()=>window.BBACCOUNT||null;
-/* after signing in: back to the page you came from (?next=, same site only), otherwise My workspace */
+/* after signing in: back to the page you came from (?next=, same site only), otherwise Workspace */
 const NEXT=(()=>{ try{ const n=new URLSearchParams(location.search).get('next')||''; return /^[a-z0-9-]+\.html(\?[^#\s]*)?(#[\w=&.-]*)?$/i.test(n)&&!/^profile\.html/i.test(n)?n:''; }catch(e){ return ''; } })();
 const goIn=()=>{ location.href=NEXT||'workspace.html'; };
 const day=t=>t?new Date(t).toLocaleDateString(LAB.lang==='en'?'en-GB':'nb-NO',{day:'numeric',month:'short',year:'numeric'}):'–';
@@ -667,10 +659,10 @@ function drawAcct(){ const A=AC(), body=el('acBody'), st=el('acState'); if(!body
     if(UI.welcome) h+=`<div class="acc-welcome"><h3>${L({en:'Welcome to NORDAP',no:'Velkommen til NORDAP'})}${nm?', '+esc(nm.split(/\s+/)[0]):''}</h3>
         <p>${L({en:'Your account is ready. Your progress and briefing packs now follow you to every device you sign in on.',no:'Kontoen din er klar. Progresjonen og briefingpakkene dine følger deg nå til alle enheter du logger inn på.'})}${me.user&&me.user.email&&!me.user.emailVerified?' '+L({en:'We have sent you an e-mail to confirm your address.',no:'Vi har sendt deg en e-post for å bekrefte adressen.'}):''}</p>
         ${UI.needKey&&A.supported?`<p class="note">${L({en:'Tip: switch on Face ID or fingerprint and sign in with one tap next time.',no:'Tips: slå på Face ID eller fingeravtrykk, så logger du inn med ett trykk neste gang.'})}</p>`:''}
-        <div class="btns"><a class="btn pri" href="${esc(NEXT||'workspace.html')}">${NEXT?L({en:'Continue where you were →',no:'Fortsett der du var →'}):L({en:'Go to My workspace →',no:'Gå til My workspace →'})}</a>${UI.needKey&&A.supported?`<button type="button" class="btn" id="acAdd2"${dis}>${L({en:'Switch on Face ID / fingerprint',no:'Slå på Face ID / fingeravtrykk'})}</button>`:''}</div></div>`;
+        <div class="btns"><a class="btn pri" href="${esc(NEXT||'workspace.html')}">${NEXT?L({en:'Continue where you were →',no:'Fortsett der du var →'}):L({en:'Go to Workspace →',no:'Gå til Workspace →'})}</a>${UI.needKey&&A.supported?`<button type="button" class="btn" id="acAdd2"${dis}>${L({en:'Switch on Face ID / fingerprint',no:'Slå på Face ID / fingeravtrykk'})}</button>`:''}</div></div>`;
     else if(UI.needKey&&A.supported&&!UI.code) h+=`<div class="callout info"><span class="ct">${L({en:'Faster sign-in',no:'Raskere innlogging'})}</span>${L({en:'Sign in with Face ID or your fingerprint next time, instead of typing your password. It takes one tap.',no:'Logg inn med Face ID eller fingeravtrykk neste gang, i stedet for å skrive passordet. Det tar ett trykk.'})}<div class="btns" style="margin-top:10px"><button type="button" class="btn pri" id="acAdd2"${dis}>${L({en:'Switch on Face ID / fingerprint',no:'Slå på Face ID / fingeravtrykk'})}</button><button type="button" class="btn" id="acNoKey">${L({en:'Not now',no:'Ikke nå'})}</button></div></div>`;
     h+=`<div class="acc-top"><div class="acc-who"><span class="av" aria-hidden="true">${esc((nm||'B').slice(0,1).toUpperCase())}</span><div><b>${nm?esc(nm):L({en:'Your NORDAP account',no:'NORDAP-kontoen din'})}</b><small><i class="${sl.c}"></i><span id="acSyncLine">${esc(sl.t)}</span></small></div></div>
-        <div class="btns"><a class="btn sm pri" href="workspace.html">${L({en:'My workspace',no:'My workspace'})}</a><button type="button" class="btn sm" id="acSync"${dis}>${L({en:'Sync now',no:'Synkroniser nå'})}</button><button type="button" class="btn sm" id="acOut"${dis}>${L({en:'Sign out',no:'Logg ut'})}</button></div></div>
+        <div class="btns"><a class="btn sm pri" href="workspace.html">${L({en:'Workspace',no:'Workspace'})}</a><button type="button" class="btn sm" id="acSync"${dis}>${L({en:'Sync now',no:'Synkroniser nå'})}</button><button type="button" class="btn sm" id="acOut"${dis}>${L({en:'Sign out',no:'Logg ut'})}</button></div></div>
       <p class="acc-sub">${L({en:'Account settings',no:'Kontoinnstillinger'})}</p>
       <div class="acc-rows">
         <details class="acc-row" data-row="sync"${UI.open.has('sync')?' open':''}><summary><b>${L({en:'What is synced',no:'Hva som synkroniseres'})}</b><span>${L({en:'Progress, briefing packs, routes and settings',no:'Progresjon, briefingpakker, ruter og innstillinger'})}</span></summary><div class="acc-rowb"><ul class="acc-ns">${A.namespaces.map(n=>`<li>${esc(L(NSL[n]))}<span>${dm[n]?esc(ago(dm[n].updatedAt)):L({en:'nothing yet',no:'ingenting ennå'})}</span></li>`).join('')}</ul>

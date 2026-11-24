@@ -429,7 +429,7 @@ body.depth-instructor .atl-split{grid-template-columns:minmax(0,1fr)}
 body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
 @media print{.atl-side,.atl-bar{display:none!important}html.vlab .page{display:block}}
 
-/* header controls (language, My workspace, Sign in): one height */
+/* header controls (language, Workspace, Sign in): one height */
 .site .hright .langseg button,.site .myws,.site .acct .mytr{min-height:32px;display:inline-flex;align-items:center;justify-content:center;line-height:1.2}
 /* touch: 44 px targets everywhere (iPad, phone): header, buttons, segmented controls, fields, footer links */
 @media (pointer:coarse){
@@ -472,7 +472,7 @@ body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
 .site .acm a,.site .acm button{display:block;width:100%;text-align:left;padding:9px 10px;border:0;background:none;font:inherit;font-size:14px;color:var(--ink);text-decoration:none;border-radius:var(--radius,3px);cursor:pointer}
 .site .acm a:hover,.site .acm button:hover,.site .acm a:focus-visible,.site .acm button:focus-visible{background:var(--wash);outline:none}
 .site .acm hr{border:0;border-top:1px solid var(--rule-2,var(--rule));margin:6px 4px}
-/* My workspace button next to My page (separate class: account.js decorates .mytr with the sync dot) */
+/* Workspace button next to My page (separate class: account.js decorates .mytr with the sync dot) */
 .site .myws{font-size:14px;font-weight:600;color:var(--ink);text-decoration:none;padding:6px 12px;border:1px solid var(--rule);border-radius:var(--radius,3px);background:var(--sheet);white-space:nowrap}
 .site .myws:hover{border-color:var(--ink)}
 .site .myws.on{border-color:var(--accent);color:var(--accent)}

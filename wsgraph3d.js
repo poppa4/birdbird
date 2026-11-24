@@ -1,4 +1,4 @@
-/* NORDAP – My Workspace map in 3D, core (no DOM): runs in the browser (window.WSGRAPH3D) and in node tests.
+/* NORDAP – Workspace map in 3D, core (no DOM): runs in the browser (window.WSGRAPH3D) and in node tests.
    The map is a brain (layout3d, shell): every section a region on the upper cerebrum, its items on the surface there,
    the biggest sections choosing their room first. shell(L, n) gives the particles that draw the brain itself.
    (Before, the map was a cloud: every group (an aircraft, a topic, then 'Unsorted') a soft ball of evenly spaced points, slightly flattened

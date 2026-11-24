@@ -1,4 +1,4 @@
-/* NORDAP – My workspace: the pen notebook and ink on PDF pages (desk tabs). Pure logic in inkcore.js.
+/* NORDAP – Workspace: the pen notebook and ink on PDF pages (desk tabs). Pure logic in inkcore.js.
    One ink engine (Ink below) serves both: pages are canvases drawn from vector strokes, input comes from Pointer Events.
      pen         pressure from the pen, coalesced events for smooth lines, palm rejection: once a pen is seen,
                  fingers never draw, they scroll and pinch. Mouse draws on a desktop. A finger draws only when the

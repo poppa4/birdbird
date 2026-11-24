@@ -123,5 +123,5 @@ test('DA42 scenarios name outcome keys and an own-checklist section kind; nothin
 test('no generic flows: the trainers carry no aircraft procedure text, only the own checklist',()=>{
   for(const k of ['gen','setGen','genHTML','GEN','REF']) assert.equal(O[k],undefined,k);
   for(const k of ['FLOWS','EMER','GROUPS','build','runHTML','flowsHTML','emerListHTML','DISC']) assert.equal(ctx.DA42PROCS[k],undefined,'DA42PROCS.'+k);
-  assert.match(src('ownck.js'),/Add your school's checklist in My Workspace/);
+  assert.match(src('ownck.js'),/Add your school's checklist in Workspace/);
 });

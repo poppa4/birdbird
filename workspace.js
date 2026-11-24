@@ -1,4 +1,4 @@
-/* NORDAP – My workspace (page). Logic lives in workspacecore.js; this file is storage, sync and the views.
+/* NORDAP – Workspace (page). Logic lives in workspacecore.js; this file is storage, sync and the views.
    Kept on this device   IndexedDB 'birdbird-workspace' (items, device settings, trashed document files), with a
                          localStorage fallback; document files and their text in 'naeroson-fi' – the same store
                          Flight Intelligence uses, so a document added in either place shows in both.
@@ -14,7 +14,7 @@
                          namespace is too big for the account, the largest notebooks stay on this device (and say so). */
 (function () {
   'use strict';
-  /* opening My workspace (a fresh page load with no place in the address) always starts on the Map, whatever was open last;
+  /* opening Workspace (a fresh page load with no place in the address) always starts on the Map, whatever was open last;
      the desk is one click away ("Back to the desk"), and links to a place (#/documents/…, #/?open=…) still go straight there */
   { const h = location.hash; if (!h || h === '#' || h === '#/') history.replaceState(null, '', location.pathname + location.search + '#/library'); }
   const W = window.WSCORE, LAB = window.LAB, NSTORE = window.NSTORE;
@@ -359,7 +359,7 @@
   /* one platform: Flight Intelligence and your own library in the same rail. Entries: [path, label, count] for views here,
      [null, label, null, href] for the Flight Intelligence pages, a string for a group heading, null for a gap */
   const RAIL = () => [t('Flight Intelligence', 'Flight Intelligence'), ['fi', t('Ask a question', 'Still et spørsmål'), null], [null, t('Instructor training', 'Instruktørtrening'), null, 'fi.html#aircraft'], [null, t('Training progress', 'Treningsprogresjon'), null, 'fi.html#progress'], [null, t('EASA rules library', 'EASA-regelbibliotek'), null, 'fi.html#easa'],
-    t('My workspace', 'Mitt arbeidsområde'), ['library', t('Home', 'Hjem'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
+    t('Workspace', 'Workspace'), ['library', t('Home', 'Hjem'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
   let railMap = null;
   function drawRailMap(cur) {
     const rl = el('wsRail'); if (!rl || !window.WSMAP || !GW || !window.WS_RAILMAP) return;
@@ -378,7 +378,7 @@
     try { railMap = { sig, host, m: window.WSMAP.mount(host, { graph: a.g, t, mini: true, sample: a.sample }) }; } catch (e) { railMap = null; console.error('rail map', e); }
   }
   window.addEventListener('resize', () => { const cur = route().path.split('/')[0] || (deskMode() ? '' : 'library'); drawRailMap(cur); });
-  /* ---------- Flight Intelligence, always open beside My workspace ----------
+  /* ---------- Flight Intelligence, always open beside Workspace ----------
      A fixed panel on the right (wide screens) or an ask bar at the bottom that opens into a sheet (narrow screens),
      on every view including the desk. It is the desk's Flight Intelligence (ask.js) mounted outside the panes:
      the same conversation all session, answers from your documents, the EASA rules library and general knowledge.
@@ -909,7 +909,7 @@
           <div class="row"><button type="button" class="btn sm pri" data-act="export">${t('Export everything', 'Eksporter alt')}</button><button type="button" class="btn sm" data-act="import">${t('Import backup', 'Importer sikkerhetskopi')}</button></div>
           <p class="note" id="bkNote" role="status">${t('Importing adds what is missing and keeps the newest copy of each item. Nothing on this device is removed.', 'Import legger til det som mangler og beholder den nyeste kopien av hvert element. Ingenting på denne enheten fjernes.')}</p></div>
         <div class="box danger"><h3>${t('Delete everything', 'Slett alt')}</h3>
-          <p>${t('Removes every aircraft, note and document in My workspace from this device', 'Fjerner alle fly, notater og dokumenter i Mitt arbeidsområde fra denne enheten')}${u ? t(' and from your account', ' og fra kontoen din') : ''}. ${t('Briefing packs, routes and training progress are not touched; you manage those on My page.', 'Briefingpakker, ruter og treningsprogresjon røres ikke; dem styrer du på Min side.')}</p>
+          <p>${t('Removes every aircraft, note and document in Workspace from this device', 'Fjerner alle fly, notater og dokumenter i Workspace fra denne enheten')}${u ? t(' and from your account', ' og fra kontoen din') : ''}. ${t('Briefing packs, routes and training progress are not touched; you manage those on the Account page.', 'Briefingpakker, ruter og treningsprogresjon røres ikke; dem styrer du på Konto-siden.')}</p>
           <button type="button" class="btn sm danger" data-act="wipe">${t('Delete everything…', 'Slett alt …')}</button></div>
       </div>`;
   }
@@ -1093,7 +1093,7 @@
   const mapPref = () => { try { const v = LS && LS.getItem(MAPV); return v === '2d' || v === '3d' ? v : ''; } catch (e) { return ''; } };
   let webgl = null;
   let map3dP = null;
-  const load3d = () => map3dP || (map3dP = (window.THREE ? Promise.resolve() : loadScript('three.min.js?v=128')).then(() => window.WSGRAPH3D ? 0 : loadScript('wsgraph3d.js?v=8')).then(() => window.WSMAP3D ? 0 : loadScript('wsmap3d.js?v=12')).catch(e => { map3dP = null; throw e; }));
+  const load3d = () => map3dP || (map3dP = (window.THREE ? Promise.resolve() : loadScript('three.min.js?v=128')).then(() => window.WSGRAPH3D ? 0 : loadScript('wsgraph3d.js?v=9')).then(() => window.WSMAP3D ? 0 : loadScript('wsmap3d.js?v=13')).catch(e => { map3dP = null; throw e; }));
   /* room kept free at the foot of the map: the colour key (two rows on a phone), and the call to action on the example */
   const mapPadB = sample => window.innerWidth < 600 ? (sample ? 250 : 100) : sample ? 130 : 64;
   function viewMap() {
@@ -1224,7 +1224,7 @@
   }
   async function wipeAll() {
     const u = user(), n = W.live(S.items).length + W.trashed(S.items).length;
-    const ok = await openDlg(`<h3 id="wsDlgH">${t('Delete everything in My workspace?', 'Slette alt i Mitt arbeidsområde?')}</h3>
+    const ok = await openDlg(`<h3 id="wsDlgH">${t('Delete everything in Workspace?', 'Slette alt i Workspace?')}</h3>
       <p>${t(`This removes ${n} items – every aircraft, note and document, the document files, and the trash – from this device`, `Dette fjerner ${n} elementer – alle fly, notater og dokumenter, dokumentfilene og papirkurven – fra denne enheten`)}${u ? t(' and from your account, so they also disappear from your other devices', ' og fra kontoen din, slik at de også forsvinner fra de andre enhetene dine') : ''}. ${t('The documents also disappear from Flight Intelligence. It cannot be undone.', 'Dokumentene forsvinner også fra Flight Intelligence. Det kan ikke angres.')}</p>
       <p>${t('Export a backup file first if you might want any of it back.', 'Eksporter en sikkerhetskopi først hvis du kanskje vil ha noe av det tilbake.')}</p>
       <div class="fld"><label class="ck"><input type="checkbox" id="wipeCk"> ${t('I understand that this cannot be undone', 'Jeg forstår at dette ikke kan angres')}</label></div>
@@ -1234,7 +1234,7 @@
     if (u) { const tomb = Object.values(S.items).filter(it => !it.gone).map(it => W.tombstone(it)); await ST.clearItems(); S.items = {}; await commit(tomb); await syncNow(true); }
     else { await ST.clearItems(); S.items = {}; S.index = null; GC = null; }
     M.recent = []; M.backupAt = 0; M.hideAdopt = {}; M.sync.full = null; await saveMeta(); await storageInfo();
-    go(''); render(); toast(t('Everything in My workspace was deleted.', 'Alt i Mitt arbeidsområde er slettet.'));
+    go(''); render(); toast(t('Everything in Workspace was deleted.', 'Alt i Workspace er slettet.'));
   }
   async function adopt(k) {
     const s = adoptable().find(x => x.k === k); if (!s) return;
@@ -1289,12 +1289,12 @@
 
   /* ---------- language ---------- */
   function drawChrome() {
-    el('wsH1').textContent = t('My workspace', 'Mitt arbeidsområde');
+    el('wsH1').textContent = t('Workspace', 'Workspace');
     el('wsHomeT').textContent = t('Open the desk', 'Åpne arbeidsflaten');
     el('wsLede').textContent = t('Flight Intelligence and your aircraft, documents, notes, briefing packs and routes in one place.', 'Flight Intelligence og flyene, dokumentene, notatene, briefingpakkene og rutene dine på ett sted.');
     qIn.setAttribute('aria-label', t('Search your workspace', 'Søk i arbeidsområdet ditt'));
     qPh();
-    document.title = t('My workspace · NORDAP', 'Mitt arbeidsområde · NORDAP');
+    document.title = t('Workspace · NORDAP', 'Workspace · NORDAP');
   }
 
   /* ---------- start ---------- */
@@ -1340,5 +1340,5 @@
     notebooksAll, useInTrainer, ockCan, OCK_TR, commit, visit, toast, openDlg, confirmDlg, download, go, route, findAll, recentList, catName, kindName, acName, noteTitle, packTitle, routeTitle, itemName, TRAINER, speedRow, linkLabel,
     doTrash, doRestore, pickFiles, addFiles, linkDoc, aircraftDlg, newPack, statusShort, saveMeta, render, deskMode, noteFormats, mapGraph, mapAny, mapSig, placeChip, placeMenu, groupOf, groupList, get M() { return M; } };
   if (window.WSDESK_INIT) window.WSDESK_INIT(window.WS.api);
-  start().catch(e => { console.error('workspace start', e); main.innerHTML = `<div class="ws-empty"><p><b>${t('My workspace could not open.', 'Mitt arbeidsområde kunne ikke åpnes.')}</b> ${t('Reload the page. If it keeps happening, the browser may be blocking storage for this site.', 'Last inn siden på nytt. Hvis det fortsetter, kan nettleseren blokkere lagring for dette nettstedet.')}</p></div>`; });
+  start().catch(e => { console.error('workspace start', e); main.innerHTML = `<div class="ws-empty"><p><b>${t('Workspace could not open.', 'Workspace kunne ikke åpnes.')}</b> ${t('Reload the page. If it keeps happening, the browser may be blocking storage for this site.', 'Last inn siden på nytt. Hvis det fortsetter, kan nettleseren blokkere lagring for dette nettstedet.')}</p></div>`; });
 })();

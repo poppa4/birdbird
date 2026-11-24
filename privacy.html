@@ -16,7 +16,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="lab.css?v=15">
-<link rel="stylesheet" href="site.css?v=40">
+<link rel="stylesheet" href="site.css?v=41">
 <style>
 /* privacy.html – page-local layout */
 .pv-short{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 40px;border-top:1px solid var(--ink)}
@@ -53,7 +53,7 @@
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
 <body data-title="Privacy">
-<script src="site.js?v=130"></script>
+<script src="site.js?v=131"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -109,7 +109,7 @@
         <tr><td>Name (optional)</td><td>Shown to you on My training and in your passkey list.</td><td class="w">Until you delete the account</td></tr>
         <tr><td>Session</td><td>A random sign-in id in a cookie (HttpOnly, Secure, SameSite=Lax). The server stores only a hash of it, with a short device label.</td><td class="w">60 days after last use, or until you sign out</td></tr>
         <tr><td>Synced data: progress and results, briefing packs and saved aircraft, routes, fixes and map notes, settings such as language</td><td>So your training and plans follow you from one device to another.</td><td class="w">Until you delete it or the account</td></tr>
-        <tr><td>Document files in My workspace (AFM, SOP, checklists), when cloud storage for documents is switched on</td><td>So a document is not lost if this browser is cleared or a device is lost, and so it opens on your other devices. Each file is stored privately in Cloudflare R2 in the EU, can only be fetched by you while signed in, is never public and is used for nothing else.</td><td class="w">Until you delete the document for good or delete the account</td></tr>
+        <tr><td>Document files in Workspace (AFM, SOP, checklists), when cloud storage for documents is switched on</td><td>So a document is not lost if this browser is cleared or a device is lost, and so it opens on your other devices. Each file is stored privately in Cloudflare R2 in the EU, can only be fetched by you while signed in, is never public and is used for nothing else.</td><td class="w">Until you delete the document for good or delete the account</td></tr>
         <tr><td>Attempt counters</td><td>To slow down anyone guessing at sign-in. Counted per hashed IP address; the address itself is not stored.</td><td class="w">At most one day</td></tr>
       </tbody>
     </table>
@@ -119,7 +119,7 @@
         <p><b>Not synced.</b> Attachments in briefing packs and keys you enter for map layers stay in your browser on that device. Your documents (AFM, QRH, SOP) stay there too, unless you are signed in and cloud storage for documents is switched on; then a private copy of each file is kept as described in the table.</p>
       </div>
       <div class="pv-text">
-        <p><b>Delete your account.</b> Go to My page, then Account, and choose Delete account. The account, its passkeys, sessions, all synced data and any document files in cloud storage are deleted from the server straight away. You can also tick a box to clear this browser at the same time.</p>
+        <p><b>Delete your account.</b> Go to Account settings and choose Delete account. The account, its passkeys, sessions, all synced data and any document files in cloud storage are deleted from the server straight away. You can also tick a box to clear this browser at the same time.</p>
         <p><b>Sign out.</b> Signing out ends the session on the server. Your data stays in that browser until you clear it.</p>
         <p class="btns"><a class="btn" href="profile.html#account">Manage your account</a></p>
       </div>
@@ -184,7 +184,7 @@
           <li>Look up the NORDAP site and choose to delete its data (sometimes called cookies and site data).</li>
           <li>To remove everything at once, clear browsing data for all time, including cookies and site data.</li>
         </ol>
-        <p class="note">Data saved to your NORDAP account is removed by deleting the account on My page. Data kept with your Claude account, when NORDAP runs inside Claude, is removed by deleting the saved items inside NORDAP.</p>
+        <p class="note">Data saved to your NORDAP account is removed by deleting the account on the Account page. Data kept with your Claude account, when NORDAP runs inside Claude, is removed by deleting the saved items inside NORDAP.</p>
       </div>
     </div>
   </section>
@@ -195,7 +195,7 @@
       <p>NORDAP is run by Daniel Nilsson, a private person in Norway, who is responsible for the processing of personal data described on this page (the data controller).</p>
       <p>Why the data is processed: for an account and the features you choose to use, to provide the service you ask for (GDPR article 6(1)(b)). For forms, to answer you, and for sign-in counters and server logs, to keep NORDAP secure and working (legitimate interest, article 6(1)(f)).</p>
       <p>Cloudflare (hosting, database, file storage and the free AI model), Resend (e-mail) and, if switched on, Anthropic (AI answers) process data on NORDAP’s behalf. Some of them are based in the United States; transfers rely on the EU–US Data Privacy Framework or the EU standard contractual clauses.</p>
-      <p>You can ask to see, correct, export or delete your data, and you can object to processing. Much of it you can do yourself on My page. For anything else, write through the contact form and choose Privacy.</p>
+      <p>You can ask to see, correct, export or delete your data, and you can object to processing. Much of it you can do yourself on the Account page. For anything else, write through the contact form and choose Privacy.</p>
       <p>You can also complain to the Norwegian Data Protection Authority (Datatilsynet), datatilsynet.no.</p>
     </div>
     <p class="btns"><a class="btn" href="#who" data-contactform data-topic="privacy">Privacy request</a></p>
@@ -210,7 +210,7 @@
   </section>
 </div>
 <script src="lab.js?v=61"></script>
-<script src="localdata.js?v=4"></script>
+<script src="localdata.js?v=5"></script>
 <script>
 (function(){
 'use strict';
@@ -261,7 +261,7 @@ LAB.add({'Sections':'Sections'},{
  "NORDAP is run by Daniel Nilsson, a private person in Norway, who is responsible for the processing of personal data described on this page (the data controller).":"NORDAP drives av Daniel Nilsson, en privatperson i Norge, som er ansvarlig for behandlingen av personopplysninger som beskrives på denne siden (behandlingsansvarlig).",
  "Why the data is processed: for an account and the features you choose to use, to provide the service you ask for (GDPR article 6(1)(b)). For forms, to answer you, and for sign-in counters and server logs, to keep NORDAP secure and working (legitimate interest, article 6(1)(f)).":"Hvorfor opplysningene behandles: for en konto og funksjonene du velger å bruke, for å levere tjenesten du ber om (GDPR artikkel 6 nr. 1 b). For skjemaer, for å svare deg, og for innloggingstellere og serverlogger, for å holde NORDAP sikker og i drift (berettiget interesse, artikkel 6 nr. 1 f).",
  "Cloudflare (hosting, database, file storage and the free AI model), Resend (e-mail) and, if switched on, Anthropic (AI answers) process data on NORDAP’s behalf. Some of them are based in the United States; transfers rely on the EU–US Data Privacy Framework or the EU standard contractual clauses.":"Cloudflare (drift, database, fillagring og den gratis AI-modellen), Resend (e-post) og, hvis det er slått på, Anthropic (AI-svar) behandler opplysninger på vegne av NORDAP. Noen av dem holder til i USA; overføringer bygger på EU–US Data Privacy Framework eller EUs standard personvernbestemmelser.",
- "You can ask to see, correct, export or delete your data, and you can object to processing. Much of it you can do yourself on My page. For anything else, write through the contact form and choose Privacy.":"Du kan be om å se, rette, eksportere eller slette opplysningene dine, og du kan protestere mot behandlingen. Mye av dette kan du gjøre selv på Min side. For alt annet, skriv via kontaktskjemaet og velg Personvern.",
+ "You can ask to see, correct, export or delete your data, and you can object to processing. Much of it you can do yourself on the Account page. For anything else, write through the contact form and choose Privacy.":"Du kan be om å se, rette, eksportere eller slette opplysningene dine, og du kan protestere mot behandlingen. Mye av dette kan du gjøre selv på Konto-siden. For alt annet, skriv via kontaktskjemaet og velg Personvern.",
  "You can also complain to the Norwegian Data Protection Authority (Datatilsynet), datatilsynet.no.":"Du kan også klage til Datatilsynet, datatilsynet.no.",
  "Privacy request":"Personvernforespørsel",'Sections':'Seksjoner',
  'The short version':'Kortversjonen','What is stored':'Hva som lagres','AI features':'AI-funksjoner','Cookies and tracking':'Cookies og sporing','Clear your data':'Slett dataene dine','Changes':'Endringer',
@@ -332,19 +332,19 @@ LAB.add({'Sections':'Sections'},{
  "At most one day":"Høyst ett døgn",
  "Where.":"Hvor.",
  "Account data is stored in a Cloudflare D1 database that runs NORDAP’s server functions, created in Cloudflare’s EU jurisdiction so that the data is stored in the European Union. Cloudflare processes it on NORDAP’s behalf.":"Kontodata lagres i en Cloudflare D1-database som kjører NORDAPs serverfunksjoner, opprettet i Cloudflares EU-jurisdiksjon slik at dataene lagres i EU. Cloudflare behandler dem på vegne av NORDAP.",
- "Document files in My workspace (AFM, SOP, checklists), when cloud storage for documents is switched on":"Dokumentfiler i Mitt arbeidsområde (AFM, SOP, sjekklister), når skylagring for dokumenter er slått på",
+ "Document files in Workspace (AFM, SOP, checklists), when cloud storage for documents is switched on":"Dokumentfiler i Workspace (AFM, SOP, sjekklister), når skylagring for dokumenter er slått på",
  "So a document is not lost if this browser is cleared or a device is lost, and so it opens on your other devices. Each file is stored privately in Cloudflare R2 in the EU, can only be fetched by you while signed in, is never public and is used for nothing else.":"Slik at et dokument ikke går tapt hvis nettleseren tømmes eller en enhet blir borte, og slik at det åpnes på de andre enhetene dine. Hver fil lagres privat i Cloudflare R2 i EU, kan bare hentes av deg når du er logget inn, er aldri offentlig og brukes ikke til noe annet.",
  "Until you delete the document for good or delete the account":"Til du sletter dokumentet for godt eller sletter kontoen",
  "Not synced.":"Synkroniseres ikke.",
  "Attachments in briefing packs and keys you enter for map layers stay in your browser on that device. Your documents (AFM, QRH, SOP) stay there too, unless you are signed in and cloud storage for documents is switched on; then a private copy of each file is kept as described in the table.":"Vedlegg i briefingpakker og nøkler du legger inn for kartlag blir i nettleseren på den enheten. Dokumentene dine (AFM, QRH, SOP) blir også der, med mindre du er logget inn og skylagring for dokumenter er slått på; da lagres en privat kopi av hver fil slik tabellen beskriver.",
  "Delete your account.":"Slett kontoen.",
- "Go to My page, then Account, and choose Delete account. The account, its passkeys, sessions, all synced data and any document files in cloud storage are deleted from the server straight away. You can also tick a box to clear this browser at the same time.":"Gå til Min side, så Konto, og velg Slett kontoen. Kontoen, passnøklene, øktene, alle synkroniserte data og eventuelle dokumentfiler i skylagringen slettes fra serveren med en gang. Du kan også krysse av for å tømme denne nettleseren samtidig.",
+ "Go to Account settings and choose Delete account. The account, its passkeys, sessions, all synced data and any document files in cloud storage are deleted from the server straight away. You can also tick a box to clear this browser at the same time.":"Gå til Kontoinnstillinger og velg Slett kontoen. Kontoen, passnøklene, øktene, alle synkroniserte data og eventuelle dokumentfiler i skylagringen slettes fra serveren med en gang. Du kan også krysse av for å tømme denne nettleseren samtidig.",
  "Sign out.":"Logg ut.",
  "Signing out ends the session on the server. Your data stays in that browser until you clear it.":"Når du logger ut, avsluttes økten på serveren. Dataene blir liggende i den nettleseren til du sletter dem.",
  "Manage your account":"Administrer kontoen",
  "NORDAP does not use tracking or third-party analytics tools and shows no advertising. No tracking pixels, no social media widgets. NORDAP counts visits itself, anonymously: to know how many people use the site and which pages, each page sends a small count when it opens and once a minute while it is open. Nothing is stored on your device for this. The server keeps only a code made from the day, your IP address and your browser type; the IP address itself is not kept, and the code changes every day, so you cannot be followed from one day to the next or to other sites. Counts are kept for about 13 months. The only cookie is the sign-in cookie, set when you sign in to an account and removed when you sign out. It is needed for the account to work and is never used to follow you.":"NORDAP bruker ingen sporing eller analyseverktøy fra andre og viser ingen reklame. Ingen sporingspiksler, ingen widgeter fra sosiale medier. NORDAP teller besøk selv, anonymt: for å vite hvor mange som bruker siden og hvilke sider, sender hver side en liten telling når den åpnes og én gang i minuttet mens den er åpen. Ingenting lagres på enheten din for dette. Serveren beholder bare en kode laget av dagen, IP-adressen din og nettlesertypen; selve IP-adressen beholdes ikke, og koden endres hver dag, så du kan ikke følges fra én dag til den neste eller til andre nettsteder. Tellingene beholdes i omtrent 13 måneder. Den eneste cookien er innloggingscookien, som settes når du logger inn på en konto og fjernes når du logger ut. Den trengs for at kontoen skal virke, og brukes aldri til å følge deg.",
  "Removes progress, settings, saved plans, setups and documents that NORDAP has stored in this browser. It cannot be undone. If you are signed in, you are signed out first, and the copy in your account is kept.":"Fjerner progresjon, innstillinger, lagrede planer, oppsett og dokumenter som NORDAP har lagret i denne nettleseren. Det kan ikke angres. Er du logget inn, logges du ut først, og kopien på kontoen beholdes.",
- "Data saved to your NORDAP account is removed by deleting the account on My page. Data kept with your Claude account, when NORDAP runs inside Claude, is removed by deleting the saved items inside NORDAP.":"Data som er lagret på NORDAP-kontoen, fjerner du ved å slette kontoen på Min side. Data som ligger hos Claude-kontoen din når NORDAP kjører inne i Claude, fjerner du ved å slette de lagrede elementene inne i NORDAP.",
+ "Data saved to your NORDAP account is removed by deleting the account on the Account page. Data kept with your Claude account, when NORDAP runs inside Claude, is removed by deleting the saved items inside NORDAP.":"Data som er lagret på NORDAP-kontoen, fjerner du ved å slette kontoen på Konto-siden. Data som ligger hos Claude-kontoen din når NORDAP kjører inne i Claude, fjerner du ved å slette de lagrede elementene inne i NORDAP.",
  'School features or other new services would change what is stored and where. This page will be updated before any of that is switched on.':'Skolefunksjoner eller andre nye tjenester vil endre hva som lagres og hvor. Denne siden oppdateres før noe av det slås på.'
 });
 LAB.start('privacy');

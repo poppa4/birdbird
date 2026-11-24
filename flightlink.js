@@ -1,4 +1,4 @@
-/* NORDAP – one flight across Route Explorer, the briefing pack and My Workspace.
+/* NORDAP – one flight across Route Explorer, the briefing pack and Workspace.
    Pure helpers, no DOM. Data stays where it was:
      route  (NSTORE 'route')  { id, pts:[{n,t,la,lo}], rt, packId? }
      pack   (NSTORE 'prep')   { id, f:{depapt,destapt,alt1apt,date,type,reg,route}, xs:{route}, routeId? }
@@ -80,7 +80,7 @@
     return m.length === 1 ? m[0] : null;
   }
 
-  /* My Workspace: open these on the desk */
+  /* Workspace: open these on the desk */
   function deskHref(items) { const v = (items || []).filter(x => x && x[0] && x[1]).map(x => x[0] + ':' + encodeURIComponent(x[1])).join(','); return 'workspace.html#/desk' + (v ? '?open=' + v : ''); }
   function parseOpen(s) { return str(s).split(',').map(x => { const i = x.indexOf(':'); if (i < 1) return null; let r = x.slice(i + 1); try { r = decodeURIComponent(r); } catch (e) {} return [x.slice(0, i), r]; }).filter(x => x && ['pack', 'route'].includes(x[0]) && x[1]).slice(0, 4); }
 

@@ -1,4 +1,4 @@
-/* NORDAP – My Workspace map in 3D (the full Map page only; the mini maps stay 2D in wsmap.js).
+/* NORDAP – Workspace map in 3D (the full Map page only; the mini maps stay 2D in wsmap.js).
    A brain drawn by three.js: one smooth, lit mesh with real folds (wsgraph3d.brainMesh) over a radar scope, each section
    (an aircraft, a group of your own, then 'Unsorted') a tinted region of the cerebrum with its items on it. The side
    facing you is bright with a brighter rim, the far side faint; seen from above, the cerebellum hides under the cerebrum.

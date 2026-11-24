@@ -164,7 +164,7 @@ with sync_playwright() as p:
 
     # Norwegian
     pg.click('.langseg button[data-v="no"]'); pg.wait_for_timeout(200)
-    t = pg.inner_text('body'); check('Norwegian', 'Mitt arbeidsområde' in t and 'Mine fly' in t and 'Lagret på denne enheten' in t)
+    t = pg.inner_text('body'); check('Norwegian', 'Workspace' in t and 'Mine fly' in t and 'Lagret på denne enheten' in t)
     pg.screenshot(path=SHOTS + '/09-home-no-1470.png', full_page=True)
     pg.click('.langseg button[data-v="en"]'); pg.wait_for_timeout(200)
 

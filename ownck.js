@@ -1,6 +1,6 @@
 /* NORDAP – "Use my own checklist" for the cockpit trainers (C172, DA42, King Air B200; 2D and 3D pages).
    Every flight school has its own checklists and SOPs, so the trainers do not impose one. The student picks a checklist from
-   My Workspace (a document in the Checklists or SOP category, or a note) or pastes the text. It is parsed into sections and
+   Workspace (a document in the Checklists or SOP category, or a note) or pastes the text. It is parsed into sections and
    items and shown in the Procedures drawer: tap to tick, the current item highlighted, large text on request. Items whose
    wording names a control the trainer knows (a per-aircraft dictionary of control names and synonyms) tick themselves when the
    trainer sees that control in the stated position; the rest are ticked by hand. Order is never enforced.
@@ -214,7 +214,7 @@ function setRec(type,rec){ const o=idx(); if(rec) o[type]=rec; else delete o[typ
 function cacheGet(type){ const c=(lsGet(TKEY,{})||{})[type]; return c&&typeof c.text==='string'?c:null; }
 function cacheSet(type,v){ const o=lsGet(TKEY,{})||{}; if(v) o[type]=v; else delete o[type]; if(!lsSet(TKEY,o)&&v){ delete o[type]; lsSet(TKEY,o); } }
 
-/* ---------- My Workspace (read only; same IndexedDB stores and schemas as workspace.js) ---------- */
+/* ---------- Workspace (read only; same IndexedDB stores and schemas as workspace.js) ---------- */
 function idb(name,up){ return new Promise(res=>{ try{ const r=indexedDB.open(name,1); r.onupgradeneeded=()=>up(r.result); r.onsuccess=()=>res(r.result); r.onerror=()=>res(null); r.onblocked=()=>res(null); }catch(e){ res(null); } }); }
 const rq=r=>new Promise((res,rej)=>{ r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
 const WSUP=db=>{ db.createObjectStore('items',{keyPath:'id'}); db.createObjectStore('kv'); db.createObjectStore('trashdocs',{keyPath:'id'}); };
@@ -239,12 +239,12 @@ async function wsText(src,id){
 /* ---------- drawer panel ---------- */
 const TX={
   title:T('My checklist','Min sjekkliste'),use:T('Add checklist','Legg til sjekkliste'),
-  useSub:T("Add your school's checklist in My Workspace.",'Legg inn skolens sjekkliste i Mitt arbeidsområde.'),
-  fromWs:T('From My Workspace','Fra Mitt arbeidsområde'),paste:T('Paste text','Lim inn tekst'),pasteH:T('Paste the checklist here — one item per line, e.g. “Fuel pump ..... ON”. Headings in capitals start a new section.','Lim inn sjekklisten her — ett punkt per linje, f.eks. «Fuel pump ..... ON». Overskrifter med store bokstaver starter en ny seksjon.'),
+  useSub:T("Add your school's checklist in Workspace.",'Legg inn skolens sjekkliste i Workspace.'),
+  fromWs:T('From Workspace','Fra Workspace'),paste:T('Paste text','Lim inn tekst'),pasteH:T('Paste the checklist here — one item per line, e.g. “Fuel pump ..... ON”. Headings in capitals start a new section.','Lim inn sjekklisten her — ett punkt per linje, f.eks. «Fuel pump ..... ON». Overskrifter med store bokstaver starter en ny seksjon.'),
   name:T('Name','Navn'),ok:T('Use this checklist','Bruk denne sjekklisten'),cancel:T('Cancel','Avbryt'),change:T('Change','Bytt'),remove:T('Stop using','Slutt å bruke'),
-  none:T('No checklists or SOPs in My Workspace yet. Add one there (category Checklists or SOP), or paste the text.','Ingen sjekklister eller SOP-er i Mitt arbeidsområde ennå. Legg til en der (kategori Sjekklister eller SOP), eller lim inn teksten.'),
+  none:T('No checklists or SOPs in Workspace yet. Add one there (category Checklists or SOP), or paste the text.','Ingen sjekklister eller SOP-er i Workspace ennå. Legg til en der (kategori Sjekklister eller SOP), eller lim inn teksten.'),
   notHere:T('not on this device','ikke på denne enheten'),loading:T('Loading…','Laster …'),
-  missing:T('The checklist is not on this device. Add the file in My Workspace here, or pick another.','Sjekklisten finnes ikke på denne enheten. Legg til filen i Mitt arbeidsområde her, eller velg en annen.'),
+  missing:T('The checklist is not on this device. Add the file in Workspace here, or pick another.','Sjekklisten finnes ikke på denne enheten. Legg til filen i Workspace her, eller velg en annen.'),
   empty:T('No checklist items were found in this text.','Fant ingen sjekklistepunkter i denne teksten.'),
   normal:T('Normal','Normal'),emer:T('Emergency and abnormal','Nød og unormalt'),
   reset:T('Clear ticks','Fjern kryss'),score:T('Score against my checklist','Vurder etter min sjekkliste'),big:T('Large text','Stor tekst'),

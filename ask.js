@@ -1,4 +1,4 @@
-/* NORDAP – My workspace: "Ask your documents" as a desk tab (Flight Intelligence beside the manual).
+/* NORDAP – Workspace: "Ask your documents" as a desk tab (Flight Intelligence beside the manual).
    The same contract as fi.html: the passages are found here in the browser (in the document text already stored
    for Flight Intelligence), only the question and those passages go to the AI through ai.js (window.NAI: the
    /api/atc service, or Claude when the page runs inside Claude). Nothing is stored on the server by this tab.
@@ -74,7 +74,7 @@
     }
     function drawBar() {
       const acs = A.aircraft(), od = openDoc();
-      /* the panel beside My workspace: no scope buttons until there are documents to choose between */
+      /* the panel beside Workspace: no scope buttons until there are documents to choose between */
       if (ctx.compact && !A.docsAll().length) { bar.innerHTML = chat.turns.length ? `<span class="sp"></span><button type="button" class="ask-new" data-a="clear">${esc(t('New conversation', 'Ny samtale'))}</button>` : ''; return; }
       if (scope === 'ac' && !acs.length) scope = 'all';
       bar.innerHTML = `<div class="seg ask-scope" role="group" aria-label="${esc(t('Ask', 'Spør'))}">
@@ -96,7 +96,7 @@
       if (avail === false) return `<div class="ask-off"><p class="eb">Flight Intelligence</p><h3>${esc(t('Answers from your documents are not switched on here yet.', 'Svar fra dokumentene dine er ikke slått på her ennå.'))}</h3>
         <p>${esc(t('When they are, you ask in your own words and get a short answer with the page it came from, for example “AFM p. 4-12”, and the page opens beside you. Nothing you type here has been sent anywhere.', 'Når de er det, spør du med dine egne ord og får et kort svar med siden det kom fra, for eksempel «AFM s. 4-12», og siden åpnes ved siden av deg. Ingenting du skriver her, er sendt noe sted.'))}</p>
         <p>${esc(t('Until then, a question still finds the pages that match it in your documents.', 'Inntil da finner et spørsmål likevel sidene i dokumentene dine som passer.'))}</p></div>`;
-      if (!docs.length) return `<div class="ask-hi"><p class="eb">Flight Intelligence</p><h3>${esc(t('Ask anything about flying', 'Spør om alt som har med flyging å gjøre'))}</h3><p>${esc(t('Theory, weather, procedures and EASA rules, with the rule each answer rests on. Add your AFM, QRH or SOP to My workspace and the answers come from your own documents too, with the page.', 'Teori, vær, prosedyrer og EASA-regler, med regelen hvert svar bygger på. Legg AFM, QRH eller SOP inn i My workspace, så kommer svarene også fra dine egne dokumenter, med siden.'))}</p></div>`;
+      if (!docs.length) return `<div class="ask-hi"><p class="eb">Flight Intelligence</p><h3>${esc(t('Ask anything about flying', 'Spør om alt som har med flyging å gjøre'))}</h3><p>${esc(t('Theory, weather, procedures and EASA rules, with the rule each answer rests on. Add your AFM, QRH or SOP to Workspace and the answers come from your own documents too, with the page.', 'Teori, vær, prosedyrer og EASA-regler, med regelen hvert svar bygger på. Legg AFM, QRH eller SOP inn i Workspace, så kommer svarene også fra dine egne dokumenter, med siden.'))}</p></div>`;
       return `<div class="ask-hi"><p class="eb">Flight Intelligence</p><h3>${esc(t('Ask your documents', 'Spør dokumentene'))}</h3><p>${esc(t('Short answers from your own manuals, each with the page it came from. Tap a page to open it beside you, or copy the answer into your note.', 'Korte svar fra dine egne manualer, hvert med siden det kom fra. Trykk på en side for å åpne den ved siden av deg, eller kopier svaret inn i notatet ditt.'))}</p><p class="small">${esc(t('For learning. The approved flight manual always applies.', 'For opplæring. Den godkjente flyhåndboken gjelder alltid.'))}</p></div>`;
     }
     function drawLog() {
@@ -122,11 +122,11 @@
     function prompt(question, src, hist, easa) {
       const ex = src.length ? src.map((x, i) => `[S${i + 1}] ${x.d.name}${x.d.rev ? ', revision ' + x.d.rev : ''}, page ${x.label}${x.c.s ? ', ' + x.c.s : ''}:\n${x.c.t}`).join('\n\n') : '';
       const rules = easa && easa.length && window.EASA ? window.EASA.promptBlock(easa) : (window.EASA? window.EASA.noMatch() : '');
-      return `You are Flight Intelligence, an experienced flight instructor inside NORDAP's My workspace. Answer any aviation question clearly (theory, meteorology, systems, procedures, planning, EASA rules), short and concrete: two to six sentences or a short list. Write in ${window.NAI.langName()} and keep aviation terms, speeds and checklist items in English.
+      return `You are Flight Intelligence, an experienced flight instructor inside NORDAP's Workspace. Answer any aviation question clearly (theory, meteorology, systems, procedures, planning, EASA rules), short and concrete: two to six sentences or a short list. Write in ${window.NAI.langName()} and keep aviation terms, speeds and checklist items in English.
 ${src.length ? `The pilot's own documents are below. Use them first. Never invent a limitation, speed, procedure step, callout or performance value: if the excerpts do not contain it, say plainly that you cannot find it in their documents and where they should look. Keep manufacturer documentation and operator documentation apart.
 
 SOURCES (excerpts from the pilot's own documents):
-${ex}` : `No passage from the pilot's own documents matched this question${A.docsAll().length ? '' : ' (they have not added any documents yet)'}. Never give aircraft-specific limitations, speeds, procedure steps or performance values from memory: say that adding their AFM, QRH or SOP to My workspace lets you answer that with the page.`}
+${ex}` : `No passage from the pilot's own documents matched this question${A.docsAll().length ? '' : ' (they have not added any documents yet)'}. Never give aircraft-specific limitations, speeds, procedure steps or performance values from memory: say that adding their AFM, QRH or SOP to Workspace lets you answer that with the page.`}
 
 ${rules}
 

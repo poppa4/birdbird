@@ -1,4 +1,4 @@
-/* NORDAP – My workspace: the desk (the default view, #/). Layout model in deskcore.js; storage, sync, names and
+/* NORDAP – Workspace: the desk (the default view, #/). Layout model in deskcore.js; storage, sync, names and
    dialogs come from workspace.js (WS.api). One screen like a desk: the library on the left, panes with tabs on the right.
    A desk is a 'desk' item in the 'workspace' namespace and holds positions only (which tabs, where, which page).
    Overview (first in the bar) lays the desk home over the panes without closing a tab; each pane's strip shows the group
@@ -105,8 +105,8 @@
     function desks() { return D.desksOf(S.items); }
     function pickDesk() {
       const list = desks(); const d = list.find(x => x.id === A.M.desk) || list[0];
-      if (d && /^(My desk|Min arbeidsflate)$/.test(d.name || '')) d.name = t('My desk', 'Min arbeidsflate');
-      return d || { id: DEFAULT_ID, kind: 'desk', name: t('My desk', 'Min arbeidsflate'), L: D.newLayout(), createdAt: 0, updatedAt: 0, unsaved: true };
+      if (d && /^(My desk|Workspace)$/.test(d.name || '')) d.name = t('My desk', 'Workspace');
+      return d || { id: DEFAULT_ID, kind: 'desk', name: t('My desk', 'Workspace'), L: D.newLayout(), createdAt: 0, updatedAt: 0, unsaved: true };
     }
     function readSnap() { try { return JSON.parse(A.LS && A.LS.getItem(SNAP)); } catch (e) { return null; } }
     function loadDesk(d) {
@@ -207,10 +207,10 @@
     const lazy = {};
     const cssOnce = href => new Promise(res => { if (document.querySelector(`link[href="${href}"]`)) return res(); const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; l.onload = l.onerror = () => res(); document.head.appendChild(l); });
     function needNB() {
-      return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=7'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=3')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=6'))])
+      return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=8'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=3')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=7'))])
         .then(() => { window.WSNB.init(EXT); lazy.nbOk = true; S.index = null; }).catch(e => { lazy.nb = null; throw e; }));
     }
-    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=7'), window.WSASK ? 0 : A.loadScript('ask.js?v=14')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
+    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=8'), window.WSASK ? 0 : A.loadScript('ask.js?v=15')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
     /* a tab whose code is still loading: a quiet line, then the real view (render() remounts it) */
     function mountLazy(box, need) {
       let ok = false, dead = false;
@@ -308,7 +308,7 @@
         <span class="sp"></span>
         ${stA}
         <button type="button" class="dk-ib" data-b="split-h" title="${esc(t('Split right', 'Del til høyre'))}" aria-label="${esc(t('Split right', 'Del til høyre'))}"${D.panes(L).length >= maxPanes() ? ' disabled' : ''}>${ic('splith')}</button>
-        <a class="dk-ib dk-mapb" href="#/library" title="${esc(t('My workspace: Flight Intelligence and your library', 'Mitt arbeidsområde: Flight Intelligence og biblioteket ditt'))}" aria-label="${esc(t('My workspace home', 'Mitt arbeidsområde, hjem'))}">${ic('lib')}<span>${esc(t('Workspace', 'Arbeidsområdet'))}</span></a>`;
+        <a class="dk-ib dk-mapb" href="#/library" title="${esc(t('Workspace: Flight Intelligence and your library', 'Workspace: Flight Intelligence og biblioteket ditt'))}" aria-label="${esc(t('Workspace home', 'Workspace, hjem'))}">${ic('lib')}<span>${esc(t('Workspace', 'Arbeidsområdet'))}</span></a>`;
     }
     function status() { if (!mounted) return; const st = A.statusShort(); host.querySelectorAll('.dk-st').forEach(s => { s.title = st.title || ''; s.innerHTML = `<i class="kept ${st.c}"></i><span>${esc(st.s)}</span>`; }); }
     const railCollapsed = () => !!(A.M.deskRail && A.M.deskRail.c);
@@ -1027,7 +1027,7 @@
       collectStates(); await A.commit(W.trash(W.patch(cur, { L: D.sanitize(L) })));
       try { A.LS && A.LS.removeItem(SNAP); } catch (e) {}
       const next = desks()[0];
-      loadDesk(next || { id: 'dk' + Date.now().toString(36), name: t('My desk', 'Min arbeidsflate'), L: D.newLayout(), unsaved: true });
+      loadDesk(next || { id: 'dk' + Date.now().toString(36), name: t('My desk', 'Workspace'), L: D.newLayout(), unsaved: true });
       render(true); drawBar(); drawRail();
       A.toast(t('Desk moved to the trash: ', 'Arbeidsflaten er flyttet til papirkurven: ') + name, [t('Undo', 'Angre'), async () => { await A.commit(W.restore(A.item(cur.id))); switchDesk(cur.id); }]);
     }
@@ -1254,7 +1254,7 @@
     window.addEventListener('resize', () => { if (!mounted) return; clearTimeout(rzT); rzT = setTimeout(() => { sizeHost(); const ph = isPhone(); if (ph !== phoneMode) { drawBar(); drawRail(); render(true); } else { drawBar(); } }, 120); }, { passive: true });
     window.addEventListener('pagehide', snapshot);
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') snapshot(); });
-    window.LAB.onLang(() => { if (desk && /^(My desk|Min arbeidsflate)$/.test(desk.name || '')) desk.name = t('My desk', 'Min arbeidsflate'); if (!mounted) return; collectStates(); unmountViews(); drawBar(); drawRail(); render(true); });
+    window.LAB.onLang(() => { if (desk && /^(My desk|Workspace)$/.test(desk.name || '')) desk.name = t('My desk', 'Workspace'); if (!mounted) return; collectStates(); unmountViews(); drawBar(); drawRail(); render(true); });
 
     /* helpers for notebook.js and ask.js */
     const EXT = { A, D, W, t, esc, h, ic, menu, missing, toast: A.toast, isPhone, openItem: (k, r, o) => openItem(k, r, o), drawTabTitles, pdfLabel, docBeside, lang: () => t('en', 'no') };

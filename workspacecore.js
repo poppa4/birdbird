@@ -1,4 +1,4 @@
-/* NORDAP – My Workspace, core logic (no DOM, no storage): runs in the browser (window.WSCORE) and in node tests.
+/* NORDAP – Workspace, core logic (no DOM, no storage): runs in the browser (window.WSCORE) and in node tests.
    Items   every aircraft, document index entry, note and pack mark is one item: { id, kind, createdAt, updatedAt, deletedAt? }.
            Deleting sets deletedAt (Trash, 30 days), then the item shrinks to a small tombstone ({ gone:1 }) so the
            deletion still reaches other devices; tombstones are dropped after 180 days.
