@@ -501,3 +501,8 @@ p.mstat a{font-size:13.5px;margin-left:4px;color:var(--accent)}
 /* the NORDAP logo on phones: the tagline set to the logo's width so the Menu button keeps its place on the first line */
 @media (max-width:520px){.site .logo .lg{width:124px;height:18.6px}.site .logo .lgx{gap:5px}.site .logo .lgx small{font-size:7.4px;letter-spacing:.1em}}
 @media (max-width:359px){.site .logo .lgx small{display:none}}
+/* footer logo: a plain link, whatever a browser or a touch rule gives links (iOS showed a large dark box behind it) */
+.sitefoot .fb a.logo{display:inline-flex!important;min-height:0!important;height:auto!important;width:auto!important;padding:4px 0!important;background:none!important;border:0!important;border-radius:0;box-shadow:none!important;-webkit-tap-highlight-color:transparent;overflow:visible}
+.sitefoot .fb a.logo .lgx{background:none!important;height:auto!important}
+.sitefoot .fb a.logo img.lg{display:block;width:150px!important;height:22.4px!important;max-height:22.4px;object-fit:contain;background:none!important}
+.sitefoot .fb a.logo img.lg-w{display:none!important}
