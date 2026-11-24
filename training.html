@@ -729,10 +729,11 @@ LAB.start('training');
   const full=[0,0,W,H*1.0];
   const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
   function dot(i){ const [x,y]=P[i]; const g=document.createElementNS(NS,'g'); g.innerHTML=`<circle cx="${x}" cy="${y}" r="13" style="fill:${P[i][3]==='PF'?'#3CCB7F':'#F2C230'}"/><text x="${x}" y="${y+.5}">${P[i][4]}</text>`; gd.appendChild(g); }
-  function line(i){ const [a,b]=P[i-1],[c,d]=P[i]; const l=document.createElementNS(NS,'line'); l.setAttribute('x1',a);l.setAttribute('y1',b);l.setAttribute('x2',c);l.setAttribute('y2',d);
+  /* each role is its own path: a step joins the previous step of the same pilot (PF to PF, PM to PM), never the other pilot's */
+  function line(i){ let j=i-1; while(j>=0&&P[j][3]!==P[i][3]) j--; if(j<0) return [null,0]; const [a,b]=P[j],[c,d]=P[i]; const l=document.createElementNS(NS,'line'); l.setAttribute('x1',a);l.setAttribute('y1',b);l.setAttribute('x2',c);l.setAttribute('y2',d);
     const len=Math.hypot(c-a,d-b); l.style.strokeDasharray=len; l.style.stroke=P[i][3]==='PF'?'#3CCB7F':'#F2C230'; l.style.strokeDashoffset=len; gl.appendChild(l); return [l,len]; }
   function cap(i){ capT.style.opacity=0; setTimeout(()=>{ capN.textContent=P[i][4]; capN.style.background=P[i][3]==='PF'?'#3CCB7F':'#F2C230'; capT.textContent=P[i][3]+' '+P[i][2]; capT.style.opacity=1; },180); }
-  if(reduce){ vb(...full); P.forEach((_,i)=>{ if(i) line(i)[0].style.strokeDashoffset=0; dot(i); }); capN.textContent='✓'; capT.textContent='Before takeoff · 6 steps'; return; }
+  if(reduce){ vb(...full); P.forEach((_,i)=>{ const l=i&&line(i)[0]; if(l) l.style.strokeDashoffset=0; dot(i); }); capN.textContent='✓'; capT.textContent='Before takeoff · 6 steps'; return; }
   let cur=view(0), i=0, visible=true, timer=0;
   new IntersectionObserver(e=>{ visible=e[0].isIntersecting; if(visible&&!timer) step(); },{threshold:.15}).observe(box);
   function move(to,ms,onT,done){ const from=cur.slice(), t0=performance.now();
@@ -742,7 +743,7 @@ LAB.start('training');
     if(i>=P.length){ move(full,1400,null,()=>{ timer=setTimeout(()=>{ reset(); move(view(0),1400,null,()=>{ dot(0); cap(0); i=1; timer=setTimeout(step,1100); }); },2600); }); return; }
     if(i===0){ vb(...cur); dot(0); cap(0); i=1; timer=setTimeout(step,1100); return; }
     const [l,len]=line(i), k0=i; cap(k0);
-    move(view(k0),1300,k=>{ l.style.strokeDashoffset=len*(1-k); },()=>{ dot(k0); i++; timer=setTimeout(step,1100); });
+    move(view(k0),1300,k=>{ if(l) l.style.strokeDashoffset=len*(1-k); },()=>{ dot(k0); i++; timer=setTimeout(step,1100); });
   }
 })();
 (function cont(){ let v=null; try{ v=JSON.parse(localStorage.getItem('bb-last-trn')||'null'); }catch(e){}
