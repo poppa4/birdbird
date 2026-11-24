@@ -369,6 +369,28 @@
 .ft-dots g{transform-box:fill-box;transform-origin:center;animation:ftIn .35s ease-out both}
 @keyframes ftIn{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
 @media (max-width:600px){.th-grid>.th-flow{height:300px!important;flex-direction:column!important}.th-flow .ft-tag{display:none}}
+
+/* overview polish: the small tiles show their screenshot as a screen on a navy stage (light and dark screenshots then sit
+   together evenly), a kicker and an arrow; the aircraft row with bigger pictures and no cut names */
+.th-t:not(.th-feat):not(.th-flow){background:radial-gradient(120% 90% at 50% 0%,#1C3550 0%,#0E1A28 70%);box-shadow:0 1px 0 rgba(255,255,255,.04) inset}
+.th-t:not(.th-feat):not(.th-flow) img{margin:14px 14px 0;width:calc(100% - 28px);border-radius:6px 6px 0 0;box-shadow:0 10px 24px -8px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08);filter:saturate(.92)}
+.th-t:not(.th-feat):not(.th-flow) .th-tx{background:#0E1A28}
+.th-t:not(.th-feat) .th-tx b::after{content:"→";display:inline-block;margin-left:8px;font-weight:600;opacity:.55;transform:translateX(0);transition:transform .2s,opacity .2s}
+.th-t:not(.th-feat):hover .th-tx b::after{opacity:1;transform:translateX(4px)}
+.th-t:not(.th-feat):hover img{transform:translateY(-3px)}
+.th-t{box-shadow:0 18px 36px -26px rgba(11,30,52,.55);transition:box-shadow .25s}
+.th-t:hover{box-shadow:0 22px 40px -22px rgba(11,30,52,.7)}
+.th-feat .k{background:rgba(127,178,229,.18);color:#CFE3F6;border:1px solid rgba(127,178,229,.35)}
+.th-ac{grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,1fr) minmax(280px,320px)}
+.th-ac a{padding:10px;gap:14px;box-shadow:0 10px 24px -22px rgba(11,30,52,.6)}
+.th-ac img{width:92px;height:56px;border-radius:6px}
+.th-ac b{white-space:normal!important;overflow:visible!important;line-height:1.2}
+.th-ac span{white-space:normal!important}
+.th-ac .all{background:var(--nv,#0B1E34)!important;color:#fff!important;border-color:var(--nv,#0B1E34)!important}
+.th-ac .all:hover{background:#17324F!important}
+@media (max-width:600px){.th-t:not(.th-feat):not(.th-flow) img{margin:8px 0 8px 8px;width:112px;flex:0 0 112px;border-radius:5px;height:80px!important}}
+@media (min-width:601px){.th-feat img{inset:auto 0 0 0;height:150%;object-position:50% 100%}}  /* the panel, not the sky, fills the feature */
+@media (prefers-reduced-motion:reduce){.th-t,.th-t img,.th-tx b::after{transition:none!important}}
 </style>
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
@@ -394,7 +416,7 @@
       </a>
       <a class="th-t th-s1" href="ifr.html"><img src="img/training/hub-ifr-640.webp" srcset="img/training/hub-ifr-640.webp 640w, img/training/hub-ifr-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="Exercises in the IFR trainer: track to the station, intercept, NDB, DME arc, holds and the ILS." data-alt-no="Øvelser i IFR-treneren: til stasjonen, avskjæring, NDB, DME-bue, venteoppsett og ILS." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tIf">IFR trainer</b><span data-tx="tIfL">One procedure at a time.</span><small data-tx="tIfM">46 exercises</small></div></a>
       <a class="th-t th-s2" href="radio.html"><img src="img/training/hub-radio-640.webp" srcset="img/training/hub-radio-640.webp 640w, img/training/hub-radio-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="Gate to gate: a whole flight with ATC, from the planning room to the apron." data-alt-no="Gate to gate: en hel flyging med ATC, fra planleggingsrommet til oppstillingsplassen." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tRa">Radio</b><span data-tx="tRaL">Out loud, gate to gate.</span><small data-tx="tRaM">Gate to gate · drills</small></div></a>
-      <a class="th-t th-s3" href="mcdu.html"><img src="img/training/hub-mcdu-640.webp" srcset="img/training/hub-mcdu-640.webp 640w, img/training/hub-mcdu-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The A320 MCDU trainer with the cockpit preparation task." data-alt-no="A320 MCDU-treneren med oppgaven for cockpitklargjøring." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tAv">Avionics trainers</b><span data-tx="tAvL">MCDU, FMC and GNS 530.</span><small data-tx="tAvM">A320 · 737 · GNS 530</small></div></a>
+      <a class="th-t th-s3" href="mcdu.html"><img src="img/training/hub-mcdu-640.webp" srcset="img/training/hub-mcdu-640.webp 640w, img/training/hub-mcdu-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The A320 MCDU trainer with the cockpit preparation task." data-alt-no="A320 MCDU-treneren med oppgaven for cockpitklargjøring." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tAv">MCDU trainer</b><span data-tx="tAvL">A320 FMGS, from preparation to approach.</span><small data-tx="tAvM">A320 · 737 · GNS 530</small></div></a>
       <a class="th-t th-s4" href="briefing.html"><img src="img/training/hub-brief-640.webp" srcset="img/training/hub-brief-640.webp 640w, img/training/hub-brief-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="A departure briefing in the briefing trainer, with the SID chart beside it." data-alt-no="En avgangsbriefing i briefing-treneren, med SID-kartet ved siden av." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tBr">Briefing</b><span data-tx="tBrL">Brief out loud, get it scored.</span><small data-tx="tBrM">Departures and approaches</small></div></a>
       <aside class="th-rail" aria-label="Your hub" data-aria-no="Din hub">
         <section class="th-cont"><h2 data-tx="rC">Continue</h2><div id="thCont"><a href="ifr.html"><img src="img/training/hub-ifr-640.webp" alt=""><div><b data-tx="rCn">IFR trainer</b><span data-tx="rCs">New here? Start with exercise 1.</span></div></a></div></section>
@@ -638,7 +660,7 @@ LAB.tx({
  tFl:'Flow-trener', ftTag:'A320 · Før avgang', tFlL:'Hver flow tegnet i den ekte cockpiten.', tFlM:'13 flytyper',
  tIf:'IFR-trener', tIfL:'Én prosedyre om gangen.', tIfM:'46 øvelser',
  tRa:'Radio', tRaL:'Høyt, fra gate til gate.', tRaM:'Gate to gate · driller',
- tAv:'Avionikktrenere', tAvL:'MCDU, FMC og GNS 530.', tAvM:'A320 · 737 · GNS 530',
+ tAv:'MCDU-trener', tAvL:'A320 FMGS, fra klargjøring til innflyging.', tAvM:'A320 · 737 · GNS 530',
  tBr:'Briefing', tBrL:'Brief høyt og få det vurdert.', tBrM:'Avganger og innflyginger',
  rC:'Fortsett', rCn:'IFR-trener', rCs:'Ny her? Start med øvelse 1.', rQ:'Hurtigstart',
  q1:'A320 innflygingssjekkliste', q2:'Til stasjonen', q3:'Sett opp FMS', q4:'IFR-treningsflyging', q4s:'Radio', q5:'Flow for cockpitklargjøring',

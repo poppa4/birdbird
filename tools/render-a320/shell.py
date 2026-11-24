@@ -173,6 +173,8 @@ for t, g in G.items():
                           'sizes': [len(pad(p)) for p in parts]})
     im = Image.open(os.path.join(RES, t)).convert('RGB'); s = TEX[t]
     if im.width > s: im = im.resize((s, s), Image.LANCZOS)
+    if t == 'fd_other.png':  # an airline emblem on the captain's window post in the source texture: painted out with the post's colour
+        from PIL import ImageDraw; k = im.width / 2048; ImageDraw.Draw(im).ellipse(tuple(v * k for v in (1368, 19, 1402, 53)), fill=(73, 86, 105))
     im.save(os.path.join(OUT, f'a320-shell-{name}.jpg'), quality=82, optimize=True)
     print(t, 'verts', len(P), 'tris', len(I) // 3)
 # the same bake on a grid over each rendered panel (the page multiplies the panel picture by it)
