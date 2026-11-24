@@ -271,7 +271,11 @@ function ewd(g,cv,D){
       if(it.ok) T(g,it.t,120,yy,C.g,30); else { T(g,lab,120,yy,C.c,30); if(val){ const w=g.measureText(lab).width; T(g,' '+'.'.repeat(Math.max(2,18-lab.length))+val,120+w,yy,C.c,30); } } }); }
   }
   // right memo
-  let yr=620; for(const r of (D.memoR||[]).slice(0,9)){ T(g,r.t,630,yr,r.c==='a'?C.a:C.g,30); yr+=40; }
+  let yr=620; const sl=(D.secList||[]).filter(x=>!x.clr);
+  if(list.length||sl.length||(D.land&&!(D.memoR||[]).some(r=>r.t==='LAND ASAP'))){ // Box 2: LAND ASAP and the secondary failures
+    if(D.land) { T(g,'LAND ASAP',630,yr,D.land==='r'?C.r:C.a,30,'left',700); yr+=44; }
+    for(const x of sl.slice(0,8)){ T(g,x.t,630,yr,C.a,30); yr+=40; } }
+  else for(const r of (D.memoR||[]).slice(0,9)){ T(g,r.t,630,yr,r.c==='a'?C.a:r.c==='r'?C.r:r.c==='w'?C.w:C.g,30); yr+=40; }
   if(list.length>4||D.stsRem) T(g,'↓',600,985,C.g,28,'center');
 }
 function slatFlap(g,D,x,y){
@@ -454,11 +458,11 @@ const PAGES={
     T(g,'CKPT '+Math.round(a.tCk)+'°C',40,560,C.g,28); T(g,'FWD '+Math.round(a.tFwd)+'°C',40,610,C.g,28); T(g,'AFT '+Math.round(a.tAft)+'°C',40,660,C.g,28);
   },
   sts(g,D){ title(g,'STATUS');
-    let y=120; const lim=[], inop=[];
-    (D.alerts||[]).forEach(a=>{ if(a.lvl>=2) inop.push(a.title+' '+a.text); });
-    if(D.law!=='NORMAL') lim.push('MAX SPD.............320 KT');
-    if(!inop.length&&!lim.length){ T(g,'NORMAL',500,420,C.g,40,'center',700); return; }
-    lim.forEach(t=>{ T(g,t,30,y,C.c,30); y+=40; });
+    let y=120; const lim=(D.stsLim||[]).slice(), proc=(D.stsProc||[]).slice(), inop=(D.stsInop||[]).slice();
+    if(!inop.length&&!lim.length&&!proc.length){ T(g,'NORMAL',500,420,C.g,40,'center',700); return; }
+    // Box 3: limitations and procedures (cyan), Box 4: INOP SYS (amber)
+    lim.forEach(t=>{ T(g,t,30,y,C.c,28); y+=38; }); if(lim.length&&proc.length) y+=10;
+    proc.forEach(t=>{ T(g,t,30,y,/:$/.test(t)?C.w:C.c,28); y+=38; });
     T(g,'INOP SYS',620,120,C.a,30,'left',700); inop.slice(0,12).forEach((t,i)=>T(g,t.replace(/^(ELEC|HYD|FUEL|AIR|F\/CTL|NAV) /,'$1 '),620,165+i*38,C.a,24));
   }
 };

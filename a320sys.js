@@ -398,7 +398,7 @@ function phases(A,dt,air,fm){
    steps [[text, done()]] in cyan until done (then removed, as on the E/WD), page (SD page called), inhibited phases. */
 function alerts(A,air,fm){
   const S=A.sw, B=A.bus, H=A.hyd, F=A.fuel, e=A.eng, X=A.air, out=[], ph=A.phase;
-  const add=(id,lvl,title,text,steps,o)=>{ o=o||{}; if(o.inh&&o.inh.includes(ph)) return; out.push({id,lvl,title,text,steps:(steps||[]).filter(s=>!s[1]||!s[1]()),page:o.page||null,crc:!!o.crc,sts:o.sts||null}); };
+  const add=(id,lvl,title,text,steps,o)=>{ o=o||{}; if(o.inh&&o.inh.includes(ph)) return; const st=(steps||[]).filter(s=>!s[1]||!s[1]()); while(st.length&&/^IF |:$/.test(st[st.length-1][0])) st.pop(); /* a condition line goes with the actions under it */ out.push({id,lvl,title,text,steps:st,page:o.page||null,crc:!!o.crc,sts:o.sts||null}); };
   const tl=i=>fm?fm.tla[i]:0;
   // FIRE
   for(let i=0;i<2;i++){ const n=i+1; if(A.fire.e[i]) add('eng'+n+'fire',3,'ENG '+n,'FIRE',[
@@ -521,14 +521,50 @@ function memos(A,air,fm){
   if(A.gpu&&!S.ext&&air.gnd) R('EXT PWR AVAIL','g');
   if(S.abrk&&!E.tomemo&&!E.ldgmemo) R('AUTO BRK '+['','LO','MED','MAX'][S.abrk]);
   if(fm&&fm.tcasStby) R('TCAS STBY');
+  if(E.land&&E.stsDone) R('LAND ASAP',E.land==='r'?'r':'a'); if(E.stsHas&&E.stsDone) R('STS','w');
   E.memo=m; E.memoR=r;
 }
 
+/* ---------- ECAM flow (APS "ECAM Handling"): Box 1 primary failures and actions, Box 2 LAND ASAP and secondary failures (*),
+   Box 3 STATUS limitations and procedures, Box 4 INOP SYS. CLR clears the primary failures one by one, then the SD shows each
+   secondary failure's page in turn (CLR each), then the STATUS page comes up by itself; CLR removes it. ---------- */
+const ECX=[
+  [/^eng\dfire$/,{land:'r',sec:n=>[['*HYD','hyd'],['*ELEC','elec'],['*AIR','bleed']],lim:[],proc:['APPR PROC:','  IF SEVERE ICE: ENG ANTI ICE..ON'],inop:n=>['ENG '+n,'ENG '+n+' BLEED','GEN '+n,(n===1?'G':'Y')+' ENG '+n+' PUMP','CAT 3 DUAL']}],
+  [/^eng\dfail$/,{land:'a',sec:n=>[['*HYD','hyd'],['*ELEC','elec'],['*AIR','bleed']],lim:[],proc:['ENG RELIGHT...CONSIDER'],inop:n=>['ENG '+n,'ENG '+n+' BLEED','GEN '+n,(n===1?'G':'Y')+' ENG '+n+' PUMP','CAT 3 DUAL']}],
+  [/^eng\dsd$/,{land:'a',sec:n=>[['*HYD','hyd'],['*ELEC','elec'],['*AIR','bleed']],lim:[],proc:[],inop:n=>['ENG '+n,'ENG '+n+' BLEED','GEN '+n,(n===1?'G':'Y')+' ENG '+n+' PUMP','CAT 3 DUAL']}],
+  [/^apufire$/,{land:'r',sec:()=>[],lim:[],proc:[],inop:()=>['APU']}],
+  [/^emercfg$/,{land:'r',sec:()=>[['*F/CTL','fctl'],['*HYD','hyd'],['*FUEL','fuel'],['*AIR','bleed']],lim:['MAX SPD.............320/.77','MIN RAT SPD.........140 KT','APPR SPD.........VREF+10'],proc:['FOR LDG: USE FLAP 3','GPWS LDG FLAP 3....ON','L/G..........GRVTY EXTN','ALTN LAW: PROT LOST'],inop:()=>['GEN 1+2','MAIN GALLEY','FUEL PUMPS','CAT 2']}],
+  [/^gen\df$/,{land:'',sec:()=>[],lim:[],proc:[],inop:n=>['GEN '+n,'CAT 3 DUAL']}],
+  [/^hydgy$/,{land:'r',sec:()=>[['*F/CTL','fctl'],['*BRAKES','wheel'],['*NW STRG','wheel']],lim:['MAX SPD.............320 KT','MANEUVER WITH CARE','APPR SPD..........VREF+25'],proc:['FOR LDG: USE FLAP 3','GPWS LDG FLAP 3....ON','L/G..........GRVTY EXTN','ALTN LAW: PROT LOST','LDG DIST PROC.......APPLY'],inop:()=>['G+Y HYD','AP 1+2','SPLR 1+2+3+4+5','FLAPS','A/SKID','N/W STRG','CAT 2']}],
+  [/^hydg$/,{land:'',sec:()=>[['*F/CTL','fctl'],['*WHEEL','wheel']],lim:[],proc:['SLATS SLOW','L/G..........GRVTY EXTN','LDG DIST PROC.......APPLY'],inop:()=>['G HYD','CAT 3 DUAL','SPLR 1+5','AP 1']}],
+  [/^hydy$/,{land:'',sec:()=>[['*F/CTL','fctl'],['*WHEEL','wheel']],lim:[],proc:['FLAPS SLOW','LDG DIST PROC.......APPLY'],inop:()=>['Y HYD','CAT 3 DUAL','SPLR 2+4','AP 2','N/W STRG']}],
+  [/^hydb$/,{land:'',sec:()=>[['*F/CTL','fctl']],lim:[],proc:[],inop:()=>['B HYD','SPLR 3','CSM/G']}],
+  [/^bl\d$/,{land:'',sec:()=>[],lim:[],proc:[],inop:n=>['ENG '+n+' BLEED']}],
+  [/^pk\d$/,{land:'',sec:()=>[],lim:[],proc:[],inop:n=>['PACK '+n]}],
+  [/^pk12$/,{land:'a',sec:()=>[['*PRESS','press']],lim:['MAX FL..............100/MEA'],proc:['WHEN DIFF PR<1 PSI AND','FL BELOW 100: RAM AIR..ON'],inop:()=>['PACK 1+2']}],
+  [/^excab$/,{land:'a',sec:()=>[],lim:['MAX FL..............100/MEA'],proc:[],inop:()=>[]}],
+  [/^elac\d$/,{land:'',sec:()=>[],lim:[],proc:[],inop:n=>['ELAC '+n]}],
+  [/^sec\d$/,{land:'',sec:()=>[],lim:[],proc:[],inop:n=>['SEC '+n]}],
+  [/^altn$/,{land:'',sec:()=>[],lim:['MAX SPD.............320 KT'],proc:['ALTN LAW: PROT LOST','WHEN L/G DN: DIRECT LAW'],inop:()=>['F/CTL PROT','CAT 2']}],
+  [/^direct$/,{land:'',sec:()=>[],lim:['MAX SPD..........320/.77','MANEUVER WITH CARE','USE MAN PITCH TRIM'],proc:[],inop:()=>['F/CTL PROT','AP 1+2','CAT 2']}]
+];
+function ecamFlow(A){
+  const E=A.ecam; let land='', sec=[], lim=[], proc=[], inop=[];
+  for(const a of E.list){ const m=ECX.find(x=>x[0].test(a.id)); if(!m) continue; const d=m[1], n=+(/\d/.exec(a.id)||[0])[0]||0;
+    if(d.land==='r'||(d.land==='a'&&land!=='r')) land=d.land;
+    for(const sc of d.sec(n)) if(!sec.some(z=>z[0]===sc[0])) sec.push(sc);
+    lim.push(...d.lim.filter(t=>!lim.includes(t))); proc.push(...d.proc.filter(t=>!proc.includes(t))); inop.push(...d.inop(n).filter(t=>t&&!inop.includes(t))); }
+  E.land=land; E.secList=sec.map(([t,p])=>({t,p,clr:!!(E.secClr||{})[t]})); E.stsLim=lim; E.stsProc=proc; E.stsInop=inop;
+  E.stsHas=lim.length+proc.length+inop.length>0;
+}
 /* the SD page the ECAM shows by itself: the page of the active alert, else the flight-phase page (FCOM DSC-31-40) */
 function autoPage(A,air,fm){
   const E=A.ecam, S=A.sw;
   const top=E.list.find(a=>a.page&&!E.clr[a.id]);
   if(top) return top.page;
+  if(E.list.some(a=>!E.clr[a.id])) return 'eng';
+  const sc=(E.secList||[]).find(x=>!x.clr); if(sc) return sc.p;
+  if(E.stsHas&&!E.stsDone) return 'sts';
   if(A.eng.some(e=>e.st>0&&e.st<4)||S.engMode===2&&!(A.eng[0].run&&A.eng[1].run)) return 'eng';
   if(A.apu.st===1||A.apu.st===2||(A.apu.avail&&A.apu.availT<10)) return 'apu';
   const ph=A.phase;
@@ -552,7 +588,9 @@ function step(A,dt,air,fm){
   const L=A.dc&&(A.bus.acEss||A.bus.ac1||A.bus.ac2||A.bus.dcEss)?alerts(A,air,fm):[];
   const ids={}; L.forEach(a=>{ ids[a.id]=1; if(!prev[a.id]){ if(a.lvl===3){ E.mwAck[a.id]=false; } if(a.lvl===2){ E.mcAck[a.id]=false; } A.events.push({k:a.lvl===3?'warn':(a.lvl===2?'caut':'adv'),id:a.id,crc:a.crc}); } });
   Object.keys(E.clr).forEach(k=>{ if(!ids[k]) delete E.clr[k]; });
+  if(L.some(a=>!prev[a.id]&&a.lvl>=2)){ E.secClr={}; E.stsDone=false; }
   E.ids=ids; E.list=L;
+  ecamFlow(A);
   E.mw=L.some(a=>a.lvl===3&&!E.mwAck[a.id]); E.mc=L.some(a=>a.lvl===2&&!E.mcAck[a.id]);
   E.crc=L.some(a=>a.crc&&!E.mwAck[a.id]);
   E.cfgOK=!L.some(a=>a.id.startsWith('cfg'));
@@ -566,8 +604,11 @@ const air_=air;
 /* panel actions that are more than a switch */
 function ecamBtn(A,k){
   const E=A.ecam;
-  if(k==='clr'){ const a=E.list.find(x=>!E.clr[x.id]); if(a){ E.clr[a.id]=1; return; } E.man=null; E.rcl=false; return; }
-  if(k==='rcl'){ E.clr={}; E.rcl=true; return; }
+  if(k==='clr'){ const a=E.list.find(x=>!E.clr[x.id]); if(a){ E.clr[a.id]=1; E.man=null; return; }
+    const sc=(E.secList||[]).find(x=>!x.clr); if(sc){ E.secClr=E.secClr||{}; E.secClr[sc.t]=1; ecamFlow(A); E.man=null; return; }
+    if(E.stsHas&&!E.stsDone){ E.stsDone=true; E.man=null; return; }
+    E.man=null; E.rcl=false; return; }
+  if(k==='rcl'){ E.clr={}; E.secClr={}; E.stsDone=false; ecamFlow(A); E.rcl=true; return; }
   if(k==='emer'){ E.list.forEach(a=>{ E.mwAck[a.id]=true; E.mcAck[a.id]=true; }); return; }
   if(k==='cfg'){ A.cfgTest=3; E.toMemoOn=true; return; }
   if(k==='sts'){ E.man=E.man==='sts'?null:'sts'; return; }

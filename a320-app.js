@@ -573,14 +573,14 @@ function dispData(d){
     const al=A.ecam.list.map(a=>Object.assign({},a,{clr:!!A.ecam.clr[a.id]}));
     const moving=Math.abs(M.slat-[0,18,18,22,22,27][Math.min(5,fl===0?0:fl===1?(M.onePlusF?2:1):fl+1)])>0.3||Math.abs(M.flap-[0,0,10,15,20,35][Math.min(5,fl===0?0:fl===1?(M.onePlusF?2:1):fl+1)])>0.3;
     return {pwr:A.bus.acEss||A.bus.ac1,fadec:[0,1].map(i=>A.sw.engMode===2||A.sw['mst'+(i+1)]===1||A.t<300),eng:A.eng,n1Cmd:ap.athr?M.n1Cmd:null,thrLim:thrLim+(thrLim==='FLX'&&K.d.flex?' +'+K.d.flex+'°C':''),thrLimN1:n1lim,fob:A.fuel.fob,slat:M.slat,flap:M.flap,confTxt:M.slat>0.5||M.flap>0.5||moving?conf||'':'',flapMoving:moving,
-      alerts:al,memo:A.ecam.memo,memoR:A.ecam.memoR};
+      alerts:al,memo:A.ecam.memo,memoR:A.ecam.memoR,land:A.ecam.land,secList:A.ecam.secList};
   }
   if(d.k==='sd'){
     const at=F.isa(M.h,M.oatDev), sat=at.T-273.15, tat=sat+(M.tas*M.tas)/(2*1005);
     const dt=new Date(); const utc=String(dt.getUTCHours()).padStart(2,'0')+':'+String(dt.getUTCMinutes()).padStart(2,'0');
     return {pwr:A.bus.ac2||A.bus.acEss,page:A.ecam.page,eng:A.eng,fused:A.fuel.used,duct:A.air.duct,showStart:A.sw.engMode!==1||A.eng.some(e=>e.st>0&&e.st<4),air:A.air,sw:A.sw,apu:A.apu,bus:A.bus,src:A.src,batV:A.batV,batA:A.batA,batCtc:A.batCtc,gen:A.gen,apuAv:A.apuAv,apuGenLoad:A.apuGenLoad||0,
       gpu:A.gpu,extOn:A.extOn,idgOK:A.idgOK,idgT:[A.eng[0].run?70:A.env.t,A.eng[1].run?70:A.env.t],hyd:A.hyd,fuel:A.fuel,doors:A.doors,gear:M.gear,gearLv:A.sw.gearLv,autoBrk:A.sw.abrk,brkT:A.brk.temp,sp:M.sp,ths:M.ths||0,
-      ail:M.ctl.sx,elev:-M.ctl.sy,rud:M.ctl.rud,elac:A.elac,sec:A.sec,law:A.law,alerts:A.ecam.list,tat,sat,utc,gw:A.gw,gwOK:!!(K.d.zfw),elev:0,gnd:M.gnd};
+      ail:M.ctl.sx,elev:-M.ctl.sy,rud:M.ctl.rud,elac:A.elac,sec:A.sec,law:A.law,alerts:A.ecam.list,stsLim:A.ecam.stsLim,stsProc:A.ecam.stsProc,stsInop:A.ecam.stsInop,tat,sat,utc,gw:A.gw,gwOK:!!(K.d.zfw),elev:0,gnd:M.gnd};
   }
   if(d.k==='isis') return {pwrIsis:A.bus.dcEss||A.bus.hot1,phi:A.irs[2].st>=0?M.phi*R2D:0,th:M.th*R2D,ias:M.ias,alt:M.h/FT+(UI.efis.std?0:(UI.efis.qnh-1013.25)*27.3),qnh:UI.efis.qnh,mach:M.mach};
   if(d.k==='mcdu'){ return {pwr:side?A.bus.ac2:(A.bus.acEss||A.bus.ac1),mcdu:MC.render(K,M,A)}; }
