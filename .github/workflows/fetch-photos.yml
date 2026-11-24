@@ -1,0 +1,30 @@
+# Downloads freely licensed cockpit photos and their licence data from Wikimedia Commons to the photo-assets branch.
+name: Fetch photos
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['tools/photo-files.txt', '.github/workflows/fetch-photos.yml']
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download
+        run: |
+          set +e; mkdir -p /tmp/out; UA="NORDAPAssetFetch/1.0 (github actions; cockpit training images)"
+          while read -r f; do [ -z "$f" ] && continue
+            curl -sS --retry 3 -A "$UA" --get "https://commons.wikimedia.org/w/api.php" --data-urlencode "action=query" --data-urlencode "format=json" --data-urlencode "prop=imageinfo" --data-urlencode "iiprop=url|size|extmetadata" --data-urlencode "titles=File:$f" -o "/tmp/out/$f.json"
+            u=$(python3 -c "import json,sys;d=json.load(open(sys.argv[1]));p=list(d['query']['pages'].values())[0];print(p['imageinfo'][0]['url'])" "/tmp/out/$f.json" 2>/dev/null)
+            u="${u%%\?*}"
+            if [ -n "$u" ]; then c=$(curl -sS -L --retry 4 --retry-delay 8 -A "$UA" -w '%{http_code}' "$u" -o "/tmp/out/$f"); echo "$c $f" >> /tmp/out/codes.txt
+            else echo "fail meta $f" >> /tmp/out/errors.txt; fi
+            sleep 2
+          done < tools/photo-files.txt
+          ls -la /tmp/out; cat /tmp/out/errors.txt 2>/dev/null; true
+      - name: Publish
+        run: |
+          git config user.name "fetch"; git config user.email "actions@github.com"
+          git checkout --orphan photo-assets && git rm -rqf . && git clean -fdxq && cp /tmp/out/* . && git add -A && git commit -qm "photos" && git push -f origin photo-assets
