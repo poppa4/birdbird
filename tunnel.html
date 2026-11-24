@@ -63,7 +63,7 @@ details[open].adv>summary h2{margin-bottom:8px}
 @keyframes blink{50%{opacity:.75}}
 @media (prefers-reduced-motion:reduce){.status.stall{animation:none}}
 
-.app{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+.app{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
 @media (max-width:900px){.app{grid-template-columns:minmax(0,1fr)}}
 .main{display:flex;flex-direction:column;gap:14px;min-width:0}
 
@@ -298,6 +298,21 @@ body.depth-short .cbhow:not(:empty){display:block}
 .t3data .tblw{overflow-x:auto}
 .cbrow canvas.c2{display:none}.cbar.two .cbrow canvas.c2{display:block}
 @media (max-width:640px){.cbar.two .cbrow canvas.c2{display:none}.cbhow span+span{display:none}}
+/* ---- ett kontrollpanel ved siden av 3D-bildet: grunnleggende øverst, detaljer i sammenleggbare grupper ---- */
+.t3g h3 small{font-family:var(--f-body);font-weight:400;font-size:11px;color:var(--muted);margin-left:6px}
+.t3d>summary{list-style:none;cursor:pointer;display:flex;align-items:center}
+.t3d>summary::-webkit-details-marker{display:none}
+.t3d>summary h3{margin:0;display:flex;align-items:center;gap:6px;width:100%}
+.t3d>summary h3::before{content:"▸";color:var(--muted);font-size:11px;transition:transform .15s}
+.t3d[open]>summary h3::before{transform:rotate(90deg)}
+.t3dd{padding-top:8px}
+.t3dd .sec.adv{border:0;border-top:1px solid var(--line);padding:0;margin:0;background:none}
+.t3dd .sec.adv>summary{padding:8px 0;cursor:pointer}
+.t3dd .sec.adv>summary h2{font-size:13.5px;margin:0}
+.t3sub2{padding:4px 0 8px}.t3sub2 h4{font-size:12.5px;margin:4px 0 4px;color:var(--fg)}
+.t3dd .ctl label{font-size:12px}
+#atmCtl .ctl:first-child{display:none}   /* trykkhøyden står allerede under Flyging */
+#t3FlyG #segMode{margin-bottom:6px}
 /* ---- 3D-vindtunnel: kontrollpanel til venstre (som profilsnittet), måleverdier og polarer under ---- */
 .t3sec{container-type:inline-size;container-name:t3}
 .t3grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
@@ -340,10 +355,11 @@ body.depth-short .cbhow:not(:empty){display:block}
 .t3sub{border-left:2px solid var(--line);margin:1px 0 3px 2px;padding-left:8px}.t3sub .rrow{font-size:11.5px;padding:0}
 .pread .note{font-size:11.5px;color:var(--muted);margin:6px 0 0}
 @container t3 (min-width:740px){
-  .t3grid{grid-template-columns:236px minmax(0,1fr)}
-  .t3panel{order:0;align-self:stretch;max-height:min(70vh,660px);overflow:auto;background:var(--panel)}
+  .t3grid{grid-template-columns:minmax(0,1fr) 292px}
+  .t3panel{order:2;align-self:stretch;height:min(76vh,720px);overflow:auto;background:var(--panel);overscroll-behavior:contain}
   .t3panel>summary{display:none}
-  .t3view .viewport{height:min(70vh,660px)}
+  .t3view{order:1}
+  .t3view .viewport{height:min(76vh,720px)}
 }
 @container t3 (max-width:739px){ .t3bench{grid-template-columns:minmax(0,1fr)} }
 @media (max-width:1180px) and (min-width:901px){ .t3bench{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .t3bench .t3pol{grid-column:1/-1;order:-1} }
@@ -535,8 +551,13 @@ body.depth-instructor .memo h3{font-size:20px}
               <div class="seg grid" id="t3SlipM"><button data-v="cruise">Skyvekraft = motstand</button><button data-v="max">Full effekt</button></div>
               <div class="hint" id="t3SlipH"></div>
             </div>
-            <div class="t3g"><h3>Forhold</h3>
-              <div class="ctl"><label for="t3_alpha"><span>Angrepsvinkel α</span><output id="t3o_alpha"></output></label>
+            <div class="t3g" id="t3FlyG"><h3>Flyging <small id="modeHint"></small></h3>
+              <div class="seg grid" id="segMode">
+        <button data-v="speed">Styr med fart</button>
+        <button data-v="alpha">Styr med α</button>
+      </div>
+              <div id="flightCtl"></div>
+              <div class="ctl" hidden><label for="t3_alpha"><span>Angrepsvinkel α</span><output id="t3o_alpha"></output></label>
                 <input type="range" id="t3_alpha" min="-6" max="24" step="0.5"></div>
               <div class="ctl"><label for="t3_tas"><span>Sann fart (TAS)</span><output id="t3o_tas"></output></label>
                 <input type="range" id="t3_tas" min="100" max="560" step="1"></div>
@@ -560,20 +581,33 @@ body.depth-instructor .memo h3{font-size:20px}
               <label class="tog deep"><input type="checkbox" id="t3_viso"> Virvlighet, isoflate</label>
               </div>
             </div>
-            <div class="t3g deep"><h3>Strømlinjer og snitt</h3>
-              <div class="ctl"><label><span>Farge etter</span></label><div class="seg grid t3s3" id="t3Cby"><button data-v="v">Fart V/V∞</button><button data-v="cp">Trykk Cp</button><button data-v="solid">Ensfarget</button></div></div>
-              <label class="tog"><input type="checkbox" id="t3_rib"> Strømbånd (fra raken)</label>
-              <div class="ctl"><label><span>Størrelse i snittet</span></label><div class="seg grid" id="t3Sscal"><button data-v="v">|V|/V∞</button><button data-v="cp">Cp</button><button data-v="cp0">Totaltrykktap</button><button data-v="om">Virvlighet ω</button></div></div>
-              <div class="ctl"><label for="t3_visoK"><span>Isoflate |ω|</span><output id="t3o_visoK"></output></label><input type="range" id="t3_visoK" min="0.03" max="0.6" step="0.01"></div>
-            </div>
-            <div class="t3g deep"><h3>Fargekart</h3>
-              <div class="seg grid" id="t3Cmap"><button data-v="-1">Auto</button><button data-v="1">Turbo</button><button data-v="2">Viridis</button><button data-v="0">Kjølig–varm</button></div>
-              <div class="hint" id="t3CmapH"></div>
-              <div class="ctl"><label for="t3_vcon"><span>Fargeområde, linjer</span><output id="t3o_vcon"></output></label>
-                <input type="range" id="t3_vcon" min="0" max="40" step="5"></div>
-              <div class="ctl"><label for="t3_cpR"><span>Cp-område (flate)</span><output id="t3o_cpR"></output></label>
-                <input type="range" id="t3_cpR" min="0" max="4" step="0.25"></div>
-            </div>
+            <details class="t3g t3d" id="t3LinesG"><summary><h3>Strømlinjer og frø</h3></summary><div class="t3dd rakebox">
+              <div class="ctl" id="seedBox"><label>Frøområde</label>
+        <div class="seg" id="segSeed"><button data-v="span">Hele spennet</button><button data-v="tip">Vingetupp</button><button data-v="fus">Skrog</button><button data-v="rake">Rake</button></div>
+        <div class="hint" id="seedHint"></div>
+      </div>
+      <div class="ctl" id="sliceBox"><label>Fartssnitt |V|/V∞</label>
+        <div class="seg" id="segSdir"><button data-v="long">Langs strømmen</button><button data-v="cross">Tverrsnitt</button></div>
+        <div class="hint">Dra planet i bildet for å flytte det.</div>
+      </div>
+      <div class="ctl" id="rakeBox"><label>Frørake</label>
+        <div class="seg" id="segRake"><button data-v="line">Linje</button><button data-v="plane">Plan</button><button data-v="section">Snitt</button><button data-v="tips">Vingetupper</button></div>
+      </div>
+      <div class="ctl" id="laserBox"><label>Laserark</label>
+        <div class="seg" id="segLaser"><button data-v="off">Av</button><button data-v="cross">Tverrsnitt</button><button data-v="span">Langs korden</button></div>
+        <div id="laserCtl"></div>
+      </div>
+      <div id="rakeCtl"></div>
+      <div class="tg2">
+        <label class="tog"><input type="checkbox" id="showPulse" checked> Pulser</label>
+        <label class="tog"><input type="checkbox" id="showMirror" checked> Begge sider</label>
+        <label class="tog"><input type="checkbox" id="showSurf" checked> Cp på flyet</label>
+        <label class="tog"><input type="checkbox" id="showPlane"> Krysstrømsplan</label>
+      </div>
+      <div id="planeCtl"></div>
+      <div id="secCtl"></div>
+      <div id="sxCtl"></div>
+            </div></details>
             <div class="t3g"><h3>Mål</h3>
               <div class="t3btns"><button class="t3b" id="t3Probe" aria-pressed="false">Sonde</button><button class="t3b" id="t3Wand" aria-pressed="false">Røykstav</button><button class="t3b" id="t3Sweep">Automatisk sveip</button></div>
               <div class="hint" id="t3MeasHint"></div>
@@ -584,6 +618,48 @@ body.depth-instructor .memo h3{font-size:20px}
               <div class="t3btns"><button class="t3b" id="t3SaveA">Lagre som A</button><button class="t3b" id="t3ClrA" disabled>Fjern A</button></div>
               <div class="hint" id="t3AHint">Lagre et utgangspunkt, endre noe, og se forskjellen.</div>
             </div>
+            <details class="t3g t3d" id="t3AdvG"><summary><h3>Avanserte innstillinger</h3></summary><div class="t3dd">
+              <div class="t3sub2 deep"><h4>Strømlinjer og snitt</h4><div class="ctl"><label><span>Farge etter</span></label><div class="seg grid t3s3" id="t3Cby"><button data-v="v">Fart V/V∞</button><button data-v="cp">Trykk Cp</button><button data-v="solid">Ensfarget</button></div></div>
+              <label class="tog"><input type="checkbox" id="t3_rib"> Strømbånd (fra raken)</label>
+              <div class="ctl"><label><span>Størrelse i snittet</span></label><div class="seg grid" id="t3Sscal"><button data-v="v">|V|/V∞</button><button data-v="cp">Cp</button><button data-v="cp0">Totaltrykktap</button><button data-v="om">Virvlighet ω</button></div></div>
+              <div class="ctl"><label for="t3_visoK"><span>Isoflate |ω|</span><output id="t3o_visoK"></output></label><input type="range" id="t3_visoK" min="0.03" max="0.6" step="0.01"></div></div>
+              <div class="t3sub2 deep"><h4>Fargekart</h4><div class="seg grid" id="t3Cmap"><button data-v="-1">Auto</button><button data-v="1">Turbo</button><button data-v="2">Viridis</button><button data-v="0">Kjølig–varm</button></div>
+              <div class="hint" id="t3CmapH"></div>
+              <div class="ctl"><label for="t3_vcon"><span>Fargeområde, linjer</span><output id="t3o_vcon"></output></label>
+                <input type="range" id="t3_vcon" min="0" max="40" step="5"></div>
+              <div class="ctl"><label for="t3_cpR"><span>Cp-område (flate)</span><output id="t3o_cpR"></output></label>
+                <input type="range" id="t3_cpR" min="0" max="4" step="0.25"></div></div>
+    <details class="sec adv" data-k="Vinge">
+      <summary><h2>Vinge</h2></summary>
+      <div id="wingCtl"></div>
+    </details>
+    <details class="sec adv" data-k="Profil">
+      <summary><h2>Profil</h2></summary>
+      <div class="seg grid" id="segAf"></div>
+    </details>
+    <details class="sec adv" data-k="Atmosfære">
+      <summary><h2>Atmosfære</h2></summary>
+      <div id="atmCtl"></div>
+    </details>
+    <details class="sec adv" data-k="Visning">
+      <summary><h2>Visning</h2></summary>
+      <div class="ctl deep"><label>Fargekart</label>
+        <div class="seg" id="segCmap"><button data-v="-1">Auto</button><button data-v="1">Turbo</button><button data-v="2">Viridis</button><button data-v="0">Kjølig–varm</button></div>
+      </div>
+      <div id="visCtl"></div>
+      <label class="tog"><input type="checkbox" id="showIso" checked> Isolinjer for Cp</label>
+      <div class="ctl"><label>Forsterkning av forstyrrelsen</label>
+        <div class="seg" id="segExag"><button data-v="1">1× (ekte)</button><button data-v="2">2×</button><button data-v="3">3×</button></div>
+      </div>
+      <label class="tog"><input type="checkbox" id="showLabels" checked> Forklaringer i bildet</label>
+      <label class="tog"><input type="checkbox" id="showForces" checked> Kraftpiler (løft, vekt, motstand, relativ vind)</label>
+      <p class="hint" style="font-size:11px;color:var(--muted);margin:8px 0 0">Hold musen over flyet for å lese av trykk og lokal fart.</p>
+    </details>
+            </div></details>
+            <div hidden><div class="sec">
+      <h2>Konfigurasjon <small id="confHint"></small></h2>
+      <div class="seg" id="segConf"></div>
+    </div></div>
           </div>
         </details>
         <div class="t3view">
@@ -704,75 +780,6 @@ body.depth-instructor .memo h3{font-size:20px}
     <p class="foot">FOOT</p>
   </div>
 
-  <aside id="panel">
-    <div class="sec">
-      <h2>Konfigurasjon <small id="confHint"></small></h2>
-      <div class="seg" id="segConf"></div>
-    </div>
-    <div class="sec">
-      <h2>Flyging <small id="modeHint"></small></h2>
-      <div class="seg" id="segMode">
-        <button data-v="speed">Styr med fart</button>
-        <button data-v="alpha">Styr med α</button>
-      </div>
-      <div id="flightCtl"></div>
-    </div>
-    <div class="sec rakebox">
-      <h2>Strømlinjer <small>RK4 · virvelgitter</small></h2>
-      <div class="ctl" id="seedBox"><label>Frøområde</label>
-        <div class="seg" id="segSeed"><button data-v="span">Hele spennet</button><button data-v="tip">Vingetupp</button><button data-v="fus">Skrog</button><button data-v="rake">Rake</button></div>
-        <div class="hint" id="seedHint"></div>
-      </div>
-      <div class="ctl" id="sliceBox"><label>Fartssnitt |V|/V∞</label>
-        <div class="seg" id="segSdir"><button data-v="long">Langs strømmen</button><button data-v="cross">Tverrsnitt</button></div>
-        <div class="hint">Dra planet i bildet for å flytte det.</div>
-      </div>
-      <div class="ctl" id="rakeBox"><label>Frørake</label>
-        <div class="seg" id="segRake"><button data-v="line">Linje</button><button data-v="plane">Plan</button><button data-v="section">Snitt</button><button data-v="tips">Vingetupper</button></div>
-      </div>
-      <div class="ctl" id="laserBox"><label>Laserark</label>
-        <div class="seg" id="segLaser"><button data-v="off">Av</button><button data-v="cross">Tverrsnitt</button><button data-v="span">Langs korden</button></div>
-        <div id="laserCtl"></div>
-      </div>
-      <div id="rakeCtl"></div>
-      <div class="tg2">
-        <label class="tog"><input type="checkbox" id="showPulse" checked> Pulser</label>
-        <label class="tog"><input type="checkbox" id="showMirror" checked> Begge sider</label>
-        <label class="tog"><input type="checkbox" id="showSurf" checked> Cp på flyet</label>
-        <label class="tog"><input type="checkbox" id="showPlane"> Krysstrømsplan</label>
-      </div>
-      <div id="planeCtl"></div>
-      <div id="secCtl"></div>
-      <div id="sxCtl"></div>
-    </div>
-    <div class="advh">Avanserte innstillinger</div>
-    <details class="sec adv" data-k="Vinge">
-      <summary><h2>Vinge</h2></summary>
-      <div id="wingCtl"></div>
-    </details>
-    <details class="sec adv" data-k="Profil">
-      <summary><h2>Profil</h2></summary>
-      <div class="seg grid" id="segAf"></div>
-    </details>
-    <details class="sec adv" data-k="Atmosfære">
-      <summary><h2>Atmosfære</h2></summary>
-      <div id="atmCtl"></div>
-    </details>
-    <details class="sec adv" data-k="Visning">
-      <summary><h2>Visning</h2></summary>
-      <div class="ctl deep"><label>Fargekart</label>
-        <div class="seg" id="segCmap"><button data-v="-1">Auto</button><button data-v="1">Turbo</button><button data-v="2">Viridis</button><button data-v="0">Kjølig–varm</button></div>
-      </div>
-      <div id="visCtl"></div>
-      <label class="tog"><input type="checkbox" id="showIso" checked> Isolinjer for Cp</label>
-      <div class="ctl"><label>Forsterkning av forstyrrelsen</label>
-        <div class="seg" id="segExag"><button data-v="1">1× (ekte)</button><button data-v="2">2×</button><button data-v="3">3×</button></div>
-      </div>
-      <label class="tog"><input type="checkbox" id="showLabels" checked> Forklaringer i bildet</label>
-      <label class="tog"><input type="checkbox" id="showForces" checked> Kraftpiler (løft, vekt, motstand, relativ vind)</label>
-      <p class="hint" style="font-size:11px;color:var(--muted);margin:8px 0 0">Hold musen over flyet for å lese av trykk og lokal fart.</p>
-    </details>
-  </aside>
 </div>
 </div>
 
@@ -953,7 +960,7 @@ const NO2EN={
 'Negativ verdi er washout: tippen har lavere innfallsvinkel enn roten.':'Negative values are washout: the tip has a lower angle of incidence than the root.',
 'Rakeposisjon langs spennet':'Rake position along the span',
 ' % av halvspenn':' % of semi-span','Brukes av Snitt (både røykrake og snittplan).':'Used by Slice (both the smoke rake and the slice plane).',
-'Rakehøyde':'Rake height','Trykk og høyde':'Pressure & altitude','Romlig orientering':'Spatial orientation','Holding':'Holding','Pitot-statisk':'Pitot-static','Vindtunnel':'Wind tunnel','Profilsnitt':'Airfoil section','3D-vindtunnel':'3D wind tunnel','Avanserte innstillinger':'Advanced settings','Vis alle verdier og diagrammer':'Show all values and charts','Løftkoeffisient CL':'Lift coefficient CL','Glidetall L/D':'Lift-to-drag ratio L/D','Stallfart Vs (1 g)':'Stall speed Vs (1 g)','Margin til stall':'Margin to stall','forbi stall':'past stall','Seksjoner':'Sections','Fly inn i stall':'Fly into a stall','Stopp demo':'Stop demo','Tilbake til 4°':'Back to 4°','Strømningen har løsnet':'Flow has separated','Wake turbulence · sett bakfra':'Wake turbulence · view from behind','Vingetippvirvler':'Wingtip vortices',
+'Rakehøyde':'Rake height','Trykk og høyde':'Pressure & altitude','Romlig orientering':'Spatial orientation','Holding':'Holding','Pitot-statisk':'Pitot-static','Vindtunnel':'Wind tunnel','Profilsnitt':'Airfoil section','3D-vindtunnel':'3D wind tunnel','Avanserte innstillinger':'Advanced settings','Strømlinjer og frø':'Streamlines and seeding','Vis alle verdier og diagrammer':'Show all values and charts','Løftkoeffisient CL':'Lift coefficient CL','Glidetall L/D':'Lift-to-drag ratio L/D','Stallfart Vs (1 g)':'Stall speed Vs (1 g)','Margin til stall':'Margin to stall','forbi stall':'past stall','Seksjoner':'Sections','Fly inn i stall':'Fly into a stall','Stopp demo':'Stop demo','Tilbake til 4°':'Back to 4°','Strømningen har løsnet':'Flow has separated','Wake turbulence · sett bakfra':'Wake turbulence · view from behind','Vingetippvirvler':'Wingtip vortices',
 'Virvelparet bak flyet, sett bakfra. Fart og masse er de samme som i tunnelen.':'The vortex pair behind the aircraft, seen from behind. Speed and mass are shared with the tunnel.',
 'Pause':'Pause','Spill av':'Play','Start på nytt':'Restart','Høyde over bakken':'Height above ground','Sidevind':'Crosswind','Rullebane':'Runway','Flybane':'Flight path',
 'Nedvind':'Downwash','Oppvind':'Upwash','Virvelkjerne':'Vortex core','virvlene er':'the vortices are','under flybanen':'below the flight path','vist i':'shown at','fart':'speed',
