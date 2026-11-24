@@ -23,6 +23,7 @@ for k, (c, n, up, W, H) in V.items():
     c, n, up = map(lambda v: np.array(v, float), (c, n, up)); n /= np.linalg.norm(n); up = up - up.dot(n) * n; up /= np.linalg.norm(up); B.append((c, n, up, np.cross(up, -n), W, H))
 TEX = {'fd_main.png': 2048, 'fd_other.png': 2048, 'fd_leather.png': 1024, 'fabric2.png': 64, 'carpet2.png': 512}  # fd_glare = window glass: left out
 SKIP = re.compile(r'(?i)hud|efb|headset|screw|plug|extinguisher|checklist|torch|cable|_lt\b|knb|btn|breaker')
+WHOLE = re.compile(r'(?i)^(sidestick|tiller)')  # hand controls: finely modelled (the grip is all small faces), kept whole or the grip has holes
 import trimesh
 OV, OF = [], []
 for o in O:
@@ -123,12 +124,16 @@ for o in O:
         if px[1] > 150 and px[1] > px[0] + 60 and px[1] > px[2] + 40: continue
         for bi, (c, n, up, x, W, H) in enumerate(B[:3]):  # side consoles: the model's own geometry is kept
             d = ctr - c; dn = d @ (-n)
-            if abs(d @ x) < W / 2 + 0.01 and abs(d @ up) < H / 2 + 0.01 and -0.03 < dn < (0.32 if bi == 1 else 0.12): inside = True; break  # the glareshield stands well proud of the main panel
+            if abs(d @ x) < W / 2 + 0.01 and abs(d @ up) < H / 2 + 0.01 and -0.03 < dn < (0.32 if bi == 1 else 0.12):
+                # only what the panel picture can show: faces turned towards its view. A face seen edge-on from there (the top of
+                # the glareshield, the sides of the panel bodies) is not in the picture at all, so it stays in the shell.
+                fn = np.cross(P[1] - P[0], P[2] - P[0]); fl = np.linalg.norm(fn)
+                if fl < 1e-12 or abs(fn @ n) / fl > 0.42 or diag < 0.25: inside = True; break
         if inside: continue
         nrm = np.cross(P[1] - P[0], P[2] - P[0]); ln = np.linalg.norm(nrm)
         if ln < 1e-12: continue
         area = sum(np.linalg.norm(np.cross(P[j] - P[0], P[j + 1] - P[0])) for j in range(1, len(P) - 1)) / 2
-        if area < MINA and np.linalg.norm(P.max(0) - P.min(0)) < 0.03: continue  # tiny detail (bolts, edges of small parts): invisible at cockpit distance
+        if area < MINA and np.linalg.norm(P.max(0) - P.min(0)) < 0.03 and not WHOLE.search(o['name']): continue  # tiny detail (bolts, edges of small parts): invisible at cockpit distance
         nrm /= ln; T = np.stack([-P[:, 2], P[:, 1], P[:, 0]], 1); nT = np.array([-nrm[2], nrm[1], nrm[0]])
         UVs = [(uvs[j][0] * rep[0] + off[0], 1 - (uvs[j][1] * rep[1] + off[1])) for j in range(len(idx))]
         for j in range(1, len(idx) - 1):
@@ -175,6 +180,9 @@ for t, g in G.items():
     if im.width > s: im = im.resize((s, s), Image.LANCZOS)
     if t == 'fd_other.png':  # an airline emblem on the captain's window post in the source texture: painted out with the post's colour
         from PIL import ImageDraw; k = im.width / 2048; ImageDraw.Draw(im).ellipse(tuple(v * k for v in (1368, 19, 1402, 53)), fill=(73, 86, 105))
+        # a white mask picture in the atlas that the pedestal's side wall is mapped to: it showed as a white slab beside the
+        # pedestal. The real wall is plain dark lining.
+        ImageDraw.Draw(im).rectangle(tuple(v * k for v in (618, 216, 702, 280)), fill=(30, 32, 36))
     im.save(os.path.join(OUT, f'a320-shell-{name}.jpg'), quality=82, optimize=True)
     print(t, 'verts', len(P), 'tris', len(I) // 3)
 # the same bake on a grid over each rendered panel (the page multiplies the panel picture by it)

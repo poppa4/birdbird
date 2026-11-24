@@ -125,14 +125,14 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=4').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=5').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
       const g=new THREE.BufferGeometry(); const pa=new THREE.BufferAttribute(P,3,true); g.setAttribute('position',pa);
       const uv=new Float32Array(gr.nv*2); for(let i=0;i<gr.nv;i++){ uv[i*2]=gr.uv[0]+UV[i*2]/65535*gr.uv[2]; uv[i*2+1]=gr.uv[1]+UV[i*2+1]/65535*gr.uv[3]; } g.setAttribute('uv',new THREE.BufferAttribute(uv,2));
       g.setAttribute('color',new THREE.InterleavedBufferAttribute(new THREE.InterleavedBuffer(new Uint8Array(buf,N.byteOffset,gr.nv*4),4),3,0,true)); g.setIndex(new THREE.BufferAttribute(I,1));
-      const tex=gr.tex==='flat'?null:TL.load((CF3?CF3.shellTex:'models/a320-shell-')+gr.tex+'.jpg?v=2'); if(tex){ tex.anisotropy=Math.min(8,o_R.capabilities.getMaxAnisotropy()); tex.flipY=false; tex.wrapS=tex.wrapT=THREE.RepeatWrapping; if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding; }
+      const tex=gr.tex==='flat'?null:TL.load((CF3?CF3.shellTex:'models/a320-shell-')+gr.tex+'.jpg?v=4'); if(tex){ tex.anisotropy=Math.min(8,o_R.capabilities.getMaxAnisotropy()); tex.flipY=false; tex.wrapS=tex.wrapT=THREE.RepeatWrapping; if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding; }
       const mat=new THREE.MeshBasicMaterial({map:gr.tex==='flat'?null:tex,vertexColors:true,side:THREE.DoubleSide /* the FlightGear surfaces are single-sided and many face outwards: seen from the seat they would vanish and leave holes */}); mat.color.setScalar((hdr.lmax||1)*1.22); const mesh=new THREE.Mesh(g,mat); mesh.scale.setScalar(32767/hdr.S); if(hdr.o) mesh.position.set(...hdr.o); mesh.matrixAutoUpdate=false; mesh.updateMatrix(); mesh.frustumCulled=false; grp.add(mesh); }
     if(hdr.panels) for(const k in hdr.panels){ const pb=hdr.panels[k], p=P[k]; if(!p) continue; const col=p.mesh.geometry.attributes.color, n=24;
       for(let j=0;j<=n;j++) for(let i=0;i<=n;i++){ const x=i/n*pb.nx, y=j/n*pb.ny, x0=Math.min(pb.nx-1,Math.floor(x)), y0=Math.min(pb.ny-1,Math.floor(y)), fx=x-x0, fy=y-y0, at=(a,b)=>pb.v[b*(pb.nx+1)+a];
@@ -148,7 +148,7 @@ function init(o){
     const m=new THREE.Mesh(new THREE.PlaneGeometry(w/v.r[2]*v.W,h/v.r[3]*v.H),new THREE.MeshBasicMaterial({map:tex,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-14}));
     m.matrixAutoUpdate=false; m.matrix.copy(basis(v)).setPosition(c); scene.add(m); m.geometry.computeBoundingSphere(); disp.push({d,tex,m,c,wm:w/v.r[2]*v.W}); d.tex=tex; d.mesh=m; }
   /* ---- the panels' depth: height fields from models/a320-relief.bin (see HM above); the screens move onto their surface ---- */
-  const RELIEF=CF3?Promise.resolve(false):fetch('models/a320-relief.bin?v=5').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  const RELIEF=CF3?Promise.resolve(false):fetch('models/a320-relief.bin?v=6').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl;
     for(const k in hdr.views){ const p=P[k], hv=hdr.views[k]; if(!p) continue; const n=hv.nx*hv.ny, raw=new Int16Array(buf.slice(base+hv.off,base+hv.off+n*2)), a=new Float32Array(n), cl=HCL[k]||[-0.05,0.05];
       for(let i=0;i<n;i++) a[i]=Math.max(cl[0],Math.min(cl[1],raw[i]/hdr.scale));
@@ -156,9 +156,30 @@ function init(o){
       /* the drawn surface is coarser than the height field (every 2nd sample, every 3rd on small devices): a quarter of the
          triangles, drawn twice (picture + light layer); clicks and the screens still use the full field */
       const S=mobile||phone()?3:2, mx=Math.round((hv.nx-1)/S)+1, my=Math.round((hv.ny-1)/S)+1;
-      const g=new THREE.PlaneGeometry(p.v.W,p.v.H,mx-1,my-1), pa=g.attributes.position.array; for(let j=0;j<my;j++) for(let i=0;i<mx;i++) pa[(j*mx+i)*3+2]=hAt(k,i/(mx-1),j/(my-1));
-      const nv=mx*my;
-      g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(nv*3).fill(1),3)); g.computeBoundingSphere();
+      /* A height field cannot hold a step: a cell that spans one (the glareshield's edges, the panel's rim, a guard) used to be
+         a slanted face with the picture smeared down it, and where the step runs across the grid the slants made a saw edge.
+         Such a cell is now flat, at the level of its own middle, and the step is a wall along the cell's edge that carries the
+         colour of the higher side. Everywhere else the surface is the smooth grid as before. */
+      const W_=p.v.W, H_=p.v.H, cx_=mx-1, cy_=my-1, STEP=0.016, pos=[], uvs=[], idx=[];
+      const gh=new Float32Array(mx*my); for(let j=0;j<my;j++) for(let i=0;i<mx;i++){ const h=hAt(k,i/cx_,j/cy_); gh[j*mx+i]=h; pos.push((i/cx_-0.5)*W_,(0.5-j/cy_)*H_,h); uvs.push(i/cx_,1-j/cy_); }
+      const lev=new Float32Array(cx_*cy_).fill(NaN);
+      for(let j=0;j<cy_;j++) for(let i=0;i<cx_;i++){ const a=gh[j*mx+i], b=gh[j*mx+i+1], c=gh[(j+1)*mx+i], d=gh[(j+1)*mx+i+1], lo=Math.min(a,b,c,d), hi=Math.max(a,b,c,d);
+        if(hi-lo<=STEP){ const v0=j*mx+i; idx.push(v0,v0+mx,v0+1, v0+1,v0+mx,v0+mx+1); continue; }
+        const m=hAt(k,(i+0.5)/cx_,(j+0.5)/cy_); let best=a; for(const q of [b,c,d]) if(Math.abs(q-m)<Math.abs(best-m)) best=q; lev[j*cx_+i]=best; }
+      const vtx=(i,j,h,u,v)=>{ pos.push((i/cx_-0.5)*W_,(0.5-j/cy_)*H_,h); uvs.push(u,v); return pos.length/3-1; };
+      const edgeH=(ci,cj,i,j)=>{ if(ci<0||cj<0||ci>=cx_||cj>=cy_) return null; const l=lev[cj*cx_+ci]; return l===l?l:gh[j*mx+i]; };
+      for(let j=0;j<cy_;j++) for(let i=0;i<cx_;i++){ const l=lev[j*cx_+i]; if(l!==l) continue;
+        const A=vtx(i,j,l,i/cx_,1-j/cy_), B=vtx(i+1,j,l,(i+1)/cx_,1-j/cy_), C=vtx(i,j+1,l,i/cx_,1-(j+1)/cy_), D=vtx(i+1,j+1,l,(i+1)/cx_,1-(j+1)/cy_); idx.push(A,C,B, B,C,D);
+        /* walls to the four neighbours (a neighbouring step cell draws the shared wall only if it is the higher one, or first) */
+        for(const [ni,nj,i0,j0,i1,j1] of [[i-1,j,i,j,i,j+1],[i+1,j,i+1,j,i+1,j+1],[i,j-1,i,j,i+1,j],[i,j+1,i,j+1,i+1,j+1]]){
+          const h0=edgeH(ni,nj,i0,j0), h1=edgeH(ni,nj,i1,j1); if(h0===null) continue; if(Math.abs(h0-l)<0.001&&Math.abs(h1-l)<0.001) continue;
+          const nl=lev[nj*cx_+ni]; if(nl===nl&&nl>l) continue;
+          /* colour: a line through the middle of the higher cell, so the wall is the colour of what stands up, not of the gap */
+          const hiMine=l>=Math.max(h0,h1), si=hiMine?i:ni, sj=hiMine?j:nj, um=(si+0.5)/cx_, vm=1-(sj+0.5)/cy_, vert=(i0===i1);
+          const u0=vert?um:i0/cx_, v0=vert?1-j0/cy_:vm, u1=vert?um:i1/cx_, v1=vert?1-j1/cy_:vm;
+          const a=vtx(i0,j0,l,u0,v0), b=vtx(i1,j1,l,u1,v1), c=vtx(i0,j0,h0,u0,v0), d=vtx(i1,j1,h1,u1,v1); idx.push(a,c,b, b,c,d); } }
+      const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(pos),3)); g.setAttribute('uv',new THREE.BufferAttribute(new Float32Array(uvs),2)); g.setIndex(pos.length/3>65535?new THREE.BufferAttribute(new Uint32Array(idx),1):new THREE.BufferAttribute(new Uint16Array(idx),1));
+      const nv=pos.length/3; g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(nv*3).fill(1),3)); g.computeBoundingSphere(); p.mesh.material.side=THREE.DoubleSide; if(p.ov&&p.ov.material) p.ov.material.side=THREE.DoubleSide;
       const old=p.mesh.geometry; p.mesh.geometry=g; if(p.ov) p.ov.geometry=g; old.dispose(); }
     /* the screens follow the surface: a small grid whose points sit 1.5 mm above the height field (a flat screen on a sloped
        part of the panel, such as the MCDUs on the pedestal, stood out of the surface at one edge and sank into it at the other) */

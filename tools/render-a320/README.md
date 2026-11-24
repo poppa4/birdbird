@@ -42,3 +42,13 @@ details under about 6 cm². A derived work of the model, GPL-2.0 as well.
 flight deck, with NORDAP's display drawings (`scr/*.png`) as emissive screens, the DCDUs and MCDUs lit, glass hidden, a clear blue sky and warm panel flood:
 `python dcdu.py` (DCDU display), then `python dusk.py -- 2000 32 out.png 1.05 0.60 0 -0.55 0.30 0 32` (camera x y z, target x y z, lens mm), then cropped to 16:10.
 A derived work of the model, GPL-2.0 as well.
+
+## Proud parts and steps (2026-11-24)
+
+`depth.py` now leaves the small parts that stand proud of a panel face (rotary knobs, selectors, toggle switches, guards; listed in
+`proud.json`) out of the height fields: a height field turned each into a cone with the panel picture smeared down its sides. The
+face under them stays flat with the part's picture on it, and the page draws its own knob and switch geometry there. Rays that
+miss the model take the nearest hit's height, so the picture's own outline cuts the top of the glareshield. In `a320-3d.js` a
+grid cell that spans a step of more than 16 mm is drawn flat with walls to its neighbours instead of as a slanted face.
+`shell.py` keeps the sidesticks and tillers whole, keeps faces that the panel pictures see edge-on, and paints out a white mask
+picture in `fd_other.png` that the pedestal's side wall is mapped to.
