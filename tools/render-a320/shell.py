@@ -25,12 +25,12 @@ TEX = {'fd_main.png': 2048, 'fd_other.png': 2048, 'fd_leather.png': 1024, 'fabri
 SKIP = re.compile(r'(?i)hud|efb|headset|screw|plug|extinguisher|checklist|torch|cable|knb|btn|breaker')
 WHOLE = re.compile(r'(?i)^(sidestick|tiller)')  # hand controls: finely modelled (the grip is all small faces), kept whole or the grip has holes
 import trimesh
-OV, OF = [], []
-for o in O:
+OV, OF, OFO = [], [], []
+for _oi, o in enumerate(O):
     if o['tex'] == 'fd_glare.png' or re.search(r'(?i)glass|^sfl', o['name']): continue
     b = sum(len(x) for x in OV)
     for mat, idx, uvs, flags in o['faces']:
-        for j in range(1, len(idx) - 1): OF.append([b + idx[0], b + idx[j], b + idx[j + 1]])
+        for j in range(1, len(idx) - 1): OF.append([b + idx[0], b + idx[j], b + idx[j + 1]]); OFO.append(_oi)
     OV.append(o['v'])
 OVa = np.concatenate(OV); OCC = trimesh.Trimesh(vertices=np.stack([-OVa[:, 2], OVa[:, 1], OVa[:, 0]], 1), faces=np.array(OF), process=False)
 RAY = trimesh.ray.ray_pyembree.RayMeshIntersector(OCC)
@@ -149,7 +149,54 @@ POSTS = []
 for p0, p1 in (((-0.915, 0.40, -0.41), (-0.77, 0.88, 0.0)), ((-1.30, 0.40, 0.32), (-0.99, 0.88, 0.36))):
     POSTS.append(post(p0, p1)); POSTS.append(post((-p0[0],) + p0[1:], (-p1[0],) + p1[1:]))
 POSTS.append(post((0, 0.45, -0.865), (0, 0.88, -0.41)))
-def in_post(pt):   # pt in the page's frame
+# ---- window headers, rebuilt the same way, part by part. Along the top of each window the model has a frame lip and a padded
+# beam, each a box of flat plates. Every part of the model that runs along a header as a beam (cut at 12 stations: present in
+# most of them, between 12 mm and 20 cm across) is replaced by one rounded loft of its own size and colour. ----
+OFOa = np.array(OFO); DIAGALL = [float(np.linalg.norm(np.ptp(np.asarray(o['v'], float).reshape(-1, 3), 0))) if len(o['v']) else 0.0 for o in O]
+def header(p0, p1, R=0.17, NR=24):
+    p0, p1 = np.array(p0, float), np.array(p1, float); a = p1 - p0; Lh = np.linalg.norm(a); a /= Lh; mid = (p0 + p1) / 2
+    v = np.array([0.0, 0.70, 0.40]) - mid; v -= (v @ a) * a; v /= np.linalg.norm(v); u = np.cross(a, v); per = collections.defaultdict(list)
+    for t in np.linspace(0.10, 0.90, 12):
+        c = p0 + a * Lh * t; lines, fidx = trimesh.intersections.mesh_plane(OCC, a, c, return_faces=True)
+        if not len(lines): continue
+        q = lines.reshape(-1, 3) - c; fo = np.repeat(OFOa[fidx], 2); near = np.linalg.norm(q, axis=1) < R
+        for oi in np.unique(fo[near]):
+            qq = q[near & (fo == oi)]
+            if len(qq) >= 4: per[int(oi)].append((t, np.percentile(qq @ u, 2), np.percentile(qq @ u, 98), np.percentile(qq @ v, 2), np.percentile(qq @ v, 98)))
+    out = []
+    for oi, rows in per.items():
+        rows = np.array(rows)
+        if len(rows) < 9 or DIAGALL[oi] < 0.30 or O[oi]['tex'] not in TEX or O[oi]['name'].startswith('pedestal_low_glare'): continue
+        w_ = np.median(rows[:, 2] - rows[:, 1]); h_ = np.median(rows[:, 4] - rows[:, 3])
+        if min(w_, h_) < 0.012 or max(w_, h_) > 0.20: continue                      # a sheet passing by, or a wall: not a beam
+        fit = [np.polyfit(rows[:, 0], rows[:, k], 1) for k in range(1, 5)]; rings = []
+        for t in np.linspace(-0.05, 1.05, 12):
+            u0, u1, v0, v1 = (np.polyval(f, t) for f in fit); u0 -= 0.003; u1 += 0.003; v0 -= 0.003; v1 += 0.003
+            cu, cv, hw, hh = (u0 + u1) / 2, (v0 + v1) / 2, (u1 - u0) / 2, (v1 - v0) / 2; r = min(0.42 * min(hw, hh), 0.016); ring = []
+            for k in range(NR):
+                th = 2 * np.pi * k / NR; cx, sx = np.cos(th), np.sin(th); ring.append(p0 + a * Lh * t + u * (cu + np.sign(cx) * (hw - r) + r * cx) + v * (cv + np.sign(sx) * (hh - r) + r * sx))
+            rings.append(ring)
+        b = dict(p0=p0, a=a, L=Lh, u=u, v=v, fit=fit, rings=rings, obj=oi)
+        # the part's colour: the median of its texture over the faces that the loft replaces
+        o = O[oi]; vv = np.asarray(o['v'], float).reshape(-1, 3); cols = []
+        for mat, idx, uvs, flags in o['faces']:
+            cm = vv[idx].mean(0); pt = np.array([-cm[2], cm[1], cm[0]]) - p0; t = (pt @ a) / Lh
+            if 0 <= t <= 1 and abs(pt @ u - np.polyval(fit[0], t) / 2 - np.polyval(fit[1], t) / 2) < 0.12:
+                tu = np.mean([x[0] for x in uvs]) * o['rep'][0] + o['off'][0]; tv = 1 - (np.mean([x[1] for x in uvs]) * o['rep'][1] + o['off'][1])
+                cols.append(TXA[o['tex']][min(511, int((tv % 1) * 512)), min(511, int((tu % 1) * 512))])
+        b['col'] = np.median(np.array(cols), 0).astype(float) if cols else np.array([71.0, 85.0, 104.0]); b['tex'] = o['tex']
+        out.append(b); print('  header part', o['name'], 'size mm', int(w_ * 1000), int(h_ * 1000), 'colour', b['col'].astype(int).tolist())
+    return out
+HEADS = []
+for p0, p1 in (((-0.77, 0.88, 0.0), (0.0, 0.88, -0.41)), ((-0.77, 0.88, 0.0), (-0.99, 0.88, 0.36)), ((-0.99, 0.88, 0.36), (-1.0, 0.88, 0.95))):
+    HEADS += header(p0, p1); HEADS += header((-p0[0],) + p0[1:], (-p1[0],) + p1[1:])
+def in_post(pt, oi=None):   # pt in the page's frame
+    for b in HEADS:
+        if b['obj'] != oi: continue
+        d = pt - b['p0']; t = (d @ b['a']) / b['L']
+        if t < -0.05 or t > 1.05: continue
+        u0, u1, v0, v1 = (np.polyval(f, t) for f in b['fit']); pu, pv = d @ b['u'], d @ b['v']
+        if u0 - 0.02 < pu < u1 + 0.02 and v0 - 0.02 < pv < v1 + 0.02: return True
     for b in POSTS:
         d = pt - b['p0']; t = (d @ b['a']) / b['L']
         if t < -0.04 or t > 1.04: continue
@@ -186,7 +233,7 @@ for oi, o in enumerate(O):
     for fi, (mat, idx, uvs, flags) in enumerate(o['faces']):
         if (oi, fi) in TAKEN: continue
         P = v[idx]; ctr = P.mean(0); inside = False
-        if PSH is None and in_post(np.array([-ctr[2], ctr[1], ctr[0]])): continue
+        if PSH is None and in_post(np.array([-ctr[2], ctr[1], ctr[0]]), oi): continue
         # (the bright green lamp / marking areas of the textures are painted over in the saved pictures below: skipping those
         # faces left holes to the outside)
         tu = np.mean([uvs[j][0] * rep[0] + off[0] for j in range(len(idx))]) % 1; tv = 1 - (np.mean([uvs[j][1] * rep[1] + off[1] for j in range(len(idx))]) % 1)
@@ -220,7 +267,7 @@ for oi, o in enumerate(O):
         for j in range(1, len(idx) - 1):
             g['F'] += split([(T[0], UVs[0]), (T[j], UVs[j]), (T[j + 1], UVs[j + 1])], nT)
 POST_OI = next(i for i, o in enumerate(O) if o['name'] == 'WindowCpt')
-for b in POSTS:
+for b in POSTS + HEADS:
     rg = b['rings']; NR = len(rg[0])
     for i in range(len(rg) - 1):
         for k in range(NR):
@@ -228,7 +275,7 @@ for b in POSTS:
             if ln_ < 1e-12: continue
             n_ /= ln_; cc = sum(q) / 4 - (b['p0'] + b['a'] * ((sum(q) / 4 - b['p0']) @ b['a']))
             if n_ @ cc < 0: q = q[::-1]; n_ = -n_
-            fid = len(FCOL); FCOL.append(np.array([71.0, 85.0, 104.0])); FAREA.append(ln_); FOBJ.append(POST_OI); FTEX.append('fd_other.png'); FY.append(0.0); FEDG.append([])
+            fid = len(FCOL); FCOL.append(b.get('col', np.array([71.0, 85.0, 104.0]))); FAREA.append(ln_); FOBJ.append(POST_OI); FTEX.append(b.get('tex', 'fd_other.png')); FY.append(0.0); FEDG.append([])
             G['flat']['F'] += [([(q[0], (fid, 0)), (q[1], (fid, 0)), (q[2], (fid, 0))], n_), ([(q[0], (fid, 0)), (q[2], (fid, 0)), (q[3], (fid, 0))], n_)]
 # the reading-light panel on the two front posts (a part of the old post, so it went with it): a dark plate with rounded corners
 # on the face towards the cockpit, with the light's lens and its switch
