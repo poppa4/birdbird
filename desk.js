@@ -307,8 +307,7 @@
         <button type="button" class="dk-qo" data-b="open" aria-keyshortcuts="${isMac ? 'Meta+K' : 'Control+K'}">${ic('search')}<span>${esc(t('Open anything', 'Åpne hva som helst'))}</span><kbd>${KEY}</kbd></button>
         <span class="sp"></span>
         ${stA}
-        <button type="button" class="dk-ib" data-b="split-h" title="${esc(t('Split right', 'Del til høyre'))}" aria-label="${esc(t('Split right', 'Del til høyre'))}"${D.panes(L).length >= maxPanes() ? ' disabled' : ''}>${ic('splith')}</button>
-        <a class="dk-ib dk-mapb" href="#/library" title="${esc(t('Flight Intelligence: home and your library', 'Flight Intelligence: hjem og biblioteket ditt'))}" aria-label="${esc(t('Flight Intelligence home', 'Flight Intelligence, hjem'))}">${ic('lib')}<span>${esc(t('Workspace', 'Arbeidsområdet'))}</span></a>`;
+        <button type="button" class="dk-ib" data-b="split-h" title="${esc(t('Split right', 'Del til høyre'))}" aria-label="${esc(t('Split right', 'Del til høyre'))}"${D.panes(L).length >= maxPanes() ? ' disabled' : ''}>${ic('splith')}</button>`;
     }
     function status() { if (!mounted) return; const st = A.statusShort(); host.querySelectorAll('.dk-st').forEach(s => { s.title = st.title || ''; s.innerHTML = `<i class="kept ${st.c}"></i><span>${esc(st.s)}</span>`; }); }
     const railCollapsed = () => !!(A.M.deskRail && A.M.deskRail.c);

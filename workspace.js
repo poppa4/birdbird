@@ -386,7 +386,7 @@
   const DOCK = 'bb-fi-dock';
   let dock = null;
   const dockWide = () => window.innerWidth >= 1200;
-  function dockState(v) { try { if (v != null) LS && LS.setItem(DOCK, v); return (LS && LS.getItem(DOCK)) || 'open'; } catch (e) { return 'open'; } }
+  function dockState(v) { try { if (v != null) LS && LS.setItem(DOCK + '2', v); return (LS && LS.getItem(DOCK + '2')) || 'closed'; } catch (e) { return 'closed'; } }
   function dockApply() {
     if (!dock) return;
     const wide = dockWide(), open = wide ? dockState() === 'open' : dock.sheet;
@@ -399,8 +399,8 @@
   }
   function dockLabels() {
     if (!dock) return;
-    dock.el.querySelector('.ttl').textContent = 'Flight Intelligence';
-    dock.el.querySelector('.strip span').textContent = 'Flight Intelligence';
+    dock.el.querySelector('.ttl').textContent = t('Ask Flight Intelligence', 'Spør Flight Intelligence');
+    dock.el.querySelector('.strip span').textContent = t('Ask', 'Spør');
   }
   async function ensureDock() {
     if (dock || !window.WSDESK || !window.WSDESK.needAsk) return;
@@ -559,14 +559,46 @@
       return `<article class="hac"><a class="hac-h" href="#/aircraft/${esc(a.id)}"><span class="reg">${esc(a.reg || a.type || acName(a))}</span><span class="ty">${esc([a.reg ? a.type : '', a.callsign].filter(Boolean).join(' · ') || ' ')}</span>${a.isDefault ? `<span class="def">${t('Default', 'Standard')}</span>` : ''}</a>
         <ul class="hac-d">${d.length ? d.slice().sort((x, y) => (y.updatedAt || 0) - (x.updatedAt || 0)).slice(0, 4).map(x => `<li><a href="#/documents/${esc(x.id)}" data-visit="doc:${esc(x.id)}"><span class="k">${esc(catName(x.cat))}</span><b>${esc(x.name)}</b></a></li>`).join('') : `<li class="none"><button type="button" class="lk" data-act="doc-add" data-id="${esc(a.id)}">${t('Add the AFM or POH', 'Legg til AFM eller POH')}</button></li>`}</ul>
         <footer class="hac-f"><span><b>${d.length}</b> ${t(d.length === 1 ? 'document' : 'documents', d.length === 1 ? 'dokument' : 'dokumenter')}</span><span><b>${n.length}</b> ${t(n.length === 1 ? 'note' : 'notes', n.length === 1 ? 'notat' : 'notater')}</span><span>${lastP ? `<a href="prep.html?id=${encodeURIComponent(lastP.id)}" data-visit="pack:${esc(lastP.id)}">${t('Last pack', 'Siste pakke')}: ${esc(packTitle(lastP))}</a>` : `<b>${pk.length}</b> ${t('packs', 'pakker')}`}</span></footer></article>`; };
-    const tile = (h, n, c) => `<a class="hlib-t" href="${h}"><span>${esc(n)}</span><b>${c}</b></a>`;
+    const IC = { doc: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>', note: '<path d="M5 4h14v16H5z"/><path d="M8 9h8M8 13h8M8 17h5"/>', ac: '<path d="M12 3c1 0 1.5 1 1.5 2v4.5L21 14v2l-7.5-2v4l2 1.5V21L12 20l-3.5 1v-1.5l2-1.5v-4L3 16v-2l7.5-4.5V5c0-1 .5-2 1.5-2z"/>', pack: '<path d="M6 3h12v18H6z"/><path d="M9 7h6M9 11h6M9 15h4"/>', route: '<path d="M5 19c3-6 5-2 7-8s5-6 7-6"/><circle cx="5" cy="19" r="1.6"/><circle cx="19" cy="5" r="1.6"/>', desk: '<path d="M3 5h18v14H3z"/><path d="M10 5v14M16 5v14"/>' };
+    const svg = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>`;
+    const libCard = (h, k, n, c) => `<a class="fh-lib-c" href="${h}">${svg(k)}<span>${esc(n)}</span><b>${c}</b></a>`;
+    const ex = [t('What is Vmca, and what changes it?', 'Hva er Vmca, og hva påvirker den?'), t('Alternate planning minima for a CAT I ILS', 'Planleggingsminima for alternativ med CAT I ILS'), t('Explain this TAF: TEMPO 4000 -SN BKN012', 'Forklar denne TAF-en: TEMPO 4000 -SN BKN012')];
     main.innerHTML = `
       ${nb ? `<div class="ws-remind"><span>${t(`<b>${plural(nb, 'document file exists', 'document files exist', '', '')} only on this device.</b> Files are not uploaded, so a backup file is their only copy elsewhere.`, `<b>${nb} ${nb === 1 ? 'dokumentfil finnes' : 'dokumentfiler finnes'} bare på denne enheten.</b> Filer lastes ikke opp, så en sikkerhetskopi er den eneste kopien et annet sted.`)}</span><button type="button" class="btn sm" data-act="export">${t('Export everything', 'Eksporter alt')}</button></div>` : ''}
-      ${setup ? `<section class="hset" aria-labelledby="hsetH"><h2 id="hsetH">${t('Get started', 'Kom i gang')}</h2><ol>${steps.map((x, i) => `<li class="${x[0] ? 'done' : ''}"><span class="n" aria-hidden="true">${x[0] ? '✓' : i + 1}</span><div><b>${esc(x[1])}</b><small>${esc(x[2])}</small></div>${x[0] ? `<span class="ok">${t('Done', 'Ferdig')}</span>` : x[3]}</li>`).join('')}</ol></section>` : ''}
+      <section class="fh-top">
+        <div class="fh-ask">
+          <span class="k">${t('Ask anything', 'Spør om hva som helst')}</span>
+          <h2>${t('What do you want to know?', 'Hva lurer du på?')}</h2>
+          <p>${t('Theory, EASA rules, weather or your own manuals. Every answer shows where it comes from.', 'Teori, EASA-regler, vær eller dine egne manualer. Hvert svar viser hvor det kommer fra.')}</p>
+          <form class="fh-q" id="fhAsk"><label class="sr" for="fhQ">${t('Your question', 'Spørsmålet ditt')}</label><textarea id="fhQ" rows="2" maxlength="2000" placeholder="${esc(t('Ask a question…', 'Still et spørsmål …'))}"></textarea><button type="submit" class="fh-go">${t('Ask', 'Spør')}</button></form>
+          <div class="fh-ex">${ex.map(q => `<button type="button" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+        </div>
+        <div class="fh-do">
+          <button type="button" class="fh-a" data-act="doc-add">${svg('doc')}<span><b>${t('Add a document', 'Legg til et dokument')}</b><small>${t('AFM, QRH, SOP or a checklist. The AI reads it.', 'AFM, QRH, SOP eller en sjekkliste. AI-en leser det.')}</small></span></button>
+          <button type="button" class="fh-a" data-act="note-new">${svg('note')}<span><b>${t('Write a note', 'Skriv et notat')}</b><small>${t('Saved as you type.', 'Lagres mens du skriver.')}</small></span></button>
+          <a class="fh-a" href="#/desk">${svg('desk')}<span><b>${t('Work side by side', 'Jobb side om side')}</b><small>${t('A document, your notes and the AI on one screen.', 'Et dokument, notatene og AI-en på én skjerm.')}</small></span></a>
+        </div>
+      </section>
+      ${rec.length ? `<section class="hsec"><header><h2>${t('Pick up where you left off', 'Fortsett der du slapp')}</h2></header><ul class="hrec">${rec.slice(0, 6).map(r => `<li><a href="${r.h}"${r.v ? ` data-visit="${esc(r.v)}"` : ''}><span class="k">${esc(r.k)}</span><b>${esc(r.n)}</b><small>${esc(ago(r.at))}</small></a></li>`).join('')}</ul></section>` : ''}
+      <section class="hsec"><header><h2>${t('Your library', 'Biblioteket ditt')}</h2></header><nav class="fh-lib" aria-label="${esc(t('Your library', 'Biblioteket ditt'))}">
+        ${libCard('#/documents', 'doc', t('Documents', 'Dokumenter'), docs.length)}${libCard('#/notes', 'note', t('Notes', 'Notater'), notes.length)}${libCard('#/aircraft', 'ac', t('Aircraft', 'Fly'), ac.length)}${libCard('#/packs', 'pack', t('Briefing packs', 'Briefingpakker'), packs.length)}${libCard('#/routes', 'route', t('Routes', 'Ruter'), S.routes.length)}</nav></section>
       ${ac.length ? `<section class="hsec"><header><h2>${t('My aircraft', 'Mine fly')}</h2><button type="button" class="lk" data-act="ac-new">+ ${t('Add aircraft', 'Legg til fly')}</button></header><div class="hac-g">${ac.map(card).join('')}</div></section>` : ''}
-      ${rec.length ? `<section class="hsec"><header><h2>${t('Recent', 'Nylig')}</h2></header><ul class="hrec">${rec.slice(0, 6).map(r => `<li><a href="${r.h}"${r.v ? ` data-visit="${esc(r.v)}"` : ''}><span class="k">${esc(r.k)}</span><b>${esc(r.n)}</b><small>${esc(ago(r.at))}</small></a></li>`).join('')}</ul></section>` : ''}
-      <section class="hsec"><header><h2>${t('Library', 'Bibliotek')}</h2></header><nav class="hlib" aria-label="${esc(t('Library', 'Bibliotek'))}">
-        ${tile('#/documents', t('Documents', 'Dokumenter'), docs.length)}${tile('#/notes', t('Notes', 'Notater'), notes.length)}${tile('#/packs', t('Briefing packs', 'Briefingpakker'), packs.length)}${tile('#/routes', t('Routes', 'Ruter'), S.routes.length)}</nav></section>`;
+      <section class="fh-learn" aria-label="${esc(t('Learn with the instructor', 'Lær med instruktøren'))}"><h2>${t('Learn with the instructor', 'Lær med instruktøren')}</h2>
+        <a href="fi.html#aircraft"><b>${t('Instructor training', 'Instruktørtrening')}</b><small>${t('Lessons and questions on your aircraft', 'Leksjoner og spørsmål om flyet ditt')}</small></a>
+        <a href="fi.html#progress"><b>${t('Training progress', 'Treningsprogresjon')}</b><small>${t('What to revise next', 'Hva du bør repetere')}</small></a>
+        <a href="fi.html#easa"><b>${t('EASA rules library', 'EASA-regelbibliotek')}</b><small>${t('Minima, fuel and alternates, with the source', 'Minima, drivstoff og alternativer, med kilde')}</small></a></section>`;
+    const f = el('fhAsk'), q = el('fhQ');
+    const send = v => { v = String(v || '').trim(); if (!v) { q.focus(); return; } M.fiTried = true; saveMeta(); askDock(v); q.value = ''; };
+    f.addEventListener('submit', e => { e.preventDefault(); send(q.value); });
+    q.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(q.value); } e.stopPropagation(); });
+    main.querySelectorAll('.fh-ex [data-q]').forEach(b => b.addEventListener('click', () => send(b.dataset.q)));
+  }
+  /* a question from Home goes to the Flight Intelligence panel, which opens with the answer */
+  async function askDock(v) {
+    await ensureDock(); focusDock();
+    for (let i = 0; i < 40 && !(dock && dock.view && dock.el.querySelector('form textarea')); i++) await new Promise(r => setTimeout(r, 50));
+    const ta = dock && dock.el.querySelector('form textarea'); if (!ta) return;
+    ta.value = v; const fm = ta.closest('form'); fm.requestSubmit ? fm.requestSubmit() : fm.dispatchEvent(new Event('submit', { cancelable: true }));
   }
 
   /* aircraft */
@@ -1146,6 +1178,7 @@
     const r = route(), p = r.path.split('/'), same = lastPath === r.path;
     const desk = window.WSDESK && deskMode();
     document.documentElement.classList.toggle('ws-deskmode', !!desk);
+    document.documentElement.classList.toggle('ws-homeview', !desk && !['search', 'aircraft', 'documents', 'packs', 'notes', 'routes', 'trash', 'storage', 'notebook'].includes(p[0]));
     if (desk) { closeViewer(); if (mapV) { if (mapV.m) mapV.m.destroy(); mapV = null; } window.WSDESK.show(); drawRail(); drawStatus(); lastPath = r.path;
       const op = r.q.get('open'); if (op && window.FLIGHT) { history.replaceState(null, '', '#/'); lastPath = ''; const l = window.FLIGHT.parseOpen(op); l.forEach((x, i) => window.WSDESK.openItem(x[0], x[1], i ? { beside: true } : {})); if (l.length > 1) window.WSDESK.openItem(l[0][0], l[0][1]); }
       return; }

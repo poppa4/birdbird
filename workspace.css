@@ -629,3 +629,55 @@ html.ws-deskmode:not(.ws-dock-wide) body{padding-bottom:84px}
 }
 /* the desk reaches the right edge of the page, not under the Flight Intelligence panel */
 html.ws-dock-wide .desk{margin-right:0}
+
+/* ===== Flight Intelligence hub (2026-11-24): one page, the same look as the Training hub and Preflight.
+   The views are tabs in the sub-nav (Home, Desk, Documents, Notes, Aircraft, More), so the old left rail is gone;
+   the Ask panel stays closed at the side until you ask. */
+.ws-side{display:none!important}
+.ws-body{grid-template-columns:minmax(0,1fr)!important;margin-top:22px}
+.ws-home{display:none}
+.ws .lhead.ws-head{padding-bottom:0}
+.ws .lhead.ws-head h1{font-family:var(--f-display,"Archivo","Arial Narrow",system-ui,sans-serif);font-stretch:84%;font-weight:750;font-size:clamp(34px,3.4vw,48px);line-height:1;letter-spacing:-.03em;color:#0B1E34}
+.ws .lhead.ws-head .eyebrow{display:none}
+.ws-status{margin-top:14px;padding:6px 0;border-top:0;border-bottom:0;min-height:0;font-size:13px;gap:4px 16px;color:var(--ink-3)}
+.ws-status .st b{font-weight:500;color:var(--ink-2)}
+.ws-status .kept{width:8px;height:8px}
+/* home: ask first, three ways in beside it */
+.fh-top{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:14px;margin-bottom:8px}
+.fh-ask{position:relative;border-radius:12px;padding:30px 32px 26px;color:#fff;background:radial-gradient(120% 120% at 100% 0%,#1C3A5E 0%,#0B1E34 60%);box-shadow:0 18px 36px -26px rgba(11,30,52,.55)}
+.fh-ask .k{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:600;background:rgba(127,178,229,.18);color:#CFE3F6;border:1px solid rgba(127,178,229,.35)}
+.fh-ask h2{margin:14px 0 0;font-family:var(--f-display,"Archivo","Arial Narrow",system-ui,sans-serif);font-stretch:84%;font-weight:750;font-size:clamp(30px,2.8vw,40px);line-height:1.02;letter-spacing:-.025em;color:#fff}
+.fh-ask p{margin:10px 0 0;font-size:15.5px;line-height:1.5;color:#D3DEE9;max-width:36em}
+.fh-q{display:flex;gap:8px;margin-top:20px;background:#fff;border-radius:8px;padding:6px}
+.fh-q textarea{flex:1;min-width:0;border:0;resize:none;font:inherit;font-size:16px;line-height:1.4;padding:10px 10px;color:var(--ink);background:none;outline:none;max-height:140px}
+.fh-q .fh-go{flex:0 0 auto;align-self:stretch;border:0;border-radius:6px;padding:0 22px;background:#0B1E34;color:#fff;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+.fh-q .fh-go:hover{background:#17324F}
+.fh-q:focus-within{box-shadow:0 0 0 3px rgba(127,178,229,.45)}
+.fh-ex{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.fh-ex button{font:inherit;font-size:13.5px;color:#E6EDF3;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:6px 12px;cursor:pointer;text-align:left}
+.fh-ex button:hover{background:rgba(255,255,255,.16)}
+.fh-do{display:grid;grid-template-rows:repeat(3,1fr);gap:14px}
+.fh-a{display:flex;align-items:center;gap:14px;padding:16px 18px;border:1px solid var(--rule);border-radius:12px;background:var(--sheet,#fff);color:var(--ink);text-decoration:none;font:inherit;text-align:left;cursor:pointer;box-shadow:0 10px 24px -22px rgba(11,30,52,.6);transition:border-color .15s}
+.fh-a:hover{border-color:#9FB2C2}
+.fh-a svg,.fh-lib-c svg{flex:0 0 auto;width:26px;height:26px;fill:none;stroke:#1F5A8F;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.fh-a b{display:block;font-size:16px;font-weight:650;line-height:1.25}
+.fh-a small{display:block;margin-top:2px;font-size:13.5px;line-height:1.35;color:var(--ink-2)}
+.fh-a::after{content:"→";margin-left:auto;color:var(--ink-3);transition:transform .15s}
+.fh-a:hover::after{transform:translateX(3px);color:var(--accent)}
+.fh-lib{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.fh-lib-c{display:flex;flex-direction:column;gap:10px;padding:16px 18px;border:1px solid var(--rule);border-radius:12px;background:var(--sheet,#fff);color:var(--ink);text-decoration:none;transition:border-color .15s}
+.fh-lib-c:hover{border-color:#9FB2C2}
+.fh-lib-c span{font-size:15px;font-weight:600}
+.fh-lib-c b{font-family:var(--f-mono);font-size:24px;font-weight:500;line-height:1;color:#0B1E34}
+.fh-learn{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,minmax(0,1fr));align-items:center;gap:12px;margin-top:36px;padding-top:20px;border-top:1px solid var(--rule)}
+.fh-learn h2{margin:0;font-size:15px;font-weight:650;color:var(--ink)}
+.fh-learn a{display:block;padding:12px 14px;border:1px solid var(--rule);border-radius:10px;background:var(--sheet,#fff);text-decoration:none;color:var(--ink)}
+.fh-learn a:hover{border-color:#9FB2C2}
+.fh-learn b{display:block;font-size:14.5px}
+.fh-learn small{display:block;font-size:13px;color:var(--ink-2)}
+@media (max-width:1100px){.fh-top{grid-template-columns:minmax(0,1fr)}.fh-do{grid-template-rows:none}.fh-lib{grid-template-columns:repeat(3,minmax(0,1fr))}.fh-learn{grid-template-columns:repeat(3,minmax(0,1fr))}.fh-learn h2{grid-column:1/-1}}
+@media (max-width:600px){.fh-ask{padding:22px 18px 18px}.fh-lib{grid-template-columns:repeat(2,minmax(0,1fr))}.fh-learn{grid-template-columns:minmax(0,1fr)}.fh-q .fh-go{padding:0 16px}}
+.fh-top{margin-bottom:30px}
+/* phones: on Home the big ask box is the way in, so the bottom ask bar waits until you have asked */
+@media (max-width:1199px){html.ws-homeview:not(.ws-dock-open) .ws-dock{display:none}}
+@media (max-width:600px){.ws-status{font-size:12.5px}.ws-status .st:first-child{display:none}}
