@@ -16,7 +16,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>GNSS and RNAV</title>
 <link rel="stylesheet" href="lab.css?v=15">
-<link rel="stylesheet" href="site.css?v=37">
+<link rel="stylesheet" href="site.css?v=38">
 <style>
 /* the combined figure: sky plot + readout (left), map with the HSI inset and the approach profile (right) */
 .gn-vp{background:radial-gradient(130% 100% at 50% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
@@ -172,7 +172,7 @@ body.depth-instructor .og-pill{font-size:15px}body.depth-instructor .og-card>b{f
 </style>
 </head>
 <body data-title="GNSS and RNAV">
-<script src="site.js?v=125"></script>
+<script src="site.js?v=126"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
@@ -304,7 +304,7 @@ body.depth-instructor .og-pill{font-size:15px}body.depth-instructor .og-card>b{f
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Training simulation, not for navigation; the route, waypoints and minima are illustrative, not a published procedure. DOP from least squares on the satellites you place (equal weights). Accuracy: 95 % horizontal = 2 × HDOP × σ, vertical = 1.96 × VDOP × σ, with σ = 4 m for GPS alone and 1 m with SBAS corrections. RAIM: snapshot least-squares slopes with σ = 33.3 m, false alarm 1/15 000 and missed detection 0.001 (the conservative values of the original RTCA availability standard); FDE when every subset without one satellite still meets the alert limit; no baro-aiding. SBAS: HPL = 6.0 × σ × d<sub>major</sub>, VPL = 5.33 × σ × VDOP with σ = 2.5 m; LPV needs HPL ≤ 40 m and VPL ≤ 50 m. Turns in still air: r = GS² / (g · tan bank); fly-by starts r · tan(ΔTrack / 2) early; fly-over turns overhead and rejoins with an intercept of up to 30°. CDI full scale 2 NM en route (beyond 30 NM), 1 NM terminal, ramping to 0.3 NM over the 2 NM before the FAF; LPV angular, 105 m at the threshold and at most 0.3 NM. Vertical deviation ±0.7° full scale for both baro-VNAV and LPV (real baro-VNAV displays are often linear). DME/DME reversion uses Flesland, Vollo and Stord with σ = 0.1 NM. No wind, no magnetic variation; coastline and relief as in the radio navigation simulator (Mapzen/AWS Terrain Tiles). <b>3D globe:</b> circular orbits with the nominal radius, inclination, period and number of planes (GPS 6, GLONASS and Galileo 3); the slots drawn are the design constellations, not today's exact fleet; satellite size is greatly exaggerated; EGNOS positions illustrative; elevation mask 5° at Bergen. Earth images NASA Blue Marble and Black Marble. Geoid: EGM96 (NGA) sampled every 2°, heights exaggerated as set; the WGS-84 ellipsoid is drawn round (its 1/298 flattening is not shown at the same scale).</p>
 </div>
 <script src="lab.js?v=60"></script>
-<script src="concepts.js?v=10"></script>
+<script src="concepts.js?v=11"></script>
 <script src="navcore.js?v=3"></script>
 <script src="navgauges.js?v=5"></script>
 <script src="gnsscore.js?v=2"></script>
@@ -312,7 +312,7 @@ body.depth-instructor .og-pill{font-size:15px}body.depth-instructor .og-card>b{f
 <script src="three.min.js?v=128"></script>
 <script src="gnssglobe.js?v=1"></script>
 <script src="gnsslab.js?v=11"></script>
-<script src="corepic.js?v=13"></script>
+<script src="corepic.js?v=14"></script>
 <script src="pic-gnss.js?v=3"></script>
 </body>
 </html>

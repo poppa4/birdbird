@@ -16,7 +16,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>High-speed flight and drag</title>
 <link rel="stylesheet" href="lab.css?v=15">
-<link rel="stylesheet" href="site.css?v=37">
+<link rel="stylesheet" href="site.css?v=38">
 <style>
 .stack{display:flex;flex-direction:column;gap:10px;min-width:0}
 /* explore: one dark viewport with view tabs and a sticky control panel (tunnel.html layout) */
@@ -78,7 +78,7 @@ body.depth-short .presec{display:none}
 .etile .w{display:block;font-size:11.5px;color:var(--ink-2);margin:4px 0 8px;font-family:var(--f-mono);letter-spacing:.03em}
 .etile .a{font-size:15px;font-weight:600}
 .etile.up .a{color:var(--ok)}.etile.dn .a{color:#B03A2E}.etile.eq .a{color:var(--ink-2)}
-.etile.held{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;background:rgba(154,30,104,.06)}
+.etile.held{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;background:rgba(31,90,143,.06)}
 .etile.held .a{color:var(--accent)}
 .ectm .rule{margin:12px 0 0;font-size:14px;line-height:1.55;color:var(--ink)}
 @media (max-width:520px){.etiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.etile .l{font-size:28px}}
@@ -91,7 +91,7 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
 </style>
 </head>
 <body data-title="High-speed flight and drag">
-<script src="site.js?v=125"></script>
+<script src="site.js?v=126"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
@@ -270,7 +270,7 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of an A320-sized aircraft in the ISA (wing area 122.6 m², drag polar CD = 0.020 + 0.040 CL² clean, wave drag from a simple Lock-type law, a simplified buffet boundary). All numbers are illustrative typical values, not FCOM or AFM data. Real limits come from the FCOM, the AFM and the FMS (MAX and REC MAX altitudes, VLS, green dot).</p>
 </div>
 <script src="lab.js?v=60"></script>
-<script src="concepts.js?v=10"></script>
+<script src="concepts.js?v=11"></script>
 <script src="cfd3d.js?v=7"></script>
 <script>
 (function(){
@@ -324,8 +324,8 @@ LAB.tx({
 const FULL={D:false,S:false,F:false,C:false,U:false};
 /* dark viewport: the model code keeps its light-paper colours; each canvas maps them to the dark instrument palette */
 const DK={'#FBFBF8':'rgba(0,0,0,0)','#EEF1EF':'#1F2A34','#E3E8EA':'#2A3743','#13202A':'#E2E8EE','#5E6B74':'#8B99A7','#7D8B95':'#8B99A7','#4C5B66':'#AEB9C3','#DDE3E6':'#4A5763','#D3DBDE':'#2C3945',
- '#9A1E68':'#E46BAE','#1E5E9E':'#7FB2E8','#1D4E9E':'#7FB2E8','#A86A00':'#F0B440','#B3261E':'#EC5A47','#2C7A4B':'#71CC93','#5B4BB0':'#A99BF0',
- 'rgba(179,38,30,.08)':'rgba(236,90,71,.13)','rgba(179,38,30,.06)':'rgba(236,90,71,.10)','rgba(179,38,30,.10)':'rgba(236,90,71,.16)','rgba(46,125,50,.07)':'rgba(113,204,147,.08)','rgba(46,125,50,.10)':'rgba(113,204,147,.12)','rgba(30,94,158,.06)':'rgba(127,178,232,.07)','rgba(154,30,104,.18)':'rgba(228,107,174,.22)'};
+ '#1F5A8F':'#7FB2E5','#1E5E9E':'#7FB2E8','#1D4E9E':'#7FB2E8','#A86A00':'#F0B440','#B3261E':'#EC5A47','#2C7A4B':'#71CC93','#5B4BB0':'#A99BF0',
+ 'rgba(179,38,30,.08)':'rgba(236,90,71,.13)','rgba(179,38,30,.06)':'rgba(236,90,71,.10)','rgba(179,38,30,.10)':'rgba(236,90,71,.16)','rgba(46,125,50,.07)':'rgba(113,204,147,.08)','rgba(46,125,50,.10)':'rgba(113,204,147,.12)','rgba(30,94,158,.06)':'rgba(127,178,232,.07)','rgba(31,90,143,.18)':'rgba(127,178,229,.22)'};
 const PF=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'fillStyle'), PS=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'strokeStyle');
 function darkify(g){ Object.defineProperty(g,'fillStyle',{configurable:true,get(){ return PF.get.call(this); },set(v){ PF.set.call(this,typeof v==='string'&&DK[v]!==undefined?DK[v]:v); }});
   Object.defineProperty(g,'strokeStyle',{configurable:true,get(){ return PS.get.call(this); },set(v){ PS.set.call(this,typeof v==='string'&&DK[v]!==undefined?DK[v]:v); }}); }
@@ -381,8 +381,8 @@ function dD(){ const C=CD_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, c=CFG[
   // Vmd og Vmp
   [[R.vmd,FULL.D?'Vmd':L({en:'Vmd: least drag',no:'Vmd: minst motstand'}),'#2C7A4B']].concat(FULL.D?[[R.vmp,'Vmp','#5B4BB0']]:[]).forEach(([v,t,col])=>{ if(v<v0||v>v1) return; g.strokeStyle=col; g.lineWidth=1.2; g.setLineDash([3,3]); g.beginPath(); g.moveTo(X(v),Y(drag(v).D)); g.lineTo(X(v),T0+PH); g.stroke(); g.setLineDash([]); g.fillStyle=col; g.beginPath(); g.arc(X(v),Y(drag(v).D),4,0,7); g.fill(); mono(g,t,X(v)+4,T0+PH-6,col); });
   // nåpunkt
-  const r=drag(D.v); if(!r.stall){ const x=X(D.v), y=Y(Math.min(ymax,r.D)); g.fillStyle='#9A1E68'; g.beginPath(); g.arc(x,y,7,0,7); g.fill();
-    g.strokeStyle='#9A1E68'; g.lineWidth=1.5; g.setLineDash([5,4]); g.beginPath(); g.moveTo(X(D.v-35),y); g.lineTo(X(D.v+35),y); g.stroke(); g.setLineDash([]); { const tl=L({en:'thrust set',no:'satt skyvekraft'}); g.font='11px IBM Plex Mono, monospace'; const tw=g.measureText(tl).width; if(X(D.v+37)+tw>W-4) mono(g,tl,X(D.v-37)-4,y+4,'#9A1E68','right'); else mono(g,tl,X(D.v+37),y+4,'#9A1E68'); }
+  const r=drag(D.v); if(!r.stall){ const x=X(D.v), y=Y(Math.min(ymax,r.D)); g.fillStyle='#1F5A8F'; g.beginPath(); g.arc(x,y,7,0,7); g.fill();
+    g.strokeStyle='#1F5A8F'; g.lineWidth=1.5; g.setLineDash([5,4]); g.beginPath(); g.moveTo(X(D.v-35),y); g.lineTo(X(D.v+35),y); g.stroke(); g.setLineDash([]); { const tl=L({en:'thrust set',no:'satt skyvekraft'}); g.font='11px IBM Plex Mono, monospace'; const tw=g.measureText(tl).width; if(X(D.v+37)+tw>W-4) mono(g,tl,X(D.v-37)-4,y+4,'#1F5A8F','right'); else mono(g,tl,X(D.v+37),y+4,'#1F5A8F'); }
     const r2=drag(D.v-10); if(!r2.stall&&D.v-10>=v0){ const y2=Y(Math.min(ymax,r2.D)); g.fillStyle=r2.D>r.D?'#B3261E':'#2C7A4B'; g.beginPath(); g.arc(X(D.v-10),y2,4.5,0,7); g.fill(); mono(g,'−10 kt',X(D.v-10),y2+(r2.D>r.D?-9:16),r2.D>r.D?'#B3261E':'#2C7A4B','center'); } }
   g.restore();
   // forklaring
@@ -419,13 +419,13 @@ function dS(){ const C=CS_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h; const 
   mono(g,L({en:'speed (kt)',no:'fart (kt)'}),L0+PW,T0+PH+30,null,'right');
   const hx=xover(); g.fillStyle='rgba(30,94,158,.06)'; if(hx<hmax) g.fillRect(L0,T0,PW,Y(Math.max(0,hx))-T0);
   const line=(f,col,w,dash)=>{ g.strokeStyle=col; g.lineWidth=w; g.setLineDash(dash||[]); g.beginPath(); for(let h=0;h<=hmax;h+=250){ const x=X(f(spAt(h))); h?g.lineTo(x,Y(h)):g.moveTo(x,Y(h)); } g.stroke(); g.setLineDash([]); };
-  if(FULL.S) line(s=>s.a,'#7D8B95',1.6,[6,4]); line(s=>s.tas,'#9A1E68',2.6); if(FULL.S) line(s=>s.eas,'#A86A00',2); line(s=>s.cas,'#13202A',2.6);
+  if(FULL.S) line(s=>s.a,'#7D8B95',1.6,[6,4]); line(s=>s.tas,'#1F5A8F',2.6); if(FULL.S) line(s=>s.eas,'#A86A00',2); line(s=>s.cas,'#13202A',2.6);
   { const hl=Math.min(hx,hmax)/2; if(hl>3000){ const q=spAt(hl); hand(g,L({en:'IAS held',no:'IAS holdes'}),X(q.cas)-8,Y(hl),'#13202A','end',15); } if(hx<hmax-6000&&hx>0){ const hu=(hx+hmax)/2, q=spAt(hu); hand(g,L({en:'Mach held: IAS falls',no:'Mach holdes: IAS faller'}),X(q.cas)-8,Y(hu)+4,'#13202A','end',15); } }
   if(hx<hmax){ g.strokeStyle='#1E5E9E'; g.lineWidth=1.2; g.setLineDash([4,4]); g.beginPath(); g.moveTo(L0,Y(hx)); g.lineTo(L0+PW,Y(hx)); g.stroke(); g.setLineDash([]); hand(g,W<520?'crossover':L({en:'crossover: constant Mach above',no:'crossover: konstant Mach over'}),L0+PW-6,Y(hx)-6,'#1E5E9E','end',16); }
-  const top=spAt(37000); if(FULL.S||!(hx<hmax-6000&&hx>0)) hand(g,'IAS',X(top.cas)-6,Y(37000),'#13202A','end'); if(FULL.S){ const e2=spAt(24000); hand(g,'EAS',X(e2.eas)-6,Y(24000),'#A86A00','end'); hand(g,L({en:'speed of sound',no:'lydhastighet'}),X(spAt(4000).a)-4,Y(4000),'#7D8B95','end',16); } hand(g,'TAS',X(top.tas)+6,Y(37000)+14,'#9A1E68');
+  const top=spAt(37000); if(FULL.S||!(hx<hmax-6000&&hx>0)) hand(g,'IAS',X(top.cas)-6,Y(37000),'#13202A','end'); if(FULL.S){ const e2=spAt(24000); hand(g,'EAS',X(e2.eas)-6,Y(24000),'#A86A00','end'); hand(g,L({en:'speed of sound',no:'lydhastighet'}),X(spAt(4000).a)-4,Y(4000),'#7D8B95','end',16); } hand(g,'TAS',X(top.tas)+6,Y(37000)+14,'#1F5A8F');
   const s=spAt(Sp.hm); g.strokeStyle='#13202A'; g.lineWidth=1; g.setLineDash([2,3]); g.beginPath(); g.moveTo(L0,Y(Sp.hm)); g.lineTo(L0+PW,Y(Sp.hm)); g.stroke(); g.setLineDash([]);
-  (FULL.S?[[s.cas,'#13202A'],[s.eas,'#A86A00'],[s.tas,'#9A1E68'],[s.a,'#7D8B95']]:[[s.cas,'#13202A'],[s.tas,'#9A1E68']]).forEach(([v,c])=>{ g.fillStyle=c; g.beginPath(); g.arc(X(v),Y(Sp.hm),4.5,0,7); g.fill(); });
-  mono(g,'M '+nf(s.M,2),X(s.tas)+8,Y(Sp.hm)-6,'#9A1E68'); }
+  (FULL.S?[[s.cas,'#13202A'],[s.eas,'#A86A00'],[s.tas,'#1F5A8F'],[s.a,'#7D8B95']]:[[s.cas,'#13202A'],[s.tas,'#1F5A8F']]).forEach(([v,c])=>{ g.fillStyle=c; g.beginPath(); g.arc(X(v),Y(Sp.hm),4.5,0,7); g.fill(); });
+  mono(g,'M '+nf(s.M,2),X(s.tas)+8,Y(Sp.hm)-6,'#1F5A8F'); }
 function rS(){ const hx=xover(), s=spAt(Sp.hm); el('s1').textContent= hx>41000? L({en:'above FL 410',no:'over FL 410'}) : hx<0? L({en:'below sea level',no:'under havnivå'}) : FL(hx)+' ('+ft(hx)+')';
   el('s2').textContent=Math.round(s.cas)+' kt'; el('s3').textContent=Math.round(s.eas)+' kt'; el('s4').textContent=Math.round(s.tas)+' kt'; el('s5').textContent='M '+nf(s.M,3); el('s6').textContent=Math.round(s.a)+' kt ('+nf(isa(Sp.hm).T-273.15+Sp.dev,0)+' °C)';
   el('sx').innerHTML=L({en:`<b>IAS, CAS, EAS, TAS.</b> IAS is what the instrument shows; CAS corrects it for instrument and position error (on the A320 the two are close, so they are treated together here). EAS also corrects for the compressibility of the air in the pitot tube, which matters at high speed and altitude: EAS is a little below CAS. TAS is the speed through the air and is EAS divided by √σ, so it grows about 2 % per 1000 ft. Mach is TAS divided by the local speed of sound, √(γRT). Climbing at constant IAS, TAS rises and the speed of sound falls, so Mach grows quickly until it reaches the climb Mach at the crossover altitude. Above that you hold Mach, and the IAS falls. The crossover altitude depends only on the IAS/Mach pair, because both are pressure relationships: change the temperature and TAS and the speed of sound move, but the crossover stays.`,no:`<b>IAS, CAS, EAS, TAS.</b> IAS er det instrumentet viser; CAS korrigerer for instrument- og posisjonsfeil (på A320 er de to nær hverandre, så de behandles sammen her). EAS korrigerer i tillegg for at lufta presses sammen i pitotrøret, noe som betyr noe ved høy fart og høyde: EAS ligger litt under CAS. TAS er farten gjennom lufta og er EAS delt på √σ, så den øker rundt 2 % per 1000 ft. Mach er TAS delt på den lokale lydhastigheten, √(γRT). I stigning med konstant IAS øker TAS og lydhastigheten faller, så Mach øker raskt til den når stige-Mach ved crossover-høyden. Over den holder du Mach, og IAS faller. Crossover-høyden avhenger bare av IAS/Mach-paret, fordi begge er trykkforhold: endre temperaturen, og TAS og lydhastigheten flytter seg, men crossover blir der den er.`}); }
@@ -506,13 +506,13 @@ function dF(){ const C=CF_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, s=fsta
   g.strokeStyle='#D3DBDE'; g.lineWidth=1; for(let k=-3;k<=4;k++){ if(!k) continue; g.beginPath(); for(let i=0;i<=120;i++){ const xx=-0.35+i/120*1.75, xc=Math.min(1,Math.max(0,xx)); const hump=Math.exp(-Math.pow((xx-0.3)/0.45,2)); const bump= k>0? 0.085*sc*hump*Math.exp(-k*0.35) : -0.03*sc*hump*Math.exp(k*0.35); const y=cy-k*H*0.085-bump; i?g.lineTo(X(xx),y):g.moveTo(X(xx),y); } g.stroke(); }
   // supersonisk område
   if(s.sup){ const hgt=Math.min(H*0.42,(0.02+s.x*1.5)*cw), xa=Math.max(0.04,0.22-s.x*0.6);
-    const gr=g.createLinearGradient(0,cy-hgt,0,cy); gr.addColorStop(0,'rgba(154,30,104,.10)'); gr.addColorStop(1,'rgba(154,30,104,.30)'); g.fillStyle=MFD?'rgba(0,0,0,0)':gr;
+    const gr=g.createLinearGradient(0,cy-hgt,0,cy); gr.addColorStop(0,'rgba(31,90,143,.10)'); gr.addColorStop(1,'rgba(31,90,143,.30)'); g.fillStyle=MFD?'rgba(0,0,0,0)':gr;
     g.beginPath(); g.moveTo(X(xa),Yu(xa)); for(let i=0;i<=40;i++){ const t=i/40, xx=xa+(s.xs-xa)*t; g.lineTo(X(xx),Yu(xx)-hgt*Math.sin(Math.PI*Math.pow(t,0.8))*(t<0.98?1:0.6)); } g.lineTo(X(s.xs),Yu(s.xs)); for(let i=40;i>=0;i--){ const xx=xa+(s.xs-xa)*i/40; g.lineTo(X(xx),Yu(xx)); } g.closePath(); g.fill();
-    hand(g,'M > 1',X((xa+s.xs)/2),Yu((xa+s.xs)/2)-hgt*0.45,MFD?'#ffffff':'#9A1E68','center');
+    hand(g,'M > 1',X((xa+s.xs)/2),Yu((xa+s.xs)/2)-hgt*0.45,MFD?'#ffffff':'#1F5A8F','center');
     // sjokk
     if(MFD){ g.strokeStyle='rgba(8,12,16,.75)'; g.lineWidth=5.5; g.beginPath(); g.moveTo(X(s.xs),Yu(s.xs)); g.lineTo(X(s.xs)+4,Yu(s.xs)-hgt*0.85); g.stroke(); }
     g.strokeStyle='#B3261E'; g.lineWidth=3; g.beginPath(); g.moveTo(X(s.xs),Yu(s.xs)); g.lineTo(X(s.xs)+4,Yu(s.xs)-hgt*0.85); g.stroke(); hand(g,L({en:'shock wave',no:'sjokkbølge'}),X(s.xs)+8,Yu(s.xs)-hgt*0.85,'#B3261E');
-    if(s.low){ const xl=Math.min(0.9,s.xs+0.05), hl=Math.min(H*0.25,(s.x-0.06)*4*cw); g.fillStyle='rgba(154,30,104,.18)'; g.beginPath(); g.moveTo(X(xl-0.3),Yl(xl-0.3)); g.quadraticCurveTo(X(xl-0.12),Yl(xl-0.12)+hl,X(xl),Yl(xl)); g.closePath(); g.fill(); g.strokeStyle='#B3261E'; g.lineWidth=2.4; g.beginPath(); g.moveTo(X(xl),Yl(xl)); g.lineTo(X(xl)+3,Yl(xl)+hl*0.9+6); g.stroke(); }
+    if(s.low){ const xl=Math.min(0.9,s.xs+0.05), hl=Math.min(H*0.25,(s.x-0.06)*4*cw); g.fillStyle='rgba(31,90,143,.18)'; g.beginPath(); g.moveTo(X(xl-0.3),Yl(xl-0.3)); g.quadraticCurveTo(X(xl-0.12),Yl(xl-0.12)+hl,X(xl),Yl(xl)); g.closePath(); g.fill(); g.strokeStyle='#B3261E'; g.lineWidth=2.4; g.beginPath(); g.moveTo(X(xl),Yl(xl)); g.lineTo(X(xl)+3,Yl(xl)+hl*0.9+6); g.stroke(); }
     if(s.sep){ g.strokeStyle='#B3261E'; g.lineWidth=1.4; for(let j=0;j<3;j++){ g.beginPath(); for(let i=0;i<=30;i++){ const xx=s.xs+i/30*(1.25-s.xs), y=Yu(Math.min(1,xx))-6-j*7-Math.sin(i*1.2+j)*4; i?g.lineTo(X(xx),y):g.moveTo(X(xx),y); } g.stroke(); } hand(g,L({en:'separated flow behind the shock: buffet',no:'separert strømning bak sjokket: buffet'}),X(1.02),Yu(1)-34,'#B3261E','start',16); }
   }
   // profil
@@ -538,7 +538,7 @@ function dM(){ const C=CM_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, s=fsta
   g.save(); g.beginPath(); g.rect(L0,T0,PW,PH); g.clip(); g.strokeStyle='#13202A'; g.lineWidth=2.4; g.beginPath(); for(let m=m0;m<=m1;m+=0.002){ const y=Y(cd(m)); m===m0?g.moveTo(X(m),y):g.lineTo(X(m),y); } g.stroke(); g.restore();
   if(!FULL.F){ const md=Math.min(m1-0.03,s.mdd); hand(g,L({en:'drag rises steeply',no:'motstanden stiger bratt'}),X(md)-6,Math.max(T0+28,Y(Math.min(ymax,cd(md+0.02)))),'#B3261E','end',14); }
   [[s.mc,FULL.F?'Mcrit':L({en:'Mcrit: first shock',no:'Mcrit: første sjokk'}),'#A86A00']].concat(FULL.F?[[s.mdd,'Mdd','#B3261E'],[MMO,'MMO','#7D8B95']]:[]).forEach(([m,t,c],i)=>{ if(m<m0||m>m1) return; g.strokeStyle=c; g.setLineDash([3,3]); g.beginPath(); g.moveTo(X(m),T0); g.lineTo(X(m),T0+PH); g.stroke(); g.setLineDash([]); mono(g,t,X(m)+3,T0+10+i*12,c); });
-  g.fillStyle='#9A1E68'; g.beginPath(); g.arc(X(F.M),Y(Math.min(ymax,cd(F.M))),5.5,0,7); g.fill(); }
+  g.fillStyle='#1F5A8F'; g.beginPath(); g.arc(X(F.M),Y(Math.min(ymax,cd(F.M))),5.5,0,7); g.fill(); }
 function rF(){ const s=fstate(); el('f1').textContent='M '+nf(s.mc,2); el('f2').textContent='≈ M '+nf(s.mdd,2); el('f3').textContent= 'M '+nf(s.peak,2)+(s.peak>=1?' ('+L({en:'supersonic',no:'supersonisk'})+')':'');
   el('f4').textContent= nf(s.cdw*1e4,0)+' '+L({en:'drag counts',no:'motstandsenheter (counts)'});
   el('f5').innerHTML= !s.sup? `<span class="ok">${L({en:'subsonic',no:'subsonisk'})}</span>` : s.sep? `<span class="ko">${L({en:'shock-induced separation: buffet',no:'sjokkindusert separasjon: buffet'})}</span>` : F.M>s.mdd? `<span class="wa">${L({en:'beyond drag divergence',no:'forbi motstandsdivergens'})}</span>` : `<span class="wa">${L({en:'local supersonic flow, weak shock',no:'lokal supersonisk strømning, svakt sjokk'})}</span>`;
@@ -573,7 +573,7 @@ function dC(){ const C=CC_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h; const 
     else { g.font='600 '+Math.round(14*0.76*(W<520?0.82:1))+'px "Public Sans", sans-serif'; const rt=ax+34+g.measureText(L({en:'here the margins meet',no:'her møtes marginene'})).width>W-4, tx=rt?ax-16:ax+16; hand(g,L({en:'Coffin corner:',no:'Coffin corner:'}),tx,Math.max(T0+14,ay+4),'#B3261E',rt?'end':'start',16); hand(g,L({en:'here the margins meet',no:'her møtes marginene'}),rt?tx:tx+16,Math.max(T0+14,ay+4)+16,'#B3261E',rt?'end':'start',14); } }
   if(bn) hand(g,nf(B.n,2)+' g',X(bn.mt)+10,Math.min(T0+PH-6,Math.max(T0+32,Y(bn.top)+18)),'#2C7A4B','start',16);
   hand(g,L({en:'low-speed buffet',no:'buffet, lav fart'}),X(0.5),Y(27000),'#13202A','start',16); hand(g,L({en:'high-speed buffet',no:'buffet, høy fart'}),X(0.865),Y(24500),'#13202A','end',16);
-  const h=B.fl*100, inside=clAt(B.M,h,FULL.C?B.n:1)<=CLb(B.M); g.fillStyle=inside?'#9A1E68':'#B3261E'; g.beginPath(); g.arc(X(B.M),Y(h),7,0,7); g.fill(); g.strokeStyle='#fff'; g.lineWidth=2; g.stroke(); }
+  const h=B.fl*100, inside=clAt(B.M,h,FULL.C?B.n:1)<=CLb(B.M); g.fillStyle=inside?'#1F5A8F':'#B3261E'; g.beginPath(); g.arc(X(B.M),Y(h),7,0,7); g.fill(); g.strokeStyle='#fff'; g.lineWidth=2; g.stroke(); }
 function rC(){ const h=B.fl*100, CL=clAt(B.M,h,1), cb=CLb(B.M), gm=cb/CL, e=edges(h,B.n), ma=Math.min(maxAlt(B.n),CEIL), {p}=isa(h);
   el('c1').textContent='CL '+nf(CL,2)+' · CLbuffet '+nf(cb,2);
   el('c2').innerHTML=`<span class="${gm<1?'ko':gm<B.n?'wa':'ok'}">${nf(gm,2)} g (${gm>1?L({en:'bank about',no:'krengning ca.'})+' '+Math.round(Math.acos(1/gm)*180/Math.PI)+'°':L({en:'in buffet',no:'i buffet'})})</span>`;
@@ -611,7 +611,7 @@ function dW(){ const C=CW_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, s=wst(
   { const gr=g.createLinearGradient(cx-hw,0,cx+hw,0); gr.addColorStop(0,'#B9C3CC'); gr.addColorStop(0.5,'#F1F4F7'); gr.addColorStop(1,'#B9C3CC'); g.fillStyle=gr; PS.set.call(g,'rgba(15,21,27,.55)'); g.lineWidth=1;
     g.beginPath(); g.moveTo(cx,y0); g.bezierCurveTo(cx+hw*0.9,y0+hw*0.2,cx+hw,y0+hw*1.6,cx+hw,y0+hw*3.2); g.lineTo(cx+hw,y0+Lf*0.74); g.bezierCurveTo(cx+hw,y0+Lf*0.9,cx+hw*0.35,y0+Lf*0.99,cx,y0+Lf); g.bezierCurveTo(cx-hw*0.35,y0+Lf*0.99,cx-hw,y0+Lf*0.9,cx-hw,y0+Lf*0.74); g.lineTo(cx-hw,y0+hw*3.2); g.bezierCurveTo(cx-hw,y0+hw*1.6,cx-hw*0.9,y0+hw*0.2,cx,y0); g.closePath(); g.fill(); g.stroke();
     PF.set.call(g,'#26313B'); g.beginPath(); g.moveTo(cx-hw*0.62,y0+hw*1.5); g.quadraticCurveTo(cx,y0+hw*0.9,cx+hw*0.62,y0+hw*1.5); g.lineTo(cx+hw*0.55,y0+hw*1.95); g.quadraticCurveTo(cx,y0+hw*1.5,cx-hw*0.55,y0+hw*1.95); g.closePath(); g.fill();
-    PF.set.call(g,'#E46BAE'); g.fillRect(cx-1.5,y0+Lf*0.8,3,Lf*0.19); }
+    PF.set.call(g,'#7FB2E5'); g.fillRect(cx-1.5,y0+Lf*0.8,3,Lf*0.19); }
   // vektor-dekomponering på høyre vinge
   const p=wing(1), mid=[(p[0][0]+p[1][0])/2,(p[0][1]+p[1][1])/2], V=Math.min(H*0.16,70); const ox=mid[0], oy=Math.max(8,mid[1]-V-12);
   arrow(g,ox,oy,ox,oy+V,'#13202A',2.4); hand(g,'V',ox-8,oy+V*0.4,'#13202A','end');
@@ -626,8 +626,8 @@ function dW(){ const C=CW_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, s=wst(
 function dR(){ const C=CR_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, s=wst(); const L0=10, PW=W-20, cy=H*0.5, T=24, X=t=>L0+t/T*PW, wd=2*Math.PI/5.5, z=s.zeta, wn=wd;
   g.strokeStyle='#E3E8EA'; g.beginPath(); g.moveTo(L0,cy); g.lineTo(L0+PW,cy); g.stroke();
   const tr=(amp,lag,col)=>{ g.strokeStyle=col; g.lineWidth=2.2; g.beginPath(); for(let t=0;t<=T;t+=0.05){ const tt=Math.max(0,t-lag); const y=cy-amp*Math.exp(-z*wn*tt)*Math.sin(wd*tt); t?g.lineTo(X(t),y):g.moveTo(X(t),y); } g.stroke(); };
-  const a=H*0.18; tr(a,0,'#1E5E9E'); tr(Math.min(H*0.42,a*s.ratio*0.5),0.6,'#9A1E68');
-  mono(g,L({en:'sideslip (yaw)',no:'sideslip (giring)'}),W-10,16,'#1E5E9E','right'); mono(g,L({en:'bank (roll)',no:'krengning (rull)'}),W-10,30,'#9A1E68','right'); mono(g,L({en:'after a yaw disturbance → time (24 s)',no:'etter en giringsforstyrrelse → tid (24 s)'}),L0+2,H-8); }
+  const a=H*0.18; tr(a,0,'#1E5E9E'); tr(Math.min(H*0.42,a*s.ratio*0.5),0.6,'#1F5A8F');
+  mono(g,L({en:'sideslip (yaw)',no:'sideslip (giring)'}),W-10,16,'#1E5E9E','right'); mono(g,L({en:'bank (roll)',no:'krengning (rull)'}),W-10,30,'#1F5A8F','right'); mono(g,L({en:'after a yaw disturbance → time (24 s)',no:'etter en giringsforstyrrelse → tid (24 s)'}),L0+2,H-8); }
 function rW(){ const s=wst(); el('w1').textContent='M '+nf(s.ideal,2); el('w2').textContent='M '+nf(s.real,2);
   el('w3').textContent='× '+nf(s.slope,2)+' · CLmax × '+nf(s.clmax,2)+(Wg.dev==='hl'?' ('+L({en:'slats and flaps out',no:'slats og flaps ute'})+')':'');
   el('w4').innerHTML= s.tip<0.15? `<span class="ok">${L({en:'small',no:'liten'})}</span>` : (Wg.dev==='none'&&s.tip>0.35)? `<span class="ko">${L({en:'strong',no:'sterk'})}</span>` : `<span class="wa">${L({en:'moderate',no:'moderat'})}${Wg.dev!=='none'?' ('+L({en:'reduced by the devices',no:'redusert av tiltakene'})+')':''}</span>`;
@@ -688,7 +688,7 @@ function dU(){ if(!UR) return; const r=UR, tmax=Math.max(30,Math.ceil(r.pts[r.pt
     g.strokeStyle='#EEF1EF'; g.lineWidth=1; for(let t=0;t<=tmax;t+=10){ g.beginPath(); g.moveTo(X(t),T0); g.lineTo(X(t),T0+PH); g.stroke(); mono(g,String(t),X(t),T0+PH+14,null,'center'); }
     const st=lost>8000?2000:1000; for(let d=0;d<=lost;d+=st){ g.beginPath(); g.moveTo(L0,Y(r.h0-d)); g.lineTo(L0+PW,Y(r.h0-d)); g.stroke(); mono(g,FL(r.h0-d),L0-6,Y(r.h0-d)+4,null,'right'); }
     mono(g,L({en:'time (s)',no:'tid (s)'}),L0+PW,T0+PH+28,null,'right');
-    [['unst',L({en:'out of stall',no:'ute av stall'}),'#2C7A4B'],['lvl',L({en:'wings level',no:'vinger rette'}),'#1E5E9E'],['done',L({en:'level flight',no:'plan flyging'}),'#9A1E68']].forEach(([k,t,c],i)=>{ const v=r.ev[k]; if(!FULL.U&&k==='lvl') return; if(v===null||v===undefined) return; g.strokeStyle=c; g.setLineDash([3,3]); g.beginPath(); g.moveTo(X(v),T0); g.lineTo(X(v),T0+PH); g.stroke(); g.setLineDash([]); hand(g,t,X(v)+4,T0+PH-8-i*18,c,'start',15); });
+    [['unst',L({en:'out of stall',no:'ute av stall'}),'#2C7A4B'],['lvl',L({en:'wings level',no:'vinger rette'}),'#1E5E9E'],['done',L({en:'level flight',no:'plan flyging'}),'#1F5A8F']].forEach(([k,t,c],i)=>{ const v=r.ev[k]; if(!FULL.U&&k==='lvl') return; if(v===null||v===undefined) return; g.strokeStyle=c; g.setLineDash([3,3]); g.beginPath(); g.moveTo(X(v),T0); g.lineTo(X(v),T0+PH); g.stroke(); g.setLineDash([]); hand(g,t,X(v)+4,T0+PH-8-i*18,c,'start',15); });
     g.save(); g.beginPath(); g.rect(L0,T0,PW,PH); g.clip(); g.strokeStyle='#13202A'; g.lineWidth=2.6; g.beginPath(); r.pts.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.h)):g.moveTo(X(p.t),Y(p.h))); g.stroke(); g.restore();
     hand(g,L({en:'altitude',no:'høyde'})+' · −'+nf(Math.round(r.lost/100)*100,0)+' ft',L0+PW-8,T0+16,'#13202A','end',16); }
   { const C=CA_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, L0=58,R0=14,T0=12,B0=26, PW=W-L0-R0, PH=H-T0-B0, X=t=>L0+t/tmax*PW, Y=a=>T0+(16-a)/22*PH;
@@ -697,8 +697,8 @@ function dU(){ if(!UR) return; const r=UR, tmax=Math.max(30,Math.ceil(r.pts[r.pt
     g.save(); g.beginPath(); g.rect(L0,T0,PW,PH); g.clip();
     g.fillStyle='rgba(179,38,30,.10)'; g.beginPath(); r.pts.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.as)):g.moveTo(X(p.t),Y(p.as))); g.lineTo(X(r.pts[r.pts.length-1].t),T0); g.lineTo(X(0),T0); g.closePath(); g.fill();
     if(FULL.U){ g.strokeStyle='#1E5E9E'; g.lineWidth=1.6; g.setLineDash([5,4]); g.beginPath(); r.pts.forEach((p,i)=>{ const y=Y(Math.abs(p.phi)/5); i?g.lineTo(X(p.t),y):g.moveTo(X(p.t),y); }); g.stroke(); g.setLineDash([]); }
-    g.strokeStyle='#9A1E68'; g.lineWidth=2.4; g.beginPath(); r.pts.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.al)):g.moveTo(X(p.t),Y(p.al))); g.stroke(); g.restore();
-    hand(g,L({en:'stalled',no:'stallet'}),L0+PW-6,T0+16,'#B3261E','end',15); hand(g,L({en:'angle of attack',no:'angrepsvinkel'}),L0+8,T0+16,'#9A1E68','start',15); if(FULL.U) mono(g,L({en:'- - bank ÷ 5',no:'- - krengning ÷ 5'}),L0+PW-6,T0+PH-6,'#1E5E9E','end'); } }
+    g.strokeStyle='#1F5A8F'; g.lineWidth=2.4; g.beginPath(); r.pts.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.al)):g.moveTo(X(p.t),Y(p.al))); g.stroke(); g.restore();
+    hand(g,L({en:'stalled',no:'stallet'}),L0+PW-6,T0+16,'#B3261E','end',15); hand(g,L({en:'angle of attack',no:'angrepsvinkel'}),L0+8,T0+16,'#1F5A8F','start',15); if(FULL.U) mono(g,L({en:'- - bank ÷ 5',no:'- - krengning ÷ 5'}),L0+PW-6,T0+PH-6,'#1E5E9E','end'); } }
 function rU(){ const r=UR, e=r.ev, s=v=>v===null||v===undefined? `<span class="ko">${L({en:'not within the run',no:'ikke i løpet av kjøringen'})}</span>` : nf(v,0)+' s';
   el('u1').innerHTML=s(e.unst); el('u2').innerHTML= U.bank===0? L({en:'level from the start',no:'rette fra start'}) : s(e.lvl); el('u3').innerHTML=s(e.done);
   el('u4').innerHTML=`<span class="${r.lost>6000?'ko':r.lost>3000?'wa':''}">${nf(Math.round(r.lost/100)*100,0)} ft</span>`; el('u5').textContent=nf(Math.round(r.maxRod/100)*100,0)+' ft/min';
@@ -799,8 +799,8 @@ function dCt(){ const C=CT_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, narro
   else { hand(g,L({en:'← low-speed buffet',no:'← buffet, lav fart'}),L0,by-6,'#B3261E','start',14); hand(g,L({en:'high-speed buffet →',no:'buffet, høy fart →'}),L0+PW,by-6,'#B3261E','end',14);
     if(en.lo!==null&&X(en.hi)-X(en.lo)>60) hand(g,L({en:`OK with ${nf(B.n,1)} g`,no:`OK med ${nf(B.n,1)} g`}),(X(en.lo)+X(en.hi))/2,by+bh/2+5,'#fff','center',13); }
   // needle: your Mach
-  const x=X(B.M); g.fillStyle='#9A1E68'; g.beginPath(); g.moveTo(x,by+bh+2); g.lineTo(x-7,by+bh+16); g.lineTo(x+7,by+bh+16); g.closePath(); g.fill(); g.fillRect(x-1.5,by-4,3,bh+6);
-  hand(g,L({en:'you',no:'du'})+' · M '+nf(B.M,2),Math.max(L0+30,Math.min(L0+PW-30,x)),by+bh+32,'#9A1E68','center',14); }
+  const x=X(B.M); g.fillStyle='#1F5A8F'; g.beginPath(); g.moveTo(x,by+bh+2); g.lineTo(x-7,by+bh+16); g.lineTo(x+7,by+bh+16); g.closePath(); g.fill(); g.fillRect(x-1.5,by-4,3,bh+6);
+  hand(g,L({en:'you',no:'du'})+' · M '+nf(B.M,2),Math.max(L0+30,Math.min(L0+PW-30,x)),by+bh+32,'#1F5A8F','center',14); }
 
 /* ---------- presets ---------- */
 function setD(o){ Object.assign(D,o); segD.set(D.cfg); sDm.set(D.m); sDh.set(D.h); mkD(); uD(); }
@@ -834,12 +834,12 @@ const HOW={
 const VIEWS=[['drag',t2('Drag curve','Motstandskurve'),'D'],['climb',t2('Climb speeds','Fart i stigning'),'S'],['shock',t2('Shock on the wing','Sjokk på vingen'),'F'],['buffet',t2('Buffet window','Buffetvindu'),'C'],['sweep',t2('Swept wing','Pilvinge'),'W'],['upset',t2('Upset','Upset'),'U']];
 let VIEW='drag';
 const LEG={
- drag:k=>[['#E2E8EE',t2('total drag','total motstand')],['#71CC93',t2('Vmd: least drag','Vmd: minst motstand'),'d'],['#E46BAE',t2('you','du')]].concat(k?[['#7FB2E8',t2('induced','indusert'),'d'],['#F0B440',t2('parasite','parasitt'),'d'],['#EC5A47',t2('wave','bølge'),'d'],['#A99BF0','Vmp','d']]:[]),
- climb:k=>[['#E2E8EE','IAS (CAS)'],['#E46BAE','TAS'],['#7FB2E8',t2('crossover','crossover'),'d']].concat(k?[['#F0B440','EAS'],['#8B99A7',t2('speed of sound','lydhastighet'),'d']]:[]),
- shock:k=>[['#E46BAE',t2('supersonic flow (M > 1)','supersonisk strømning (M > 1)'),'a'],['#EC5A47',t2('shock wave','sjokkbølge')],['#E2E8EE',t2('drag coefficient','motstandskoeffisient')],['#F0B440','Mcrit','d']].concat(k?[['#EC5A47','Mdd','d'],['#8B99A7','MMO','d']]:[]),
+ drag:k=>[['#E2E8EE',t2('total drag','total motstand')],['#71CC93',t2('Vmd: least drag','Vmd: minst motstand'),'d'],['#7FB2E5',t2('you','du')]].concat(k?[['#7FB2E8',t2('induced','indusert'),'d'],['#F0B440',t2('parasite','parasitt'),'d'],['#EC5A47',t2('wave','bølge'),'d'],['#A99BF0','Vmp','d']]:[]),
+ climb:k=>[['#E2E8EE','IAS (CAS)'],['#7FB2E5','TAS'],['#7FB2E8',t2('crossover','crossover'),'d']].concat(k?[['#F0B440','EAS'],['#8B99A7',t2('speed of sound','lydhastighet'),'d']]:[]),
+ shock:k=>[['#7FB2E5',t2('supersonic flow (M > 1)','supersonisk strømning (M > 1)'),'a'],['#EC5A47',t2('shock wave','sjokkbølge')],['#E2E8EE',t2('drag coefficient','motstandskoeffisient')],['#F0B440','Mcrit','d']].concat(k?[['#EC5A47','Mdd','d'],['#8B99A7','MMO','d']]:[]),
  buffet:k=>[['rgba(236,90,71,.75)','buffet','a'],['#4E9A6A',t2('usable with your g margin','brukbart med din g-margin'),'a'],['#E9B949',t2('buffet-free only at 1 g','buffetfritt bare ved 1 g'),'a'],['#E2E8EE',t2('buffet onset, 1 g','buffetgrense, 1 g')]].concat(k?[['#71CC93',t2('your g margin','din g-margin')],['#EC5A47','VMO / MMO','d']]:[]),
  sweep:()=>[['#7FB2E8','V cos Λ'],['#F0B440',t2('V sin Λ (spanwise)','V sin Λ (langs spennet)')],['rgba(236,90,71,.7)',t2('where the stall starts','der stallen starter'),'a']],
- upset:k=>[['#E2E8EE',t2('altitude','høyde')],['#E46BAE',t2('angle of attack','angrepsvinkel')],['rgba(236,90,71,.6)',t2('stalled','stallet'),'a']].concat(k?[['#7FB2E8',t2('bank ÷ 5','krengning ÷ 5'),'d']]:[])};
+ upset:k=>[['#E2E8EE',t2('altitude','høyde')],['#7FB2E5',t2('angle of attack','angrepsvinkel')],['rgba(236,90,71,.6)',t2('stalled','stallet'),'a']].concat(k?[['#7FB2E8',t2('bank ÷ 5','krengning ÷ 5'),'d']]:[])};
 function drawTabs(){ el('vtabs').innerHTML=VIEWS.map(([k,t])=>`<button type="button" role="tab" data-v="${k}" class="${k===VIEW?'on':''}${k==='upset'?' deep':''}" aria-selected="${k===VIEW}">${L(t)}</button>`).join('');
   document.querySelectorAll('.fullseg').forEach(b=>{ const k=b.dataset.k; b.classList.add('seg'); b.innerHTML=`<button type="button" data-fs="${k}" data-f="0" class="${FULL[k]?'':'on'}">${L(t2('Simple','Enkel'))}</button><button type="button" data-fs="${k}" data-f="1" class="${FULL[k]?'on':''}">${L(t2('Full chart','Hele diagrammet'))}</button>`; }); }
 function drawHow(){ const k=VIEWS.find(x=>x[0]===VIEW)[2], o=HOW[k];
@@ -875,13 +875,13 @@ const tx=(x,y,t,c,a)=>`<text x="${x}" y="${y}" font-size="9.5" font-family="Publ
 const ar=(x0,y0,x1,y1,c)=>{ const a=Math.atan2(y1-y0,x1-x0), s=5; return `<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="${c}" stroke-width="1.6"/><path d="M${x1},${y1} L${(x1-s*Math.cos(a-.45)).toFixed(1)},${(y1-s*Math.sin(a-.45)).toFixed(1)} L${(x1-s*Math.cos(a+.45)).toFixed(1)},${(y1-s*Math.sin(a+.45)).toFixed(1)} Z" fill="${c}"/>`; };
 const FOIL='M40,40 C48,27 86,22 122,28 C148,32 166,38 176,41 C150,43 92,47 58,46 C46,46 40,44 40,40 Z';
 const ILL={
- xover:()=>SV(`<line x1="16" y1="56" x2="190" y2="56" stroke="#55626e"/><path d="M30,56 L110,24" stroke="#7fcbe8" stroke-width="1.8"/><path d="M110,24 L180,10" stroke="#f0b440" stroke-width="1.8"/><circle cx="110" cy="24" r="3" fill="#E46BAE"/>${tx(40,40,'IAS','#7fcbe8')}${tx(150,26,'Mach','#f0b440')}${tx(116,36,'crossover','#c9d2da','start',7.5)}`),
+ xover:()=>SV(`<line x1="16" y1="56" x2="190" y2="56" stroke="#55626e"/><path d="M30,56 L110,24" stroke="#7fcbe8" stroke-width="1.8"/><path d="M110,24 L180,10" stroke="#f0b440" stroke-width="1.8"/><circle cx="110" cy="24" r="3" fill="#7FB2E5"/>${tx(40,40,'IAS','#7fcbe8')}${tx(150,26,'Mach','#f0b440')}${tx(116,36,'crossover','#c9d2da','start',7.5)}`),
  upset:()=>SV(`<path d="M30,40 L170,40" stroke="#55626e" stroke-dasharray="3 3"/><g transform="translate(70 30) rotate(-18)"><rect x="-26" y="-2" width="52" height="4" rx="2" fill="#c9d2da"/></g>${ar(70,30,70,52,'#ec5a47')}${tx(78,56,'1 push',  '#ec5a47','start',7.5)}${tx(122,26,'2 roll','#f0b440','start',7.5)}${tx(122,44,'3 thrust','#71cc93','start',7.5)}`),
  drag:()=>SV(`<path d="M22,6 C40,34 80,46 186,50" fill="none" stroke="#7FB2E8" stroke-width="1.4" stroke-dasharray="4 3"/><path d="M22,50 C110,48 150,34 186,8" fill="none" stroke="#F0B440" stroke-width="1.4" stroke-dasharray="4 3"/><path d="M28,4 Q100,66 182,4" fill="none" stroke="#E2E8EE" stroke-width="2.2"/><circle cx="103" cy="35" r="3.5" fill="#71CC93"/>${tx(110,31,'Vmd','#71CC93')}${tx(192,61,L(t2('induced','indusert')),'#7FB2E8','end')}${tx(8,61,L(t2('parasite','parasitt')),'#F0B440')}`),
  stab:()=>SV(`<path d="M18,6 Q100,78 182,6" fill="none" stroke="#E2E8EE" stroke-width="2"/><circle cx="52" cy="28" r="4.5" fill="#EC5A47"/>${ar(46,24,32,14,'#EC5A47')}<circle cx="150" cy="28" r="4.5" fill="#71CC93"/>${ar(144,32,128,38,'#71CC93')}${tx(8,50,L(t2('back side: runs away','baksiden: løper løpsk')),'#EC5A47')}${tx(192,61,L(t2('front: comes back','forsiden: kommer tilbake')),'#71CC93','end')}`),
- mach:()=>SV(`${[0,1,2,3].map(i=>`<circle cx="${146-i*14}" cy="30" r="${6+i*6}" fill="none" stroke="#7FCBE8" stroke-opacity="${0.8-i*0.17}"/>`).join('')}<path d="M160,30 L142,24 L138,30 L142,36 Z" fill="#E2E8EE"/>${ar(164,30,192,30,'#E46BAE')}${tx(12,14,'M = TAS / a','#E2E8EE')}${tx(8,60,L(t2('a falls with temperature','a faller med temperaturen')),'#8B99A7')}`),
+ mach:()=>SV(`${[0,1,2,3].map(i=>`<circle cx="${146-i*14}" cy="30" r="${6+i*6}" fill="none" stroke="#7FCBE8" stroke-opacity="${0.8-i*0.17}"/>`).join('')}<path d="M160,30 L142,24 L138,30 L142,36 Z" fill="#E2E8EE"/>${ar(164,30,192,30,'#7FB2E5')}${tx(12,14,'M = TAS / a','#E2E8EE')}${tx(8,60,L(t2('a falls with temperature','a faller med temperaturen')),'#8B99A7')}`),
  mcrit:()=>SV(`${[18,12].map(y=>`<path d="M8,${y} C60,${y} 80,${y-6} 120,${y-2} C150,${y} 170,${y} 196,${y}" fill="none" stroke="#56636E"/>`).join('')}<path d="${FOIL}" fill="#8E99A4"/><circle cx="84" cy="22" r="4" fill="#F0B440"/>${tx(92,16,L(t2('local M 1 here','lokal M 1 her')),'#F0B440')}${tx(8,60,L(t2('free stream ≈ M 0.7','fri strøm ≈ M 0,7')),'#8B99A7')}`),
- shock:()=>SV(`<path d="M64,26 C76,8 108,6 120,26 Z" fill="rgba(228,107,174,.45)"/><path d="${FOIL}" fill="#8E99A4"/><line x1="120" y1="27" x2="122" y2="6" stroke="#EC5A47" stroke-width="2.6"/>${[0,1].map(j=>`<path d="M124,${22-j*6} q8,-4 16,0 t16,0 t16,0" fill="none" stroke="#EC5A47" stroke-width="1.1"/>`).join('')}${tx(70,60,L(t2('shock','sjokk')),'#EC5A47')}${tx(140,60,'buffet','#EC5A47')}${tx(12,14,'M > 1','#E46BAE')}`),
+ shock:()=>SV(`<path d="M64,26 C76,8 108,6 120,26 Z" fill="rgba(127,178,229,.45)"/><path d="${FOIL}" fill="#8E99A4"/><line x1="120" y1="27" x2="122" y2="6" stroke="#EC5A47" stroke-width="2.6"/>${[0,1].map(j=>`<path d="M124,${22-j*6} q8,-4 16,0 t16,0 t16,0" fill="none" stroke="#EC5A47" stroke-width="1.1"/>`).join('')}${tx(70,60,L(t2('shock','sjokk')),'#EC5A47')}${tx(140,60,'buffet','#EC5A47')}${tx(12,14,'M > 1','#7FB2E5')}`),
  buffet:()=>SV(`<path d="M62,62 C70,30 86,10 100,8 C114,10 130,30 138,62 Z" fill="rgba(113,204,147,.16)" stroke="#E2E8EE" stroke-width="1.6"/>${tx(8,40,L(t2('low-speed','lav fart')),'#EC5A47')}${tx(8,50,'buffet','#EC5A47')}${tx(192,40,L(t2('high-speed','høy fart')),'#EC5A47','end')}${tx(192,50,'buffet','#EC5A47','end')}${tx(100,48,L(t2('no buffet','ingen buffet')),'#71CC93','middle')}`),
  coffin:()=>SV(`<path d="M40,64 C60,30 84,14 100,12 C116,14 140,30 160,64" fill="none" stroke="#E2E8EE" stroke-width="1.8"/><circle cx="100" cy="12" r="7" fill="none" stroke="#EC5A47" stroke-width="1.8"/>${ar(119,12,110,12,'#EC5A47')}${tx(196,15,L(t2('margins meet','marginene møtes')),'#EC5A47','end')}${tx(8,14,L(t2('altitude ↑','høyde ↑')),'#8B99A7')}`),
  sweep:()=>SV(`<path d="M96,8 L150,40 L150,50 L96,24 Z M104,8 L50,40 L50,50 L104,24 Z" fill="#8E99A4"/>${ar(130,4,130,30,'#E2E8EE')}${ar(130,4,141,23,'#7FB2E8')}${tx(134,10,'V','#E2E8EE')}${tx(162,30,'V cos Λ','#7FB2E8')}${tx(8,60,L(t2('only the normal part counts','bare normalkomponenten teller')),'#8B99A7')}`),
@@ -979,7 +979,7 @@ LAB.onLang(()=>{ uD(); uS(); uF(); uC(); uW(); conf(); cards(); machm(); dU(); r
 
 })();
 </script>
-<script src="corepic.js?v=13"></script>
+<script src="corepic.js?v=14"></script>
 <script src="pic-hs.js?v=1"></script>
 </body>
 </html>

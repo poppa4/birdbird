@@ -7,7 +7,7 @@ const {L,el,nf}=LAB, G=GNAV, t2=(en,no)=>({en,no});
 const D2R=Math.PI/180, R2D=180/Math.PI;
 const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const MONO='"IBM Plex Mono", ui-monospace, monospace', SANS='"Public Sans", system-ui, sans-serif';
-const C={hdg:'#7FCBE8',trk:'#71CC93',wind:'#F0B440',dtk:'#C9D2DA',gc:'#E46BAE',rl:'#7FCBE8',red:'#EC5A47',txt:'#EEF2F5',mut:'#8E99A4',dim:'#5E6D7C',ring:'rgba(214,226,236,.55)',grid:'rgba(200,215,225,.13)'};
+const C={hdg:'#7FCBE8',trk:'#71CC93',wind:'#F0B440',dtk:'#C9D2DA',gc:'#7FB2E5',rl:'#7FCBE8',red:'#EC5A47',txt:'#EEF2F5',mut:'#8E99A4',dim:'#5E6D7C',ring:'rgba(214,226,236,.55)',grid:'rgba(200,215,225,.13)'};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const f3=a=>{ const v=Math.round(G.norm(a))%360; return String(v===0?360:v).padStart(3,'0'); };
 const dg=a=>f3(a)+'°';
@@ -221,7 +221,7 @@ function drawPet(g,F,P){ const R=petCalc(); GEO=null; const D=S.dist;
   const ds=D>800?200:D>300?100:D>120?50:D>50?20:10; for(let d=0;d<=D-ds*0.3||d===0;d+=ds){ line(g,X(d),y1,X(d),y1+4,'rgba(214,226,236,.35)',1); txt(g,String(d),X(d),y1+15,C.dim,'center',10); }
   txt(g,L(t2('distance from A (NM)','distanse fra A (NM)')),(x0+x1)/2,y1+(F.ph?28:30),C.dim,'center',10);
   line(g,X(0),Y(0),X(D),Y(tA),C.rl,2.6); line(g,X(0),Y(tB),X(D),Y(0),C.wind,2.6);
-  const xp=X(R.pet.dist), yp=Y(R.pet.tAfter); line(g,xp,yp,xp,y1,'rgba(228,107,174,.7)',1.3,[4,4]); dot(g,xp,yp,5.5,C.gc,'#0c1217',1.5);
+  const xp=X(R.pet.dist), yp=Y(R.pet.tAfter); line(g,xp,yp,xp,y1,'rgba(127,178,229,.7)',1.3,[4,4]); dot(g,xp,yp,5.5,C.gc,'#0c1217',1.5);
   const pnrIn=R.pnr.dist<=D; if(pnrIn){ const xn=X(R.pnr.dist); line(g,xn,y0,xn,y1,'rgba(236,90,71,.75)',1.4,[6,4]); P.put('PNR',xn,y0+6,C.red,{c:[[0,8],[10,8]],sz:11,font:MONO}); }
   P.put(L(t2('time back to A','tid tilbake til A')),X(D*0.86),Y(tA*0.86),C.rl,{c:[[-8,-14],[-8,14],[0,-24]],sz:11.5});
   P.put(L(t2('time on to B','tid videre til B')),X(D*0.12),Y(tB*0.88),C.wind,{c:[[8,-14],[8,14],[0,-24]],sz:11.5});
@@ -241,7 +241,7 @@ function drawStrip(g,F){ const y0=F.bot, H=F.H, W=F.W; g.fillStyle='rgba(6,9,12,
     plane(g,lx0+16,ly,90,7,'#EEF3F7'); ends('A','B'); return; }
   if(S.mode==='off'){ const o=offCalc(), f=o.flown/S.dist, xp=lx0+(lx1-lx0)*f;
     head(L(t2('LEG','ETAPPE'))+'  '+nf(S.dist,0)+' NM',`${L(t2('to B','til B'))} ${nf(o.dToB,0)} NM · ${hm(o.tB)} · ${kg(o.fuel)}`);
-    line(g,lx0,ly,xp,ly,C.trk,2); line(g,xp,ly,lx1,ly,'rgba(228,107,174,.85)',2,[6,4]); plane(g,xp,ly,90,7,'#EEF3F7'); ends('A','B'); return; }
+    line(g,lx0,ly,xp,ly,C.trk,2); line(g,xp,ly,lx1,ly,'rgba(127,178,229,.85)',2,[6,4]); plane(g,xp,ly,90,7,'#EEF3F7'); ends('A','B'); return; }
   if(S.mode==='earth'){ const R=routeCalc(), mx=Math.max(R.gc,R.rl), bw=lx1-lx0, tas=S.tas, dT=(R.rl-R.gc)/tas*60;
     head(L(t2('GREAT CIRCLE vs RHUMB LINE','STORSIRKEL mot LOKSODROM')),`${L(t2('saves','sparer'))} ${nf(R.rl-R.gc,R.rl-R.gc<10?1:0)} NM · ${dT>=60?hm(dT)+' h':nf(dT,1)+' min'} · ${kg(G.legFuel(dT,S.ff))}`);
     const yb=ly-6; g.fillStyle=C.gc; g.fillRect(lx0,yb,bw*R.gc/mx,4); g.fillStyle=C.rl; g.fillRect(lx0,yb+9,bw*R.rl/mx,4);
@@ -442,7 +442,7 @@ const KC=[
   ill:()=>sv(`<line x1="16" y1="46" x2="184" y2="46" stroke="#c9d2da"/>${ar(16,46,184,22,'#71cc93')}<line x1="184" y1="46" x2="184" y2="22" stroke="#f0b440" stroke-width="1.6"/>${tx(100,58,'60 NM','#8b99a7','middle',8)}${tx(178,36,'1 NM','#f0b440','end',8)}${tx(48,40,'1°','#71cc93','start',8)}`)},go({mode:'off',dist:120,flown:60,off:3})),
  Object.assign({k:'gc',t:t2('Great circle vs rhumb line','Storsirkel og loksodrom'),d:t2('A <b>great circle</b> is the shortest route but its true track keeps changing; a <b>rhumb line</b> holds one constant track but is longer.','En <b>storsirkel</b> er den korteste ruten, men den rettvisende tracken endrer seg hele tiden; en <b>loksodrom</b> holder én fast track, men er lengre.'),
     dd:t2('The great circle always lies on the pole side of the rhumb line. The difference is largest on east–west routes at high latitude; along a meridian or the equator the two are the same line.','Storsirkelen ligger alltid på polsiden av loksodromen. Forskjellen er størst på øst–vest-ruter på høye bredder; langs en meridian eller ekvator er de to samme linje.'),
-  ill:()=>sv(`<path d="M20,52 Q100,2 180,52" stroke="#e46bae" stroke-width="2" fill="none"/><line x1="20" y1="52" x2="180" y2="52" stroke="#7fcbe8" stroke-width="2" stroke-dasharray="5 4"/>${tx(100,22,'GC','#e46bae','middle',8)}${tx(100,62,'RL','#7fcbe8','middle',8)}`)},go({mode:'earth',route:'engm-kjfk',proj:'merc'})),
+  ill:()=>sv(`<path d="M20,52 Q100,2 180,52" stroke="#7FB2E5" stroke-width="2" fill="none"/><line x1="20" y1="52" x2="180" y2="52" stroke="#7fcbe8" stroke-width="2" stroke-dasharray="5 4"/>${tx(100,22,'GC','#7FB2E5','middle',8)}${tx(100,62,'RL','#7fcbe8','middle',8)}`)},go({mode:'earth',route:'engm-kjfk',proj:'merc'})),
  Object.assign({k:'proj',t:t2('Chart projections','Kartprojeksjoner'),d:t2('A flat chart cannot keep everything true, so each projection picks: <b>Mercator</b> keeps rhumb lines straight, <b>Lambert</b> keeps great circles nearly straight. Mercator stretches the scale towards the poles; Lambert keeps it nearly constant, so en-route charts use it.','Et flatt kart kan ikke holde alt riktig, så hver projeksjon velger: <b>Mercator</b> holder loksodromer rette, <b>Lambert</b> holder storsirkler nesten rette. Mercator strekker målestokken mot polene; Lambert holder den nesten konstant, så strekningskart bruker den.'),
   dd:t2('Both are conformal: angles and small shapes are right. On a Lambert chart the scale is exact on the two standard parallels.','Begge er konforme: vinkler og små former er riktige. På et Lambert-kart er målestokken nøyaktig på de to standardparallellene.'),
   ill:()=>sv(`<rect x="14" y="10" width="76" height="46" fill="none" stroke="#5e6d7c"/>${[24,40,56,72].map(x=>`<line x1="${x}" y1="10" x2="${x}" y2="56" stroke="#5e6d7c"/>`).join('')}<path d="M110,56 L120,10 M140,56 L144,10 M170,56 L168,10 M196,56 L192,10" stroke="#5e6d7c"/><path d="M110,40 Q150,30 196,40" fill="none" stroke="#F0B440"/>${tx(52,62,'Mercator','#C9D2DA','middle',7.5)}${tx(152,62,'Lambert','#C9D2DA','middle',7.5)}`)},go({mode:'earth',route:'engm-kjfk',proj:'merc'})),
@@ -453,7 +453,7 @@ const KC=[
   ill:()=>sv(`<circle cx="60" cy="32" r="22" fill="none" stroke="#c9d2da" stroke-width="1.6"/><line x1="60" y1="32" x2="60" y2="16" stroke="#eef3f7" stroke-width="1.6"/><line x1="60" y1="32" x2="72" y2="38" stroke="#eef3f7" stroke-width="1.6"/>${tx(100,28,'15° = 1 h','#f0b440','start',9)}${tx(100,44,'1° = 4 min','#8b99a7','start',9)}`)}),
  Object.assign({k:'pet',t:t2('PET and PNR','PET og PNR'),d:t2('The <b>PET</b> is where going on takes as long as turning back; the <b>PNR</b> is the furthest you can go and still return with the reserves.','<b>PET</b> er der det tar like lang tid å fortsette som å snu; <b>PNR</b> er det lengste du kan fly og fortsatt komme tilbake med reservene.'),
     dd:t2('Distance to the PET = D × H ÷ (O + H), with O the groundspeed on and H the groundspeed home. Time to the PNR = E × H ÷ (O + H). In still air the PET is halfway; wind moves it into the wind.','Distanse til PET = D × H ÷ (O + H), der O er groundspeed videre og H groundspeed hjem. Tid til PNR = E × H ÷ (O + H). I vindstille er PET halvveis; vind flytter det mot vinden.'),
-  ill:()=>sv(`<line x1="16" y1="34" x2="184" y2="34" stroke="#c9d2da" stroke-width="2"/><circle cx="16" cy="34" r="4" fill="#eef3f7"/><circle cx="184" cy="34" r="4" fill="#eef3f7"/><path d="M108,30 L102,18 L114,18 Z" fill="#e46bae"/><path d="M140,38 L134,50 L146,50 Z" fill="#ec5a47"/>${tx(108,14,'PET','#e46bae','middle',8)}${tx(140,60,'PNR','#ec5a47','middle',8)}${tx(16,52,'A','#8b99a7','middle',8)}${tx(184,52,'B','#8b99a7','middle',8)}`)},go({mode:'pet',tas:450,know:'trk',trk:355,wd:340,ws:80,varE:12,dist:515,ff:2400,ctas:360,cs:'oei',fuel:4000}))];
+  ill:()=>sv(`<line x1="16" y1="34" x2="184" y2="34" stroke="#c9d2da" stroke-width="2"/><circle cx="16" cy="34" r="4" fill="#eef3f7"/><circle cx="184" cy="34" r="4" fill="#eef3f7"/><path d="M108,30 L102,18 L114,18 Z" fill="#7FB2E5"/><path d="M140,38 L134,50 L146,50 Z" fill="#ec5a47"/>${tx(108,14,'PET','#7FB2E5','middle',8)}${tx(140,60,'PNR','#ec5a47','middle',8)}${tx(16,52,'A','#8b99a7','middle',8)}${tx(184,52,'B','#8b99a7','middle',8)}`)},go({mode:'pet',tas:450,know:'trk',trk:355,wd:340,ws:80,varE:12,dist:515,ff:2400,ctas:360,cs:'oei',fuel:4000}))];
 KCS.render(el('kcGrid'),KC);
 
 /* ---------------- deep-dive folds ---------------- */

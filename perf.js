@@ -348,18 +348,18 @@ function drawSpd(g,W,H,top){ const ph=W<640, c=spdCtx(), sel=spdOf(S.vsel);
     L2.forEach(({s,v,x,nm,lx})=>{ const on=s.k===sel.k;
       line(g,x,yy-5,x,yy+5,on?'#FFFFFF':col,on?2.6:1.8);
       if(Math.abs(lx-x)>2) line(g,lx,yy-9,x,yy-5,on?'#FFFFFF':'rgba(200,215,225,.45)',1);
-      if(on){ g.fillStyle='#E46BAE'; g.beginPath(); g.arc(x,yy,4.2,0,7); g.fill(); }
+      if(on){ g.fillStyle='#7FB2E5'; g.beginPath(); g.arc(x,yy,4.2,0,7); g.fill(); }
       txt(g,nm,lx,yy-(ph?21:23),on?'#FFFFFF':col,'center',fsz,on?800:700);
       txt(g,String(Math.round(v)),lx,yy-11,on?'#FFFFFF':C.dim,'center',fsz-1,on?700:500);
       SH.push({k:s.k,x:lx,y:yy-16}); SH.push({k:s.k,x,y:yy}); });
     y+=rowH; });
   /* the selected speed: a guide line down all the rows */
-  const sv=sel.v(c); if(sv!=null&&isFinite(sv)){ line(g,X(sv),top0,X(sv),y-4,'rgba(228,107,174,.55)',1.2,[3,3]); }
+  const sv=sel.v(c); if(sv!=null&&isFinite(sv)){ line(g,X(sv),top0,X(sv),y-4,'rgba(127,178,229,.55)',1.2,[3,3]); }
   /* the explanation box */
   y+=6; const bx=ph?8:LW+10, bw=W-bx-R0; const head=spdName(sel,c)+(sv!=null&&isFinite(sv)?' · '+kt(sv):'')+'  '+L(sel.t);
   const fz=ph?10:11.5, lh=fz*FS*1.5, ok=sv!=null&&isFinite(sv), rule=ok?L(sel.r(c)):L(sel.na||NA_B);
   const LD=wrapLines(g,L(sel.d),bw-28,fz), LR=wrapLines(g,rule,bw-28,fz), bh=22+(ph?18:20)+LD.length*lh+4+LR.length*lh+6;
-  g.fillStyle='rgba(8,12,16,.5)'; rr(g,bx,y,bw,bh,6); g.fill(); g.strokeStyle='rgba(228,107,174,.6)'; g.lineWidth=1; g.stroke();
+  g.fillStyle='rgba(8,12,16,.5)'; rr(g,bx,y,bw,bh,6); g.fill(); g.strokeStyle='rgba(127,178,229,.6)'; g.lineWidth=1; g.stroke();
   let yy=y+22; txt(g,head,bx+14,yy,'#FFFFFF','left',ph?11.5:13,700,SANS); yy+=ph?18:20;
   LD.forEach(t=>{ txt(g,t,bx+14,yy,'#D5DDE4','left',fz,500,SANS); yy+=lh; }); yy+=4;
   LR.forEach(t=>{ txt(g,t,bx+14,yy,ok?'#F0C470':C.mut,'left',fz,500,SANS); yy+=lh; });
@@ -548,7 +548,7 @@ function spIll(k){ const s=spdOf(k), x=10+POS[k]*180, col=RC[s.row]; let b=`<lin
   if(k==='vs0'||k==='vfe') b+=`<line x1="${10+POS.vs0*180}" y1="50" x2="${10+POS.vfe*180}" y2="50" stroke="#eef2f5" stroke-width="3"/>`;
   if(k==='vs1'||k==='vno'||k==='vne') b+=`<line x1="${10+POS.vs1*180}" y1="55" x2="${10+POS.vno*180}" y2="55" stroke="#4fbf7a" stroke-width="3.5"/><line x1="${10+POS.vno*180}" y1="55" x2="${10+POS.vne*180}" y2="55" stroke="#f0c040" stroke-width="3.5"/><line x1="${10+POS.vne*180}" y1="50" x2="${10+POS.vne*180}" y2="60" stroke="#ec5a47" stroke-width="2.2"/>`;
   if(k==='vmo') b+=`${[0,1,2,3,4,5].map(i=>`<rect x="${x+i*3}" y="34" width="3" height="12" fill="${i%2?'#ec5a47':'#14181c'}"/>`).join('')}`;
-  b+=`<line x1="${x}" y1="28" x2="${x}" y2="50" stroke="${col}" stroke-width="2.6"/><circle cx="${x}" cy="40" r="3.4" fill="#E46BAE"/>`;
+  b+=`<line x1="${x}" y1="28" x2="${x}" y2="50" stroke="${col}" stroke-width="2.6"/><circle cx="${x}" cy="40" r="3.4" fill="#7FB2E5"/>`;
   b+=tx(Math.min(176,Math.max(24,x)),22,s.n,col,'middle',9.5);
   return sv(b); }
 const spCard=k=>{ const s=spdOf(k); return {k:'s-'+k,t:t2(s.n+' · '+s.t.en,s.n+' · '+s.t.no),d:s.d,ill:()=>spIll(k),

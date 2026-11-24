@@ -16,7 +16,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mass and balance</title>
 <link rel="stylesheet" href="lab.css?v=15">
-<link rel="stylesheet" href="site.css?v=37">
+<link rel="stylesheet" href="site.css?v=38">
 <style>
 .paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
 .paper canvas{display:block;width:100%}
@@ -46,7 +46,7 @@
 </style>
 </head>
 <body data-title="Mass and balance">
-<script src="site.js?v=125"></script>
+<script src="site.js?v=126"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
@@ -173,7 +173,7 @@ function dA(){ if(!CA.w) return; const g=bg(CA), W=CA.w, H=CA.h, M=mass(); const
   const L0=48,T0=24,B0=46, PH=H-T0-B0, chartW=narrow? W-L0-10 : W*0.64-L0, m0=30000, m1=82000, Y=m=>T0+PH-(m-m0)/(m1-m0)*PH;
   g.strokeStyle='#EEF1EF'; g.lineWidth=1; for(let m=30000;m<=80000;m+=10000){ g.beginPath(); g.moveTo(L0,Y(m)); g.lineTo(L0+chartW,Y(m)); g.stroke(); mono(g,nf(m/1000,0)+' t',L0-6,Y(m)+4,null,'right'); }
   mono(g,L({en:'axis starts at 30 t',no:'aksen starter på 30 t'}),L0,H-6,'#9AA6AC');
-  const cols=[{t:'ZFM',lim:MZFM,parts:[[DOM,'#C9D2D5'],[M.tl,'#9A1E68']],tot:M.zfm},{t:'TOM',lim:MTOM,parts:[[DOM,'#C9D2D5'],[M.tl,'#9A1E68'],[A.tof,'#1E5E9E']],tot:M.tom},{t:'LM',lim:MLM,parts:[[DOM,'#C9D2D5'],[M.tl,'#9A1E68'],[A.tof-A.trip,'#1E5E9E']],tot:M.lm}];
+  const cols=[{t:'ZFM',lim:MZFM,parts:[[DOM,'#C9D2D5'],[M.tl,'#1F5A8F']],tot:M.zfm},{t:'TOM',lim:MTOM,parts:[[DOM,'#C9D2D5'],[M.tl,'#1F5A8F'],[A.tof,'#1E5E9E']],tot:M.tom},{t:'LM',lim:MLM,parts:[[DOM,'#C9D2D5'],[M.tl,'#1F5A8F'],[A.tof-A.trip,'#1E5E9E']],tot:M.lm}];
   const cw=chartW/3, bw=Math.min(70,cw*0.5);
   cols.forEach((c,i)=>{ const cx=L0+cw*i+cw/2; let acc=0; c.parts.forEach(([v,col])=>{ const y0=Y(Math.max(m0,acc)), y1=Y(Math.max(m0,acc+v)); g.fillStyle=col; g.fillRect(cx-bw/2,y1,bw,y0-y1); acc+=v; });
     if(c.tot>c.lim){ g.fillStyle='rgba(179,38,30,.55)'; g.fillRect(cx-bw/2,Y(c.tot),bw,Y(c.lim)-Y(c.tot)); }
@@ -183,12 +183,12 @@ function dA(){ if(!CA.w) return; const g=bg(CA), W=CA.w, H=CA.h, M=mass(); const
   // fuel arrows: burn
   const x1=L0+cw*1.5+bw/2+4, x2=L0+cw*2.5-bw/2-4; g.strokeStyle='#1E5E9E'; g.lineWidth=1.4; g.setLineDash([3,3]); g.beginPath(); g.moveTo(x1,Y(M.tom)); g.lineTo(x2,Y(M.lm)); g.stroke(); g.setLineDash([]); hand(g,L({en:'trip fuel burnt',no:'turdrivstoff brent'}),(x1+x2)/2,Math.min(Y(M.tom),Y(M.lm))-22,'#1E5E9E','center',15);
   // legend
-  const lg=[[L({en:'dry operating mass',no:'tørr operativ masse'}),'#C9D2D5'],[L({en:'traffic load',no:'trafikklast'}),'#9A1E68'],[L({en:'fuel',no:'drivstoff'}),'#1E5E9E']]; let lx=L0; lg.forEach(([t,c])=>{ g.fillStyle=c; g.fillRect(lx,8,10,10); mono(g,t,lx+14,17,'#13202A'); g.font='11px IBM Plex Mono, monospace'; lx+=g.measureText(t).width+28; });
+  const lg=[[L({en:'dry operating mass',no:'tørr operativ masse'}),'#C9D2D5'],[L({en:'traffic load',no:'trafikklast'}),'#1F5A8F'],[L({en:'fuel',no:'drivstoff'}),'#1E5E9E']]; let lx=L0; lg.forEach(([t,c])=>{ g.fillStyle=c; g.fillRect(lx,8,10,10); mono(g,t,lx+14,17,'#13202A'); g.font='11px IBM Plex Mono, monospace'; lx+=g.measureText(t).width+28; });
   if(narrow) return;
   // allowed traffic load per limit
   const bx=W*0.68, bw2=W*0.3-10, maxv=Math.max(...M.lim.map(l=>l.v),M.tl,1), rowH=Math.min(46,PH/5); let y=T0+30;
   hand(g,L({en:'traffic load each limit allows',no:'trafikklast hver grense tillater'}),bx,T0+14,'#13202A','start',16);
-  M.lim.forEach(l=>{ const w=Math.max(0,l.v)/maxv*bw2*0.8, on=l===M.gov; g.fillStyle=on?'#9A1E68':'#DCE3E4'; g.fillRect(bx,y,w,rowH*0.5); mono(g,l.n+': '+kg(l.v),bx,y+rowH*0.5+13,on?'#9A1E68':'#4C5B66'); y+=rowH+12; });
+  M.lim.forEach(l=>{ const w=Math.max(0,l.v)/maxv*bw2*0.8, on=l===M.gov; g.fillStyle=on?'#1F5A8F':'#DCE3E4'; g.fillRect(bx,y,w,rowH*0.5); mono(g,l.n+': '+kg(l.v),bx,y+rowH*0.5+13,on?'#1F5A8F':'#4C5B66'); y+=rowH+12; });
   const wt=M.tl/maxv*bw2*0.8; g.strokeStyle=M.under<0?'#B3261E':'#13202A'; g.lineWidth=2; g.beginPath(); g.moveTo(bx+wt,T0+24); g.lineTo(bx+wt,y-8); g.stroke(); mono(g,L({en:'actual',no:'faktisk'})+' '+kg(M.tl),bx+wt,y+6,M.under<0?'#B3261E':'#13202A',wt>bw2*0.5?'right':'start'); }
 function rA(){ const M=mass(); el('a1').textContent=kg(M.tl)+' ('+A.pax+' × 84 + '+kg(A.cargo)+')';
   const lim=(v,l)=>`<span class="${v>l?'ko':'ok'}">${kg(v)}</span>`;
@@ -228,7 +228,7 @@ function dB(){ if(!CB.w) return; const g=bg(CB), W=CB.w, H=CB.h, R=cgCalc(); con
   g.fillStyle='#DDE3E6'; g.beginPath(); g.moveTo(X(32),cy-fh); g.lineTo(X(35),cy-fh*2.6); g.lineTo(X(37),cy-fh*2.6); g.lineTo(X(37),cy-fh); g.closePath(); g.fill(); g.stroke();
   // vinge (MAC)
   g.fillStyle='rgba(30,94,158,.18)'; g.fillRect(X(LEMAC),cy+fh*0.15,X(LEMAC+MAC)-X(LEMAC),fh*0.5); g.strokeStyle='#1E5E9E'; g.strokeRect(X(LEMAC),cy+fh*0.15,X(LEMAC+MAC)-X(LEMAC),fh*0.5);
-  const zone=(a0,a1,n,max,y,h,lab)=>{ const f=n/max; g.fillStyle='#fff'; g.fillRect(X(a0),y,X(a1)-X(a0),h); g.fillStyle='rgba(154,30,104,'+(0.15+0.6*f)+')'; g.fillRect(X(a0),y,X(a1)-X(a0),h); g.strokeStyle='#9A1E68'; g.lineWidth=1; g.strokeRect(X(a0),y,X(a1)-X(a0),h); mono(g,lab,(X(a0)+X(a1))/2,y+h/2+4,'#13202A','center',W<520?9:11); };
+  const zone=(a0,a1,n,max,y,h,lab)=>{ const f=n/max; g.fillStyle='#fff'; g.fillRect(X(a0),y,X(a1)-X(a0),h); g.fillStyle='rgba(31,90,143,'+(0.15+0.6*f)+')'; g.fillRect(X(a0),y,X(a1)-X(a0),h); g.strokeStyle='#1F5A8F'; g.lineWidth=1; g.strokeRect(X(a0),y,X(a1)-X(a0),h); mono(g,lab,(X(a0)+X(a1))/2,y+h/2+4,'#13202A','center',W<520?9:11); };
   zone(7,14.3,Cg.A,60,cy-fh*0.9,fh*0.8,'A '+Cg.A); zone(14.4,22.4,Cg.B,60,cy-fh*0.9,fh*0.8,'B '+Cg.B); zone(22.5,30.5,Cg.C,60,cy-fh*0.9,fh*0.8,'C '+Cg.C);
   zone(7.8,12.2,Cg.fwd,3400,cy+fh*0.12,fh*0.75,W<520?'':nf(Cg.fwd,0)); zone(22,27,Cg.aft,4500,cy+fh*0.12,fh*0.75,W<520?'':nf(Cg.aft,0)); zone(27.3,29.8,Cg.bulk,1500,cy+fh*0.12,fh*0.75,'');
   // CG-markør
@@ -247,7 +247,7 @@ function dE(){ if(!CE.w) return; const g=bg(CE), W=CE.w, H=CE.h, R=cgCalc(); con
   g.strokeStyle='#1E5E9E'; g.lineWidth=2; g.beginPath(); R.path.forEach((p,i)=>i?g.lineTo(X(pmac(p.arm)),Y(p.m)):g.moveTo(X(pmac(p.arm)),Y(p.m))); g.stroke();
   g.strokeStyle='#9AA6AC'; g.setLineDash([3,3]); g.beginPath(); g.moveTo(X(pmac(R.zf.arm)),Y(R.zf.m)); g.lineTo(X(pmac(R.ld.arm)),Y(R.ld.m)); g.stroke(); g.setLineDash([]);
   const pt=(p,t,col)=>{ const ok=inEnv(p)&&!(t==='ZFW'&&p.m>MZFM)&&!(t==='LW'&&p.m>MLM); g.fillStyle=ok?col:'#B3261E'; g.beginPath(); g.arc(X(pmac(p.arm)),Y(p.m),6.5,0,7); g.fill(); mono(g,t,X(pmac(p.arm))+10,Y(p.m)+4,ok?'#13202A':'#B3261E',null,12); };
-  pt(R.zf,'ZFW','#9A1E68'); pt(R.ld,'LW','#5B4BB0'); pt(R.to,'TOW','#13202A');
+  pt(R.zf,'ZFW','#1F5A8F'); pt(R.ld,'LW','#5B4BB0'); pt(R.to,'TOW','#13202A');
   hand(g,L({en:'fuel burn',no:'drivstofforbruk'}),X(pmac((R.to.arm+R.ld.arm)/2))-12,Y((R.to.m+R.ld.m)/2),'#1E5E9E','end',16);
   hand(g,L({en:'forward limit',no:'fremre grense'}),X(16),Y(45000),'#2C7A4B','start',16); hand(g,L({en:'aft limit',no:'bakre grense'}),X(39),Y(47000),'#2C7A4B','end',16); }
 function rG(){ const R=cgCalc(), z=pmac(R.zf.arm), t=pmac(R.to.arm), l=pmac(R.ld.arm); const f=p=>`<span class="${inEnv(p)?'':'ko'}">${nf(pmac(p.arm),1)} % MAC</span> · ${t1(p.m)}`;

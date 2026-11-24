@@ -59,12 +59,12 @@ const ATT={
   nav:'Airports, navaids: '+A('https://ourairports.com/data/','OurAirports'),
   oaip:'Airspace, VFR points, obstacles: '+A('https://www.openaip.net','© openAIP')+' ('+A('https://creativecommons.org/licenses/by-nc/4.0/','CC BY-NC 4.0')+')'
 };
-// chart-room palette (site.css: --paper #EDF1EE, --sheet #FFF, --ink #13202A, --accent #9A1E68, --info #1D4E9E)
+// chart-room palette (site.css: --paper #EDF1EE, --sheet #FFF, --ink #13202A, --accent #1F5A8F, --info #1D4E9E)
 // modern palette (2026-11): cooler neutral land, clear blue water, quiet greys for roads and borders; airports in NORDAP navy-blue
-const AP_SM='#A0286F';
+const AP_SM='#2A6BA3';
 const P={land:'#F1F3F1',water:'#CFE1EC',coast:'#9DB9CC',waterLine:'#B3CDDD',wood:'#DFE8DC',park:'#E3EBE0',ice:'#F9FBFC',resid:'#E6E7E4',bldg:'#DCDDD8',aero:'#DEE1E3',runway:'#B9BEC3',
   border:'#8E97A3',state:'#C5CBD2',road:'#E2E4E6',roadMaj:'#D6DADF',rail:'#CDD1D5',ink:'#0B2545',ink2:'#435466',ink3:'#6B7A88',halo:'rgba(250,251,250,.94)',waterLbl:'#4E7896',peak:'#4A5562',
-  accent:'#9A1E68',info:'#1D4E9E',ap:'#1F4E8C',vor:'#24706A',ndb:'#7A6440',aip:'#7D93A3'};
+  accent:'#1F5A8F',info:'#1D4E9E',ap:'#1F4E8C',vor:'#24706A',ndb:'#7A6440',aip:'#7D93A3'};
 const FONT_R=['Noto Sans Regular'], FONT_B=['Noto Sans Bold'], FONT_I=['Noto Sans Italic'];
 // vfr = VFR chart (default): hypsometric tints, multidirectional hillshade, contours
 // chart = plain chart, terrain = strong relief, ifr = low-ink chart, sat, topo
@@ -403,7 +403,7 @@ function lim(p){ const v=['get',p+'_value'], d=['coalesce',['get',p+'_reference_
     ['concat',['to-string',v],' ',['downcase',['to-string',['coalesce',['get',p+'_unit'],'']]],' ',['to-string',d]]]; }
 const AS_LBL=['concat',['coalesce',['get','name'],''],['case',['has','upper_limit_value'],['concat','\n',lim('upper_limit'),' / ',lim('lower_limit')],'']];
 const T=(...a)=>['match',['get','type'],a,true,false];
-const AS_BLUE='#1D4E9E', AS_RED='#B3261E', AS_MAG='#9A1E68', AS_AMB='#A0620A';
+const AS_BLUE='#1D4E9E', AS_RED='#B3261E', AS_MAG='#1F5A8F', AS_AMB='#A0620A';
 function asLayers(src){ const s={source:src,'source-layer':'airspaces'}, so={source:src,'source-layer':'airspaces_border_offset'};
   const ln=(id,f,c,w,d,mz)=>Object.assign({id,type:'line',filter:f,minzoom:mz||5,layout:{visibility:'none','line-join':'round'},paint:Object.assign({'line-color':c,'line-width':w,'line-opacity':lin(5,0.55,8,1)},d?{'line-dasharray':d}:{})},s);
   const fl=(id,f,c,o,src2)=>Object.assign({id,type:'fill',filter:f,minzoom:5,layout:{visibility:'none'},paint:{'fill-color':c,'fill-opacity':o}},src2||s);
@@ -539,7 +539,7 @@ function addOverlays(map){
   add({id:'bb-note',type:'symbol',source:'bb-note',layout:{'icon-image':'bb-note','icon-anchor':'bottom','icon-allow-overlap':true,'icon-ignore-placement':true,'text-field':['step',['zoom'],'',4.3,['get','t']],'text-font':FONT_B,'text-size':11,'text-offset':[0.9,-1.1],'text-anchor':'left','text-optional':true},paint:Object.assign({'text-color':'#5C4A00'},halo)});
   // route points and names on top
   add({id:'bb-rpt',type:'circle',source:'bb-rpt',paint:{'circle-radius':['case',['==',['get','s'],1],6,4.6],'circle-color':['case',['==',['get','s'],1],P.accent,'#fff'],'circle-stroke-color':P.accent,'circle-stroke-width':2.2,'circle-pitch-alignment':'map'}});
-  add({id:'bb-rptl',type:'symbol',source:'bb-rpt',layout:{'text-field':['get','n'],'text-font':FONT_B,'text-size':12.5,'text-offset':[0.75,-0.65],'text-anchor':'bottom-left','text-allow-overlap':true,'text-ignore-placement':false,'text-padding':1},paint:{'text-color':'#7A1652','text-halo-color':'#fff','text-halo-width':2,'text-halo-blur':0.1}});
+  add({id:'bb-rptl',type:'symbol',source:'bb-rpt',layout:{'text-field':['get','n'],'text-font':FONT_B,'text-size':12.5,'text-offset':[0.75,-0.65],'text-anchor':'bottom-left','text-allow-overlap':true,'text-ignore-placement':false,'text-padding':1},paint:{'text-color':'#163F63','text-halo-color':'#fff','text-halo-width':2,'text-halo-blur':0.1}});
   add({id:'bb-crit',type:'symbol',source:'bb-crit',layout:{'icon-image':['concat','bb-crit-',['get','c']],'icon-anchor':'bottom','icon-allow-overlap':true,'text-field':['get','t'],'text-font':FONT_B,'text-size':11.5,'text-anchor':'left','text-offset':[0.9,-0.7],'text-allow-overlap':true},paint:{'text-color':['match',['get','c'],'r','#B3261E','a','#B86E00','#13202A'],'text-halo-color':'#fff','text-halo-width':2}});
   add({id:'bb-snap',type:'circle',source:'bb-snap',paint:{'circle-radius':11,'circle-color':'rgba(29,78,158,.08)','circle-stroke-color':P.info,'circle-stroke-width':2}});
   add({id:'bb-snapl',type:'symbol',source:'bb-snap',layout:{'text-field':['get','n'],'text-font':FONT_B,'text-size':12,'text-anchor':'top-left','text-offset':[1,0.8],'text-allow-overlap':true},paint:{'text-color':P.info,'text-halo-color':'#fff','text-halo-width':2}});
@@ -619,7 +619,7 @@ function asRoute(map,o){ const out={list:[],ok:false}; if(!map||map.__bb.oaip!==
     if(iv.length) out.list.push({key:e.key,name:e.name,type:e.type,k:e.k,cat:e.cat,cls:e.cls,lo:e.lo,up:e.up,freq:e.freq,iv}); });
   out.list.sort((a,b)=>a.iv[0][0]-b.iv[0][0]); out.ok=true; return out; }
 /* ---------- 3D: the planned path at altitude (curtain to the ground + ribbon at the level) and the aircraft ---------- */
-const AC_SVG='<svg viewBox="-16 -16 32 32" width="34" height="34" aria-hidden="true"><path d="M0-14c1.3 0 2 1.4 2 3.2V-4l11 6.2v2.6L2 1.6V8.4l3.6 2.8v2.2L0 12l-5.6 1.4v-2.2L-2 8.4V1.6l-11 3.2V2.2L-2-4v-6.8C-2-12.6-1.3-14 0-14z" fill="#9A1E68" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+const AC_SVG='<svg viewBox="-16 -16 32 32" width="34" height="34" aria-hidden="true"><path d="M0-14c1.3 0 2 1.4 2 3.2V-4l11 6.2v2.6L2 1.6V8.4l3.6 2.8v2.2L0 12l-5.6 1.4v-2.2L-2 8.4V1.6l-11 3.2V2.2L-2-4v-6.8C-2-12.6-1.3-14 0-14z" fill="#1F5A8F" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>';
 function pathLayer(){
   const VS='attribute vec3 a_p; attribute float a_k; attribute vec3 a_c; uniform mat4 u_m; uniform float u_ex; uniform float u_band; uniform float u_a; varying vec4 v_c;\n'+
     'void main(){ float z = a_k<0.5 ? a_p.z*u_ex : (a_k<1.5 ? a_p.z*u_ex-u_band : -200.0); gl_Position=u_m*vec4(a_p.xy,z,1.0); float al = a_k>1.5 ? u_a*0.25 : u_a; v_c=vec4(a_c*al,al); }';

@@ -49,7 +49,7 @@ function twinTop(g,x,y,s,yaw,prop,tm){
   g.beginPath(); g.moveTo(0,P(-4.2)); g.quadraticCurveTo(P(0.75),P(-3.7),P(0.65),P(-2.2)); g.lineTo(P(0.5),P(3.5)); g.lineTo(P(0.18),P(6.2)); g.lineTo(P(-0.18),P(6.2)); g.lineTo(P(-0.5),P(3.5)); g.lineTo(P(-0.65),P(-2.2)); g.quadraticCurveTo(P(-0.75),P(-3.7),0,P(-4.2)); g.closePath(); g.fill(); g.stroke();
   g.fillStyle='#2B3B4A'; g.beginPath(); g.ellipse(0,P(-2.9),P(.42),P(.7),0,0,7); g.fill();
   // fin (seen from above: a line)
-  g.strokeStyle='#9A1E68'; g.lineWidth=Math.max(2,P(.2)); g.beginPath(); g.moveTo(0,P(4.4)); g.lineTo(0,P(6.3)); g.stroke();
+  g.strokeStyle='#1F5A8F'; g.lineWidth=Math.max(2,P(.2)); g.beginPath(); g.moveTo(0,P(4.4)); g.lineTo(0,P(6.3)); g.stroke();
   // nacelles and propellers
   [-2.2,2.2].forEach((ex,i)=>{ g.fillStyle='#CBD3DA'; g.strokeStyle='rgba(10,16,21,.6)'; g.lineWidth=1; g.beginPath(); g.ellipse(P(ex),P(-0.6),P(.45),P(1.7),0,0,7); g.fill(); g.stroke();
     const dead=i===0, ph=dead?(prop.wm?tm*3:0):tm*40; g.strokeStyle=dead?(prop.feather?'rgba(200,210,220,.9)':'rgba(236,90,71,.85)'):'rgba(230,236,240,.35)'; g.lineWidth=Math.max(1.5,P(.16));

@@ -285,7 +285,7 @@
 
   /* A320-shaped model. x forward, y right, z up, metres, origin at the CG (25 % MAC).
      def: {ailL, ailR (deg, + = trailing edge down), splL[5], splR[5] (deg up), elev (deg, + = TE up), rud (deg, + = nose right), ths (deg, + = nose-up trim)} */
-  const COL = { body: '#C9D2D8', wing: '#AEB9C2', eng: '#D5DCE1', inlet: '#2B333B', ail: '#7FCBE8', spl: '#E46BAE', elev: '#F0B440', rud: '#71CC93', ths: '#B9A6F0', fin: '#BCC6CE' };
+  const COL = { body: '#C9D2D8', wing: '#AEB9C2', eng: '#D5DCE1', inlet: '#2B333B', ail: '#7FCBE8', spl: '#7FB2E5', elev: '#F0B440', rud: '#71CC93', ths: '#B9A6F0', fin: '#BCC6CE' };
   function a320(def) {
     def = def || {}; const F = [], hi = def.hi || {};
     const add = (p, col, tag) => F.push({ p, col, tag });
@@ -385,7 +385,7 @@
   function shade(hex, k) { const n = parseInt(hex.slice(1), 16); const r = (n >> 16) & 255, gg = (n >> 8) & 255, b = n & 255; return 'rgb(' + Math.round(r * k) + ',' + Math.round(gg * k) + ',' + Math.round(b * k) + ')'; }
 
   /* ---------------- dark-instrument chart helpers ---------------- */
-  const INK = { bg: '#10171D', bg2: '#18232C', grid: '#1F2B35', rule: '#2A3742', ink: '#D7E1E6', mute: '#8B99A7', dim: '#5E6D7C', cyan: '#7FCBE8', mag: '#E46BAE', amber: '#F0B440', red: '#EC5A47', green: '#71CC93', violet: '#B9A6F0', white: '#EEF3F7' };
+  const INK = { bg: '#10171D', bg2: '#18232C', grid: '#1F2B35', rule: '#2A3742', ink: '#D7E1E6', mute: '#8B99A7', dim: '#5E6D7C', cyan: '#7FCBE8', mag: '#7FB2E5', amber: '#F0B440', red: '#EC5A47', green: '#71CC93', violet: '#B9A6F0', white: '#EEF3F7' };
   const FONT = { mono: '"IBM Plex Mono", ui-monospace, monospace', body: '"Public Sans", system-ui, sans-serif' };
   function txt(g2, s, x, y, o) { o = o || {}; g2.font = (o.w || (o.mono ? 400 : 600)) + ' ' + (o.size || (o.mono ? 10.5 : 12)) + 'px ' + (o.mono ? FONT.mono : FONT.body); g2.fillStyle = o.col || INK.ink; g2.textAlign = o.al || 'left'; g2.textBaseline = o.bl || 'alphabetic'; if (o.bg) { const w = g2.measureText(s).width, h = (o.size || 11) + 4, x0 = o.al === 'center' ? x - w / 2 : o.al === 'right' ? x - w : x; g2.save(); g2.fillStyle = o.bg; g2.fillRect(x0 - 3, y - h + 4, w + 6, h); g2.restore(); g2.fillStyle = o.col || INK.ink; } g2.fillText(s, x, y); g2.textBaseline = 'alphabetic'; }
   function arrow(g2, x0, y0, x1, y1, col, w, head) { const hl = head || 9; g2.strokeStyle = col; g2.fillStyle = col; g2.lineWidth = w || 2.5; const a = Math.atan2(y1 - y0, x1 - x0), L = Math.hypot(x1 - x0, y1 - y0); if (L < 1) return; const xe = x1 - Math.cos(a) * hl * 0.7, ye = y1 - Math.sin(a) * hl * 0.7; g2.beginPath(); g2.moveTo(x0, y0); g2.lineTo(xe, ye); g2.stroke(); g2.beginPath(); g2.moveTo(x1, y1); g2.lineTo(x1 - hl * Math.cos(a - 0.42), y1 - hl * Math.sin(a - 0.42)); g2.lineTo(x1 - hl * Math.cos(a + 0.42), y1 - hl * Math.sin(a + 0.42)); g2.closePath(); g2.fill(); }

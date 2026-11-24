@@ -46,7 +46,7 @@
   /* colour */
   --paper:#EDF1EE; --sheet:#FFFFFF; --wash:#F5F7F5; --ink:#13202A; --ink-2:#4C5B66; --ink-3:#5F6D77;   /* ink-3: 4.7:1 on paper, 5.3:1 on sheet (WCAG AA) */
   --rule:#C6D0D3; --rule-2:#DCE3E4;
-  --accent:#9A1E68; --accent-hover:#82165A; --accent-wash:#F6EDF2;      /* actions and current state only */
+  --accent:#1F5A8F; --accent-hover:#17476F; --accent-wash:#EAF1F8;      /* actions and current state only */
   --info:#1D4E9E; --info-wash:#EEF3FA;                                  /* links to theory, notes */
   --ok:#2B774B; --caution:#B7791F; --warning:#B42318;                   /* status, inside instruments */
   --caution-ink:#8A5A0B;                                                /* caution as text on paper or sheet (AA); --caution is for fills, rules and dark panels */
@@ -81,7 +81,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-siz
   padding:0 var(--gr) 32px var(--gl);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 a{color:var(--accent);text-underline-offset:2px}
 button,input,select,textarea{font-family:inherit}
-::selection{background:#E9CFDF}
+::selection{background:#D2E1EE}
 button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
 /* visually hidden, still read by screen readers */
@@ -127,10 +127,10 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 .site nav a.on{color:var(--ink);font-weight:600}
 .site nav a.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--accent)}
 /* Flight Intelligence: the one AI service, set apart in a quiet tinted box with a small mark */
-.site nav a.nfi{flex-direction:row;align-items:center;align-self:center;gap:6px;padding:4px 10px;margin:0 -4px;background:var(--accent-wash);border:1px solid rgba(154,30,104,.18);border-radius:999px;color:var(--ink)}
+.site nav a.nfi{flex-direction:row;align-items:center;align-self:center;gap:6px;padding:4px 10px;margin:0 -4px;background:var(--accent-wash);border:1px solid rgba(31,90,143,.18);border-radius:999px;color:var(--ink)}
 .site nav a.nfi::before{display:none}
 .site nav a.nfi::after,.site nav a.nfi.on::after{content:"";position:static;flex:0 0 auto;width:6px;height:6px;border-radius:50%;background:var(--accent);display:block}
-.site nav a.nfi:hover{border-color:rgba(154,30,104,.4)}
+.site nav a.nfi:hover{border-color:rgba(31,90,143,.4)}
 .site nav a.nfi.on{border-color:var(--accent);font-weight:600}
 .site .hright{display:flex;align-items:center;gap:12px;flex:0 0 auto}
 .site .hright .seg button{padding:4px 9px;font-size:13px;min-height:0}
@@ -165,7 +165,7 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 /* search bar: the box is placed by site.js before first paint and wired by search.js (results list styled there) */
 .nsearch{position:relative;z-index:25;margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl));padding:10px var(--gr) 10px var(--gl);background:var(--wash);border-bottom:1px solid var(--rule-2)}
 .nsearch .in{display:flex;align-items:center;gap:10px;max-width:var(--shell);margin:0 auto;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:0 12px;transition:border-color .15s,box-shadow .15s}
-.nsearch .in:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(154,30,104,.12)}
+.nsearch .in:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,90,143,.12)}
 .nsearch svg{flex:0 0 18px;width:18px;height:18px;color:var(--ink-3)}
 .nsearch input{flex:1;border:0;outline:0;font:inherit;font-size:15px;line-height:24px;padding:9px 0;background:transparent;color:var(--ink);min-width:0;min-height:0}
 .nsearch .hint{display:none}

@@ -33,11 +33,11 @@ function jetRear(g,x,y,s,bank){
   g.fillStyle='#C9D1D8'; g.strokeStyle='rgba(10,16,21,.6)'; g.lineWidth=1;
   // wings with slight dihedral
   g.beginPath(); g.moveTo(P(-17),P(-1.0)); g.lineTo(P(-1.6),P(0.35)); g.lineTo(P(1.6),P(0.35)); g.lineTo(P(17),P(-1.0)); g.lineTo(P(17),P(-0.45)); g.lineTo(P(1.6),P(1.15)); g.lineTo(P(-1.6),P(1.15)); g.lineTo(P(-17),P(-0.45)); g.closePath(); g.fill(); g.stroke();
-  [-17,17].forEach(t=>{ g.fillStyle='#E46BAE'; g.beginPath(); g.arc(P(t),P(-0.72),P(.32),0,7); g.fill(); }); g.fillStyle='#C9D1D8';
+  [-17,17].forEach(t=>{ g.fillStyle='#7FB2E5'; g.beginPath(); g.arc(P(t),P(-0.72),P(.32),0,7); g.fill(); }); g.fillStyle='#C9D1D8';
   // tailplane
   g.beginPath(); g.moveTo(P(-6.2),P(-2.6)); g.lineTo(P(6.2),P(-2.6)); g.lineTo(P(6.2),P(-2.25)); g.lineTo(P(-6.2),P(-2.25)); g.closePath(); g.fill();
   // fin
-  g.fillStyle='#9A1E68'; g.beginPath(); g.moveTo(P(-0.35),P(-2)); g.lineTo(P(-0.25),P(-8)); g.lineTo(P(0.25),P(-8)); g.lineTo(P(0.35),P(-2)); g.closePath(); g.fill();
+  g.fillStyle='#1F5A8F'; g.beginPath(); g.moveTo(P(-0.35),P(-2)); g.lineTo(P(-0.25),P(-8)); g.lineTo(P(0.25),P(-8)); g.lineTo(P(0.35),P(-2)); g.closePath(); g.fill();
   // fuselage
   const gr=g.createRadialGradient(P(-0.6),P(-0.6),P(.3),0,0,P(2)); gr.addColorStop(0,'#F7F9FA'); gr.addColorStop(1,'#9AA6B0'); g.fillStyle=gr; g.beginPath(); g.arc(0,0,P(2),0,7); g.fill(); g.stroke();
   // engines

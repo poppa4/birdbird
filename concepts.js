@@ -15,7 +15,7 @@ const css=`
 .kcgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:8px;margin-top:12px;counter-reset:kc}
 .kcgrid>.kc{counter-increment:kc}
 .kc .kh{display:flex;align-items:baseline;gap:7px;margin-top:2px}
-.kc .kn{flex:none;font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--smoke,#9A1E68);min-width:1.6em;letter-spacing:.02em}
+.kc .kn{flex:none;font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--smoke,#1F5A8F);min-width:1.6em;letter-spacing:.02em}
 .kc .kn::before{content:counter(kc,decimal-leading-zero)}
 .kc .kh h3{margin:0}
 .kcgrid>.kgrp{grid-column:1/-1;display:flex;align-items:baseline;gap:10px;margin:12px 0 0;padding-top:10px;border-top:1px solid var(--rule-2,#DCE3E6);font-family:var(--f-mono);font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2,#4C5B66)}
@@ -28,12 +28,12 @@ const css=`
 .kc h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:14.5px;margin:2px 0 0;color:var(--fg,#13202A);line-height:1.2}
 .kc p{margin:0;font-size:12.5px;color:var(--muted,#4C5B66);line-height:1.45}
 .kc p b{color:var(--fg,#13202A);font-weight:600}
-.kc .kgo{align-self:flex-start;margin-top:auto;font-family:var(--f-body);font-size:12px;font-weight:600;background:none;border:0;color:var(--smoke,#9A1E68);padding:2px 0;cursor:pointer}
+.kc .kgo{align-self:flex-start;margin-top:auto;font-family:var(--f-body);font-size:12px;font-weight:600;background:none;border:0;color:var(--smoke,#1F5A8F);padding:2px 0;cursor:pointer}
 .kc .kgo:hover{text-decoration:underline}
 .kc a.kgo{text-decoration:none}
 .kc .kmore summary{cursor:pointer;font-size:12px;color:var(--muted,#4C5B66);list-style:none}
 .kc .kmore summary::-webkit-details-marker{display:none}
-.kc .kmore summary::before{content:"▸ ";color:var(--smoke,#9A1E68)}.kc .kmore[open] summary::before{content:"▾ "}
+.kc .kmore summary::before{content:"▸ ";color:var(--smoke,#1F5A8F)}.kc .kmore[open] summary::before{content:"▾ "}
 .kc .kmore p{font-size:12px;color:var(--fg,#13202A);margin:5px 0 0}
 .kintro{margin:0;color:var(--muted,#4C5B66);font-size:13px;max-width:80ch}
 .kfull{margin-top:14px}
@@ -45,9 +45,9 @@ const css=`
 @keyframes kcflash{0%{box-shadow:0 0 0 0 rgba(255,214,102,.0)}20%{box-shadow:0 0 0 3px rgba(255,214,102,.95)}100%{box-shadow:0 0 0 3px rgba(255,214,102,0)}}
 .kc-flash{animation:kcflash 1.8s ease-out 1}
 /* the caption that follows a card into the model: which card, and what to look at */
-.kc-spot{position:fixed;z-index:60;display:flex;align-items:flex-start;gap:12px;box-sizing:border-box;padding:10px 12px 10px 14px;background:#fff;border:1px solid var(--rule,#C6D0D3);border-left:4px solid var(--accent,#9A1E68);border-radius:0 8px 8px 0;box-shadow:0 8px 28px rgba(16,28,38,.22)}
+.kc-spot{position:fixed;z-index:60;display:flex;align-items:flex-start;gap:12px;box-sizing:border-box;padding:10px 12px 10px 14px;background:#fff;border:1px solid var(--rule,#C6D0D3);border-left:4px solid var(--accent,#1F5A8F);border-radius:0 8px 8px 0;box-shadow:0 8px 28px rgba(16,28,38,.22)}
 .kc-spot[hidden]{display:none}
-.kc-spot .n{flex:none;font-family:var(--f-mono);font-size:12px;font-weight:600;color:#fff;background:var(--accent,#9A1E68);border-radius:4px;padding:3px 6px;margin-top:1px}
+.kc-spot .n{flex:none;font-family:var(--f-mono);font-size:12px;font-weight:600;color:#fff;background:var(--accent,#1F5A8F);border-radius:4px;padding:3px 6px;margin-top:1px}
 .kc-spot .tx{min-width:0;flex:1}
 .kc-spot .k{display:block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3,#6A7884)}
 .kc-spot b.t{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:700;font-size:16px;line-height:1.25;color:var(--ink,#13202A);margin:1px 0 2px}

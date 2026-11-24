@@ -34,7 +34,7 @@ function draw(g,W,H,p,tm){
   let x=W*.04, y=H*.1; const maxX=W*.96;
   TOK.forEach(([t,grp])=>{ const w=g.measureText(t).width; if(x+w>maxX){ x=W*.04; y+=(sm?20:26)*fs; }
     const on=grp===cur, past=grp&&grp<cur;
-    if(on){ rr(g,x-4,y-(sm?13:17)*fs,w+8,(sm?18:24)*fs,4); g.fillStyle='rgba(228,107,174,.22)'; g.fill(); g.strokeStyle='#E46BAE'; g.stroke(); }
+    if(on){ rr(g,x-4,y-(sm?13:17)*fs,w+8,(sm?18:24)*fs,4); g.fillStyle='rgba(127,178,229,.22)'; g.fill(); g.strokeStyle='#7FB2E5'; g.stroke(); }
     txt(g,t,x,y,{mono:1,size:(sm?11:15)*fs,col:on?'#fff':past?'#AEB8C1':'#5F6D77',w:on?600:500}); x+=w+sp*1.4; });
   const top=y+H*.06;
   // panel area

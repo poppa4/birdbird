@@ -16,7 +16,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pressure and wind</title>
 <link rel="stylesheet" href="lab.css?v=15">
-<link rel="stylesheet" href="site.css?v=37">
+<link rel="stylesheet" href="site.css?v=38">
 <style>
 .kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
 .prose{max-width:72ch;font-size:15px;line-height:1.6;color:var(--ink);margin:16px 0 0}
@@ -75,7 +75,7 @@ body.depth-instructor .ro .rrow b{font-size:15px}
 </style>
 </head>
 <body data-title="Pressure and wind">
-<script src="site.js?v=125"></script>
+<script src="site.js?v=126"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
@@ -219,7 +219,7 @@ body.depth-instructor .ro .rrow b{font-size:15px}
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of two idealised pressure systems on a flat chart, north up, 2000–2600 km across. The geostrophic wind uses V<sub>g</sub> = Δp / (ρ f Δn) with f = 2Ω sin φ and ignores isobar curvature, so it overestimates the wind close to a tight low. The surface wind uses typical, illustrative values: backed about 30° and about half the speed over land, about 10° and 70 % over the sea; real values depend on terrain, stability and the time of day. The force arrows show directions, not exact sizes, and the parcel’s turn is damped so it settles quickly (real air oscillates as it adjusts). The altimeter error uses about 27 ft per hPa and ISA temperatures. The local winds are schematic, with typical strengths; the föhn uses 3 °C per 1000 ft dry and about 1.8 °C per 1000 ft saturated. For real flights use the METAR, TAF, wind charts and AIP.</p>
 </div>
 <script src="lab.js?v=60"></script>
-<script src="concepts.js?v=10"></script>
+<script src="concepts.js?v=11"></script>
 <script>
 (function(){
 'use strict';
@@ -229,8 +229,8 @@ const D2R=Math.PI/180, OMEGA=7.2921e-5, KT=1.943844;
 const reduced=()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
 const isIns=()=>document.body.classList.contains('depth-instructor');
 /* dark instrument palette (the viewport), and the light one for the paper figure in Understand */
-const COL={pgf:'#F07B6A',cor:'#7FCBE8',fr:'#F0B440',wind:'#E46BAE',ink:'#E6EBEF',ink2:'#AEB8C1',ink3:'#7D8B95',low:'#F07B6A',high:'#8FB8F0',flow:'127,203,232',dark:'#10171D',pill:'rgba(12,16,20,.86)'};
-const UC={ink:'#13202A',ink2:'#4C5B66',wind:'#9A1E68'};
+const COL={pgf:'#F07B6A',cor:'#7FCBE8',fr:'#F0B440',wind:'#EBC35A',ink:'#E6EBEF',ink2:'#AEB8C1',ink3:'#7D8B95',low:'#F07B6A',high:'#8FB8F0',flow:'127,203,232',dark:'#10171D',pill:'rgba(12,16,20,.86)'};
+const UC={ink:'#13202A',ink2:'#4C5B66',wind:'#1F5A8F'};
 
 /* ---------- strings ---------- */
 LAB.add({},{
@@ -433,7 +433,7 @@ function stepParcel(dt){ const p=parcel; if(!p||p.done) return; const n=6, h=dt*
 
 /* overlay: centres, probe, forces, wind, parcel */
 function drawCentre(g,c,isL,fs){ const p=toPx(isL?cL:cH), w=windAt(isL?cL.x:cH.x,isL?cL.y:cH.y); const col=isL?COL.low:COL.high;
-  if(drag&&drag.k===(isL?'L':'H')){ g.fillStyle='rgba(228,107,174,.16)'; g.beginPath(); g.arc(p.x,p.y,30*fs,0,7); g.fill(); }
+  if(drag&&drag.k===(isL?'L':'H')){ g.fillStyle='rgba(235,195,90,.16)'; g.beginPath(); g.arc(p.x,p.y,30*fs,0,7); g.fill(); }
   g.font=`700 ${Math.round(30*fs)}px Archivo, sans-serif`; g.textAlign='center'; g.fillStyle=col; g.fillText(isL?'L':'H',p.x,p.y+10*fs);
   g.font=`500 ${Math.round(11*fs)}px IBM Plex Mono, monospace`; g.fillStyle=col; g.fillText(Math.round(w.p),p.x,p.y+26*fs); g.textAlign='start'; }
 function frame(){ const W=C.w,H=C.h; if(!W) return; if(bgDirty) buildBg(); const g=C.ctx, fs=isIns()?1.3:(W<480?0.92:1);
@@ -447,7 +447,7 @@ function frame(){ const W=C.w,H=C.h; if(!W) return; if(bgDirty) buildBg(); const
   g.fillStyle=COL.ink; g.beginPath(); g.moveTo(W-20,12); g.lineTo(W-26,28); g.lineTo(W-20,24); g.lineTo(W-14,28); g.closePath(); g.fill(); g.textAlign='center'; g.fillText('N',W-20,42); g.textAlign='right';
   g.fillStyle=COL.ink2; g.fillText(S.lat+'°'+(S.hemi==='N'?'N':'S'),W-40,24); g.textAlign='start';
   /* parcel */
-  if(parcel&&parcel.trail.length>1){ g.strokeStyle=parcel.done?'rgba(228,107,174,.45)':COL.wind; g.lineWidth=2.6*fs; g.lineJoin='round'; g.lineCap='round'; g.beginPath(); parcel.trail.forEach((q,i)=>i?g.lineTo(q.x,q.y):g.moveTo(q.x,q.y)); g.stroke();
+  if(parcel&&parcel.trail.length>1){ g.strokeStyle=parcel.done?'rgba(235,195,90,.45)':COL.wind; g.lineWidth=2.6*fs; g.lineJoin='round'; g.lineCap='round'; g.beginPath(); parcel.trail.forEach((q,i)=>i?g.lineTo(q.x,q.y):g.moveTo(q.x,q.y)); g.stroke();
     const q=parcel.trail[parcel.trail.length-1]; g.fillStyle='#fff'; g.strokeStyle=COL.wind; g.lineWidth=2.4; g.beginPath(); g.arc(q.x,q.y,6*fs,0,7); g.fill(); g.stroke();
     if(!parcel.done){ const sp=Math.hypot(parcel.vx,parcel.vy)*KT; pill(g,q.x+10*fs,q.y+16*fs,Math.round(sp)+' kt',`600 ${Math.round(11*fs)}px IBM Plex Mono, monospace`,COL.dark,COL.wind,'left'); } }
   /* probe: forces and wind */
@@ -468,7 +468,7 @@ function frame(){ const W=C.w,H=C.h; if(!W) return; if(bgDirty) buildBg(); const
     if(showBack) backFig(g,P,w,fs); }
   g.fillStyle=COL.dark; g.strokeStyle=COL.ink; g.lineWidth=2; g.beginPath(); g.arc(P.x,P.y,7*fs,0,7); g.fill(); g.stroke();
   g.beginPath(); g.moveTo(P.x-11*fs,P.y); g.lineTo(P.x+11*fs,P.y); g.moveTo(P.x,P.y-11*fs); g.lineTo(P.x,P.y+11*fs); g.lineWidth=1.2; g.stroke();
-  if(drag&&drag.k==='P'){ g.strokeStyle='rgba(228,107,174,.4)'; g.lineWidth=8; g.beginPath(); g.arc(P.x,P.y,16*fs,0,7); g.stroke(); } }
+  if(drag&&drag.k==='P'){ g.strokeStyle='rgba(235,195,90,.4)'; g.lineWidth=8; g.beginPath(); g.arc(P.x,P.y,16*fs,0,7); g.stroke(); } }
 /* reduced motion: a static field of small wind arrows instead of moving air */
 function staticFlow(g){ rc=Math.cos(A.th*D2R); rs=Math.sin(A.th*D2R); g2kt=0.1/(S.rho*fcor())*KT; const st=C.w<500?34:44; for(let y=st/2;y<C.h;y+=st) for(let x=st/2;x<C.w;x+=st){ const v=flowAt(x,y), m=Math.hypot(v.x,v.y); if(m<3) continue; const l=Math.min(st*0.75,12+m*0.3); arrow(g,x-v.x/m*l/2,y-v.y/m*l/2,v.x/m*l,v.y/m*l,`rgba(${COL.flow},.5)`,1.4,5); } }
 /* task 3: "back to the wind" figure at the probe */
@@ -734,13 +734,13 @@ function lbuild(){ const W=CL.w,H=CL.h,d=CL.dpr; if(!W||!LS.st) return; if(!LG) 
 function ld(){ const g=CL.ctx,W=CL.w,H=CL.h; if(!W||view!=='local'||!LS.st) return; if(lbg.width!==Math.round(W*CL.dpr)) lbuild();
   const st=LS.st, tt=reduced()?0:performance.now()/900, gy=H*0.8;
   g.clearRect(0,0,W,H); g.drawImage(lbg,0,0,W,H);
-  g.strokeStyle='rgba(228,107,174,.85)'; g.lineDashOffset=-tt*20; g.setLineDash(DASH);
+  g.strokeStyle='rgba(235,195,90,.85)'; g.lineDashOffset=-tt*20; g.setLineDash(DASH);
   if(LW.w==='coast'){ const dir= st.day?1:st.night?-1:0; if(dir){ g.setLineDash(NODASH);
       /* one closed circulation: onshore (day) or offshore (night) near the ground, return flow aloft; particles show speed */
       const cx=W*0.47, cy=(gy-18+H*0.4)/2, rx=W*0.33, ry=(gy-18-H*0.4)/2, k=Math.max(.35,(st.str||8)/14);
       const pt=a=>[cx+rx*Math.cos(a),cy+ry*Math.sin(a)];                       // a=π/2 is the bottom (screen y down)
       g.lineWidth=(dir>0?12:7)*k; g.strokeStyle=dir>0?'rgba(127,198,238,.16)':'rgba(127,198,238,.1)'; g.beginPath(); g.ellipse(cx,cy,rx,ry,0,0,7); g.stroke();
-      g.lineWidth=dir>0?2.2:1.6; g.strokeStyle='rgba(228,107,174,.7)'; g.beginPath(); g.ellipse(cx,cy,rx,ry,0,0,7); g.stroke();
+      g.lineWidth=dir>0?2.2:1.6; g.strokeStyle='rgba(235,195,90,.7)'; g.beginPath(); g.ellipse(cx,cy,rx,ry,0,0,7); g.stroke();
       // bottom flows left→right by day (sea → land): with y down that is decreasing angle at the bottom, i.e. anticlockwise on screen
       const sp=(dir>0?1:-1)*(reduced()?0:0.22*k);
       for(let i=0;i<28;i++){ const a=(Math.PI/2)-(tt*sp+i/28)*Math.PI*2*(dir>0?1:1), p=pt(dir>0?a:Math.PI-a), near=Math.sin(dir>0?a:Math.PI-a);
@@ -757,7 +757,7 @@ function ld(){ const g=CL.ctx,W=CL.w,H=CL.h; if(!W||view!=='local'||!LS.st) retu
     if(f.wet){ g.strokeStyle='rgba(127,203,232,.55)'; g.lineWidth=1; g.beginPath(); for(let i=0;i<16;i++){ const x=cx-hw*0.98+i*hw*0.055, b=Math.max(f.lcl,G.hill(x)); if(b>f.lcl+50) continue; const y=Y(f.lcl)+4+((tt*28+i*13)%Math.max(8,Y(G.hill(x))-Y(f.lcl)-6)); g.moveTo(x,y); g.lineTo(x-2,y+6); } g.stroke(); } }
   g.setLineDash(NODASH); }
 const LP1=new Float32Array(8), LP2=new Float32Array(8);
-function head(g,x,y,an){ g.fillStyle='#E46BAE'; g.beginPath(); g.moveTo(x+9*Math.cos(an),y+9*Math.sin(an)); g.lineTo(x-7*Math.cos(an-0.6),y-7*Math.sin(an-0.6)); g.lineTo(x-7*Math.cos(an+0.6),y-7*Math.sin(an+0.6)); g.closePath(); g.fill(); }
+function head(g,x,y,an){ g.fillStyle='#EBC35A'; g.beginPath(); g.moveTo(x+9*Math.cos(an),y+9*Math.sin(an)); g.lineTo(x-7*Math.cos(an-0.6),y-7*Math.sin(an-0.6)); g.lineTo(x-7*Math.cos(an+0.6),y-7*Math.sin(an+0.6)); g.closePath(); g.fill(); }
 const segW=LAB.seg(el('where'),[['coast','Sea breeze'],['valley','Valley'],['foehn','Föhn']],LW.w,v=>{ LW.w=v; lwPlay=false; syncLw(); lu(); });
 const cT=document.createElement('div'), cF=document.createElement('div'); el('c2').append(cT,cF);
 const sHr=LAB.slider(cT,{label:'Time of day',min:0,max:23,step:1,v:LW.h,f:v=>String(v).padStart(2,'0')+':00',on:v=>{ LW.h=v; lwPlay=false; drawTabs(); lu(); }});
@@ -863,16 +863,16 @@ function setSeason(v){ GC.s=v; segG.set(v); gu(); }
     dd:t2('Coriolis force per unit mass = 2Ω · sin(latitude) · V. It acts at right angles to the motion: it changes the direction of the wind, never its speed.','Corioliskraft per masseenhet = 2Ω · sin(breddegrad) · V. Den virker vinkelrett på bevegelsen: den endrer vindens retning, aldri farten.'),
     ill:()=>sv(`<path d="M40,52 C70,52 110,44 130,18" fill="none" stroke="#7FCBE8" stroke-width="1.6"/>${ar(126,24,132,14,'#7FCBE8')}<line x1="40" y1="52" x2="140" y2="52" stroke="#5B6B78" stroke-dasharray="3 3"/>${tx(146,40,L(t2('NH: right','NH: høyre')),'#7FCBE8')}`),click:go('chart',()=>setStage(1)),to:'#pvp'},
    {k:'geo',t:t2('Geostrophic wind','Geostrofisk vind'),d:t2('When Coriolis balances the gradient, the wind blows <b>along the isobars</b>: the wind above the friction layer. V<sub>g</sub> = Δp / (ρ f Δn).','Når Coriolis balanserer gradienten, blåser vinden <b>langs isobarene</b>: vinden over friksjonslaget. V<sub>g</sub> = Δp / (ρ f Δn).'),
-    ill:()=>sv(`${iso}${ar(60,30,140,22,'#E46BAE',2)}${tx(100,58,'Vg','#E46BAE','middle')}`),click:go('chart',()=>setStage(1)),to:'#pvp'},
+    ill:()=>sv(`${iso}${ar(60,30,140,22,'#EBC35A',2)}${tx(100,58,'Vg','#EBC35A','middle')}`),click:go('chart',()=>setStage(1)),to:'#pvp'},
    {k:'fr',t:t2('Friction','Friksjon'),d:t2('Below about 2000–3000 ft the ground slows the wind; it <b>backs</b> (NH) and crosses the isobars towards the low: about 30° over land, 10–15° over the sea.','Under rundt 2000–3000 ft bremser bakken vinden; den <b>dreier mot venstre</b> (NH) og krysser isobarene inn mot lavtrykket: rundt 30° over land, 10–15° over sjø.'),
     ill:()=>sv(`${iso}${ar(60,34,132,36,'#F0B440',2)}${tx(150,54,'30°','#F0B440')}`),click:go('chart',()=>setStage(2)),to:'#pvp'},
    {k:'bb',t:t2('Buys Ballot’s law','Buys Ballots lov'),d:t2('Northern hemisphere: <b>back to the wind, the low is on your left</b>. In the southern hemisphere, on your right.','Nordlig halvkule: <b>ryggen mot vinden, lavtrykket til venstre</b>. På sørlig halvkule til høyre.'),
-    ill:()=>sv(`<circle cx="110" cy="40" r="6" fill="#c9d2da"/>${ar(150,40,120,40,'#E46BAE')}${ar(108,32,108,8,'#F07B6A')}${tx(114,12,'L','#F07B6A',null,12)}${tx(156,36,L(t2('wind','vind')),'#E46BAE')}`),click:()=>{ document.querySelector('#task-back [data-show]')?.click(); },to:'#pvp'},
+    ill:()=>sv(`<circle cx="110" cy="40" r="6" fill="#c9d2da"/>${ar(150,40,120,40,'#EBC35A')}${ar(108,32,108,8,'#F07B6A')}${tx(114,12,'L','#F07B6A',null,12)}${tx(156,36,L(t2('wind','vind')),'#EBC35A')}`),click:()=>{ document.querySelector('#task-back [data-show]')?.click(); },to:'#pvp'},
    {k:'q',t:t2('QNH, QFE and QFF','QNH, QFE og QFF'),d:t2('<b>QFE</b>: pressure at the aerodrome (height above it). <b>QNH</b>: reduced to MSL with ISA (altitude). <b>QFF</b>: reduced with the real temperature (the chart).','<b>QFE</b>: trykket på flyplassen (høyde over den). <b>QNH</b>: redusert til MSL med ISA (høyde over havet). <b>QFF</b>: redusert med virkelig temperatur (kartet).'),
-    ill:()=>sv(`<path d="M10,54 L70,54 C90,54 96,30 120,30 L190,30 L190,64 L10,64 Z" fill="#3b3a33"/><line x1="150" y1="30" x2="150" y2="54" stroke="#E46BAE" stroke-dasharray="3 2"/>${tx(146,24,'QFE','#c9d2da','end')}${tx(156,52,'QNH','#E46BAE')}${tx(16,48,'MSL','#8b99a7')}`),click:go('alt'),to:'#pvp',dp:false},
+    ill:()=>sv(`<path d="M10,54 L70,54 C90,54 96,30 120,30 L190,30 L190,64 L10,64 Z" fill="#3b3a33"/><line x1="150" y1="30" x2="150" y2="54" stroke="#EBC35A" stroke-dasharray="3 2"/>${tx(146,24,'QFE','#c9d2da','end')}${tx(156,52,'QNH','#EBC35A')}${tx(16,48,'MSL','#8b99a7')}`),click:go('alt'),to:'#pvp',dp:false},
    {k:'sea',t:t2('Sea and land breeze','Sjø- og landbris'),d:t2('By day the land heats faster than the sea: air rises over the land and cooler sea air flows in underneath, the <b>sea breeze</b>, typically 10–15 kt. At night it reverses, weaker: the land breeze.','Om dagen varmes land raskere enn sjøen: luften stiger over land og kjøligere sjøluft strømmer inn under, <b>sjøbrisen</b>, typisk 10–15 kt. Om natten snur den, svakere: landbrisen.'),
     dd:t2('The sea breeze starts late in the morning, peaks in the afternoon and can push a front of cumulus inland. Expect a wind change, and a crosswind, on a coastal runway.','Sjøbrisen starter sent på formiddagen, er sterkest om ettermiddagen og kan skyve en front av cumulus innover land. Vent vindskifte, og sidevind, på en kystnær bane.'),
-    ill:()=>sv(`<rect x="0" y="48" width="90" height="16" fill="#1D4566"/><rect x="90" y="46" width="110" height="18" fill="#4F4838"/><path d="M40,40 L140,40 L140,16 L40,16 Z" fill="none" stroke="#E46BAE" stroke-dasharray="4 3"/>${ar(60,40,110,40,'#E46BAE')}${tx(150,12,'day','#F0B440')}`),click:()=>{ go('local')(); const b=document.querySelector('#where button[data-v="coast"]'); if(b) b.click(); },to:'#pvp'},
+    ill:()=>sv(`<rect x="0" y="48" width="90" height="16" fill="#1D4566"/><rect x="90" y="46" width="110" height="18" fill="#4F4838"/><path d="M40,40 L140,40 L140,16 L40,16 Z" fill="none" stroke="#EBC35A" stroke-dasharray="4 3"/>${ar(60,40,110,40,'#EBC35A')}${tx(150,12,'day','#F0B440')}`),click:()=>{ go('local')(); const b=document.querySelector('#where button[data-v="coast"]'); if(b) b.click(); },to:'#pvp'},
    {k:'valley',t:t2('Valley winds: anabatic and katabatic','Dalvinder: anabatisk og katabatisk'),d:t2('Sunny slopes warm the air against them and it flows <b>up the slope</b> (anabatic). At night the slopes cool it and cold, heavy air drains <b>down</b> into the valley (katabatic), sometimes strongly.','Solbelyste lier varmer luften mot seg, og den strømmer <b>opp lia</b> (anabatisk). Om natten kjøler liene den, og kald, tung luft renner <b>ned</b> i dalen (katabatisk), noen ganger kraftig.'),
     dd:t2('Katabatic air collects in the valley floor: frost, fog and a strong tailwind on a valley runway in the early morning.','Katabatisk luft samles i dalbunnen: frost, tåke og kraftig medvind på en dalbane tidlig om morgenen.'),
     ill:()=>sv(`<path d="M0,60 L70,14 L100,52 L130,14 L200,60 Z" fill="#4A4536"/>${ar(60,24,30,44,'#7FCBE8')}${ar(140,24,170,44,'#7FCBE8')}${tx(100,12,'night: downslope','#7FCBE8','middle',7.5)}`),click:()=>{ go('local')(); const b=document.querySelector('#where button[data-v="valley"]'); if(b) b.click(); },to:'#pvp'},
@@ -884,10 +884,10 @@ function setSeason(v){ GC.s=v; segG.set(v); gu(); }
     ill:()=>sv(`<path d="M30,60 A70,70 0 0 1 170,60" fill="none" stroke="#5B6B78"/>${[[40,84],[88,112],[116,160]].map(([a,b])=>`<path d="M${a},50 Q${(a+b)/2},${a===88?8:14} ${b},50" fill="none" stroke="#7FCBE8" stroke-width="1.6"/>`).join('')}${tx(62,46,'polar','#7FCBE8','middle',7)}${tx(100,40,'Ferrel','#7FCBE8','middle',7)}${tx(138,46,'Hadley','#7FCBE8','middle',7)}`),see:t2('Three loops on the right-hand rim of the globe: the <b>Hadley</b>, <b>Ferrel</b> and <b>polar</b> cells, with the jets where they meet.','Tre sløyfer på høyre kant av kloden: <b>Hadley</b>-, <b>Ferrel</b>- og <b>polarcellen</b>, med jetstrømmene der de møtes.'),click:go('glob',()=>setSeason('eq')),to:'#pvp'},
    {k:'belts',t:t2('Pressure belts and prevailing winds','Trykkbelter og fremherskende vinder'),d:t2('<b>Lows</b> at the equator and near 60°, <b>highs</b> at 30° and the poles. Between them blow the <b>trade winds</b>, the <b>westerlies</b> of the mid-latitudes and the polar easterlies.','<b>Lavtrykk</b> ved ekvator og nær 60°, <b>høytrykk</b> ved 30° og polene. Mellom dem blåser <b>passatvindene</b>, <b>vestavindene</b> på midlere bredder og de polare østavindene.'),
     dd:t2('Coriolis turns the air on its way from high to low: the trades blow from the NE (northern) and SE (southern hemisphere). Norway lies in the westerlies, under the polar front, so the weather arrives from the west.','Coriolis bøyer luften på vei fra høyt til lavt: passaten blåser fra NØ (nordlig) og SØ (sørlig halvkule). Norge ligger i vestavindsbeltet, under polarfronten, så været kommer fra vest.'),
-    ill:()=>sv(`<circle cx="100" cy="34" r="28" fill="none" stroke="#5B6B78"/><line x1="72" y1="34" x2="128" y2="34" stroke="#F07B6A" stroke-dasharray="4 3"/><line x1="76" y1="20" x2="124" y2="20" stroke="#8FB8F0" stroke-dasharray="4 3"/><line x1="76" y1="48" x2="124" y2="48" stroke="#8FB8F0" stroke-dasharray="4 3"/>${ar(112,23,96,31,'#E46BAE')}${ar(112,45,96,37,'#E46BAE')}${tx(136,23,'H 30°','#8FB8F0','start',7.5)}${tx(136,37,'L 0°','#F07B6A','start',7.5)}`),see:t2('Dashed belts: red for low, blue for high. The pink arrows between them are the <b>trade winds</b> and the <b>westerlies</b>.','Stiplede belter: rødt for lavtrykk, blått for høytrykk. De rosa pilene mellom dem er <b>passaten</b> og <b>vestavindene</b>.'),click:go('glob',()=>setSeason('eq')),to:'#pvp'},
+    ill:()=>sv(`<circle cx="100" cy="34" r="28" fill="none" stroke="#5B6B78"/><line x1="72" y1="34" x2="128" y2="34" stroke="#F07B6A" stroke-dasharray="4 3"/><line x1="76" y1="20" x2="124" y2="20" stroke="#8FB8F0" stroke-dasharray="4 3"/><line x1="76" y1="48" x2="124" y2="48" stroke="#8FB8F0" stroke-dasharray="4 3"/>${ar(112,23,96,31,'#EBC35A')}${ar(112,45,96,37,'#EBC35A')}${tx(136,23,'H 30°','#8FB8F0','start',7.5)}${tx(136,37,'L 0°','#F07B6A','start',7.5)}`),see:t2('Dashed belts: red for low, blue for high. The pink arrows between them are the <b>trade winds</b> and the <b>westerlies</b>.','Stiplede belter: rødt for lavtrykk, blått for høytrykk. De rosa pilene mellom dem er <b>passaten</b> og <b>vestavindene</b>.'),click:go('glob',()=>setSeason('eq')),to:'#pvp'},
    {k:'itcz',t:t2('ITCZ','ITCZ'),d:t2('The trade winds of both hemispheres meet in the <b>intertropical convergence zone</b>: a belt of rising air with towering CB and heavy showers. It follows the sun: north in July, south in January.','Passatvindene fra begge halvkuler møtes i <b>den intertropiske konvergenssonen</b>: et belte med stigende luft, høye CB og kraftige byger. Den følger sola: nord i juli, sør i januar.'),
     dd:t2('The tropopause is highest here, so CB tops can pass FL500, above any cruising level. Expect embedded CB, turbulence and icing; cross it where the radar shows gaps.','Tropopausen er høyest her, så CB-toppene kan passere FL500, over alle marsjhøyder. Vent innleirede CB, turbulens og ising; kryss der radaren viser åpninger.'),
-    ill:()=>sv(`<line x1="14" y1="40" x2="186" y2="40" stroke="#F07B6A" stroke-dasharray="5 3"/>${ar(60,14,84,34,'#E46BAE')}${ar(60,62,84,46,'#E46BAE')}${ar(130,14,154,34,'#E46BAE')}${ar(130,62,154,46,'#E46BAE')}${tx(100,36,'ITCZ','#F07B6A','middle',9)}`),see:t2('July: the red <b>ITCZ</b> belt lies north of the equator. Switch to January and it moves south.','Juli: det røde <b>ITCZ</b>-beltet ligger nord for ekvator. Bytt til januar, og det flytter seg sørover.'),click:go('glob',()=>setSeason('jul')),to:'#pvp'},
+    ill:()=>sv(`<line x1="14" y1="40" x2="186" y2="40" stroke="#F07B6A" stroke-dasharray="5 3"/>${ar(60,14,84,34,'#EBC35A')}${ar(60,62,84,46,'#EBC35A')}${ar(130,14,154,34,'#EBC35A')}${ar(130,62,154,46,'#EBC35A')}${tx(100,36,'ITCZ','#F07B6A','middle',9)}`),see:t2('July: the red <b>ITCZ</b> belt lies north of the equator. Switch to January and it moves south.','Juli: det røde <b>ITCZ</b>-beltet ligger nord for ekvator. Bytt til januar, og det flytter seg sørover.'),click:go('glob',()=>setSeason('jul')),to:'#pvp'},
    {k:'mons',dp:true,t:t2('Monsoon','Monsun'),d:t2('A wind that reverses with the season. In summer the ITCZ moves over the hot continent: the trades cross the equator, turn with Coriolis and arrive as a moist onshore wind, the <b>SW monsoon</b> of India and West Africa.','En vind som snur med årstiden. Om sommeren flytter ITCZ seg inn over det varme kontinentet: passaten krysser ekvator, bøyes av Coriolis og kommer inn som en fuktig pålandsvind, <b>SV-monsunen</b> i India og Vest-Afrika.'),
     dd:t2('June to September: low cloud, heavy rain and embedded CB for weeks. In winter the wind blows off the cold land (the NE monsoon): dry and clear, often hazy.','Juni til september: lave skyer, kraftig regn og innleirede CB i ukevis. Om vinteren blåser vinden fra det kalde landet (NØ-monsunen): tørt og klart, ofte disig.'),
     ill:()=>sv(`<rect x="110" y="8" width="80" height="26" fill="#4F4838"/><rect x="10" y="34" width="180" height="26" fill="#1D4566"/><line x1="10" y1="46" x2="190" y2="46" stroke="#8b99a7" stroke-dasharray="2 3"/><path d="M70,58 Q52,44 96,26" fill="none" stroke="#F0B440" stroke-width="1.8"/>${ar(88,30,100,24,'#F0B440')}${tx(150,24,L(t2('hot land','varmt land')),'#c9d2da','middle',7.5)}${tx(16,44,L(t2('equator','ekvator')),'#8b99a7','start',7)}`),see:t2('The yellow arrows: trade winds that cross the equator and turn right, arriving as the <b>SW monsoon</b>.','De gule pilene: passat som krysser ekvator og bøyes mot høyre, og kommer inn som <b>SV-monsunen</b>.'),click:go('glob',()=>setSeason('jul')),to:'#pvp'},
@@ -910,7 +910,7 @@ document.addEventListener('labdepth',()=>{ bgDirty=true; changed(); ufig(); });
 LAB.onLang(()=>{ drawStage(); drawPre(); drawPreA(); drawTasks(); drawMaid(); drawTabs(); legend(); ufig(); bgDirty=true; changed(); altU(); lu(); gu(); });
 })();
 </script>
-<script src="corepic.js?v=13"></script>
+<script src="corepic.js?v=14"></script>
 <script src="pic-press-wind.js?v=2"></script>
 </body>
 </html>

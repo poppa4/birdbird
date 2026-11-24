@@ -36,7 +36,7 @@
       g.push(`<rect x="${X0+2}" y="${y1}" width="${CW-4}" height="${Math.max(2,y2-y1)}" rx="5" fill="${col[l.name]}" fill-opacity="${op}"/>`); });
     // freezing level, ceiling
     if(d.frz!=null){ const yy=y(d.frz,H0); g.push(`<line x1="${X0}" x2="${X0+CW}" y1="${yy}" y2="${yy}" stroke="#1D63B8" stroke-width="1.6" stroke-dasharray="5 3"/>`); lab.push([yy,'#1D63B8','0 °C '+alt(d.frz)]); }
-    if(d.ceil!=null){ const yy=y(d.ceil,H0); g.push(`<line x1="${X0}" x2="${X0+CW}" y1="${yy}" y2="${yy}" stroke="#9A1E68" stroke-width="1.8"/>`); lab.push([yy,'#9A1E68',L({en:'Ceiling',no:'Skytak'})+' '+alt(d.ceil)]); }
+    if(d.ceil!=null){ const yy=y(d.ceil,H0); g.push(`<line x1="${X0}" x2="${X0+CW}" y1="${yy}" y2="${yy}" stroke="#1F5A8F" stroke-width="1.8"/>`); lab.push([yy,'#1F5A8F',L({en:'Ceiling',no:'Skytak'})+' '+alt(d.ceil)]); }
     // ground
     const yg=y(sfc,H0); g.push(`<rect x="${X0}" y="${yg}" width="${CW}" height="${Math.max(3,H0-yg)}" fill="#B9A27A"/>`); lab.push([Math.min(H0-4,yg),'#7A6640',L({en:'Ground',no:'Bakken'})+' '+fmt(sfc)+' ft']);
     // labels on the right, pushed apart so they never overlap (bottom up)

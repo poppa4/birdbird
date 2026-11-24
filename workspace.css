@@ -525,7 +525,7 @@ html.ws-deskmode .nsearch,html.ws-deskmode .ws-status{display:none}
 
 /* Flight Intelligence, always one click away in My workspace */
 .ws-rail a[href="#/fi"]{color:var(--accent);font-weight:600}
-.ws-rail a[href="#/fi"]::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(181,43,126,.15);align-self:center;flex:none;margin-right:-2px;order:-1}
+.ws-rail a[href="#/fi"]::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(42,107,163,.15);align-self:center;flex:none;margin-right:-2px;order:-1}
 .ws-rail a[href="#/fi"]{justify-content:flex-start;gap:10px}
 
 .dk-add.dk-fi{color:var(--accent);font-weight:600}
@@ -533,7 +533,7 @@ html.ws-deskmode .nsearch,html.ws-deskmode .ws-status{display:none}
 /* ---------- Flight Intelligence panel (workspace.js ensureDock) ---------- */
 .ws-dock{--dock:380px;position:fixed;z-index:50;display:flex;flex-direction:column;background:var(--sheet);color:var(--ink)}
 .ws-dock .hd{display:flex;align-items:center;gap:9px;padding:12px 14px;border-bottom:1px solid var(--rule)}
-.ws-dock .hd i,.ws-dock .strip i{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(181,43,126,.16);flex:none}
+.ws-dock .hd i,.ws-dock .strip i{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(42,107,163,.16);flex:none}
 .ws-dock .hd b{font-size:15px;font-weight:650}
 .ws-dock .hd .sp{flex:1}
 .ws-dock .hd .dk-ib{width:30px;height:30px;border:0;background:none;border-radius:var(--radius);font-size:20px;line-height:1;color:var(--ink-2);cursor:pointer}

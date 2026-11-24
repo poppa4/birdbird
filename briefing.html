@@ -16,7 +16,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="lab.css?v=15">
-<link rel="stylesheet" href="site.css?v=37">
+<link rel="stylesheet" href="site.css?v=38">
 <link rel="stylesheet" href="train.css?v=4">
 <style>
 .bgrid{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:24px;align-items:start}
@@ -60,15 +60,15 @@
 .sh-bar .btns{display:flex;gap:10px;align-items:center;margin:0}
 .sheets{display:flex;justify-content:center;background:#DDE3E1;border-radius:4px;padding:22px 12px;overflow-x:auto}
 /* the sheet: an A4 page */
-.bs{--pm:#1D4E9E;--pf:#9A1E68;--bo:#0B2545;--th:#B7791F;--thw:#FBF3E4;width:794px;min-height:1123px;flex:none;background:#fff;color:#13202A;box-shadow:0 2px 6px rgba(19,32,42,.15),0 22px 40px -26px rgba(19,32,42,.5);display:flex;flex-direction:column;font-family:var(--f-body)}
+.bs{--pm:#1D4E9E;--pf:#1F5A8F;--bo:#0B2545;--th:#B7791F;--thw:#FBF3E4;width:794px;min-height:1123px;flex:none;background:#fff;color:#13202A;box-shadow:0 2px 6px rgba(19,32,42,.15),0 22px 40px -26px rgba(19,32,42,.5);display:flex;flex-direction:column;font-family:var(--f-body)}
 .bs[hidden]{display:none}
 .bs-hd{background:var(--bo);color:#fff;padding:18px 28px 14px;display:grid;grid-template-columns:1fr auto;gap:6px 20px;align-items:end;position:relative}
 .bs-hd::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(90deg,var(--pm) 0 50%,var(--pf) 50% 100%)}
 .bs-brand{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:#A9C2E6}
 .bs .bs-hd h3{color:#fff;grid-column:1;margin:2px 0 0;font-family:var(--f-display);font-stretch:80%;font-weight:800;font-size:36px;line-height:1;letter-spacing:.01em}
-.bs-hd h3 em{font-style:normal;color:#F2A7D0}
+.bs-hd h3 em{font-style:normal;color:#A9CCEF}
 .bs-crit{grid-column:2;grid-row:1/3;display:grid;grid-template-columns:auto auto;gap:3px 12px;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#D7E1E6;text-align:right}
-.bs-crit span::before{content:"■ ";color:#F2A7D0}
+.bs-crit span::before{content:"■ ";color:#A9CCEF}
 .bs-when{grid-column:1/-1;margin:6px 0 0;font-size:12.5px;color:#D7E1E6}
 .bs-when b{color:#fff}
 .bs-body{flex:1;padding:16px 28px 12px;display:flex;flex-direction:column;gap:9px}
@@ -102,7 +102,7 @@
 .bs-atm{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0}
 .bs-atm div{position:relative;padding:6px 14px 6px 24px;background:#F5F7F5;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%,14px 50%)}
 .bs-atm div:first-child{padding-left:14px;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%)}
-.bs-atm div:nth-child(1){background:#EEF3FA}.bs-atm div:nth-child(2){background:#E7EDF5}.bs-atm div:nth-child(3){background:#F6EDF2}
+.bs-atm div:nth-child(1){background:#EEF3FA}.bs-atm div:nth-child(2){background:#E7EDF5}.bs-atm div:nth-child(3){background:#EAF1F8}
 .bs-atm b{display:block;font-family:var(--f-display);font-stretch:85%;font-size:20px;line-height:1.1;color:var(--bo)}
 .bs-atm b u{text-decoration:none;color:var(--pf)}
 .bs-atm small{display:block;font-size:12px;color:#4C5B66;line-height:1.4}
@@ -161,7 +161,7 @@
 </style>
 </head>
 <body data-title="Briefings">
-<script src="site.js?v=125"></script>
+<script src="site.js?v=126"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -255,7 +255,7 @@
 <script src="lab.js?v=60"></script>
 <script src="ops.js?v=4"></script>
 <script src="brief.js?v=11"></script>
-<script src="chart.js?v=6"></script>
+<script src="chart.js?v=7"></script>
 <script src="ai.js?v=8"></script>
 <script src="store.js?v=4"></script>
 <script>

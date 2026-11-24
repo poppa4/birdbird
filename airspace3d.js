@@ -108,7 +108,7 @@ function mount(cv,o){
     acMat.color.setHex(S.col); ac.userData.halo.material.color.setHex(S.col);
     drop.geometry.setFromPoints([new T.Vector3(S.x,y,0),new T.Vector3(S.x,0,0)]); drop.computeLineDistances(); drop.material.color.setHex(S.col); foot.position.x=S.x; foot.material.color.setHex(S.col);
     scene.remove(acTag); const i=labels.indexOf(acTag); if(i>=0) labels.splice(i,1);
-    const nt=sprite(S.tag,{fs:40,col:'#fff',bg:'rgba(154,30,104,.92)'}); acTag.material=nt.material; acTag.userData=nt.userData; fitSprite(acTag); acTag.position.set(S.x,y+3.4,0); acTag.renderOrder=60; scene.add(acTag);
+    const nt=sprite(S.tag,{fs:40,col:'#fff',bg:'rgba(31,90,143,.92)'}); acTag.material=nt.material; acTag.userData=nt.userData; fitSprite(acTag); acTag.position.set(S.x,y+3.4,0); acTag.renderOrder=60; scene.add(acTag);
     if(S.base==null){ [cloud,cloudTop,cloudBot].forEach(m=>m.visible=false); } else { const b=H(S.base), t=H(S.base+S.thick); [cloud,cloudTop,cloudBot].forEach(m=>m.visible=layersOn.cloud!==false); cloud.scale.y=t-b; cloud.position.y=(b+t)/2; cloudTop.position.y=t; cloudBot.position.y=b; }
     inKey=S.inKey; paint(); }
   const layersOn={};

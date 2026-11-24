@@ -12,7 +12,7 @@
 'use strict';
 const {L,el,nf}=LAB;
 const t2=(en,no)=>({en,no});
-const INK={bg:'#10171D',grid:'#1F2B35',rule:'#2A3742',ink:'#D7E1E6',mute:'#8B99A7',dim:'#5E6D7C',cyan:'#7FCBE8',ice:'#9FE3FF',mag:'#E46BAE',amber:'#F0B440',red:'#EC5A47',green:'#71CC93',violet:'#B9A6F0',white:'#EEF3F7',blue:'#5DA9E9'};
+const INK={bg:'#10171D',grid:'#1F2B35',rule:'#2A3742',ink:'#D7E1E6',mute:'#8B99A7',dim:'#5E6D7C',cyan:'#7FCBE8',ice:'#9FE3FF',mag:'#7FB2E5',amber:'#F0B440',red:'#EC5A47',green:'#71CC93',violet:'#B9A6F0',white:'#EEF3F7',blue:'#5DA9E9'};
 const FONT={mono:'"IBM Plex Mono", ui-monospace, monospace',body:'"Public Sans", system-ui, sans-serif'};
 const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -421,7 +421,7 @@ const KCI=[
   dd:t2('Rule of thumb: CAT becomes likely when the vertical wind shear exceeds about 5–6 kt per 1,000 ft. Change level or route away from the core.','Tommelfingerregel: CAT blir sannsynlig når det vertikale vindskjæret er over omkring 5–6 kt per 1000 ft. Bytt høyde eller rute bort fra kjernen.'),
   ill:()=>KS(`<ellipse cx="120" cy="24" rx="60" ry="16" fill="none" stroke="#B9A6F0"/><ellipse cx="120" cy="24" rx="32" ry="8" fill="none" stroke="#B9A6F0"/><circle cx="120" cy="24" r="4" fill="#B9A6F0"/><rect x="62" y="38" width="44" height="10" fill="rgba(240,180,64,.45)"/>${KT(66,60,'CAT','#F0B440')}${KT(14,20,'cold','#7FCBE8')}`),click:()=>preset('cat','xs'),to:'#hzCv'},
  {k:'scale',t:t2('Turbulence intensity','Turbulensintensitet'),d:t2('Light: slight changes, you can walk. Moderate: definite strain against the belts, still in positive control. Severe: large abrupt changes, momentarily out of control. Extreme: structural damage possible.','Lett: små endringer, du kan gå. Moderat: tydelig trykk mot beltene, fortsatt full kontroll. Kraftig: store brå endringer, kortvarig ute av kontroll. Ekstrem: strukturskade mulig.'),
-  ill:()=>KS(`${['L','M','S','X'].map((s,i)=>`<rect x="${16+i*44}" y="${40-i*8}" width="36" height="${12+i*8}" fill="${['#71CC93','#F0B440','#EC5A47','#9A1E68'][i]}" opacity=".75"/>${KT(34+i*44,60,s,'#c9d2da','middle')}`).join('')}`),click:()=>{ const d=document.querySelector('.kfull'); if(d) d.open=true; },to:'#ref-turb'},
+  ill:()=>KS(`${['L','M','S','X'].map((s,i)=>`<rect x="${16+i*44}" y="${40-i*8}" width="36" height="${12+i*8}" fill="${['#71CC93','#F0B440','#EC5A47','#1F5A8F'][i]}" opacity=".75"/>${KT(34+i*44,60,s,'#c9d2da','middle')}`).join('')}`),click:()=>{ const d=document.querySelector('.kfull'); if(d) d.open=true; },to:'#ref-turb'},
  {k:'wake',dp:true,t:t2('Wake turbulence','Vaketurbulens'),d:t2('Every wing sheds two wingtip vortices that sink and drift with the wind. They are strongest behind a heavy, clean, slow aircraft. Keep the separation and stay above the leader’s path.','Hver vinge kaster av seg to vingetippvirvler som synker og driver med vinden. De er sterkest bak et tungt fly som flyr sakte i ren konfigurasjon. Hold separasjonen og bli over banen til flyet foran.'),
   ill:()=>KS(`<circle cx="70" cy="30" r="12" fill="none" stroke="#7FCBE8" stroke-width="1.5"/><circle cx="130" cy="30" r="12" fill="none" stroke="#7FCBE8" stroke-width="1.5"/>${KA(70,18,62,22,'#7FCBE8')}${KA(130,18,138,22,'#7FCBE8')}${KA(100,30,100,54,'#8B99A7')}${KT(108,52,'sinks','#8B99A7')}`),href:'tunnel.html#wake',hl:t2('See it in the wind tunnel lab','Se det i vindtunnel-labben')}];
 

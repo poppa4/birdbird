@@ -18,7 +18,7 @@
   const MAX_PAGES = 300, MAX_STROKES = 6000, MAX_VERSIONS = 8, VERSION_GAP = 10 * 60e3;
   const PAPERS = ['blank', 'lined', 'grid', 'dots', 'approach'];
   const TEMPLATES = ['approach'];
-  const PENS = ['#1B2430', '#1D4E9E', '#C0322B', '#9A1E68', '#2E7D4F', '#B7791F'];       // black, blue, red, accent, green, amber
+  const PENS = ['#1B2430', '#1D4E9E', '#C0322B', '#1F5A8F', '#2E7D4F', '#B7791F'];       // black, blue, red, accent, green, amber
   const MARKERS = ['#F5D90A', '#7BE07F', '#7CC4FA', '#F7A1D0'];
   const WIDTHS = { p: [9, 16, 28], h: [90, 140, 200], e: [60, 120, 240] };               // units: 0.9, 1.6, 2.8 mm pen
 
@@ -225,7 +225,7 @@
 
   /* ---------- paper and templates: vector primitives in page units ---------- */
   /* -> [{ k:'line', x1, y1, x2, y2, w, c } | { k:'rect', x, y, w, h, c?, f?, lw? } | { k:'text', x, y, t, s, c, b?, m?, al? } | { k:'dots', x0, y0, dx, dy, nx, ny, r, c } | { k:'circle', x, y, r, c, lw }] */
-  const C = { rule: '#C9D3DA', faint: '#E3E8EC', mid: '#9AA8B2', ink: '#13202A', ink2: '#4C5B66', accent: '#9A1E68', wash: '#F4F6F7', margin: '#E8B8CF' };
+  const C = { rule: '#C9D3DA', faint: '#E3E8EC', mid: '#9AA8B2', ink: '#13202A', ink2: '#4C5B66', accent: '#1F5A8F', wash: '#F4F6F7', margin: '#E8B8CF' };
   function paperPrims(paper, h, lang) {
     h = h || PH; const no = lang === 'no', T = (en, nb) => no ? nb : en, out = [];
     const line = (x1, y1, x2, y2, c, w) => out.push({ k: 'line', x1, y1, x2, y2, c: c || C.rule, w: w || 2.2 });

@@ -16,12 +16,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Wind tunnel · NORDAP</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="site.css?v=37">
+<link rel="stylesheet" href="site.css?v=38">
 <style>
 /* Layout: tunnelen er scenen, kontrollpanel til høyre som instrumentpanel; avlesninger og diagrammer under. Bevisst ett mørkt tema (vindtunnel med røyk). */
 :root{
   --bg:#EDF1EE; --panel:#FFFFFF; --panel-2:#F6F8F6; --line:#C6D0D3; --fg:#13202A; --muted:#4C5B66;
-  --smoke:#9A1E68; --amber:#A86A00; --red:#B3261E; --green:#2C7A4B;
+  --smoke:#1F5A8F; --amber:#A86A00; --red:#B3261E; --green:#2C7A4B;
   --f-display:"Archivo","Archivo fb","Arial Narrow",system-ui,sans-serif;
   --f-body:"Public Sans","Public Sans fb",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
@@ -194,7 +194,7 @@ input[type=range]{width:100%;accent-color:var(--smoke);margin:0}
 .gtxt b{display:block;color:var(--fg);font-size:13.5px;margin-bottom:2px}
 #geCv{aspect-ratio:16/9}
 @media (max-width:640px){#geCv{aspect-ratio:1/1}}
-#quiz{--sheet:#fff;--ink:var(--fg);--ink-2:var(--muted);--rule:var(--line);--rule-2:#DCE3E4;--magenta:#9A1E68;--chart-blue:#1E5E9E}
+#quiz{--sheet:#fff;--ink:var(--fg);--ink-2:var(--muted);--rule:var(--line);--rule-2:#DCE3E4;--magenta:#1F5A8F;--chart-blue:#1E5E9E}
 #quiz .quiz{display:flex;flex-direction:column;gap:12px;max-width:820px}
 #quiz .qtop{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--ink-2)}
 #quiz .qbar{height:3px;background:var(--rule-2);overflow:hidden}
@@ -437,7 +437,7 @@ body.depth-instructor .memo h3{font-size:20px}
 .dbgrid div{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:13px;color:var(--muted)}
 .dbgrid b{display:block;color:var(--fg);font-size:13.5px;margin-bottom:2px}
 .kflash{animation:kflash 1.6s ease-out 1}
-@keyframes kflash{0%{box-shadow:0 0 0 0 rgba(154,30,104,.55)}100%{box-shadow:0 0 0 14px rgba(154,30,104,0)}}
+@keyframes kflash{0%{box-shadow:0 0 0 0 rgba(31,90,143,.55)}100%{box-shadow:0 0 0 14px rgba(31,90,143,0)}}
 @media (prefers-reduced-motion:reduce){.kflash{animation:none}}
 /* touch: larger targets for the panel buttons and chart toggles; the overlay buttons on the 3D view stay compact (36px) so they cover less of the model */
 @media (pointer:coarse){.t3b,html .cn-tog,.kc .kgo{min-height:44px}.atl-main input[type=range]{min-height:44px}.atl-main label.tog{min-height:44px}html .lmeta .atl-depth button,html .atl-bar .atl-depth button{min-height:44px}html .lmeta .atl-lim{display:inline-flex;align-items:center;min-height:44px}.atl-main .opts button,.atl-main .btns button,.atl-main .lessons button,.atl-main .stbtn{min-height:44px}.atl-main .sec.adv>summary{padding-top:9px;padding-bottom:9px}.viewport .ovbar .ov-tabs button,.ov-tr .envseg button,.camb{min-height:36px}}
@@ -445,7 +445,7 @@ body.depth-instructor .memo h3{font-size:20px}
 
 </head>
 <body data-title="Wind tunnel">
-<script src="site.js?v=125"></script>
+<script src="site.js?v=126"></script>
 <div class="page">
 <nav class="labnav" aria-label="Virtual Labs"></nav>
 <header class="lhead">
@@ -781,11 +781,11 @@ body.depth-instructor .memo h3{font-size:20px}
 window.addEventListener('error',function(e){ var b=document.getElementById('errbox'); if(!b) return; b.hidden=false; b.textContent='Error: '+(e.message||e)+(e.filename?'\n'+e.filename.split('/').pop()+':'+e.lineno:''); });
 </script>
 <script src="three.min.js?v=128"></script>
-<script src="tunnel3d.js?v=4"></script>
+<script src="tunnel3d.js?v=5"></script>
 <script src="cfd3d.js?v=7"></script>
 <script src="lab.js?v=60"></script>
-<script src="concepts.js?v=10"></script>
-<script src="corepic.js?v=13"></script>
+<script src="concepts.js?v=11"></script>
+<script src="corepic.js?v=14"></script>
 <script src="pic-tunnel.js?v=2"></script>
 <script src="chartnote.js?v=3"></script>
 <script src="physics.js?v=14"></script>

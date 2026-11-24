@@ -101,7 +101,7 @@
     // magenta stripe på begge sider, sveiper opp mot halen
     const stripe = (side) => {
       const vS = side > 0 ? 0.245 : 0.755, sw = 0.018;
-      g.fillStyle = o.stripe || '#9a1e68';
+      g.fillStyle = o.stripe || '#1F5A8F';
       g.beginPath();
       const pts = [];
       for (let i = 0; i <= 80; i++) { const x = 0.9 + (L - 1.6) * i / 80, t = Math.max(0, (x - L * 0.74) / (L * 0.26));
@@ -109,7 +109,7 @@
       pts.forEach(([x, v], i) => { const yy = V(v + sw / 2); i ? g.lineTo(U(x), yy) : g.moveTo(U(x), yy); });
       for (let i = pts.length - 1; i >= 0; i--) { const [x, v] = pts[i], taper = Math.min(1, (x - 0.9) / 2.5); g.lineTo(U(x), V(v - sw / 2 * taper - sw / 2 * (1 - taper))); }
       g.closePath(); g.fill();
-      g.strokeStyle = 'rgba(154,30,104,0.65)'; g.lineWidth = 2; g.beginPath();
+      g.strokeStyle = 'rgba(31,90,143,0.65)'; g.lineWidth = 2; g.beginPath();
       pts.forEach(([x, v], i) => { const yy = V(v - side * 0.0) + (side > 0 ? 1 : -1) * 0; const y2 = V(v - sw * 0.95); i ? g.lineTo(U(x), y2) : g.moveTo(U(x), y2); });
       g.stroke();
     };
@@ -191,7 +191,7 @@
     g.strokeStyle = 'rgba(55,65,75,0.12)'; g.lineWidth = 1;
     for (const x of [0.16, 0.62]) for (const up of [true, false]) { g.beginPath(); g.moveTo(U(x, up), 0); g.lineTo(U(x, up), H); g.stroke(); }
     // magenta tuppbånd mot vingetippen (diskré)
-    for (const sg of [-1, 1]) { g.fillStyle = 'rgba(154,30,104,0.9)'; const y0 = Vv(sg * 0.985), y1 = Vv(sg * 1.0); g.fillRect(0, Math.min(y0, y1), W, Math.abs(y1 - y0)); }
+    for (const sg of [-1, 1]) { g.fillStyle = 'rgba(31,90,143,0.9)'; const y0 = Vv(sg * 0.985), y1 = Vv(sg * 1.0); g.fillRect(0, Math.min(y0, y1), W, Math.abs(y1 - y0)); }
     return tex(THREE, c, false, true);
   };
 
@@ -202,7 +202,7 @@
     g.strokeStyle = 'rgba(55,65,75,0.4)'; g.lineWidth = 1.6;
     for (const u of [0.15, 0.85]) { g.beginPath(); g.moveTo(u * W, 0); g.lineTo(u * W, H * 0.97); g.stroke(); }
     if (o.fin) {
-      g.fillStyle = '#9a1e68';
+      g.fillStyle = '#1F5A8F';
       g.beginPath(); g.moveTo(0, H * 0.62); g.lineTo(W, H * 0.48); g.lineTo(W, H * 0.56); g.lineTo(0, H * 0.70); g.closePath(); g.fill();
     }
     return tex(THREE, c, false, true);

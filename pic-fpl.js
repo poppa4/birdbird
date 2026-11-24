@@ -22,7 +22,7 @@ const FUEL=[ // kg, illustrative short sector, A320-size
  {k:'alt',kg:1300,c:'#B9A3F2',t:{en:'Alternate',no:'Alternativ'},d:{en:'missed approach and on to the alternate',no:'avbrutt innflyging og videre til alternativ'}},
  {k:'frf',kg:1100,c:'#EC5A47',t:{en:'Final reserve',no:'Endelig reserve'},d:{en:'30 min holding at 1 500 ft: land with it',no:'30 min holding på 1 500 ft: land med den'}},
  {k:'extra',kg:300,c:'#71CC93',t:{en:'Extra',no:'Ekstra'},d:{en:'expected delays, weather',no:'forventede forsinkelser, vær'}},
- {k:'disc',kg:200,c:'#E46BAE',t:{en:'Discretionary',no:'Skjønnsmessig'},d:{en:"the commander's choice",no:'fartøysjefens valg'}}];
+ {k:'disc',kg:200,c:'#7FB2E5',t:{en:'Discretionary',no:'Skjønnsmessig'},d:{en:"the commander's choice",no:'fartøysjefens valg'}}];
 
 const steps=[
  {t:{en:'Drag has two parts',no:'Motstand har to deler'},

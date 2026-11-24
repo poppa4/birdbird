@@ -568,10 +568,10 @@ function press(root){
     c.strokeStyle='#DCE3E4'; c.lineWidth=1; c.fillStyle='#4C5B66'; c.font='11px "IBM Plex Mono",monospace'; c.textAlign='right';
     for(let a=0;a<=35000;a+=5000){ c.beginPath(); c.moveTo(l,Y(a)); c.lineTo(r,Y(a)); c.stroke(); c.fillText(a/1000+'k',l-6,Y(a)+4); }
     c.strokeStyle='rgba(179,38,30,.6)'; c.setLineDash([5,4]); c.beginPath(); c.moveTo(l,Y(12500)); c.lineTo(r,Y(12500)); c.stroke(); c.setLineDash([]); c.fillStyle='#B3261E'; c.textAlign='left'; c.fillText('ALT WARN 12,500',l+4,Y(12500)-4);
-    c.strokeStyle='#9A1E68'; c.setLineDash([2,4]); c.beginPath(); c.moveTo(l,Y(P.sel)); c.lineTo(r,Y(P.sel)); c.stroke(); c.setLineDash([]);
+    c.strokeStyle='#1F5A8F'; c.setLineDash([2,4]); c.beginPath(); c.moveTo(l,Y(P.sel)); c.lineTo(r,Y(P.sel)); c.stroke(); c.setLineDash([]);
     const line=(k,col,wd)=>{ if(!H.length) return; c.strokeStyle=col; c.lineWidth=wd; c.beginPath(); H.forEach((p,i)=>{ const x=X(p[0]), y=Y(p[k]); i?c.lineTo(x,y):c.moveTo(x,y); }); c.stroke(); };
     line(1,'#13202A',2.2); line(2,'#1E5E9E',2.6);
-    c.fillStyle='#13202A'; c.textAlign='left'; c.font='12px "Public Sans",sans-serif'; c.fillText('aircraft',l+6,b+20); c.fillStyle='#1E5E9E'; c.fillText('cabin',l+70,b+20); c.fillStyle='#9A1E68'; c.fillText('selected cabin',l+120,b+20);
+    c.fillStyle='#13202A'; c.textAlign='left'; c.font='12px "Public Sans",sans-serif'; c.fillText('aircraft',l+6,b+20); c.fillStyle='#1E5E9E'; c.fillText('cabin',l+70,b+20); c.fillStyle='#1F5A8F'; c.fillText('selected cabin',l+120,b+20);
     c.fillStyle='#4C5B66'; c.textAlign='right'; c.fillText(`time ×30 · ${nf(P.t/60,1)} min`,r-4,t+12); }
   notice(root.querySelector('[data-notice]'),[
     'The controller sets a cabin altitude and a rate; the outflow valve does the work. Before take-off the ACFT ALT scale is set about 500–1,000 ft above the planned cruise altitude.',

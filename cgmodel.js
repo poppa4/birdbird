@@ -15,7 +15,7 @@ const ZG=-4.3, ZCG=-0.4;                         // ground and CG height, m from
 const TSA=11.7;                                  // tail-strike pitch angle on the ground, deg (illustrative)
 const ST={m:64,h:28,ph:'cr',lab:false,td:false};
 const hooks=[]; const changed=()=>hooks.forEach(f=>f());
-const K={ok:'#71CC93',cau:'#F0B440',bad:'#EC5A47',nav:'#1D3A5C',mag:'#E46BAE',magD:'#9A1E68'};
+const K={ok:'#71CC93',cau:'#F0B440',bad:'#EC5A47',nav:'#1D3A5C',mag:'#7FB2E5',magD:'#1F5A8F'};
 const pm=(v,d)=>(v>0.0001?'+':v<-0.0001?'−':'±')+nf(Math.abs(v),d==null?1:d);
 const isInstr=()=>document.body.classList.contains('depth-instructor');
 
@@ -65,9 +65,9 @@ function drawAircraft(g,Q,sc,o){
   g.fillStyle=fg; path(fin); g.closePath(); g.fill(); g.strokeStyle='#365A80'; g.lineWidth=1; g.stroke();
   // magenta swoosh on the fin
   g.save(); path(fin); g.closePath(); g.clip();
-  g.fillStyle='rgba(228,107,174,.9)'; g.beginPath(); { const a=P(12.2,1.9),b=P(15.8,3.9),c=P(18.8,6.2),d=P(19.6,5.6),e=P(16.6,3.3),f=P(13.6,1.9);
+  g.fillStyle='rgba(127,178,229,.9)'; g.beginPath(); { const a=P(12.2,1.9),b=P(15.8,3.9),c=P(18.8,6.2),d=P(19.6,5.6),e=P(16.6,3.3),f=P(13.6,1.9);
     g.moveTo(...a); g.quadraticCurveTo(...b,...c); g.lineTo(...d); g.quadraticCurveTo(...e,...f); g.closePath(); g.fill(); }
-  g.fillStyle='rgba(228,107,174,.28)'; g.beginPath(); { const a=P(14.4,1.9),b=P(17.4,3.4),c=P(19.9,4.7),d=P(19.9,4.1),e=P(17.8,2.8),f=P(15.8,1.9);
+  g.fillStyle='rgba(127,178,229,.28)'; g.beginPath(); { const a=P(14.4,1.9),b=P(17.4,3.4),c=P(19.9,4.7),d=P(19.9,4.1),e=P(17.8,2.8),f=P(15.8,1.9);
     g.moveTo(...a); g.quadraticCurveTo(...b,...c); g.lineTo(...d); g.quadraticCurveTo(...e,...f); g.closePath(); g.fill(); }
   g.restore();
   // rudder hinge line
@@ -122,14 +122,14 @@ function drawAircraft(g,Q,sc,o){
     g.moveTo(...a); g.lineTo(...b); g.lineTo(...c); g.lineTo(...d); g.lineTo(...e); g.lineTo(...f); g.lineTo(...h); g.lineTo(...k); g.closePath(); g.fill(); }
   g.strokeStyle='rgba(16,23,29,.55)'; g.lineWidth=1; g.stroke(); g.strokeStyle=K.nav; g.lineWidth=Math.max(2,0.3*sc); g.beginPath(); g.moveTo(...P(-6.55+E0,ec+er*0.9)); g.lineTo(...P(-6.55+E0,ec-er*0.9)); g.stroke();
   g.fillStyle='#1F2C37'; g.beginPath(); { const a=P(-1.6+E0,ec+er*0.5),b=P(-0.6+E0,ec+0.12),c=P(-0.6+E0,ec-0.12),d=P(-1.6+E0,ec-er*0.5); g.moveTo(...a); g.lineTo(...b); g.lineTo(...c); g.lineTo(...d); g.closePath(); g.fill(); }
-  g.strokeStyle='rgba(228,107,174,.8)'; g.lineWidth=Math.max(1,0.07*sc); g.beginPath(); g.moveTo(...P(-6.2+E0,ec+er*0.95)); g.lineTo(...P(-6.2+E0,ec-er*0.95)); g.stroke();
+  g.strokeStyle='rgba(127,178,229,.8)'; g.lineWidth=Math.max(1,0.07*sc); g.beginPath(); g.moveTo(...P(-6.2+E0,ec+er*0.95)); g.lineTo(...P(-6.2+E0,ec-er*0.95)); g.stroke();
   // horizontal stabiliser (THS) and elevator
   const piv=P(17.6,0.62), th=o.ths||0, el=o.elev||0, sx=sc;
   g.save(); g.translate(piv[0],piv[1]); g.rotate(o.th||0); g.rotate(th*D2R);
   g.fillStyle='#C3CDD6'; g.beginPath(); g.moveTo(-2.7*sx,0); g.quadraticCurveTo(-2.2*sx,-0.30*sx,-0.8*sx,-0.26*sx); g.lineTo(1.25*sx,-0.12*sx); g.lineTo(1.25*sx,0.12*sx); g.lineTo(-0.8*sx,0.22*sx); g.quadraticCurveTo(-2.2*sx,0.26*sx,-2.7*sx,0); g.fill();
   g.strokeStyle='rgba(16,23,29,.6)'; g.lineWidth=1; g.stroke();
   g.translate(1.25*sx,0); g.rotate(-el*D2R);
-  g.fillStyle=o.elevCol||'#E46BAE'; g.beginPath(); g.moveTo(0,-0.13*sx); g.lineTo(1.9*sx,-0.03*sx); g.lineTo(1.9*sx,0.03*sx); g.lineTo(0,0.13*sx); g.closePath(); g.fill();
+  g.fillStyle=o.elevCol||'#7FB2E5'; g.beginPath(); g.moveTo(0,-0.13*sx); g.lineTo(1.9*sx,-0.03*sx); g.lineTo(1.9*sx,0.03*sx); g.lineTo(0,0.13*sx); g.closePath(); g.fill();
   g.restore();
   // landing gear
   if(o.gear){ const wr=0.55;
@@ -243,7 +243,7 @@ function paint(){
     // tail moment arm (CG → THS) below the fuselage
     const ya=pCG[1]+Wpx+(n?8:12);
     if(ph==='cr'&&ya+(n?16:20)<=acH+(n?8:14)){ /* only when it clears the MAC ruler below (not on a narrow phone) */
-      dim(g,pCG[0],pT[0],ya,'rgba(228,107,174,.75)',L({en:'tail moment arm ',no:'halens momentarm '})+nf(17.6-E.h*AC.c,1)+' m',{below:true,size:F(n?9.5:10.5)}); }
+      dim(g,pCG[0],pT[0],ya,'rgba(127,178,229,.75)',L({en:'tail moment arm ',no:'halens momentarm '})+nf(17.6-E.h*AC.c,1)+' m',{below:true,size:F(n?9.5:10.5)}); }
   }
   // callouts on the aircraft
   if(ST.lab&&!n&&showF&&Math.abs(A.th)<4&&!(ph==='to'&&th>3)){ const fs=F(10.5);
@@ -442,7 +442,7 @@ function paintEnv(){ if(!envSt||!envSt.w) return; const g=S.clear(envSt), W=envS
   lbl(g,[L({en:'Allowed',no:'Tillatt'}),L({en:'loading',no:'lasting'})],(ax.X(eI.fwd)+ax.X(eI.aft))/2,ax.Y(inM),K.ok,fz);
   // your loading
   const col=E.sm<=0?K.bad:E.inEnv?K.mag:K.cau, x=ax.X(ST.h), y=ax.Y(ST.m);
-  g.strokeStyle='rgba(228,107,174,.35)'; g.lineWidth=1; g.beginPath(); g.moveTo(x,b.y+b.h); g.lineTo(x,y); g.lineTo(b.x,y); g.stroke();
+  g.strokeStyle='rgba(127,178,229,.35)'; g.lineWidth=1; g.beginPath(); g.moveTo(x,b.y+b.h); g.lineTo(x,y); g.lineTo(b.x,y); g.stroke();
   g.fillStyle=col; g.beginPath(); g.arc(x,y,8,0,7); g.fill(); g.strokeStyle='#0D161E'; g.lineWidth=2; g.stroke();
   envSt.ax=ax; envSt.b=b; }
 function paintLim(){ if(!limSt||!limSt.w) return; const g=S.clear(limSt), W=limSt.w, H=limSt.h, n=W<420, b={x:n?40:46,y:28,w:W-(n?52:62),h:H-(n?62:66)}, det=window.CN&&CN.full('cmLim'), hnP=S.hn*100, fz=n?9.5:10.5;
@@ -508,7 +508,7 @@ function drawTog(){ const p=el('cmPlay'); if(p) p.textContent='▶ '+(ST.ph==='c
    `<label class="chk"><input type="checkbox" data-a="td" ${ST.td?'checked':''} ${ST.ph!=='cr'?'disabled':''}> <span>${L({en:'Show thrust and drag (cruise)',no:'Vis skyvekraft og motstand (marsj)'})}</span></label>`; }
 
 function legend(){ const b=el('cmLeg'); if(!b) return;
-  const it=[['#EEF3F7','line',{en:'Weight at the CG',no:'Vekt i CG'}],['#7FCBE8','line',{en:'Wing lift at the CP',no:'Vingeløft i CP'}],['#E46BAE','line',{en:'Tail force (drawn ×5)',no:'Halekraft (tegnet ×5)'}],['#F08A5D','dash',{en:'NP, neutral point',no:'NP, nøytralpunkt'}],['#71CC93','band',{en:'CG limits at this mass',no:'CG-grenser ved denne massen'}],['#FFD58A','dot',{en:'Lit window = passengers',no:'Lyst vindu = passasjerer'}]];
+  const it=[['#EEF3F7','line',{en:'Weight at the CG',no:'Vekt i CG'}],['#7FCBE8','line',{en:'Wing lift at the CP',no:'Vingeløft i CP'}],['#7FB2E5','line',{en:'Tail force (drawn ×5)',no:'Halekraft (tegnet ×5)'}],['#F08A5D','dash',{en:'NP, neutral point',no:'NP, nøytralpunkt'}],['#71CC93','band',{en:'CG limits at this mass',no:'CG-grenser ved denne massen'}],['#FFD58A','dot',{en:'Lit window = passengers',no:'Lyst vindu = passasjerer'}]];
   b.innerHTML=it.map(([c,k,t])=>`<span><i class="${k}" style="--c:${c}"></i>${L(t)}</span>`).join('');
   el('cmHint').innerHTML=(window.CN&&CN.full('cmMac')?'<b>'+L({en:'CP',no:'CP'})+'</b> '+L({en:'(centre of pressure): where the wing’s lift acts.',no:'(trykksenter): der vingeløftet virker.'})+' <b>NP</b> '+L({en:'(neutral point): with the CG here the aircraft has no stability left.',no:'(nøytralpunkt): med CG her har flyet ingen stabilitet igjen.'})+' <b>'+L({en:'Lift arm',no:'Løftearm'})+'</b> '+L({en:'(CG to CP): lift × arm is the pitch moment the tail must balance. ',no:'(CG til CP): løft × arm er pitchmomentet halen må balansere. '}):'')+L({en:'<b>What you are seeing:</b> the aircraft with its three vertical forces, and below it the wing chord (MAC) blown up so you can see where the CG sits between its limits. The distance from the CG to the NP is the static margin.',no:'<b>Det du ser:</b> flyet med de tre vertikale kreftene, og under det vingekorden (MAC) forstørret, så du ser hvor CG ligger mellom grensene. Avstanden fra CG til NP er den statiske marginen.'}); }
 function init(){
@@ -570,9 +570,9 @@ function understand(){
   <linearGradient id="unB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0F1C29"/><stop offset="1" stop-color="#132433"/></linearGradient></defs>
   <rect width="640" height="330" rx="8" fill="url(#unB)"/>
   <path d="M548 172 L586 104 L606 104 L612 170 Z" fill="#1F3B5E" stroke="#365A80"/>
-  <path d="M566 170 Q590 140 604 112 L608 116 Q596 146 580 170 Z" fill="#E46BAE" opacity=".9"/>
+  <path d="M566 170 Q590 140 604 112 L608 116 Q596 146 580 170 Z" fill="#7FB2E5" opacity=".9"/>
   <path d="M56 196 C58 178 76 168 104 166 L520 166 C556 168 590 176 614 186 L614 192 C590 198 556 206 520 212 L104 214 C74 214 58 208 56 196 Z" fill="url(#unF)" stroke="#5B6B78"/>
-  <path d="M60 204 C200 203 420 198 612 190" stroke="#E46BAE" stroke-width="2" fill="none"/>
+  <path d="M60 204 C200 203 420 198 612 190" stroke="#7FB2E5" stroke-width="2" fill="none"/>
   <g fill="#FFD58A">${Array.from({length:22},(_,i)=>`<circle cx="${130+i*17}" cy="182" r="2.2"/>`).join('')}</g>
   <path d="M72 186 L84 178 L98 178 L97 187 Z" fill="#1A2632"/>
   <path d="M226 214 L318 200 L352 200 L282 218 Z" fill="#B4C0CA" stroke="#5B6B78"/>
@@ -580,14 +580,14 @@ function understand(){
   <line x1="${cx}" y1="190" x2="${cx}" y2="272" stroke="#EEF3F7" stroke-width="4"/>${ah(cx,284,'down','#EEF3F7')}
   <circle cx="${cx}" cy="190" r="8" fill="#0D161E" stroke="#EEF3F7" stroke-width="2"/><path d="M${cx} 190 L${cx} 182 A8 8 0 0 1 ${cx+8} 190 Z M${cx} 190 L${cx} 198 A8 8 0 0 1 ${cx-8} 190 Z" fill="#EEF3F7"/>
   <line x1="${cp}" y1="206" x2="${cp}" y2="98" stroke="#7FCBE8" stroke-width="4"/>${ah(cp,86,'up','#7FCBE8')}
-  <line x1="${tx}" y1="186" x2="${tx}" y2="222" stroke="#E46BAE" stroke-width="4"/>${ah(tx,234,'down','#E46BAE')}
+  <line x1="${tx}" y1="186" x2="${tx}" y2="222" stroke="#7FB2E5" stroke-width="4"/>${ah(tx,234,'down','#7FB2E5')}
   <text x="${cp+10}" y="96" fill="#7FCBE8" ${ff}>${tL} · CP</text>
   <text x="${cx-12}" y="282" fill="#EEF3F7" ${ff} text-anchor="end">${tW} · CG</text>
-  <text x="${tx-10}" y="246" fill="#E46BAE" ${ff} text-anchor="end">${tT} · T</text>
+  <text x="${tx-10}" y="246" fill="#7FB2E5" ${ff} text-anchor="end">${tT} · T</text>
   <g stroke="#7FCBE8" stroke-width="1.3"><line x1="${cx}" y1="130" x2="${cp}" y2="130"/><line x1="${cx}" y1="124" x2="${cx}" y2="136"/><line x1="${cp}" y1="124" x2="${cp}" y2="136"/></g>
   <text x="${(cx+cp)/2}" y="121" fill="#7FCBE8" ${fm} font-size="14" text-anchor="middle">a</text>
-  <g stroke="#E46BAE" stroke-width="1.3"><line x1="${cx}" y1="300" x2="${tx}" y2="300" stroke-dasharray="4 3"/><line x1="${cx}" y1="294" x2="${cx}" y2="306"/><line x1="${tx}" y1="294" x2="${tx}" y2="306"/></g>
-  <text x="${(cx+tx)/2}" y="293" fill="#E46BAE" ${fm} font-size="13" text-anchor="middle">${L({en:'tail arm',no:'halearm'})} l<tspan font-size="10" dy="3">T</tspan></text>
+  <g stroke="#7FB2E5" stroke-width="1.3"><line x1="${cx}" y1="300" x2="${tx}" y2="300" stroke-dasharray="4 3"/><line x1="${cx}" y1="294" x2="${cx}" y2="306"/><line x1="${tx}" y1="294" x2="${tx}" y2="306"/></g>
+  <text x="${(cx+tx)/2}" y="293" fill="#7FB2E5" ${fm} font-size="13" text-anchor="middle">${L({en:'tail arm',no:'halearm'})} l<tspan font-size="10" dy="3">T</tspan></text>
   <rect x="18" y="16" width="${LAB.lang==='en'?262:252}" height="56" rx="5" fill="rgba(9,15,21,.7)" stroke="#26343F"/>
   <text x="30" y="38" fill="#D7E1E6" ${fm} font-size="13">${L({en:'up = down',no:'opp = ned'})}:  L = W + T</text>
   <text x="30" y="60" fill="#D7E1E6" ${fm} font-size="13">${L({en:'pitch, about CG',no:'pitch, om CG'})}:  L·a = T·l<tspan font-size="10" dy="3">T</tspan></text>

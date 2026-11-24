@@ -56,9 +56,9 @@ function draw(g,W,H,p,tm){
   // A and B
   const pt=(q,l)=>{ g.fillStyle='#fff'; g.beginPath(); g.arc(q[0],q[1],5,0,7); g.fill(); txt(g,l,q[0],q[1]-12,{mono:1,size:12*fs,col:'#fff',al:'center',w:600}); };
   // planned track
-  g.strokeStyle='rgba(228,107,174,.8)'; g.lineWidth=2.2; g.beginPath(); g.moveTo(A[0],A[1]); g.lineTo(B[0],B[1]); g.stroke();
-  if(sm) pill(g,L({en:'track 090°',no:'spor 090°'}),A[0],A[1]+22,{mono:1,size:10.5*fs,col:'#F29AC8',a:tri});
-  else pill(g,L({en:'track 090°',no:'spor 090°'}),B[0]+14,A[1],{mono:1,size:10.5*fs,col:'#F29AC8',a:tri});
+  g.strokeStyle='rgba(127,178,229,.8)'; g.lineWidth=2.2; g.beginPath(); g.moveTo(A[0],A[1]); g.lineTo(B[0],B[1]); g.stroke();
+  if(sm) pill(g,L({en:'track 090°',no:'spor 090°'}),A[0],A[1]+22,{mono:1,size:10.5*fs,col:'#9CC6EE',a:tri});
+  else pill(g,L({en:'track 090°',no:'spor 090°'}),B[0]+14,A[1],{mono:1,size:10.5*fs,col:'#9CC6EE',a:tri});
   pt(A,'A'); pt(B,'B');
   if(tri>0.01){ g.save(); g.globalAlpha=tri;
     // step 1: drifting path without correction (track = heading + drift to the right)
@@ -79,7 +79,7 @@ function draw(g,W,H,p,tm){
       const h=[o[0]+TAS*Math.sin(HDG*d2r)*S, o[1]-TAS*Math.cos(HDG*d2r)*S], w=[h[0]+wx*S, h[1]+wy*S];
       txt(g,L({en:'TRIANGLE OF VELOCITIES',no:'HASTIGHETSTREKANTEN'}),o[0],h[1]-34,{mono:1,size:10*fs,col:'#AEB8C1'});
       // soft fill of the triangle
-      g.fillStyle='rgba(228,107,174,.07)'; g.beginPath(); g.moveTo(o[0],o[1]); g.lineTo(h[0],h[1]); g.lineTo(w[0],w[1]); g.closePath(); g.fill();
+      g.fillStyle='rgba(127,178,229,.07)'; g.beginPath(); g.moveTo(o[0],o[1]); g.lineTo(h[0],h[1]); g.lineTo(w[0],w[1]); g.closePath(); g.fill();
       arrow(g,o[0],o[1],h[0],h[1],'#fff',{lw:3,head:12}); arrow(g,h[0],h[1],w[0],w[1],C.blue,{lw:3,head:12}); arrow(g,o[0],o[1],w[0],w[1],C.mag,{lw:3.4,head:13});
       // WCA arc at the origin
       const aH=Math.atan2(h[1]-o[1],h[0]-o[0]), aT=Math.atan2(w[1]-o[1],w[0]-o[0]), ar=Math.min(W*.12,90);
@@ -87,7 +87,7 @@ function draw(g,W,H,p,tm){
       txt(g,`WCA ${nf(WCA,0)}°`,o[0]+ar+6,o[1]-ar*Math.sin((aT-aH)/2)*.2-4,{mono:1,size:10.5*fs,col:C.amber});
       pill(g,`HDG/TAS ${String(Math.round(HDG)).padStart(3,'0')}°/${TAS} kt`,(o[0]+h[0])/2,(o[1]+h[1])/2-20,{mono:1,size:10*fs,col:'#fff',al:'center'});
       pill(g,`W/V ${String(WD).padStart(3,'0')}°/${WS} kt`,Math.max(h[0],w[0])+10,(h[1]+w[1])/2,{mono:1,size:10*fs,col:'#9FD4F2',fit:W});
-      pill(g,`TR/GS 090°/${nf(GS,0)} kt`,(o[0]+w[0])/2,o[1]+18,{mono:1,size:10*fs,col:'#F29AC8',al:'center'});
+      pill(g,`TR/GS 090°/${nf(GS,0)} kt`,(o[0]+w[0])/2,o[1]+18,{mono:1,size:10*fs,col:'#9CC6EE',al:'center'});
       if(!sm) txt(g,L({en:'air + wind = ground',no:'luft + vind = bakke'}),o[0],o[1]+44,{size:11*fs,col:'#8E99A4'});
       g.globalAlpha=tri; }
     // step 4: numbers card

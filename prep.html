@@ -16,7 +16,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="lab.css?v=15">
-<link rel="stylesheet" href="site.css?v=37">
+<link rel="stylesheet" href="site.css?v=38">
 <link rel="stylesheet" href="train.css?v=4">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
@@ -351,7 +351,7 @@ body:not(.nofab) #askbar{display:none}
 </style>
 </head>
 <body data-title="Briefing pack">
-<script src="site.js?v=125"></script>
+<script src="site.js?v=126"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -831,7 +831,7 @@ function xsRender(){
   const XS=v=> zoom? (v<=xi? L0+v/xi*W*0.6 : L0+W*0.6+(v-xi)/(total-xi)*W*0.4) : L0+v/total*W, YS=a=>T0+H-(Math.max(0,a)/ymax)*H;
   const step=ymax>12000?2000:1000; for(let a=0;a<=ymax;a+=step){ add('line',{x1:L0,y1:YS(a),x2:1000-R0,y2:YS(a),stroke:'#EEF1EF'}); tx(a>=10000&&step===2000?'FL'+a/100:String(a),L0-6,YS(a)+4,{'text-anchor':'end','font-size':10,fill:'#7D8B95'}); }
   const tick=(d,lab)=>{ add('line',{x1:XS(d),y1:T0+H,x2:XS(d),y2:T0+H+5,stroke:'#7D8B95'}); tx(lab,XS(d),T0+H+18,{'text-anchor':'middle','font-size':10,fill:'#7D8B95'}); };
-  if(zoom){ const d1s=xi>60?20:xi>25?10:5; for(let d=0;d<=xi-d1s*0.4;d+=d1s) tick(d,d+' NM'); tick(xi,Math.round(xi)+' NM'); const r=total-xi, d2s=r>12?5:2; for(let d=d2s;d<=r+0.01;d+=d2s) tick(xi+d,'+'+d); tx(L({en:'approach expanded',no:'innflyging forstørret'}),XS(xi)+6,T0+H+32,{'font-size':9.5,fill:'#9A1E68'}); add('line',{x1:XS(xi),y1:T0,x2:XS(xi),y2:T0+H,stroke:'#9A1E68','stroke-dasharray':'2 4',opacity:.4}); }
+  if(zoom){ const d1s=xi>60?20:xi>25?10:5; for(let d=0;d<=xi-d1s*0.4;d+=d1s) tick(d,d+' NM'); tick(xi,Math.round(xi)+' NM'); const r=total-xi, d2s=r>12?5:2; for(let d=d2s;d<=r+0.01;d+=d2s) tick(xi+d,'+'+d); tx(L({en:'approach expanded',no:'innflyging forstørret'}),XS(xi)+6,T0+H+32,{'font-size':9.5,fill:'#1F5A8F'}); add('line',{x1:XS(xi),y1:T0,x2:XS(xi),y2:T0+H,stroke:'#1F5A8F','stroke-dasharray':'2 4',opacity:.4}); }
   else { const dst=total>150?50:total>60?20:total>25?10:5; for(let d=0;d<=total+0.01;d+=dst) tick(d,d+' NM'); }
   const ter=P2.filter(p=>pnum(p.ter)!=null); if(ter.length>1) add('path',{d:'M'+XS(ter[0].x)+' '+YS(0)+ter.map(p=>' L'+XS(p.x)+' '+YS(pnum(p.ter))).join('')+' L'+XS(ter[ter.length-1].x)+' '+YS(0)+' Z',fill:'#EDE6D6',stroke:'#B08A5A'});
   add('line',{x1:L0,y1:YS(0),x2:1000-R0,y2:YS(0),stroke:'#13202A'});
@@ -843,15 +843,15 @@ function xsRender(){
     if(p.t==='missed'){ const s0=lastDA||prev; if(s0) dMiss+=`M${XS(s0.x)} ${YS(s0.a)} L${x} ${y} `; prev=p; return; }
     if(p.t==='alt'&&prev){ dMiss+=`M${XS(prev.x)} ${YS(prev.a)} L${x} ${y} `; prev=p; return; }
     d1+=(d1?' L':'M')+x+' '+y; if(p.t==='da') lastDA=p; prev=p; });
-  if(d1) add('path',{d:d1,fill:'none',stroke:'#9A1E68','stroke-width':3,'stroke-linejoin':'round','stroke-linecap':'round'});
-  if(dMiss) add('path',{d:dMiss,fill:'none',stroke:'#9A1E68','stroke-width':2.2,'stroke-dasharray':'7 5'});
+  if(d1) add('path',{d:d1,fill:'none',stroke:'#1F5A8F','stroke-width':3,'stroke-linejoin':'round','stroke-linecap':'round'});
+  if(dMiss) add('path',{d:dMiss,fill:'none',stroke:'#1F5A8F','stroke-width':2.2,'stroke-dasharray':'7 5'});
   let lastLx=-99, lv=0;
   P2.forEach(p=>{ const x=XS(p.x), y=YS(p.a);
     if(p.t==='rwy') add('rect',{x:x-14,y:y-2,width:28,height:4,fill:'#13202A'});
     else if(p.t==='faf') add('path',{d:`M${x} ${y-7} L${x+7} ${y} L${x} ${y+7} L${x-7} ${y} Z`,fill:'#13202A'});
     else if(p.t==='hold') add('ellipse',{cx:x+16,cy:y-14,rx:18,ry:7,fill:'none',stroke:'#13202A','stroke-width':1.4});
     else if(p.t==='da') add('line',{x1:x-12,y1:y,x2:x+12,y2:y,stroke:'#B3261E','stroke-width':2});
-    else if(p.t==='toc'||p.t==='tod') add('circle',{cx:x,cy:y,r:3.5,fill:'#fff',stroke:'#9A1E68','stroke-width':1.6});
+    else if(p.t==='toc'||p.t==='tod') add('circle',{cx:x,cy:y,r:3.5,fill:'#fff',stroke:'#1F5A8F','stroke-width':1.6});
     else add('path',{d:`M${x} ${y-6} L${x+5.5} ${y+4} L${x-5.5} ${y+4} Z`,fill:'#fff',stroke:'#13202A','stroke-width':1.5});
     lv=(x-lastLx<70)?(lv+1)%3:0; lastLx=x;
     const endRwy=p.t==='rwy'&&p.x>0;
@@ -951,7 +951,7 @@ function drawLoad(E,TM,cg,mt,LM,lcg){ const box=el('mbLoad'); if(!box) return; c
   if(E&&TM){ const fw=envAt(E.fwd,TM), af=envAt(E.aft,TM); h+=`<rect x="${X(fw)}" y="${cy-24}" width="${X(af)-X(fw)}" height="48" fill="rgba(46,125,50,.12)" stroke="#2E7D32" stroke-dasharray="4 3"/><text x="${X(fw)}" y="${cy+36}" font-family="IBM Plex Mono, monospace" font-size="10" fill="#2E7D32" text-anchor="end">${fw.toFixed(3)} </text><text x="${X(af)}" y="${cy+36}" font-family="IBM Plex Mono, monospace" font-size="10" fill="#2E7D32" text-anchor="start"> ${af.toFixed(3)}</text>`; }
   if(cg!=null){ const ok=!E||(cg>=envAt(E.fwd,TM)-1e-4&&cg<=envAt(E.aft,TM)+1e-4); const c=ok?'#13202A':'#B3261E';
     h+=`<g><circle cx="${X(cg)}" cy="${cy}" r="11" fill="#fff" stroke="${c}" stroke-width="2"/><path d="M${X(cg)} ${cy-11} A11 11 0 0 1 ${X(cg)+11} ${cy} L${X(cg)} ${cy} Z M${X(cg)} ${cy+11} A11 11 0 0 1 ${X(cg)-11} ${cy} L${X(cg)} ${cy} Z" fill="${c}"/></g><text x="${X(cg)}" y="${cy-30}" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="700" font-size="12" fill="${c}">CG ${cg.toFixed(3)} m${ok?'':' ⚠︎'}</text>`; }
-  if(lcg!=null&&Math.abs(lcg-(cg||0))>0.002){ h+=`<circle cx="${X(lcg)}" cy="${cy}" r="5" fill="none" stroke="#9A1E68" stroke-width="1.6"/><text x="${X(lcg)}" y="${cy+22}" text-anchor="middle" font-family="Caveat, cursive" font-size="14" fill="#9A1E68">${L({en:'landing',no:'landing'})}</text>`; }
+  if(lcg!=null&&Math.abs(lcg-(cg||0))>0.002){ h+=`<circle cx="${X(lcg)}" cy="${cy}" r="5" fill="none" stroke="#1F5A8F" stroke-width="1.6"/><text x="${X(lcg)}" y="${cy+22}" text-anchor="middle" font-family="Caveat, cursive" font-size="14" fill="#1F5A8F">${L({en:'landing',no:'landing'})}</text>`; }
   h+=`<text x="12" y="232" font-family="IBM Plex Mono, monospace" font-size="10" fill="#9AA6AC">${L({en:'nose ← arm (m) → tail · not to scale',no:'nese ← arm (m) → hale · ikke i skala'})}</text>`;
   sv.innerHTML=h;
   // farter for denne massen (DA42 NG/VI, AFM)
@@ -972,8 +972,8 @@ function envChart(E,pts,mt){ const svg=el('mbChart'); if(!E){ svg.innerHTML=''; 
   const poly=E.fwd.map(p=>X(p[1])+','+Y(p[0])).concat(E.aft.slice().reverse().map(p=>X(p[1])+','+Y(p[0])));
   s+=`<polygon points="${poly.join(' ')}" fill="#E2F1E7" stroke="#2C7A4B" stroke-width="1.6"/>`;
   if(mt) s+=`<line x1="${l}" x2="${W-r}" y1="${Y(mt)}" y2="${Y(mt)}" stroke="#B3261E" stroke-dasharray="6 4"/><text x="${W-r-4}" y="${Y(mt)-4}" font-size="10" text-anchor="end" fill="#B3261E" font-family="IBM Plex Mono,monospace">MTOM ${mt}</text>`;
-  if(pts.length>1) s+=`<polyline points="${pts.map(p=>X(p.a)+','+Y(p.m)).join(' ')}" fill="none" stroke="#9A1E68" stroke-width="2"/>`;
-  pts.forEach(p=>{ s+=`<circle cx="${X(p.a)}" cy="${Y(p.m)}" r="5" fill="${p.ok?'#9A1E68':'#B3261E'}"/><text x="${X(p.a)+8}" y="${Y(p.m)+4}" font-size="11" font-weight="600" fill="#13202A" font-family="IBM Plex Mono,monospace">${p.n}</text>`; });
+  if(pts.length>1) s+=`<polyline points="${pts.map(p=>X(p.a)+','+Y(p.m)).join(' ')}" fill="none" stroke="#1F5A8F" stroke-width="2"/>`;
+  pts.forEach(p=>{ s+=`<circle cx="${X(p.a)}" cy="${Y(p.m)}" r="5" fill="${p.ok?'#1F5A8F':'#B3261E'}"/><text x="${X(p.a)+8}" y="${Y(p.m)+4}" font-size="11" font-weight="600" fill="#13202A" font-family="IBM Plex Mono,monospace">${p.n}</text>`; });
   s+=`<text x="${(l+W-r)/2}" y="${H-6}" font-size="10" text-anchor="middle" fill="#4C5B66" font-family="IBM Plex Mono,monospace">CG (m aft of datum)</text><text x="12" y="${t+4}" font-size="10" fill="#4C5B66" font-family="IBM Plex Mono,monospace">kg</text>`;
   svg.innerHTML=s; }
 
@@ -1053,7 +1053,7 @@ fin.onchange=async()=>{ const files=[...fin.files]; fin.value=''; const btn=docu
   catch(e){ alertNote(L({en:'Could not read that file.',no:'Klarte ikke å lese filen.'})); }
   finally{ btn.disabled=false; btn.textContent=t0; } };
 function alertNote(t){ el('saved').textContent=t; }
-const COLS=['#B3261E','#1E5E9E','#9A1E68','#13202A'];
+const COLS=['#B3261E','#1E5E9E','#1F5A8F','#13202A'];
 function renderAtts(sec){ const box=document.querySelector(`.atts[data-sec="${sec}"]`); if(!box) return; const list=(P.att||[]).filter(a=>a.sec===sec);
   box.innerHTML=list.map(a=>`<figure class="att" data-id="${a.id}"><figcaption><b>${esc(a.name)}</b><span class="noprint"><button data-act="edit">✎︎ ${L({en:'Draw lines',no:'Tegn linjer'})}</button><button data-act="ai" data-ai-only>${L({en:'Ask the instructor',no:'Spør instruktøren'})}</button><button data-act="del">${L({en:'Remove',no:'Fjern'})}</button></span></figcaption>
     <div class="atttools noprint" hidden><button data-t="line" class="on">${L({en:'Line',no:'Linje'})}</button><button data-t="pen">${L({en:'Pen',no:'Penn'})}</button><button data-t="text">${L({en:'Text',no:'Tekst'})}</button><input data-lab placeholder="${L({en:'Text to place, e.g. 640 m',no:'Tekst å plassere, f.eks. 640 m'})}">${COLS.map((c,i)=>`<button class="dot ${i?'':'on'}" data-c="${c}" style="background:${c}" aria-label="${c}"></button>`).join('')}<label class="chk"><input type="checkbox" data-snap checked> ${L({en:'Straight (snap ⟂)',no:'Rett (lås ⟂)'})}</label><button data-u>${L({en:'Undo',no:'Angre'})}</button><button data-x>${L({en:'Clear',no:'Tøm'})}</button><button data-done>${L({en:'Done',no:'Ferdig'})}</button></div>
@@ -1539,7 +1539,7 @@ function drawFlow(){ const box=el('flowbar'); if(!box||!P||!window.FLIGHT) retur
   const rt=r=>r.title||r.pts.filter(x=>x.t==='rwy').map(x=>x.n).filter((v,i,a)=>i===0||i===a.length-1).join(' – ')||L({en:'Route',no:'Rute'});
   let left;
   if(R){ const T=FLIGHT.thumb(R,96,56,7);
-    const svg=T?`<svg viewBox="0 0 96 56" aria-hidden="true"><path d="${T.dA}" fill="none" stroke="#5B6A72" stroke-width="1.2" stroke-dasharray="3 3"/><path d="${T.d}" fill="none" stroke="#9A1E68" stroke-width="2" stroke-linejoin="round"/><circle cx="${T.a[0]}" cy="${T.a[1]}" r="2.6" fill="#13202A"/><circle cx="${T.b[0]}" cy="${T.b[1]}" r="2.6" fill="#fff" stroke="#13202A" stroke-width="1.4"/></svg>`:'';
+    const svg=T?`<svg viewBox="0 0 96 56" aria-hidden="true"><path d="${T.dA}" fill="none" stroke="#5B6A72" stroke-width="1.2" stroke-dasharray="3 3"/><path d="${T.d}" fill="none" stroke="#1F5A8F" stroke-width="2" stroke-linejoin="round"/><circle cx="${T.a[0]}" cy="${T.a[1]}" r="2.6" fill="#13202A"/><circle cx="${T.b[0]}" cy="${T.b[1]}" r="2.6" fill="#fff" stroke="#13202A" stroke-width="1.4"/></svg>`:'';
     left=`<div class="fw-r">${svg}<div><span class="fw-k">${L({en:'Route',no:'Rute'})}</span><span class="fw-t">${esc(rt(R))}</span> <span class="fw-n">· ${R.pts.length} ${L({en:'points',no:'punkter'})}</span><br><a class="btn sec" id="fwRoute" href="route.html?pack=${encodeURIComponent(P.id)}">${L({en:'Open route',no:'Åpne ruten'})}</a> <button type="button" class="lk" id="fwUnlink">${L({en:'Unlink',no:'Fjern koblingen'})}</button></div></div>`; }
   else left=`<div class="fw-r"><div><span class="fw-k">${L({en:'Route',no:'Rute'})}</span><span class="fw-n">${L({en:'No route linked to this pack.',no:'Ingen rute er koblet til pakken.'})}</span><br><span class="fw-b">${ROUTES.length?`<select id="fwAttach" aria-label="${L({en:'Attach a route',no:'Koble til en rute'})}"><option value="">${L({en:'Attach a saved route…',no:'Koble til en lagret rute …'})}</option>${ROUTES.map(r=>`<option value="${esc(r.id)}">${esc(rt(r))}</option>`).join('')}</select>`:''}<a class="btn sec" href="route.html?pack=${encodeURIComponent(P.id)}">${L({en:'Build it on the map',no:'Bygg den på kartet'})}</a></span></div></div>`;
   const desk=FLIGHT.deskHref(R?[['pack',P.id],['route',R.id]]:[['pack',P.id]]);

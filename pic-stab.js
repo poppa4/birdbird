@@ -86,7 +86,7 @@ function draw(g,W,H,p,tm){
   arrow(g,lw[0],lw[1],lw[0],lw[1]-F*(1.05+0.35*extra),C.blue,{lw:3.2,head:11}); pill(g,L({en:'Wing lift',no:'Vingeløft'}),lw[0]+10,lw[1]-F*(1.05+0.35*extra),{size:11*fs,col:C.blue});
   // tail: down normally; in a gust the tail gets an upward increment
   const tailF=-0.18+0.55*extra*(p<4?1:0.4);
-  if(Math.abs(tailF)>0.02){ arrow(g,tl[0],tl[1],tl[0],tl[1]-F*tailF,tailF<0?C.mag:C.green,{lw:3,head:10}); pill(g,tailF<0?L({en:'tail pushes down',no:'halen presser ned'}):L({en:'extra tail lift',no:'ekstra haleløft'}),tl[0]-10,tl[1]-F*tailF+(tailF<0?14:-6),{size:10.5*fs,col:tailF<0?'#F29AC8':'#8EDDB0',al:'right',fit:W}); }
+  if(Math.abs(tailF)>0.02){ arrow(g,tl[0],tl[1],tl[0],tl[1]-F*tailF,tailF<0?C.mag:C.green,{lw:3,head:10}); pill(g,tailF<0?L({en:'tail pushes down',no:'halen presser ned'}):L({en:'extra tail lift',no:'ekstra haleløft'}),tl[0]-10,tl[1]-F*tailF+(tailF<0?14:-6),{size:10.5*fs,col:tailF<0?'#9CC6EE':'#8EDDB0',al:'right',fit:W}); }
   // pitch readout and verdict
   const verdict=p<1.5?null:p<3.5?[L({en:'returns: stable',no:'kommer tilbake: stabilt'}),C.green]:p<4.6&&p>3.6?[L({en:'keeps pitching up: unstable',no:'fortsetter opp: ustabilt'}),C.red]:null;
   pill(g,`${L({en:'pitch',no:'stigning'})} ${pitch>=0?'+':''}${nf(pitch,1)}°`,16,22,{mono:1,size:11*fs,col:'#fff'});

@@ -7,7 +7,7 @@
 const {L,el,nf}=LAB, Y=SYC, t2=(en,no)=>({en,no}), P=a=>a?{en:a[0],no:a[1]}:null;
 const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const MONO='"IBM Plex Mono", ui-monospace, monospace', SANS='"Public Sans", system-ui, sans-serif';
-const C={el:'#8EDDB0',fuel:'#8EDDB0',h1:'#7FCBE8',h2:'#8EDDB0',h3:'#F2A7D8',sig:'#C9B6F2',mech:'#D5DDE3',txt:'#EEF2F5',mut:'#8E99A4',dim:'#5E6D7C',dead:'#34414C',red:'#EC5A47',amb:'#F0B440',ok:'#71CC93',air:'#F09A5A'};
+const C={el:'#8EDDB0',fuel:'#8EDDB0',h1:'#7FCBE8',h2:'#8EDDB0',h3:'#A9CCEF',sig:'#C9B6F2',mech:'#D5DDE3',txt:'#EEF2F5',mut:'#8E99A4',dim:'#5E6D7C',dead:'#34414C',red:'#EC5A47',amb:'#F0B440',ok:'#71CC93',air:'#F09A5A'};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const depth=()=>document.body.classList.contains('depth-short')?'short':document.body.classList.contains('depth-instructor')?'instructor':'deep';
 const deepOn=()=>depth()!=='short';

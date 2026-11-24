@@ -491,7 +491,7 @@
   }
   /* the handwriting in notebooks is searched as text by inkcore.js, loaded the first time a search needs it */
   let inkP = null;
-  function needInkText() { if (window.INKCORE || inkP || !liveOf('notebook').length) return; inkP = loadScript('inkcore.js?v=2').then(() => { S.index = null; if (route().path === 'search') render(); }, () => { inkP = null; }); }
+  function needInkText() { if (window.INKCORE || inkP || !liveOf('notebook').length) return; inkP = loadScript('inkcore.js?v=3').then(() => { S.index = null; if (route().path === 'search') render(); }, () => { inkP = null; }); }
   const findAll = q => { needInkText(); return W.search(S.index || (S.index = buildIndex()), q, 60); };
 
   /* ---------- views ---------- */

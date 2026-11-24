@@ -3,7 +3,7 @@
    profil, omregningstabell, minimaboks) slik at man lærer å lese ekte kart. Alt innhold er oppdiktet. Ikke for navigasjon. */
 (function(G){
 'use strict';
-const ink='#13202A', mag='#9A1E68', blu='#1E5E9E', mut='#5E6B74', rule='#9AA6AC', amb='#7A4D00', amw='#FBEFD6', aw='#F3E6EE';
+const ink='#13202A', mag='#1F5A8F', blu='#1E5E9E', mut='#5E6B74', rule='#9AA6AC', amb='#7A4D00', amw='#FBEFD6', aw='#E6EEF6';
 const FF='Archivo,&quot;Arial Narrow&quot;,Arial,sans-serif';
 const T=(x,y,s,o)=>{ o=o||{}; return `<text x="${x}" y="${y}" font-size="${o.fs||10}" font-family="${FF}" fill="${o.c||ink}" text-anchor="${o.a||'start'}" font-weight="${o.w||450}"${o.it?' font-style="italic"':''}${o.ls?` letter-spacing="${o.ls}"`:''} style="font-stretch:${o.st||88}%">${s}</text>`; };
 const ln=(x1,y1,x2,y2,o)=>{ o=o||{}; return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${o.c||ink}" stroke-width="${o.w||1}"${o.d?` stroke-dasharray="${o.d}"`:''}/>`; };

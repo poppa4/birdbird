@@ -16,7 +16,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="lab.css?v=15">
-<link rel="stylesheet" href="site.css?v=37">
+<link rel="stylesheet" href="site.css?v=38">
 <link rel="stylesheet" href="train.css?v=4">
 <style>
 .paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
@@ -89,7 +89,7 @@
 </style>
 </head>
 <body data-title="A320 simulator assessment">
-<script src="site.js?v=125"></script>
+<script src="site.js?v=126"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -527,8 +527,8 @@ function cRun(){
   g.textAlign='left'; g.fillText('kt',4,t-10);
   // gate and intercept
   g.strokeStyle='#1E5E9E'; g.setLineDash([5,4]); g.beginPath(); g.moveTo(X(GATE),t); g.lineTo(X(GATE),ab+ah); g.stroke();
-  g.strokeStyle='#9A1E68'; g.beginPath(); g.moveTo(X(GSI),t); g.lineTo(X(GSI),ab+ah); g.stroke(); g.setLineDash([]);
-  g.fillStyle='#1E5E9E'; g.textAlign='center'; g.fillText('1000 ft',X(GATE),t-10); g.fillStyle='#9A1E68'; g.fillText('G/S',X(GSI),t-10);
+  g.strokeStyle='#1F5A8F'; g.beginPath(); g.moveTo(X(GSI),t); g.lineTo(X(GSI),ab+ah); g.stroke(); g.setLineDash([]);
+  g.fillStyle='#1E5E9E'; g.textAlign='center'; g.fillText('1000 ft',X(GATE),t-10); g.fillStyle='#1F5A8F'; g.fillText('G/S',X(GSI),t-10);
   // VFE step line
   g.strokeStyle='#B3261E'; g.lineWidth=1.6; g.beginPath(); let first=true;
   for(const p of r.pts){ const lim=p[2]===0?260:CFGS[p[2]].vfe; const y=Y(Math.min(259,lim)); if(first){ g.moveTo(X(p[0]),y); first=false; } else g.lineTo(X(p[0]),y); } g.stroke();

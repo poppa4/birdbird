@@ -13,7 +13,7 @@ const {L,el,nf}=LAB;
 const g0=9.80665, R0=1.225, KT=0.514444, FPM=196.8504, NM=1852, FT=0.3048, D2R=Math.PI/180;
 const AC={S:16.2,b:11.0,CD0:0.032,e:0.78,CLmax:1.5,CLa:0.09,a0:-1.5,inc:1.5,P:134e3,eta:0.80,Ts:3000};
 AC.AR=AC.b*AC.b/AC.S; AC.k=1/(Math.PI*AC.e*AC.AR);
-const INK={bg:'#10171D',grid:'#1F2B35',rule:'#2A3742',ink:'#D7E1E6',mute:'#8B99A7',dim:'#5E6D7C',cyan:'#7FCBE8',mag:'#E46BAE',amber:'#F0B440',red:'#EC5A47',green:'#71CC93',violet:'#B9A6F0',white:'#EEF3F7'};
+const INK={bg:'#10171D',grid:'#1F2B35',rule:'#2A3742',ink:'#D7E1E6',mute:'#8B99A7',dim:'#5E6D7C',cyan:'#7FCBE8',mag:'#7FB2E5',amber:'#F0B440',red:'#EC5A47',green:'#71CC93',violet:'#B9A6F0',white:'#EEF3F7'};
 const COL={L:INK.cyan,W:INK.white,T:INK.mag,D:INK.red};
 const FONT={mono:'"IBM Plex Mono", ui-monospace, monospace',body:'"Public Sans", system-ui, sans-serif'};
 const BG='rgba(16,23,29,.8)';
@@ -110,7 +110,7 @@ function plane(g,cx,cy,sc,th,t){ const c=Math.cos(th*D2R), s=Math.sin(th*D2R); c
   // fin with rudder and a brand stripe
   pth(SHP[1]);
   g.fillStyle=grad(2,0.3,[[0,'#24456A'],[1,'#1D3A5C']]); g.fill(); g.strokeStyle='rgba(226,232,238,.55)'; g.lineWidth=lw; g.stroke();
-  pth(SHP[2]); g.fillStyle='rgba(228,107,174,.85)'; g.fill();
+  pth(SHP[2]); g.fillStyle='rgba(127,178,229,.85)'; g.fill();
   pth(SHP[3]); g.strokeStyle='rgba(226,232,238,.35)'; g.lineWidth=lw; g.stroke();
   // fuselage
   const body=[['M',3.3,0.1],['C',3.25,0.45,2.9,0.6,2.35,0.66],['L',1.55,0.7],['C',1.1,1.12,0.6,1.24,-0.1,1.22],['C',-0.6,1.2,-1.0,1.05,-1.5,0.86],
@@ -118,7 +118,7 @@ function plane(g,cx,cy,sc,th,t){ const c=Math.cos(th*D2R), s=Math.sin(th*D2R); c
   pth(body); g.fillStyle=grad(1.25,-0.6,[[0,'#F4F7F9'],[0.45,'#E3E9EE'],[0.8,'#B9C4CC'],[1,'#8A98A4']]); g.fill();
   g.strokeStyle='rgba(30,44,56,.55)'; g.lineWidth=lw; g.stroke();
   // cheatline
-  pth(SHP[4]); g.fillStyle='#E46BAE'; g.fill();
+  pth(SHP[4]); g.fillStyle='#7FB2E5'; g.fill();
   // canopy glass with a highlight
   pth(SHP[5]);
   g.fillStyle=grad(1.17,0.7,[[0,'#3E6380'],[1,'#16283A']]); g.fill(); g.strokeStyle='rgba(226,232,238,.6)'; g.lineWidth=lw; g.stroke();
@@ -156,7 +156,7 @@ function rear(g,cx,cy,span,phi){ g.save(); g.translate(cx,cy); g.rotate(phi*D2R)
   // fuselage cross-section with canopy
   g.fillStyle=lin(-0.75*k,0.65*k,'#F4F7F9','#8A98A4'); g.beginPath(); g.ellipse?g.ellipse(0,0,0.62*k,0.66*k,0,0,7):g.arc(0,0,0.64*k,0,7); g.fill(); g.stroke();
   g.fillStyle=lin(-0.95*k,-0.3*k,'#3E6380','#16283A'); g.beginPath(); g.ellipse?g.ellipse(0,-0.42*k,0.42*k,0.36*k,0,Math.PI,0):g.arc(0,-0.42*k,0.4*k,Math.PI,0); g.closePath(); g.fill();
-  g.fillStyle='#E46BAE'; g.fillRect(-0.62*k,0.02*k,1.24*k,0.08*k);
+  g.fillStyle='#7FB2E5'; g.fillRect(-0.62*k,0.02*k,1.24*k,0.08*k);
   // gear
   g.strokeStyle='#5B6B78'; g.lineWidth=Math.max(1.2,k*0.1); [-1,1].forEach(sd=>{ g.beginPath(); g.moveTo(sd*0.5*k,0.55*k); g.lineTo(sd*1.0*k,1.25*k); g.stroke(); g.fillStyle='#1B242C'; g.beginPath(); g.ellipse?g.ellipse(sd*1.0*k,1.3*k,0.14*k,0.22*k,0,0,7):g.arc(sd*k,1.3*k,0.18*k,0,7); g.fill(); });
   g.restore(); }
@@ -288,7 +288,7 @@ function drawD(){ const st=fd; if(!st.w||!R) return; const g=clear(st), W=st.w, 
   const P=k=>rows.map(r=>[ax.X(r.v),ax.Y(val(r,k))]);
   const det=window.CN&&CN.full('fdCv');
   if(!pwr&&det){ path(g,P('Dp'),'rgba(127,203,232,.8)',1.4,[4,3]); path(g,P('Di'),'rgba(185,166,240,.9)',1.4,[4,3]); }
-  path(g,P('T1'),'rgba(228,107,174,.55)',1.4,[6,4]); path(g,P('D'),INK.red,2.6); if(F.mode==='power'&&F.pw<0.99&&F.pw>0.01) path(g,P('T'),INK.mag,2);
+  path(g,P('T1'),'rgba(127,178,229,.55)',1.4,[6,4]); path(g,P('D'),INK.red,2.6); if(F.mode==='power'&&F.pw<0.99&&F.pw>0.01) path(g,P('T'),INK.mag,2);
   g.restore();
   const lab=(k,t,col,frac,dy)=>{ const r=rows[Math.floor(rows.length*frac)]; txt(g,t,ax.X(r.v),ax.Y(val(r,k))+(dy||-7),{col,al:'center',size:10.5,bg:BG}); };
   if(!pwr&&det){ lab('Dp',L({en:'parasite ∝ V²',no:'parasitt ∝ V²'}),INK.cyan,0.84,14); lab('Di',L({en:'induced ∝ 1/V²',no:'indusert ∝ 1/V²'}),INK.violet,0.12,-8); }
@@ -489,12 +489,12 @@ if(window.KCS){ const {sv,tx,ar}=KCS;
     dd:{en:'Weight acts through the centre of gravity. In a climb or descent it splits into a part across the flight path, which lift carries, and a part along it, which thrust or drag must balance.',no:'Vekten virker gjennom tyngdepunktet. I stigning eller nedstigning deles den i en del på tvers av flybanen, som løftet bærer, og en del langs den, som skyvekraft eller motstand må balansere.'},
     ill:()=>sv(`${pl(100,22,1.3,-8)}${ar(100,22,100,58,'#eef3f7')}${tx(106,54,'W = m·g','#eef3f7')}`),click:'#pre button[data-k="level"]',to:'#fmCv'},
    {k:'td',t:{en:'Thrust and drag',no:'Skyv og motstand'},d:{en:'<b>Thrust</b> pulls along the flight path; <b>drag</b> resists the motion. When they are equal the speed stays constant. A propeller’s thrust falls as speed rises.',no:'<b>Skyv</b> drar langs flybanen; <b>motstand</b> bremser bevegelsen. Når de er like, holdes farten konstant. Propellskyvet faller når farten øker.'},
-    ill:()=>sv(`${pl(100,32,1.3)}${ar(130,32,172,32,'#E46BAE')}${ar(70,32,28,32,'#EC5A47')}${tx(170,24,'T','#E46BAE','end')}${tx(30,24,'D','#EC5A47')}`),click:'#pre button[data-k="level"]',to:'#fmCv'},
+    ill:()=>sv(`${pl(100,32,1.3)}${ar(130,32,172,32,'#7FB2E5')}${ar(70,32,28,32,'#EC5A47')}${tx(170,24,'T','#7FB2E5','end')}${tx(30,24,'D','#EC5A47')}`),click:'#pre button[data-k="level"]',to:'#fmCv'},
    {k:'steady',t:{en:'Steady flight',no:'Jevn flyging'},d:{en:'When the four forces balance, the aircraft keeps a constant speed in a straight line: level, climbing or descending. The small force polygon in the model then closes.',no:'Når de fire kreftene er i balanse, holder flyet konstant fart i en rett linje: plant, i stigning eller i nedstigning. Den lille kraftpolygonen i modellen lukker seg da.'},
-    ill:()=>sv(`${ar(90,52,90,12,'#7fcbe8')}${ar(90,12,118,12,'#E46BAE')}${ar(118,12,118,52,'#eef3f7')}${ar(118,52,90,52,'#EC5A47')}${tx(124,36,L({en:'closed = steady',no:'lukket = jevn'}),'#71cc93')}`),click:'#pre button[data-k="level"]',to:'#fmCv'},
+    ill:()=>sv(`${ar(90,52,90,12,'#7fcbe8')}${ar(90,12,118,12,'#7FB2E5')}${ar(118,12,118,52,'#eef3f7')}${ar(118,52,90,52,'#EC5A47')}${tx(124,36,L({en:'closed = steady',no:'lukket = jevn'}),'#71cc93')}`),click:'#pre button[data-k="level"]',to:'#fmCv'},
    {k:'climb',t:{en:'In a climb, lift < weight',no:'I stigning er løft < vekt'},d:{en:'In a steady climb part of the weight acts backwards along the path, so thrust must cover drag plus W·sin γ, and lift is slightly less than weight.',no:'I en jevn stigning virker en del av vekten bakover langs banen, så skyvet må dekke motstand pluss W·sin γ, og løftet er litt mindre enn vekten.'},
     dd:{en:'L = W·cos γ and T = D + W·sin γ. The climb angle depends on excess thrust, sin γ = (T − D) ÷ W; the rate of climb depends on excess power.',no:'L = W·cos γ og T = D + W·sin γ. Stigevinkelen avhenger av overskudd av skyvekraft, sin γ = (T − D) ÷ W; stigehastigheten avhenger av overskudd av effekt.'},
-    ill:()=>sv(`<line x1="20" y1="58" x2="180" y2="10" stroke="#55626e" stroke-dasharray="3 3"/>${pl(100,34,1.25,-16.7)}${ar(100,34,92,6,'#7fcbe8')}${ar(100,34,100,62,'#eef3f7')}${tx(196,56,'T = D + W·sin γ','#E46BAE','end')}`),click:'#pre button[data-k="vy"]',to:'#fmCv'},
+    ill:()=>sv(`<line x1="20" y1="58" x2="180" y2="10" stroke="#55626e" stroke-dasharray="3 3"/>${pl(100,34,1.25,-16.7)}${ar(100,34,92,6,'#7fcbe8')}${ar(100,34,100,62,'#eef3f7')}${tx(196,56,'T = D + W·sin γ','#7FB2E5','end')}`),click:'#pre button[data-k="vy"]',to:'#fmCv'},
    {k:'glide',t:{en:'Glide ratio = L/D',no:'Glidetall = L/D'},d:{en:'With the engine idle the aircraft trades height for distance. The glide ratio equals the lift-to-drag ratio, best at the minimum-drag speed VMD.',no:'Med motoren på tomgang bytter flyet høyde mot distanse. Glidetallet er lik løft/motstand, best ved minste motstandsfart VMD.'},
     ill:()=>sv(`<line x1="20" y1="12" x2="186" y2="56" stroke="#7fcbe8" stroke-dasharray="4 3"/>${pl(52,20,1.1,15)}<line x1="20" y1="58" x2="190" y2="58" stroke="#55626e"/>${tx(110,28,'L/D ≈ 10 : 1','#f0b440')}`),click:'#pre button[data-k="glide"]',to:'#fmCv'},
    {k:'dcurve',t:{en:'The drag curve',no:'Motstandskurven'},d:{en:'Total drag is U-shaped against speed: induced drag falls with speed, parasite drag rises. The bottom is VMD. Slower than VMD needs more thrust, not less.',no:'Total motstand er U-formet mot fart: indusert motstand faller med farten, parasittmotstand øker. Bunnen er VMD. Saktere enn VMD krever mer skyv, ikke mindre.'},

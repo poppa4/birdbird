@@ -14,7 +14,7 @@
 'use strict';
 const {L,el,nf}=LAB;
 const t2=(en,no)=>({en,no});
-const INK={bg:'#10171D',grid:'#1F2B35',rule:'#2A3742',ink:'#D7E1E6',mute:'#8B99A7',dim:'#5E6D7C',cyan:'#7FCBE8',mag:'#E46BAE',amber:'#F0B440',red:'#EC5A47',green:'#71CC93',violet:'#B9A6F0',white:'#EEF3F7',blue:'#5AA9E6'};
+const INK={bg:'#10171D',grid:'#1F2B35',rule:'#2A3742',ink:'#D7E1E6',mute:'#8B99A7',dim:'#5E6D7C',cyan:'#7FCBE8',mag:'#7FB2E5',amber:'#F0B440',red:'#EC5A47',green:'#71CC93',violet:'#B9A6F0',white:'#EEF3F7',blue:'#5AA9E6'};
 const FC={warm:'#EC5A47',cold:'#5AA9E6',occl:'#B98AE8'};
 const MONO='"IBM Plex Mono", ui-monospace, monospace', BODY='"Public Sans", system-ui, sans-serif';
 const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
@@ -281,7 +281,7 @@ function frame(){ if(!C.w) return; const g=C.ctx, W=C.w, H=C.h; g.setTransform(1
       if(pass===2){ g.rect(x,y,1.8,1.8); } else { g.moveTo(x,y); g.lineTo(x-1.2,y+6); } }
     if(pass===2){ g.fillStyle='rgba(225,236,245,.85)'; g.fill(); } else { g.strokeStyle=pass===1?'rgba(255,120,170,.95)':'rgba(140,190,235,.75)'; g.stroke(); } }
   /* aircraft and cursor */
-  const ax=X(S.d), ay=Y(S.alt); g.strokeStyle='rgba(228,107,174,.75)'; g.setLineDash([2,4]); g.lineWidth=1; g.beginPath(); g.moveTo(ax,ay+6); g.lineTo(ax,LY.yG); g.stroke(); g.setLineDash([]);
+  const ax=X(S.d), ay=Y(S.alt); g.strokeStyle='rgba(127,178,229,.75)'; g.setLineDash([2,4]); g.lineWidth=1; g.beginPath(); g.moveTo(ax,ay+6); g.lineTo(ax,LY.yG); g.stroke(); g.setLineDash([]);
   g.strokeStyle=INK.mag; g.lineWidth=1.2; g.beginPath(); g.moveTo(ax,LY.yS0); g.lineTo(ax,LY.yS1); g.stroke();
   if(LY.yT){ g.fillStyle=INK.red; g.beginPath(); g.arc(ax,LY.yT(tSfc(S.d)),3,0,Math.PI*2); g.fill(); g.fillStyle=INK.green; g.beginPath(); g.arc(ax,LY.yT(tdSfc(S.d)),3,0,Math.PI*2); g.fill(); }
   drawJet(g,ax,ay,W<560?1.05:1.3);
@@ -384,7 +384,7 @@ function planDraw(){ planGeo(); if(!CP.w){ planField(); live(); return; } const 
   /* cross-section line through the chosen front, with the aircraft */
   const fa=S.type==='warm'?(PG.stat?null:PWf):S.type==='cold'?(PG.stat?null:PCf):(PG.hasO?POf:null);
   PG.secOk=!!fa; if(fa){ const m=Math.round((NP-1)*(fa===POf?0.6:0.35)), ax=fa[2*m], ay=fa[2*m+1], tx=fa[2*m+2]-fa[2*m-2], ty=fa[2*m+3]-fa[2*m-1], tl=Math.hypot(tx,ty), nx=-ty/tl, ny=tx/tl;
-    g.strokeStyle='rgba(228,107,174,.8)'; g.lineWidth=1.3; g.setLineDash([5,4]); g.beginPath(); g.moveTo(PX(ax-400*nx),PY(ay-400*ny)); g.lineTo(PX(ax+900*nx),PY(ay+900*ny)); g.stroke(); g.setLineDash([]);
+    g.strokeStyle='rgba(127,178,229,.8)'; g.lineWidth=1.3; g.setLineDash([5,4]); g.beginPath(); g.moveTo(PX(ax-400*nx),PY(ay-400*ny)); g.lineTo(PX(ax+900*nx),PY(ay+900*ny)); g.stroke(); g.setLineDash([]);
     g.fillStyle=INK.mag; g.beginPath(); g.arc(PX(ax+S.d*nx),PY(ay+S.d*ny),4.5,0,Math.PI*2); g.fill();
     { let k=880; while(k>200&&(ax+k*nx<60||ax+k*nx>UW-60||ay+k*ny<40||ay+k*ny>VW-40)) k-=40; txt(g,L(t2('cross-section','snitt')),PX(ax+k*nx),PY(ay+k*ny)-8,INK.mag,'center',10); } }
   /* air labels, L and H */

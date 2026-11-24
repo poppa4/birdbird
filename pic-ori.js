@@ -67,12 +67,12 @@ function canal(g,cx,cy,r,rot,bend,tm,fs){
       g.beginPath(); g.moveTo(hx,hy); g.lineTo(hx-tx*7+ty*4,hy-ty*7-tx*4); g.moveTo(hx,hy); g.lineTo(hx-tx*7-ty*4,hy-ty*7+tx*4); g.stroke(); } }
   // cupula: a gelatinous flap across the ampulla, with hair cells at its base
   const b=clamp(bend,-1,1)*tw*.9, base=-r+tw*.78, top=-r-tw*.78;
-  g.fillStyle='rgba(228,107,174,.55)'; g.strokeStyle='#E46BAE'; g.lineWidth=1.6;
+  g.fillStyle='rgba(127,178,229,.55)'; g.strokeStyle='#7FB2E5'; g.lineWidth=1.6;
   g.beginPath(); g.moveTo(-tw*.22,base); g.quadraticCurveTo(-tw*.22+b*.3,(base+top)/2,b-tw*.12,top+2);
   g.quadraticCurveTo(b,top-2,b+tw*.12,top+2); g.quadraticCurveTo(tw*.22+b*.3,(base+top)/2,tw*.22,base); g.closePath(); g.fill(); g.stroke();
   g.strokeStyle='#fff'; g.lineWidth=1.3;
   for(let k=-2;k<=2;k++){ const x0=k*tw*.09; g.beginPath(); g.moveTo(x0,base); g.quadraticCurveTo(x0+b*.15,base-tw*.35,x0+b*.45,base-tw*.7); g.stroke(); }
-  g.fillStyle='#F29AC8'; g.fillRect(-tw*.3,base,tw*.6,3);
+  g.fillStyle='#9CC6EE'; g.fillRect(-tw*.3,base,tw*.6,3);
   g.restore(); }
 
 function head(g,cx,cy,hr,bank){
@@ -81,7 +81,7 @@ function head(g,cx,cy,hr,bank){
   const sk=g.createLinearGradient(-hr,0,hr,0); sk.addColorStop(0,'#3A4855'); sk.addColorStop(.5,'#52626F'); sk.addColorStop(1,'#3A4855');
   // shoulders
   g.fillStyle='#2A3540'; g.beginPath(); g.moveTo(-hr*1.55,hr*2.05); g.quadraticCurveTo(-hr*1.5,hr*1.25,-hr*.4,hr*1.12); g.lineTo(hr*.4,hr*1.12); g.quadraticCurveTo(hr*1.5,hr*1.25,hr*1.55,hr*2.05); g.closePath(); g.fill();
-  g.strokeStyle='rgba(228,107,174,.6)'; g.lineWidth=2; g.beginPath(); g.moveTo(-hr*1.1,hr*1.35); g.lineTo(-hr*1.0,hr*2.0); g.moveTo(hr*1.1,hr*1.35); g.lineTo(hr*1.0,hr*2.0); g.stroke();
+  g.strokeStyle='rgba(127,178,229,.6)'; g.lineWidth=2; g.beginPath(); g.moveTo(-hr*1.1,hr*1.35); g.lineTo(-hr*1.0,hr*2.0); g.moveTo(hr*1.1,hr*1.35); g.lineTo(hr*1.0,hr*2.0); g.stroke();
   // neck and head
   g.fillStyle='#46545F'; g.fillRect(-hr*.3,hr*.7,hr*.6,hr*.5);
   g.fillStyle=sk; g.beginPath(); g.ellipse(0,0,hr*.78,hr,0,0,7); g.fill();
@@ -89,7 +89,7 @@ function head(g,cx,cy,hr,bank){
   // headset
   g.strokeStyle='#1C232A'; g.lineWidth=hr*.16; g.beginPath(); g.arc(0,-hr*.05,hr*.9,Math.PI*1.08,Math.PI*1.92); g.stroke();
   for(const sx of [-1,1]){ g.fillStyle='#1C232A'; g.beginPath(); g.ellipse(sx*hr*.86,hr*.05,hr*.2,hr*.3,0,0,7); g.fill();
-    g.fillStyle='#9A1E68'; g.beginPath(); g.ellipse(sx*hr*.86,hr*.05,hr*.09,hr*.15,0,0,7); g.fill(); }
+    g.fillStyle='#1F5A8F'; g.beginPath(); g.ellipse(sx*hr*.86,hr*.05,hr*.09,hr*.15,0,0,7); g.fill(); }
   // horizon reference through the head: a level line the head tilts against
   g.restore(); }
 
@@ -111,13 +111,13 @@ function draw(g,W,H,p,tm){
     g.strokeStyle='rgba(127,198,238,.45)'; g.lineWidth=1; g.setLineDash([2,3]); g.beginPath(); g.moveTo(ex,ey); g.lineTo(cx-cr*1.42,cy); g.stroke(); g.setLineDash([]);
     canal(g,cx,cy,cr,real*Math.PI/180,bendS,tm,fs);
     txt(g,L({en:'INNER EAR · enlarged',no:'INDREØRET · forstørret'}),cx,cy-cr*1.42-10,{mono:1,size:10*fs,col:'#AEB8C1',al:'center'});
-    pill(g,Math.abs(bendS)<.15?L({en:'cupula straight: "no rotation"',no:'cupula rett: «ingen rotasjon»'}):bendS>0?L({en:'fluid lags, cupula bends: "rolling right"',no:'væsken henger etter, cupula bøyes: «ruller til høyre»'}):L({en:'bent the other way: "rolling left"',no:'bøyd andre veien: «ruller til venstre»'}),sm?W*.5:cx,cy+cr*1.42+(sm?16:20),{size:10.5*fs,col:Math.abs(bendS)<.15?'#fff':'#F29AC8',al:'center',fit:W});
+    pill(g,Math.abs(bendS)<.15?L({en:'cupula straight: "no rotation"',no:'cupula rett: «ingen rotasjon»'}):bendS>0?L({en:'fluid lags, cupula bends: "rolling right"',no:'væsken henger etter, cupula bøyes: «ruller til høyre»'}):L({en:'bent the other way: "rolling left"',no:'bøyd andre veien: «ruller til venstre»'}),sm?W*.5:cx,cy+cr*1.42+(sm?16:20),{size:10.5*fs,col:Math.abs(bendS)<.15?'#fff':'#9CC6EE',al:'center',fit:W});
     // two attitude indicators: reality and feeling
     const r2=Math.min(W*(sm?.16:.09),H*.17), y2=sm?H*.7:H*.42, xa=sm?W*.27:W*.62, xb=sm?W*.73:W*.86;
     ai(g,xa,y2,r2,real,0,L({en:'REALITY',no:'VIRKELIGHET'}),C.amber);
-    ai(g,xb,y2,r2,felt,0,L({en:'WHAT YOU FEEL',no:'DET DU FØLER'}),'#E46BAE');
+    ai(g,xb,y2,r2,felt,0,L({en:'WHAT YOU FEEL',no:'DET DU FØLER'}),'#7FB2E5');
     pill(g,`${nf(Math.abs(real))}° ${real>0.5?L({en:'right',no:'høyre'}):''}`.trim(),xa,y2-r2-14,{mono:1,size:11*fs,col:C.amber,al:'center'});
-    pill(g,`${nf(Math.abs(felt))}° ${felt>0.5?L({en:'right',no:'høyre'}):felt<-0.5?L({en:'left',no:'venstre'}):''}`.trim(),xb,y2-r2-14,{mono:1,size:11*fs,col:'#F29AC8',al:'center'});
+    pill(g,`${nf(Math.abs(felt))}° ${felt>0.5?L({en:'right',no:'høyre'}):felt<-0.5?L({en:'left',no:'venstre'}):''}`.trim(),xb,y2-r2-14,{mono:1,size:11*fs,col:'#9CC6EE',al:'center'});
     const mis=Math.abs(real-felt);
     if(mis>3) pill(g,`${L({en:'mismatch',no:'avvik'})} ${nf(mis)}°`,(xa+xb)/2,y2+r2+(sm?40:46),{mono:1,size:11*fs,col:'#FF8A78',al:'center'});
     if(p>=1.6&&p<2.6&&!sm) pill(g,L({en:'level, but it feels like a left bank → the leans',no:'rett, men føles som venstre krengning → «the leans»'}),(xa+xb)/2,y2+r2+74,{size:11*fs,col:'#FF8A78',al:'center',fit:W});
@@ -133,9 +133,9 @@ function draw(g,W,H,p,tm){
     const Lr=Math.min(s*48,W*(sm?.56:.36)); g.lineWidth=2; g.setLineDash([7,5]);
     g.strokeStyle='rgba(255,255,255,.18)'; g.beginPath(); g.moveTo(ax-s*4,ay); g.lineTo(ax+Lr,ay); g.stroke();
     g.strokeStyle=C.amber; g.beginPath(); g.moveTo(ax+s*16,ay-s*16*Math.tan(8*Math.PI/180)); g.lineTo(ax+Lr,ay-Lr*Math.tan(8*Math.PI/180)); g.stroke();
-    const fp=(8+17*k)*Math.PI/180; g.strokeStyle='#E46BAE'; g.beginPath(); g.moveTo(ax+s*16*Math.cos(fp),ay-s*16*Math.sin(fp)); g.lineTo(ax+Lr*Math.cos(fp),ay-Lr*Math.sin(fp)); g.stroke(); g.setLineDash([]);
-    g.strokeStyle='rgba(228,107,174,.6)'; g.lineWidth=1.5; g.beginPath(); g.arc(ax,ay,Lr*.82,-fp,-8*Math.PI/180); g.stroke();
-    pill(g,L({en:'feels like 20°+ nose up',no:'føles som 20°+ nese opp'}),ax+Lr*Math.cos(fp),ay-Lr*Math.sin(fp)-16,{size:11*fs,col:'#F29AC8',al:'center',fit:W,a:k});
+    const fp=(8+17*k)*Math.PI/180; g.strokeStyle='#7FB2E5'; g.beginPath(); g.moveTo(ax+s*16*Math.cos(fp),ay-s*16*Math.sin(fp)); g.lineTo(ax+Lr*Math.cos(fp),ay-Lr*Math.sin(fp)); g.stroke(); g.setLineDash([]);
+    g.strokeStyle='rgba(127,178,229,.6)'; g.lineWidth=1.5; g.beginPath(); g.arc(ax,ay,Lr*.82,-fp,-8*Math.PI/180); g.stroke();
+    pill(g,L({en:'feels like 20°+ nose up',no:'føles som 20°+ nese opp'}),ax+Lr*Math.cos(fp),ay-Lr*Math.sin(fp)-16,{size:11*fs,col:'#9CC6EE',al:'center',fit:W,a:k});
     pill(g,L({en:'real pitch 8°',no:'faktisk stigning 8°'}),ax+Lr*.98,ay-Lr*Math.tan(8*Math.PI/180)+20,{size:11*fs,col:C.amber,al:'center',fit:W});
     // the trap: pushing the nose down to "correct"
     const tr=at(p,3,.25);
@@ -147,8 +147,8 @@ function draw(g,W,H,p,tm){
     txt(g,L({en:'WHAT THE OTOLITHS FEEL',no:'DET OTOLITTENE KJENNER'}),vx-F*.2,vy-16,{mono:1,size:10*fs,col:'#AEB8C1',al:'center'});
     arrow(g,vx,vy,vx,vy+F,'#fff',{lw:3,head:10}); txt(g,'g',vx+8,vy+F-4,{mono:1,size:12*fs,col:'#fff'});
     arrow(g,vx,vy,vx-F*.45,vy,C.amber,{lw:3,head:10}); txt(g,L({en:'push back',no:'press bakover'}),vx-F*.45-4,vy+4,{size:10.5*fs,col:C.amber,al:'right'});
-    arrow(g,vx,vy,vx-F*.45,vy+F,'#E46BAE',{lw:3.4,head:11});
-    txt(g,L({en:'felt "down"',no:'følt «ned»'}),vx-F*.45-6,vy+F+4,{size:10.5*fs,col:'#F29AC8',al:'right'});
+    arrow(g,vx,vy,vx-F*.45,vy+F,'#7FB2E5',{lw:3.4,head:11});
+    txt(g,L({en:'felt "down"',no:'følt «ned»'}),vx-F*.45-6,vy+F+4,{size:10.5*fs,col:'#9CC6EE',al:'right'});
     g.restore(); }
   if(cure>0.01){ g.save(); g.globalAlpha=cure; const r=Math.min(W*(sm?.28:.15),H*.3); ai(g,W*.5,H*.46,r,0,0,null,C.amber);
     txt(g,L({en:'ATTITUDE INDICATOR',no:'HOLDNINGSINDIKATOR'}),W*.5,H*.46-r-14,{mono:1,size:10.5*fs,col:'#AEB8C1',al:'center'});

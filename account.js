@@ -426,7 +426,7 @@ dialog.bbacct-dlg::backdrop{background:rgba(19,32,42,.38)}
 .bbacct-dlg .opt{display:block;text-align:left;width:100%;font:inherit;background:var(--sheet,#fff);border:1px solid var(--rule,#C6D0D3);border-radius:var(--radius,3px);padding:12px 14px;cursor:pointer;color:var(--ink,#13202A)}
 .bbacct-dlg .opt:hover{border-color:var(--ink,#13202A)}
 .bbacct-dlg .opt b{display:block;font-size:15px;margin-bottom:2px}.bbacct-dlg .opt span{display:block;font-size:13.5px;color:var(--ink-2,#4C5B66);line-height:1.4}
-.bbacct-dlg .opt.rec{border-color:var(--accent,#9A1E68);box-shadow:inset 3px 0 0 var(--accent,#9A1E68)}
+.bbacct-dlg .opt.rec{border-color:var(--accent,#1F5A8F);box-shadow:inset 3px 0 0 var(--accent,#1F5A8F)}
 .bbacct-dlg .ns{font-family:var(--f-mono);font-size:12.5px;color:var(--ink,#13202A)}`;
     document.head.appendChild(s);
   }

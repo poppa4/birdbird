@@ -16,7 +16,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="lab.css?v=15">
-<link rel="stylesheet" href="site.css?v=37">
+<link rel="stylesheet" href="site.css?v=38">
 <style>
 /* ---------- My training (page-only styles; tokens from site.css) ---------- */
 .mt-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:24px 48px;align-items:end;margin:40px 0 0}
@@ -259,7 +259,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 </style>
 </head>
 <body data-title="My page">
-<script src="site.js?v=125"></script>
+<script src="site.js?v=126"></script>
 <div class="page">
   <header class="mt-head" id="top">
     <div class="brand">
@@ -437,7 +437,7 @@ function readB200(){ B.stats=ls.json(BK+'stats',{})||{}; B.fc=ls.json(BK+'leitne
 function loadScript(src){ return new Promise(res=>{ const s=document.createElement('script'); s.src=src; s.onload=()=>res(true); s.onerror=()=>res(false); document.head.appendChild(s); }); }
 let bLoading=null;
 function loadBank(){ if(bLoading) return bLoading;
-  bLoading=Promise.all([window.B200Q?true:loadScript('b200-qbank.js?v=2'), window.B200C?true:loadScript('b200-sim.js?v=5')]).then(()=>{ B.loaded=true; B.C=window.B200C||null;
+  bLoading=Promise.all([window.B200Q?true:loadScript('b200-qbank.js?v=2'), window.B200C?true:loadScript('b200-sim.js?v=6')]).then(()=>{ B.loaded=true; B.C=window.B200C||null;
     const CHN=['gen','elec','light','warn','fuel','power','fire','pneu','ice','air','press','hyd','gear','flt','avio','misc','wb','perf','lim','emer'];
     B.Q=(Array.isArray(window.B200Q)?window.B200Q:[]).filter(q=>q&&q.id!=null&&q.q&&Array.isArray(q.a)&&q.a.length>1&&Number.isInteger(q.c)).map(q=>({id:String(q.id),q:q.q,a:q.a,c:q.c,ch:CHN.includes(q.ch)?q.ch:'misc',lvl:+q.lvl||2})); drawAll(); });
   return bLoading; }

@@ -32,7 +32,7 @@ const css=`
 .cpic-tr button:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
 .cpic-tr button.pl{background:#E6EBEF;color:#13181D;border-color:#E6EBEF;font-weight:600;min-width:84px}
 .cpic-tr .sc{flex:1;position:relative;min-width:60px;height:32px;display:flex;align-items:center}
-.cpic-tr .sc input{width:100%;margin:0;accent-color:#E46BAE;position:relative;z-index:1;background:transparent}
+.cpic-tr .sc input{width:100%;margin:0;accent-color:#7FB2E5;position:relative;z-index:1;background:transparent}
 .cpic-tr .sc .tk{position:absolute;left:8px;right:8px;top:50%;height:0;pointer-events:none}
 .cpic-tr .sc .tk i{position:absolute;top:-9px;width:2px;height:6px;background:rgba(255,255,255,.28);transform:translateX(-1px)}
 .cpic-tr .n{font-family:var(--f-mono);font-size:11.5px;color:#8E99A4;min-width:44px;text-align:right}
@@ -46,12 +46,12 @@ const css=`
 .cpic-ls li b{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:14.5px;line-height:1.3;color:inherit;align-self:center}
 .cpic-ls li p{grid-column:2;margin:5px 0 2px;font-size:13.5px;line-height:1.5;color:#C9D2DA;display:none}
 .cpic-ls li p em{font-style:normal;color:#fff;font-weight:600}
-.cpic-ls li .go{display:none;margin:-2px 0 8px 53px;font-size:12px;font-weight:600;color:#F29AC8;background:none;border:0;padding:2px 0;cursor:pointer}
+.cpic-ls li .go{display:none;margin:-2px 0 8px 53px;font-size:12px;font-weight:600;color:#9CC6EE;background:none;border:0;padding:2px 0;cursor:pointer}
 .cpic-ls li .go:hover{text-decoration:underline}
-.cpic-ls li.c-on>button{color:#fff;border-left-color:#E46BAE;background:rgba(228,107,174,.07)}
-.cpic-ls li.c-on i{background:#E46BAE;border-color:#E46BAE;color:#13181D;font-weight:600}
+.cpic-ls li.c-on>button{color:#fff;border-left-color:#7FB2E5;background:rgba(127,178,229,.07)}
+.cpic-ls li.c-on i{background:#7FB2E5;border-color:#7FB2E5;color:#13181D;font-weight:600}
 .cpic-ls li.c-on p,.cpic-ls li.c-on .go{display:block}
-.cpic-ls li.c-past i{border-color:rgba(228,107,174,.55);color:#E9A9CC}
+.cpic-ls li.c-past i{border-color:rgba(127,178,229,.55);color:#A9CCEF}
 .cpic-ls .ft{margin:0;padding:10px 16px 12px;border-top:1px solid rgba(255,255,255,.06);font-size:11.5px;line-height:1.45;color:#7F8B96}
 .cpic-cap{display:none}
 body.depth-instructor .cpic-ls li b{font-size:16px}
@@ -70,7 +70,7 @@ body.depth-instructor .cpic-g{grid-template-columns:minmax(0,1fr) 360px}
  .cpic-cap b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:16px;color:#fff;margin:2px 0 4px}
  .cpic-cap p{margin:0;font-size:14px;line-height:1.5;color:#C9D2DA}
  .cpic-cap p em{font-style:normal;color:#fff;font-weight:600}
- .cpic-cap .go{margin-top:6px;font-size:13px;font-weight:600;color:#F29AC8;background:none;border:0;padding:4px 0;cursor:pointer}
+ .cpic-cap .go{margin-top:6px;font-size:13px;font-weight:600;color:#9CC6EE;background:none;border:0;padding:4px 0;cursor:pointer}
  .cpic-tr{flex-wrap:wrap}.cpic-tr .sc{order:5;flex-basis:100%}
 }
 /* cfg.narrow: the stacked layout at any width (for a narrow column, as in tunnel.html) */
@@ -85,7 +85,7 @@ body.depth-instructor .cpic-g{grid-template-columns:minmax(0,1fr) 360px}
 .cpic.cpic-narrow .cpic-cap b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:16px;color:#fff;margin:2px 0 4px}
 .cpic.cpic-narrow .cpic-cap p{margin:0;font-size:14px;line-height:1.5;color:#C9D2DA}
 .cpic.cpic-narrow .cpic-cap p em{font-style:normal;color:#fff;font-weight:600}
-.cpic.cpic-narrow .cpic-cap .go{margin-top:6px;font-size:13px;font-weight:600;color:#F29AC8;background:none;border:0;padding:4px 0;cursor:pointer}
+.cpic.cpic-narrow .cpic-cap .go{margin-top:6px;font-size:13px;font-weight:600;color:#9CC6EE;background:none;border:0;padding:4px 0;cursor:pointer}
 .cpic.cpic-narrow .cpic-tr{flex-wrap:wrap}.cpic.cpic-narrow .cpic-tr .sc{order:5;flex-basis:100%}
 
 @media (pointer:coarse){.cpic-tr button{min-height:44px}}
@@ -97,7 +97,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 
 /* ---------------- shared drawing helpers ---------------- */
 const FONT={mono:'"IBM Plex Mono", ui-monospace, monospace',body:'"IBM Plex Sans", system-ui, sans-serif'};
-const C={ink:'#E2E8EE',dim:'#8E99A4',faint:'rgba(255,255,255,.12)',mag:'#E46BAE',blue:'#7FC6EE',green:'#71CC93',amber:'#F0B440',red:'#EC5A47',violet:'#B9A3F2',white:'#F4F7F9'};
+const C={ink:'#E2E8EE',dim:'#8E99A4',faint:'rgba(255,255,255,.12)',mag:'#7FB2E5',blue:'#7FC6EE',green:'#71CC93',amber:'#F0B440',red:'#EC5A47',violet:'#B9A3F2',white:'#F4F7F9'};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const lerp=(a,b,k)=>a+(b-a)*k;
 const ease=k=>k<0?0:k>1?1:k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
@@ -148,7 +148,7 @@ function jet(g,o){
   if(!ghost){
     // belly shade and a cheat line in the brand colour
     g.fillStyle='rgba(24,40,58,.10)'; g.beginPath(); path([[-9.6,2.05],[10.6,2.02],[10.6,2.75],[-9.6,2.8]]); g.closePath(); g.fill();
-    g.strokeStyle='rgba(154,30,104,.55)'; g.lineWidth=Math.max(1,0.16*s); g.beginPath(); const c0=P(13.2,3.85), c1=P(-15.5,3.85); g.moveTo(c0[0],c0[1]); g.lineTo(c1[0],c1[1]); g.stroke();
+    g.strokeStyle='rgba(31,90,143,.55)'; g.lineWidth=Math.max(1,0.16*s); g.beginPath(); const c0=P(13.2,3.85), c1=P(-15.5,3.85); g.moveTo(c0[0],c0[1]); g.lineTo(c1[0],c1[1]); g.stroke();
     // windows
     g.fillStyle='#2B3B4A'; for(let x=11.2;x>-13.4;x-=0.84){ const a=P(x,4.62); g.beginPath(); g.ellipse(a[0],a[1],0.17*s,0.24*s,0,0,7); g.fill(); }
     // doors
@@ -159,8 +159,8 @@ function jet(g,o){
   // fin and tailplane
   g.fillStyle=ghost?'rgba(226,232,238,.12)':'#EEF2F4'; g.strokeStyle=ghost?'rgba(226,232,238,.35)':'rgba(10,16,21,.55)';
   g.beginPath(); path([[-12.6,6.0],[-17.7,11.9],[-20.1,11.9],[-21.0,5.35],[-20.6,5.1]]); g.closePath(); g.fill(); g.stroke();
-  if(!ghost){ g.fillStyle='#9A1E68'; g.beginPath(); path([[-15.6,8.4],[-17.7,11.9],[-20.1,11.9],[-20.55,8.6]]); g.closePath(); g.fill();
-    g.fillStyle='#E46BAE'; g.beginPath(); path([[-14.9,7.6],[-15.6,8.4],[-20.55,8.6],[-20.65,7.85]]); g.closePath(); g.fill(); }
+  if(!ghost){ g.fillStyle='#1F5A8F'; g.beginPath(); path([[-15.6,8.4],[-17.7,11.9],[-20.1,11.9],[-20.55,8.6]]); g.closePath(); g.fill();
+    g.fillStyle='#7FB2E5'; g.beginPath(); path([[-14.9,7.6],[-15.6,8.4],[-20.55,8.6],[-20.65,7.85]]); g.closePath(); g.fill(); }
   g.fillStyle=ghost?'rgba(226,232,238,.12)':'#D5DCE2';
   g.beginPath(); path([[-16.6,5.35],[-21.5,5.95],[-21.8,5.6],[-17.6,5.0]]); g.closePath(); g.fill(); g.stroke();
   // near wing

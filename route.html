@@ -16,7 +16,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Route Explorer</title>
 <link rel="stylesheet" href="lab.css?v=15">
-<link rel="stylesheet" href="site.css?v=37">
+<link rel="stylesheet" href="site.css?v=38">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
@@ -200,7 +200,7 @@
 .xprow textarea{font:inherit;font-size:14px;padding:6px 9px;border:1px solid var(--rule);border-radius:4px;background:#fff;resize:vertical;min-height:38px;box-sizing:border-box;width:100%}
 .xpmsg{margin:0 0 6px;font-size:12px;min-height:0}.xpmsg:empty{display:none}
 .rx-sheet.empty .xnrow{display:none}
-.xnrow{display:flex;justify-content:space-between;gap:14px;margin:2px 0 4px}.xn{display:flex;flex-direction:column;gap:4px;flex:0 1 46%;min-width:0}.xn.r{align-items:flex-end}.xn textarea{font:inherit;font-size:14px;padding:6px 9px;border:1px solid var(--accent);border-radius:4px;background:#fff;resize:vertical;min-height:52px;box-sizing:border-box;width:100%}.xnb{border:1px dashed #C9A3B8;background:#fff;color:var(--accent);border-radius:14px;padding:3px 11px;font:inherit;font-size:12.5px;cursor:pointer;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xnb:hover{background:var(--accent-wash)}.xnb.has{border-style:solid}
+.xnrow{display:flex;justify-content:space-between;gap:14px;margin:2px 0 4px}.xn{display:flex;flex-direction:column;gap:4px;flex:0 1 46%;min-width:0}.xn.r{align-items:flex-end}.xn textarea{font:inherit;font-size:14px;padding:6px 9px;border:1px solid var(--accent);border-radius:4px;background:#fff;resize:vertical;min-height:52px;box-sizing:border-box;width:100%}.xnb{border:1px dashed #A3B9CC;background:#fff;color:var(--accent);border-radius:14px;padding:3px 11px;font:inherit;font-size:12.5px;cursor:pointer;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xnb:hover{background:var(--accent-wash)}.xnb.has{border-style:solid}
 @media (max-width:640px){.xnrow{gap:8px}.xn{flex-basis:49%}}
 .xnbox{cursor:pointer}
 @media (max-width:640px){.xprow{grid-template-columns:1fr}}
@@ -305,7 +305,7 @@
 .mlmap .maplibregl-ctrl-scale{font:10.5px var(--f-mono);border-color:var(--ink-2);color:var(--ink-2);background:rgba(255,255,255,.8)}
 .bb-ac{position:absolute;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;pointer-events:none;z-index:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));will-change:transform}
 .bb-ac svg{display:block}
-.bb-acd{position:absolute;left:0;top:0;width:0;border-left:1.5px dashed rgba(154,30,104,.75);transform-origin:0 0;pointer-events:none;z-index:1;will-change:transform}
+.bb-acd{position:absolute;left:0;top:0;width:0;border-left:1.5px dashed rgba(31,90,143,.75);transform-origin:0 0;pointer-events:none;z-index:1;will-change:transform}
 .bb-ac[hidden],.bb-acd[hidden]{display:none}
 /* simulate the flight: cruise control, HUD, camera */
 .shcr .stp{display:inline-flex;align-items:stretch;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#fff}
@@ -361,8 +361,8 @@
 .x3look{gap:4px;font-size:13px}.x3look span{margin-right:2px;color:var(--ink-2)}.x3look button{min-width:30px;height:28px;border:1px solid var(--rule);background:#fff;border-radius:6px;cursor:pointer;font-size:12px;touch-action:none}.x3look button:last-child{padding:0 8px}
 .bb-look{cursor:grab}.bb-look:active{cursor:grabbing}
 .chk.sub{padding-left:22px;font-size:.94em}.chk.sub.dis{opacity:.45}
-.bb-satnote{position:absolute;left:50%;bottom:30px;top:auto;transform:translateX(-50%);z-index:4;background:#fff;border:1px solid #E0B4C9;border-left:3px solid var(--accent);border-radius:4px;padding:6px 8px 6px 10px;font-size:12.5px;color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:calc(100% - 24px);box-sizing:border-box}.bb-satnote .rxclr{font-size:12.5px;color:var(--accent);text-decoration:underline;padding:0 4px}.bb-satnote button{border:0;background:none;font-size:16px;line-height:1;cursor:pointer;color:var(--ink-2);padding:0 0 0 6px}
-.mlwarn{position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:4;background:#fff;border:1px solid #E0B4C9;border-left:3px solid var(--accent);border-radius:4px;padding:8px 10px;font-size:13px;color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.12);display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 24px)}.mlwarn code{font-size:11.5px;color:var(--ink-2)}.mlwarn button{font:inherit;font-size:12.5px;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;padding:3px 8px;cursor:pointer}.mlwarn .x{border:0;background:none;font-size:16px;padding:0 4px}
+.bb-satnote{position:absolute;left:50%;bottom:30px;top:auto;transform:translateX(-50%);z-index:4;background:#fff;border:1px solid #B9CFE3;border-left:3px solid var(--accent);border-radius:4px;padding:6px 8px 6px 10px;font-size:12.5px;color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:calc(100% - 24px);box-sizing:border-box}.bb-satnote .rxclr{font-size:12.5px;color:var(--accent);text-decoration:underline;padding:0 4px}.bb-satnote button{border:0;background:none;font-size:16px;line-height:1;cursor:pointer;color:var(--ink-2);padding:0 0 0 6px}
+.mlwarn{position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:4;background:#fff;border:1px solid #B9CFE3;border-left:3px solid var(--accent);border-radius:4px;padding:8px 10px;font-size:13px;color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.12);display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 24px)}.mlwarn code{font-size:11.5px;color:var(--ink-2)}.mlwarn button{font:inherit;font-size:12.5px;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;padding:3px 8px;cursor:pointer}.mlwarn .x{border:0;background:none;font-size:16px;padding:0 4px}
 /* ---- modern map chrome: floating rounded groups, soft shadows, NORDAP navy var(--navy) with magenta accents ---- */
 .rx{--glass:rgba(255,255,255,.95);--hair:rgba(11,37,69,.09);--lift:0 6px 20px rgba(11,37,69,.13),0 1px 3px rgba(11,37,69,.08)}
 .rx .seg3{border:0;border-radius:10px;background:var(--glass);box-shadow:var(--lift)}
@@ -373,7 +373,7 @@
 .rx .mapctl{gap:0;border-radius:12px;background:var(--glass);box-shadow:var(--lift);overflow:hidden}
 .rx .mapctl button,.rx .mapctl a{width:40px;height:40px;border:0;border-bottom:1px solid var(--hair);border-radius:0;box-shadow:none;background:transparent;color:var(--navy);font-size:17px;display:flex;align-items:center;justify-content:center}
 .rx .mapctl a{font-size:11px}.rx .mapctl>:last-child{border-bottom:0}
-.rx .mapctl button:hover:not(:disabled),.rx .mapctl a:hover{background:rgba(154,30,104,.07);color:var(--accent)}
+.rx .mapctl button:hover:not(:disabled),.rx .mapctl a:hover{background:rgba(31,90,143,.07);color:var(--accent)}
 .rx .edbar{border:0;border-radius:10px;box-shadow:var(--lift)}.rx .edbar button{border-right-color:var(--hair)}
 .rx .rx-ly{border:0;border-radius:16px;box-shadow:0 18px 48px rgba(11,37,69,.2),0 2px 6px rgba(11,37,69,.08);padding:14px 16px 16px;width:286px;gap:4px}
 .rx .rx-ly h4{color:#5B6C7C;letter-spacing:.08em;font-size:11px;margin-top:12px;padding-top:10px;border-top:1px solid var(--hair)}
@@ -427,7 +427,7 @@
 .asl .asn{display:block;margin-top:3px;font-size:11.5px}.asl .asw{color:#8A5A00}.asl .asw button{font:inherit;border:0;background:none;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0}
 .xio{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;margin:2px 0 6px;font-size:12.5px;color:var(--ink-2)}
 .rx-sheet.empty .xio,.rx-sheet.empty .asl{display:none!important}
-.xio .lnk{border:0;background:none;padding:2px 0;font:inherit;color:#7A1652;cursor:pointer;text-align:left}.xio .lnk:hover{text-decoration:underline}
+.xio .lnk{border:0;background:none;padding:2px 0;font:inherit;color:#163F63;cursor:pointer;text-align:left}.xio .lnk:hover{text-decoration:underline}
 .xexp{display:inline-flex;align-items:center;gap:4px}.xexp>span{margin-right:2px}
 .xexp button{font:inherit;font-size:12px;border:1px solid var(--rule);background:#fff;border-radius:6px;padding:3px 8px;cursor:pointer;color:var(--navy)}.xexp button:hover{border-color:var(--accent);color:var(--accent)}
 .sh-nl[aria-pressed="true"]{background:var(--ink);color:#fff}
@@ -445,7 +445,7 @@
 .nlt th{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:#5B6C7C;font-weight:600;text-align:right;padding:4px 6px;border-bottom:1.5px solid var(--ink);white-space:nowrap}
 .nlt td{padding:4px 6px;border-bottom:1px solid #EEF1F2;text-align:right;font-family:var(--f-mono);white-space:nowrap}
 .nlt th:first-child,.nlt td:first-child{text-align:left}.nlt td:first-child{font-family:inherit;font-weight:600}
-.nlt td.hd{font-weight:700;color:#7A1652}.nlt tfoot td{border-top:1.5px solid var(--ink);border-bottom:0;font-weight:700}
+.nlt td.hd{font-weight:700;color:#163F63}.nlt tfoot td{border-top:1.5px solid var(--ink);border-bottom:0;font-weight:700}
 .nlnote .nxn{display:none}.nlt input{width:64px;font:inherit;font-size:12px;padding:2px 4px;border:1px solid var(--rule);border-radius:3px;text-align:right}.nlt input::placeholder{color:#B4BEC5}
 .nlnote{font-size:11.5px;margin:6px 0 0}
 #nlprint-out{display:none}
@@ -551,7 +551,7 @@
 <link rel="preload" as="style" href="vendor/maplibre/maplibre-gl.css?v=5.24.0">
 </head>
 <body data-title="Route Explorer">
-<script src="site.js?v=125"></script>
+<script src="site.js?v=126"></script>
 <main id="main">
 <h1 class="sr">Route Explorer</h1>
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
@@ -568,7 +568,7 @@
     <div id="x3" hidden><b>Simulate the flight</b><div class="x3row"><button class="btn pri" id="x3play" aria-label="Fly the route">▶ Fly the route</button><input type="range" id="x3r" min="0" max="100" step="0.01" value="0" aria-label="Position along the route"><button class="btn x3more" id="x3more" type="button" aria-expanded="false" aria-label="3D settings" title="3D settings"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.5"/><circle cx="8" cy="17" r="2.5"/></svg></button></div><div class="x3o" id="x3o">Move the slider to fly along the route.</div>
       <div class="x3row x3c"><span class="seg3" id="x3cam" role="group" aria-label="Camera"><button type="button" data-c="chase" title="Behind and above the aircraft">Chase</button><button type="button" data-c="cockpit" title="From the aircraft, looking ahead along the track">Cockpit</button><button type="button" data-c="ov" class="on" title="The whole route">Overview</button></span><label>Speed <select id="x3spd" aria-label="Simulation speed"><option value="1">×1</option><option value="5" selected>×5</option><option value="10">×10</option><option value="20">×20</option><option value="30">×30</option><option value="60">×60</option></select></label><label id="x3acl" hidden>Aircraft <select id="x3ac" aria-label="Aircraft model"><option value="off" selected>Symbol</option><option value="auto">3D: auto</option><option value="da42">DA42</option><option value="b200">King Air</option><option value="a320">A320</option></select></label></div>
       <div class="x3row x3look" id="x3look" role="group" aria-label="Look around"><span>Look</span><button type="button" data-l="l" aria-label="Look left" title="Look left (←)">◀</button><button type="button" data-l="u" aria-label="Look up" title="Look up (↑)">▲</button><button type="button" data-l="d" aria-label="Look down" title="Look down (↓)">▼</button><button type="button" data-l="r" aria-label="Look right" title="Look right (→)">▶</button><button type="button" data-l="0" title="Look ahead again (C, or double-click the map)">Centre</button></div>
-      <div class="x3leg" id="x3leg" hidden><span><i style="background:#2E7D4F"></i>Margin OK</span><span><i style="background:#C77700"></i>Inside the clearance</span><span><i style="background:#B3261E"></i>Below terrain</span><span><i style="background:#9A1E68"></i>Not checked</span></div>
+      <div class="x3leg" id="x3leg" hidden><span><i style="background:#2E7D4F"></i>Margin OK</span><span><i style="background:#C77700"></i>Inside the clearance</span><span><i style="background:#B3261E"></i>Below terrain</span><span><i style="background:#1F5A8F"></i>Not checked</span></div>
       <p class="note x3h" id="x3pm" hidden>Choose Altitude line or Climb and descent in the profile to colour the route by terrain margin.</p></div>
     <div class="x3row x3s"><label><span id="x3ex">Terrain ×1.2</span> <select id="x3exs" aria-label="Terrain exaggeration"><option value="1">×1</option><option value="1.2" selected>×1.2</option><option value="1.5">×1.5</option><option value="2">×2</option><option value="3">×3</option></select></label><label id="x3ltl" hidden>Light <select id="x3lt" aria-label="Direction of the relief shading light"><option value="315" selected>from NW</option><option value="225">from SW</option><option value="135">from SE</option><option value="45">from NE</option></select></label><label>Contours <select id="x3ct" aria-label="Contour lines"><option value="0" selected>Off</option><option value="500">500 ft</option><option value="1000">1000 ft</option></select></label><button class="btn" id="x3reset">Reset view</button></div>
     <p class="note x3h" id="x3d"></p><p class="note x3h" id="x3hint">Drag to rotate · right-drag, Shift-drag or two fingers to move · scroll or pinch to zoom</p><p class="note x3h" id="x3hml" hidden>Drag to move · right-drag or two fingers to turn and tilt · scroll or pinch to zoom</p>
@@ -822,11 +822,11 @@
 <script src="flightlink.js?v=2"></script>
 <script src="terrain.js?v=3"></script>
 <script src="wmm.js?v=2"></script>
-<script src="rxmap.js?v=31"></script>
+<script src="rxmap.js?v=32"></script>
 <script src="aip.js?v=7"></script>
 <script src="windsaloft.js?v=4"></script>
-<script src="cloudcol.js?v=2"></script>
-<script src="route.js?v=2"></script>
+<script src="cloudcol.js?v=3"></script>
+<script src="route.js?v=3"></script>
 <script>try{ if(matchMedia("(max-width:520px)").matches){ const r=document.getElementById("rtxt"); const f=()=>{ r.placeholder=LAB.lang==="no"?"Flyplass / rute":"Airport or route"; }; f(); LAB.onLang(f); } }catch(e){}</script>
 </body>
 </html>

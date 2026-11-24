@@ -207,10 +207,10 @@
     const lazy = {};
     const cssOnce = href => new Promise(res => { if (document.querySelector(`link[href="${href}"]`)) return res(); const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; l.onload = l.onerror = () => res(); document.head.appendChild(l); });
     function needNB() {
-      return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=6'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=2')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=6'))])
+      return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=7'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=3')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=6'))])
         .then(() => { window.WSNB.init(EXT); lazy.nbOk = true; S.index = null; }).catch(e => { lazy.nb = null; throw e; }));
     }
-    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=6'), window.WSASK ? 0 : A.loadScript('ask.js?v=14')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
+    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=7'), window.WSASK ? 0 : A.loadScript('ask.js?v=14')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
     /* a tab whose code is still loading: a quiet line, then the real view (render() remounts it) */
     function mountLazy(box, need) {
       let ok = false, dead = false;

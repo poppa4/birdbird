@@ -16,7 +16,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Clouds, stability and fog</title>
 <link rel="stylesheet" href="lab.css?v=15">
-<link rel="stylesheet" href="site.css?v=37">
+<link rel="stylesheet" href="site.css?v=38">
 <style>
 .kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
 .kfull>summary{width:auto!important;max-width:100%}
@@ -57,7 +57,7 @@
 .tcard{position:absolute;z-index:3;right:10px;bottom:10px;width:min(330px,calc(100% - 20px));background:rgba(12,16,20,.86);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px 11px;color:#DDE4EA;font-size:12.5px;line-height:1.45;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .tcard[hidden]{display:none}
 .tcard .th{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
-.tcard .th b{font-family:var(--f-mono);font-size:13px;color:#fff;background:rgba(228,107,174,.25);border:1px solid rgba(228,107,174,.6);border-radius:3px;padding:0 5px}
+.tcard .th b{font-family:var(--f-mono);font-size:13px;color:#fff;background:rgba(127,178,229,.25);border:1px solid rgba(127,178,229,.6);border-radius:3px;padding:0 5px}
 .tcard .th span{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:15px;color:#fff}
 .tcard .tb{font-family:var(--f-mono);font-size:10.5px;color:#9FB0BE;margin-bottom:6px;letter-spacing:.02em}
 .tcard dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:3px 10px}
@@ -84,7 +84,7 @@ body.depth-instructor .tcard{font-size:14px;width:min(380px,calc(100% - 20px))}
 </style>
 </head>
 <body data-title="Clouds, stability and fog">
-<script src="site.js?v=125"></script>
+<script src="site.js?v=126"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
@@ -200,9 +200,9 @@ body.depth-instructor .tcard{font-size:14px;width:min(380px,calc(100% - 20px))}
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of one rising parcel. The dry adiabatic lapse rate is 3 °C per 1000 ft and the parcel’s dew point falls 0.5 °C per 1000 ft, so the cloud base is (T − Td) × 400 ft. The saturated lapse rate is computed from the temperature and the ISA pressure at each height (about 1.2–2.8 °C per 1000 ft). The air around has one straight lapse rate up to a tropopause at 36 000 ft (with heating, the layer below the cloud base is well mixed), with an optional inversion. There is no mixing with the air around, no ice phase and no moisture aloft, so real clouds are often smaller and real soundings are never straight lines. The cloud-type heights are typical mid-latitude values. The fog model uses typical cooling rates and wind and cloud effects and is illustrative only. Use the TAF, the METAR trend and the forecast charts for decisions.</p>
 </div>
 <script src="lab.js?v=60"></script>
-<script src="concepts.js?v=10"></script>
-<script src="clouds-lab.js?v=11"></script>
-<script src="corepic.js?v=13"></script>
+<script src="concepts.js?v=11"></script>
+<script src="clouds-lab.js?v=12"></script>
+<script src="corepic.js?v=14"></script>
 <script src="pic-clouds.js?v=2"></script>
 </body>
 </html>

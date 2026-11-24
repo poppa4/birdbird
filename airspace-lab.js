@@ -8,8 +8,8 @@
 const {L,el,nf}=LAB, A=window.ASPC, t2=A.t2;
 const isIns=()=>document.body.classList.contains('depth-instructor');
 const MONO='IBM Plex Mono, monospace', SANS='"Public Sans", sans-serif';
-const CC={C:'#5E9BD6',D:'#3FB6A8',E:'#B48AD8',F:'#9AA5AF',G:'#7D8B95',A:'#E46BAE',B:'#E46BAE'};
-const COL={ac:'#E46BAE',r:'#EC5A47',rmz:'#F0B440',cloud:'#C9D2DA',ok:'#71CC93',bad:'#EC5A47',amb:'#F0B440',ink:'#E6EBEF',ink2:'#AEB8C1',ink3:'#7D8B95'};
+const CC={C:'#5E9BD6',D:'#3FB6A8',E:'#B48AD8',F:'#9AA5AF',G:'#7D8B95',A:'#7FB2E5',B:'#7FB2E5'};
+const COL={ac:'#7FB2E5',r:'#EC5A47',rmz:'#F0B440',cloud:'#C9D2DA',ok:'#71CC93',bad:'#EC5A47',amb:'#F0B440',ink:'#E6EBEF',ink2:'#AEB8C1',ink3:'#7D8B95'};
 const XMAX=40, HMAX=30000;
 
 /* =====================================================================
@@ -175,7 +175,7 @@ function drawSide(){ if(!CS.w) return; const g=CS.ctx, {W,H,pl,pr,top,yg,X,Y,sm}
   txt(g,'NM',pl-6,H-4,{al:'right',size:9,col:COL.ink3,mono:1,w:500});
   /* the aircraft */
   const ax=X(S.x), ay=Y(S.alt), c=!J.ok?COL.bad:J.clr==='svfr'||J.clr==='yes'?COL.amb:COL.ac;
-  g.strokeStyle=hex(c.startsWith('#')?c:'#E46BAE',.5); g.setLineDash([2,3]); g.beginPath(); g.moveTo(ax,ay+8); g.lineTo(ax,yg); g.stroke(); g.setLineDash([]);
+  g.strokeStyle=hex(c.startsWith('#')?c:'#7FB2E5',.5); g.setLineDash([2,3]); g.beginPath(); g.moveTo(ax,ay+8); g.lineTo(ax,yg); g.stroke(); g.setLineDash([]);
   g.strokeStyle='rgba(255,255,255,.25)'; g.beginPath(); g.moveTo(pl,ay); g.lineTo(pl+6,ay); g.stroke();
   plane(g,ax,ay,sm?.85:1,c,1);
   const tag=`${S.fr} ${fmtAlt(S.alt)}`; g.font=`600 ${Math.round(11*GS.fs)}px ${MONO}`; const tw=g.measureText(tag).width+12, tx0=Math.min(W-pr-tw-2,Math.max(pl+2,ax-tw/2)), ty=ay-24;
@@ -215,7 +215,7 @@ function drawPlan(){ if(!CP.w) return; const g=CP.ctx, W=CP.w, H=CP.h, sm=W<560;
   /* aerodromes, route, scale */
   g.fillStyle='#fff'; g.beginPath(); g.arc(cx,cy,3.5,0,7); g.fill(); txt(g,L(t2('Aerodrome','Flyplass')),cx+6,cy+14,{size:10.5,col:'#fff'});
   g.fillStyle='#C9D2DA'; g.beginPath(); g.arc(X(A.RMZ.x),cy,2.5,0,7); g.fill(); txt(g,L(t2('Airfield','Småflyplass')),X(A.RMZ.x)+5,cy+13,{size:10,col:'#C9D2DA'});
-  g.strokeStyle='rgba(228,107,174,.55)'; g.setLineDash([6,5]); g.lineWidth=1.4; g.beginPath(); g.moveTo(X(-XMAX),cy); g.lineTo(X(XMAX),cy); g.stroke(); g.setLineDash([]);
+  g.strokeStyle='rgba(127,178,229,.55)'; g.setLineDash([6,5]); g.lineWidth=1.4; g.beginPath(); g.moveTo(X(-XMAX),cy); g.lineTo(X(XMAX),cy); g.stroke(); g.setLineDash([]);
   g.strokeStyle='rgba(255,255,255,.5)'; g.lineWidth=1; const sx=W-pad-10*k-6, sy=H-14; g.beginPath(); g.moveTo(sx,sy); g.lineTo(sx+10*k,sy); g.stroke(); txt(g,'10 NM',sx+5*k,sy-4,{al:'center',size:9.5,col:'#C9D2DA',mono:1,w:500});
   txt(g,'N ↑',pad+4,top+12,{size:10,col:'#9FB0BE',mono:1,w:500});
   /* the altitude of this slice */
@@ -377,7 +377,7 @@ el('tasks').addEventListener('click',e=>{ const go=e.target.closest('[data-go]')
    {k:'tma',t:t2('TMA and control areas','TMA og kontrollområder'),d:t2('A control area starts at a <b>lower limit</b> above the ground. A TMA is one around busy aerodromes, often <b>stepped</b> so its lower limit rises away from the field; an airway is one shaped as a corridor.','Et kontrollområde starter på en <b>nedre grense</b> over bakken. Et TMA ligger rundt travle flyplasser, ofte i <b>trinn</b> slik at den nedre grensen stiger bort fra flyplassen; en luftvei er et formet som en korridor.'),
     ill:()=>sv(`${gnd}<path d="M20,40 L50,40 L50,32 L80,32 L80,24 L120,24 L120,32 L150,32 L150,40 L180,40 L180,6 L20,6 Z" fill="${hex(CC.C,.35)}" stroke="${CC.C}"/>${blk(80,24,40,34,CC.D,'')}${tx(100,18,'TMA','#fff','middle')}`),click:go('under'),to:'#avp'},
    {k:'lim',t:t2('Reading the limits','Les grensene'),d:t2('“3500 ft – FL195”: the volume begins <b>at</b> 3500 ft. Fly under it and you are not in it. Below the transition altitude limits are altitudes; above it, flight levels.','«3500 ft – FL195»: volumet begynner <b>på</b> 3500 ft. Fly under, og du er ikke i det. Under overgangshøyden er grensene høyder; over den, flygenivåer.'),
-    ill:()=>sv(`${gnd}${blk(10,8,180,24,CC.C,'3500 ft – FL195')}<line x1="10" y1="44" x2="190" y2="44" stroke="#E46BAE" stroke-dasharray="4 3"/>${tx(100,54,'3000 ft · G','#c9d2da','middle')}`),click:go('under'),to:'#avp'},
+    ill:()=>sv(`${gnd}${blk(10,8,180,24,CC.C,'3500 ft – FL195')}<line x1="10" y1="44" x2="190" y2="44" stroke="#7FB2E5" stroke-dasharray="4 3"/>${tx(100,54,'3000 ft · G','#c9d2da','middle')}`),click:go('under'),to:'#avp'},
    {k:'fl195',dp:true,t:t2('FL195 and above','FL195 og over'),d:t2('No <b>VFR above FL195</b> unless the authority allows it, and never above FL285 where 1000 ft vertical separation is used above FL290.','Ingen <b>VFR over FL195</b> uten at myndigheten tillater det, og aldri over FL285 der 1000 ft vertikal separasjon brukes over FL290.'),
     ill:()=>sv(`<line x1="6" y1="30" x2="194" y2="30" stroke="#EC5A47" stroke-dasharray="4 3"/>${tx(100,24,'FL195','#EC5A47','middle')}${tx(100,48,'VFR','#c9d2da','middle')}`),click:at({fr:'VFR',x:0,alt:21000}),to:'#avp'},
    {grp:t2('VFR in the weather','VFR i været')},

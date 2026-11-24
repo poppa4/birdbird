@@ -67,8 +67,8 @@
 @keyframes nsgpop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
 .nsg-hint,.nsg-why,.nsg-fb{margin:4px 0 0;font-size:13.5px;max-width:96ch;color:#C9D2D8}
 .nsg-hint b,.nsg-why b,.nsg-fb b{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;margin-right:6px}
-.nsg-hint b{color:#F0B440}.nsg-why b{color:#E46BAE}
-.nsg-why{border-left:2px solid rgba(228,107,174,.6);padding-left:10px;animation:nsgin .3s ease-out}
+.nsg-hint b{color:#F0B440}.nsg-why b{color:#7FB2E5}
+.nsg-why{border-left:2px solid rgba(127,178,229,.6);padding-left:10px;animation:nsgin .3s ease-out}
 @keyframes nsgin{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
 .nsg-fb.ok b{color:#63D9A0}.nsg-fb.no b{color:#EC5A47}
 .nsg-act,.nsg-opts,.nsg-in{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
