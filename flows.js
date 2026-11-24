@@ -188,14 +188,15 @@ function flowSel() { const s = $('fsel'), S = acKey(cur), mineS = FL.filter(f =>
   s.value = cur ? (cur.std ? 'std:' + cur.std : cur.ex ? 'ex:' + cur.ac : cur.id) : ''; phaseBar(stdS, mineS, no); }
 /* the flight as a timeline: every flow of this aircraft under its phase, in the order of a flight, with its step count and
    the open one marked; abnormal and memory items last. One tap opens a flow. The short starter is marked "Start here". */
+const short = (n, ph) => { const t = n.split(' · '); return t.length > 1 && ph.toLowerCase().startsWith(t[0].toLowerCase().slice(0, 12)) ? t.slice(1).join(' · ').replace(/^./, c => c.toUpperCase()) : n; };
 function phaseBar(stdS, mineS, no) { let bar = $('fphase'); if (!bar) { bar = document.createElement('nav'); bar.id = 'fphase'; bar.className = 'fph'; $('fstart').after(bar);
     bar.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; const s = $('fsel'); s.value = b.dataset.v; s.dispatchEvent(new Event('change')); }); }
   bar.setAttribute('aria-label', L({ en: 'Flows through the flight', no: 'Flows gjennom flygingen' }));
   const st = stdS.length ? starter(stdS[0].ac) : null, curV = cur ? (cur.std ? 'std:' + cur.std : cur.ex ? 'ex:' + cur.ac : cur.id) : '';
   const chip = (v, name, n, extra) => `<button type="button" data-v="${esc(v)}"${v === curV ? ' aria-current="true"' : ''}>${extra || ''}<span>${esc(name)}</span><i>${n}</i></button>`;
   const cols = F.PHASES.map(p => { const S = stdS.filter(x => x.phase === p[0]), M = mineS.filter(f => f.phase === p[0]); if (!S.length && !M.length) return '';
-    return `<li class="${p[0] === 'abn' ? 'abn' : ''}"><b>${esc(L({ en: p[1], no: p[2] }))}</b>` + S.map(x => chip('std:' + x.id, x.name[no ? 'no' : 'en'], x.n, st && x.id === st.id ? `<em>${esc(L({ en: 'Start here', no: 'Start her' }))}</em>` : '')).join('') + M.map(f => chip(f.id, f.name, f.steps.length, `<em class="me">${esc(L({ en: 'Mine', no: 'Min' }))}</em>`)).join('') + '</li>'; }).join('');
-  bar.hidden = !cols; bar.innerHTML = cols ? `<ol>${cols}</ol>` : '';
+    return `<li class="${p[0] === 'abn' ? 'abn' : ''}"><b>${esc(L({ en: p[1], no: p[2] }))}</b>` + S.map(x => chip('std:' + x.id, short(x.name[no ? 'no' : 'en'], L({ en: p[1], no: p[2] })), x.n, st && x.id === st.id ? `<em>${esc(L({ en: 'Start here', no: 'Start her' }))}</em>` : '')).join('') + M.map(f => chip(f.id, f.name, f.steps.length, `<em class="me">${esc(L({ en: 'Mine', no: 'Min' }))}</em>`)).join('') + '</li>'; }).join('');
+  bar.hidden = !cols; bar.innerHTML = cols ? `<ol>${cols}</ol>` : ''; $('fstart').classList.toggle('tl', !!cols && !mineS.some(f => !f.phase));
   const on = bar.querySelector('[aria-current]'); if (on) { const li = on.closest('li'), ol = bar.querySelector('ol'); if (li && ol && (li.offsetLeft < ol.scrollLeft || li.offsetLeft + li.offsetWidth > ol.scrollLeft + ol.clientWidth)) ol.scrollLeft = li.offsetLeft - 12; } }
 const phIx = p => { const i = F.PHASES.findIndex(x => x[0] === p); return i < 0 ? 99 : i; }, phN = p => { const x = F.PHASES.find(y => y[0] === p); return x ? L({ en: x[1], no: x[2] }) : ''; };
 /* a NORDAP flow opens as read-only, like an example: practise it at once; Build offers a copy to change */
@@ -218,7 +219,9 @@ function stepRow(s) { const other = cur.steps.filter(x => x.r !== s.r && x.k !==
       (cur.roles.length > 1 ? `<label>${L({ en: 'Layer', no: 'Lag' })} <select data-f="r">${cur.roles.map(r => `<option${r === s.r ? ' selected' : ''}>${r}</option>`).join('')}</select></label>` : '') +
       `<label class="fwide">${L({ en: 'Note (reference, limitation)', no: 'Notat (referanse, begrensning)' })} <input data-f="n" value="${esc(s.n || '')}" maxlength="400"></label>` +
       `<div class="fmb">${F.placed(s) ? `<button class="btn sm" data-a="unplace">${L({ en: 'Place again', no: 'Plasser på nytt' })}</button>` : ''}<button class="btn sm warn" data-a="del">${L({ en: 'Delete step', no: 'Slett steg' })}</button></div></div>` : '') + '</li>'; }
-function panel(scroll) { modeHint(); const p = $('fpanel'); $('app').classList.toggle('pon', !!P.on || W.on); $('fextag').hidden = !cur || !cur.ex; if (cur) $('fextag').textContent = cur.std ? L({ en: 'NORDAP · not an SOP', no: 'NORDAP · ikke en SOP' }) : L({ en: 'Example · not an SOP', no: 'Eksempel · ikke en SOP' }); if (!cur) { p.innerHTML = ''; return; } const ex = cur.ex; 
+function stepSync() { const k = mode === 'practise' ? (P.kind === 'draw' ? 3 : 2) : mode === 'watch' || mode === 'view' ? 1 : 0;
+  document.querySelectorAll('.fsteps3 button[data-step]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.step === k))); }
+function panel(scroll) { modeHint(); stepSync(); const p = $('fpanel'); $('app').classList.toggle('pon', !!P.on || W.on); $('fextag').hidden = !cur || !cur.ex; if (cur) $('fextag').textContent = cur.std ? L({ en: 'NORDAP · not an SOP', no: 'NORDAP · ikke en SOP' }) : L({ en: 'Example · not an SOP', no: 'Eksempel · ikke en SOP' }); if (!cur) { p.innerHTML = ''; return; } const ex = cur.ex; 
   const cockpitOpts = `<option value="img"${cur.ac === 'img' ? ' selected' : ''}>${esc(L({ en: 'My own photo or PDF', no: 'Mitt eget bilde eller PDF' }))}${cur.img && cur.img.name ? ' (' + esc(cur.img.name.slice(0, 24)) + ')' : ''}</option>` + `<optgroup label="${esc(L({ en: 'Real photos (free licence)', no: 'Ekte foto (fri lisens)' }))}">` + A.photos.map(a => `<option value="${a.id}"${cur.ac === a.id ? ' selected' : ''}>${esc(a.name)} · ${esc(L({ en: 'photo', no: 'foto' }))}</option>`).join('') + '</optgroup>' + acOpts(cur.ac);
   if (mode === 'build') {
     const R = cur.roles, unp = cur.steps.filter(s => s.r === role && !F.placed(s) && s.k === 'act').length;
@@ -746,7 +749,8 @@ function init() { load(); wirePanel(); manWire();
   $('fcrb').onclick = e => { e.stopPropagation(); const w = $('fcr'), on = w.classList.toggle('on'); e.currentTarget.setAttribute('aria-expanded', on); }; document.addEventListener('click', e => { if (!e.target.closest('#fcr')) { const w = $('fcr'); if (w) w.classList.remove('on'); } });
   $('zin').onclick = () => setZoom(zoom * 1.4); $('zout').onclick = () => setZoom(zoom / 1.4); $('zfit').onclick = fit; $('zfull').onclick = () => focusMode();
   pinch(); stickTop(); addEventListener('resize', stickTop, { passive: true }); addEventListener('orientationchange', () => setTimeout(stickTop, 300));
-  document.querySelectorAll('.fmode button').forEach(b => b.onclick = () => setMode(b.dataset.m));
+  document.querySelectorAll('.fmode button').forEach(b => b.onclick = () => { if (b.dataset.k) { if (mode !== 'practise') setMode('practise'); pStart(b.dataset.k); toStage(); return; } setMode(b.dataset.m); if (b.dataset.m === 'watch' && cur && cur.steps.length) wPlay(); });
+  $('fmenu').addEventListener('click', e => { const b = e.target.closest('button[data-mm]'); if (!b) return; $('fmenu').closest('details').open = false; setMode(b.dataset.mm); });
   $('fsel').onchange = e => { const v = e.target.value; if (mode === 'build' || mode === 'together') setMode('practise'); if (v.startsWith('std:')) return open(stdGet(v.slice(4))); if (v.startsWith('ex:')) open(F.example(v.slice(3), A)); else open(FL.find(f => f.id === v)); };
   $('fnew').onclick = newDialog; $('dnew').addEventListener('close', () => { if ($('dnew').returnValue === 'ok') createFlow(); });
   $('dsop').addEventListener('close', () => { if ($('dsop').returnValue !== 'ok' || !cur) return; const S = F.parseSop($('soptxt').value); if (!S.length) return; if (cur.ex) adoptExample();
