@@ -21,40 +21,65 @@ TEX = os.environ.get('COCKPIT_TEX', '/tmp/blender3d/tex')
 SHOTS = os.environ.get('COCKPIT_SHOTS', '/tmp/gltfshots')
 PANEL_IMG = os.environ.get('PANEL_IMG_DA42', '/tmp/blender3d/da42_full.png')
 
-PS, TILT = 0.00074, 10
+PS, TILT = 0.000685, 10          # one panel unit is 0.685 mm: the panel face is 1.00 m wide and 0.39 m high, as in the aircraft
 ZF, ZR, YS, YF, WW = -1.15, 1.65, -0.33, -1.05, 0.62
 EYE_L, EYE_R = (-0.27, 0.09, 0.0), (0.27, 0.09, 0.0)
-_PO = v3(-0.592, -0.010, -0.79)
+_PO = v3(-0.548, 0.01944, -0.70659)   # panel unit (0,0): the bottom edge of the face is 0.59 m below and 0.62 m ahead of the eye
 _EX = v3(PS, 0, 0); _EY = v3(0, -PS * math.cos(TILT * D2R), PS * math.sin(TILT * D2R))
 
 
-def qb(p0, c, p1, t):
-    return ((1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * c[0] + t * t * p1[0], (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * c[1] + t * t * p1[1])
+def _cubic(p0, p1, p2, p3, t):
+    a = (1 - t) ** 3; b = 3 * (1 - t) ** 2 * t; c = 3 * (1 - t) * t * t; d = t ** 3
+    return (a * p0[0] + b * p1[0] + c * p2[0] + d * p3[0], a * p0[1] + b * p1[1] + c * p2[1] + d * p3[1])
 
 
-# panel outline top edge (da42-3d.js panel backing shape), sampled
-LIP = [qb((18, 250), (18, 140), (130, 118), i / 6) for i in range(7)] + [qb((130, 118), (800, 46), (1470, 118), i / 24) for i in range(1, 25)] + \
-      [qb((1470, 118), (1582, 140), (1582, 250), i / 6) for i in range(1, 7)]
+def _outline(x0, vb, v1, c, n=16):
+    """da42panel.js FACE / RIM path sampled from the bottom-left corner over the arch to the bottom-right corner"""
+    left = [(x0, vb + (v1 - vb) * i / 6) for i in range(6)]
+    left += [_cubic((x0, v1), c[0], c[1], c[2], i / n) for i in range(n)]
+    left += [_cubic(c[2], c[3], c[4], c[5], i / n) for i in range(n + 1)]
+    return left + [(1600 - u, v) for (u, v) in left[-2::-1]]
+
+
+FACE_P = _outline(69, 770, 530, [(69, 360), (190, 262), (350, 217), (500, 196), (680, 194), (800, 194)])
+RIM_P = _outline(16, 778, 530, [(16, 330), (160, 215), (345, 168), (500, 146), (680, 144), (800, 144)])
 
 
 def topv(u):
-    us = [p[0] for p in LIP]; vs = [p[1] for p in LIP]
-    return float(np.interp(u, us, vs))
+    """top of the padded surround (panel units) above u"""
+    pts = [q for i, q in enumerate(RIM_P) if 5 <= i <= len(RIM_P) - 6]
+    return float(np.interp(u, [q[0] for q in pts], [q[1] for q in pts], left=778, right=778))
 
 
 def rect_center(r):
     return _PO + _EX * (r[0] + r[2] / 2) + _EY * (r[1] + r[3] / 2)
 
 
-R_MAIN = [18, 82, 1564, 688]
-R_PED = [560, 760, 480, 220]
+R_MAIN = [16, 144, 1568, 634]
 MAIN = SubPlane(R_MAIN, PS, list(rect_center(R_MAIN)), pitch=-TILT)
-# the engine-control console: its own plane, sloping down and aft between the seats from the bottom edge of the panel
-PSP, PEDP = 0.00063, 58
-LEV_D = 0.14            # power-lever pivot below the console face
-_PEY = v3(0, -math.cos(PEDP * D2R), math.sin(PEDP * D2R))
-_PTOP = MAIN.p(800, 772, -0.004)
-PED = SubPlane(R_PED, PSP, list(_PTOP + _PEY * (R_PED[3] * PSP / 2)), pitch=-PEDP)
+# The engine-control console, as in the aircraft: a small console sloping down and aft from the bottom edge of the panel (rudder
+# trim, parking brake, cabin heat and defrost), then the large console between the seats (power levers, fuel selectors, elevator
+# trim wheel, auxiliary pump switches). The drawing lays these out flat; each group is its own plane here (da42-3d.js subs).
+P1, P2 = 35, 82                        # the two console faces lean back 35° and 82° from the vertical
+E1 = v3(0, -math.cos(P1 * D2R), math.sin(P1 * D2R)); E2 = v3(0, -math.cos(P2 * D2R), math.sin(P2 * D2R))
+A0 = v3(0, -0.505, -0.612); L1 = 0.25; A1 = A0 + E1 * L1; L2 = 0.50; A2 = A1 + E2 * L2
+HW1, HW2 = 0.0625, 0.070               # half width of the small and the large console
+LEV_D = 0.10                           # power-lever pivot below the console face
+SUBS = {}
+
+
+def _sub(sid, rect, ps, pos, pitch):
+    SUBS[sid] = SubPlane(rect, ps, list(pos), pitch=-pitch); SUBS[sid].sid = sid
+
+
+_sub('rt', [696, 746, 208, 64], 0.000553, A0 + E1 * 0.035, P1)
+_sub('sl', [572, 772, 112, 180], 0.00098, A0 + E1 * 0.153, P1)
+_sub('pw', [664, 778, 190, 152], 0.000605, A1 + E2 * 0.066, P2)
+_sub('fs', [660, 900, 242, 78], 0.00054, A1 + E2 * 0.149, P2)
+_sub('tw', [906, 740, 86, 232], 0.00095, A1 + E2 * 0.294, P2)
+_sub('ax', [980, 874, 80, 90], 0.0008, A1 + E2 * 0.452, P2)
+_sub('emg', [526, 772, 68, 62], 0.0008, v3(-0.108, -0.532, -0.605), TILT)
+_sub('alt', [1026, 772, 68, 62], 0.0008, v3(0.108, -0.532, -0.605), TILT)
 
 
 def pp(u, v, o=0.0):
@@ -62,7 +87,10 @@ def pp(u, v, o=0.0):
 
 
 def cw(z):
-    return 0.5 + 0.12 * sstep(0, 1, (z - ZF) / 0.3) if z < -0.85 else (WW - 0.1 * sstep(0, 1, (z - 1.0) / 0.65) if z > 1.0 else WW)
+    """half width of the cabin at the canopy sill: widest at the seats, narrowing to the nose and to the tail"""
+    if z > 1.0:
+        return WW - 0.1 * sstep(0, 1, (z - 1.0) / 0.65)
+    return WW if z > -0.25 else WW - (WW - 0.50) * sstep(0, 1, (-0.25 - z) / 0.90)
 
 
 def ct(z):
@@ -92,6 +120,7 @@ MATS = {
     'carpet':    dict(color=(0.20, 0.20, 0.21), rough=0.97, tex='carpet', tile=0.25, nstr=1.0),
     'well':      dict(color=(0.10, 0.10, 0.11), rough=0.9, tex='carpet', tile=0.25, nstr=0.6),
     'leather':   dict(color=(0.20, 0.22, 0.25), rough=0.5, tex='leather', tile=0.12, nstr=0.55),
+    'leather_cream': dict(color=(0.62, 0.57, 0.47), rough=0.6, tex='leather', tile=0.12, nstr=0.5),
     'leather_dark': dict(color=(0.12, 0.12, 0.13), rough=0.55, tex='leather', tile=0.12, nstr=0.5),
     'seat_shell': dict(color=(0.70, 0.69, 0.66), rough=0.45),
     'alu':       dict(color=(0.62, 0.63, 0.65), rough=0.42, metal=0.55, tex='metal', tile=0.2, nstr=0),
@@ -162,93 +191,82 @@ def side_walls(g, cab):
 
 
 def console_body(g, cab):
-    """between the seats: under the sloping engine-control face, then a slim console with an armrest pad"""
-    top0 = PED.p(800, R_PED[1] - 4, 0.0015); bot0 = PED.p(800, R_PED[1] + R_PED[3] + 4, 0.0015)
-    hw0 = R_PED[2] / 2 * PSP + 0.001
-    st = [(top0[2] - 0.22, top0[1], hw0), (top0[2], top0[1], hw0), (bot0[2], bot0[1], hw0), (bot0[2] + 0.05, bot0[1] - 0.022, hw0 - 0.012),
-          (-0.44, -0.692, 0.105), (-0.36, -0.702, 0.074), (-0.30, -0.705, 0.066), (0.52, -0.705, 0.066), (0.575, -0.722, 0.066), (0.60, -0.78, 0.066), (0.612, YF - 0.02, 0.066)]
-    zz = [s[0] for s in st]; yy = [s[1] for s in st]; ww = [s[2] for s in st]
-    samp = sorted(set(zz + list(np.linspace(zz[2], zz[6], 14)) + list(np.linspace(zz[6], zz[7], 6))))
+    """under the two console faces, then on between the seats with an armrest pad"""
+    n1 = SUBS['rt'].pn; n2 = SUBS['pw'].pn; off = 0.0016
+    B0 = A0 + n1 * off; B1 = A1 + (n1 + n2) * off * 0.5; B2 = A2 + n2 * off
+    st = [(B0[2] - 0.20 * E1[2], B0[1] - 0.20 * E1[1], HW1), (B0[2], B0[1], HW1), (B1[2] - 0.02, B1[1] + 0.02 * E1[1] / E1[2], HW1), (B1[2] + 0.03, B1[1] + 0.03 * E2[1] / E2[2], HW2),
+          (B2[2], B2[1], HW2), (0.52, B2[1], HW2), (0.575, B2[1] - 0.018, HW2), (0.60, -0.85, HW2), (0.612, YF - 0.02, HW2)]
+    zz = [q[0] for q in st]; yy = [q[1] for q in st]; ww = [q[2] for q in st]
+    samp = sorted(set(zz + list(np.linspace(zz[1], zz[2], 6)) + list(np.linspace(zz[3], zz[4], 8)) + list(np.linspace(zz[4], zz[5], 5))))
     secs = []
     for z in samp:
-        y = float(np.interp(z, zz, yy)); hw = float(np.interp(z, zz, ww)); r = 0.016
+        y = float(np.interp(z, zz, yy)); hw = float(np.interp(z, zz, ww)); r = 0.012
         sec = [v3(-hw, YF, z), v3(-hw, (YF + y) / 2, z), v3(-hw, y - r, z)]
         sec += [v3(-hw + r - r * math.cos(t), y - r + r * math.sin(t), z) for t in np.linspace(0, math.pi / 2, 6)[1:]]
         sec += [v3(0, y, z)]
         sec += [v3(hw - r + r * math.sin(t), y - r + r * math.cos(t), z) for t in np.linspace(0, math.pi / 2, 6)[:-1]]
         sec += [v3(hw, y - r, z), v3(hw, (YF + y) / 2, z), v3(hw, YF, z)]
         secs.append(sec)
-    loft(g, secs, 'console', toward=v3(0, 2.0, 0.2))
-    rbox(g, (0.112, 0.026, 0.44), (0.014, 0.011, 0.03), 'leather_dark', m=T(0, -0.696, 0.27), seg=4, flat=(2, 1, 5))
+    # black top with rounded shoulders; padded leather down both sides
+    loft(g, [q[2:-2] for q in secs], 'black_matte', toward=v3(0, 2.0, 0.2))
+    loft(g, [q[:3] for q in secs], 'leather_cream', toward=v3(-2.0, -0.6, 0.0))
+    loft(g, [q[-3:] for q in secs], 'leather_cream', toward=v3(2.0, -0.6, 0.0))
+    rbox(g, (0.118, 0.026, 0.36), (0.014, 0.011, 0.03), 'leather_dark', m=T(0, B2[1] + 0.009, 0.31), seg=4, flat=(2, 1, 5))
+    # lever and trim-wheel slots; a body behind the two small panels beside the console (emergency gear, alternate air)
+    pw = SUBS['pw']; tw = SUBS['tw']
+    for u in (720, 790):
+        rbox(g, (0.009, 0.004, 104 * pw.ps), 0.004, 'rubber', m=pw.frame(u, 854, -0.0012), seg=1, flat=1)
+    rbox(g, (0.024, 0.004, 116 * tw.ps), 0.005, 'rubber', m=tw.frame(942, 858, -0.0012), seg=1, flat=1)
+    for sid in ('emg', 'alt'):
+        sp = SUBS[sid]; r = sp.rect
+        rbox(g, (r[2] * sp.ps + 0.004, 0.022, r[3] * sp.ps + 0.004), 0.004, 'panel_body', m=sp.frame(r[0] + r[2] / 2, r[1] + r[3] / 2, 0.0118), seg=2, flat=1)
+        tube(g, [sp.p(r[0] + r[2] / 2, r[1] + 4, 0.012), sp.p(r[0] + r[2] / 2, r[1] - 30, 0.03)], 0.012, 'panel_body', sides=8)
 
 
 def lip_frames():
-    """panel outline samples: point on the panel plane, in-plane outward normal, toward the crew"""
-    L = [qb((18, 250), (18, 140), (130, 118), i / 8) for i in range(9)] + [qb((130, 118), (800, 46), (1470, 118), i / 36) for i in range(1, 37)] + \
-        [qb((1470, 118), (1582, 140), (1582, 250), i / 8) for i in range(1, 9)]
-    exn = nrm(MAIN.ex); eyn = nrm(MAIN.ey); F = -MAIN.pn; out = []
-    for i, (u, v) in enumerate(L):
-        a = L[max(0, i - 1)]; b = L[min(len(L) - 1, i + 1)]
-        tu, tv = b[0] - a[0], b[1] - a[1]; k = math.hypot(tu, tv); tu /= k; tv /= k
-        out.append((u, MAIN.p(u, v, 0.0), exn * tv - eyn * tu, F))
-    return out
+    """the panel's outline in the cockpit: face edge and outer edge of the padded surround, sample by sample"""
+    return [(MAIN.p(a[0], a[1], 0.0), MAIN.p(b[0], b[1], 0.0)) for a, b in zip(FACE_P, RIM_P)]
 
 
-LIP_R, LIP_F = 0.012, 0.040
+LIP_H = 0.030           # how far the padded surround stands out from the panel
 
 
 def glare_lip():
-    """padded edge of the glareshield, standing out over the top of the panel (drawn over the live panel)"""
-    g = Geo(); secs = []
-    for (u, P, O, F) in lip_frames():
-        Cc = P + O * 0.009 + F * LIP_F
-        sec = [P - O * 0.006 + F * 0.0012, P - O * 0.0045 + F * (LIP_F * 0.5), P - O * 0.003 + F * LIP_F]
-        sec += [Cc + (F * math.cos(t) + O * math.sin(t)) * LIP_R for t in np.linspace(-math.pi / 2, math.pi / 2, 9)[1:]]
-        sec += [P + O * 0.024 + F * (LIP_F * 0.5), P + O * 0.026]
+    """padded surround of the panel: a thick black roll from the face edge to the outer edge, all the way round the arch and
+    down both sides (drawn over the live panel)"""
+    g = Geo(); secs = []; F = -MAIN.pn
+    for (Pin, Pout) in lip_frames():
+        O = Pout - Pin; w = float(np.linalg.norm(O)); O = O / w
+        Cc = Pin + O * (w * 0.5) + F * 0.008
+        sec = [Pin - O * 0.004 + F * 0.0012]
+        sec += [Cc - O * math.cos(t) * (w * 0.5 + 0.003) + F * math.sin(t) * LIP_H for t in np.linspace(0.10, math.pi, 13)]
+        sec += [Pout - O * 0.001]
         secs.append(sec)
-    loft(g, secs, 'glareshield', toward=v3(-0.27, 0.6, 0.4))
+    loft(g, secs, 'glareshield', toward=v3(-0.27, 0.6, 0.6))
     for sec in (secs[0], secs[-1]):                                  # close both ends
         c = np.mean(sec, 0); g.add(np.array([c] + sec), [[0, k + 1, k + 2] for k in range(len(sec) - 1)], 'glareshield', toward=c + v3(0, -1, 0))
     return g
 
 
 def panel_body(g, cab):
-    # backing behind the face, and the strip from the face edge out to the wall on both sides
-    grid(g, 30, 1, lambda a, b: pp(18 + a * 1564, topv(18 + a * 1564) + b * (770 - topv(18 + a * 1564)), 0.012), 'panel_body', toward=cab)
-    for sd, u0 in ((-1, 18), (1, 1582)):
-        def cheek(a, b):
-            p = pp(u0, 236 + b * (772 - 236), 0.0004); xw = sd * (cw(p[2]) - 0.028)
-            return v3(lerp(p[0], xw, a), p[1], p[2])
-        grid(g, 2, 8, cheek, 'glareshield', toward=cab)
-    # the two small panels hanging below the panel beside the console (emergency gear, alternate air): a body behind each
-    for u0 in (520, 1020):
-        rbox(g, (80 * PS, 0.030, 74 * PS), 0.004, 'panel_body', m=MAIN.frame(u0 + 40, 805, 0.0158), seg=2, flat=1)
-    # under the panel: padded lower edge left and right of the console, and the underside running forward
-    grid(g, 14, 3, lambda a, b: pp(18 + a * 1564, 772, 0.0) + v3(0, 0.05 * b, -0.34 * b), 'black_matte', toward=v3(0, -1, 0.2))
-    hw0 = R_PED[2] / 2 * PSP + 0.001
-    for sd in (-1, 1):
-        x0 = sd * 0.205; x1 = sd * (WW - 0.028)
-        tube(g, [v3(lerp(x0, x1, t), pp(800, 774, 0)[1], pp(800, 774, -0.006)[2]) for t in np.linspace(0, 1, 9)], 0.017, 'leather_dark', sides=12, ry=0.013, up=-MAIN.pn)
-    # glareshield: from behind the padded edge forward to the base of the windshield, and down both sides to the canopy frame
+    # backing behind the face and its surround
+    R3 = [MAIN.p(u, v, 0.012) for (u, v) in RIM_P]; c = MAIN.p(800, 520, 0.012)
+    g.add(np.array([c] + R3), [[0, k + 1, k + 2] for k in range(len(R3) - 1)], 'panel_body', toward=cab)
+    # the small panel below the left end (alternate static valve, oxygen control): a body behind it
+    rbox(g, (112 * PS, 0.022, 50 * PS), 0.004, 'panel_body', m=MAIN.frame(130, 797, 0.0118), seg=2, flat=1)
+    # under the panel, running forward
+    grid(g, 14, 3, lambda a, b: pp(16 + a * 1568, 778, 0.0) + v3(0, 0.05 * b, -0.34 * b), 'black_matte', toward=v3(0, -1, 0.2))
+    # glareshield: from the outer edge of the surround forward to the base of the windshield, and down both sides
     fr = lip_frames(); n = len(fr) - 1
-    L3 = [P + O * 0.026 for (u, P, O, F) in fr]
-    F3 = [canopy(ZF + 0.01, ((u - 800) / 782) * 0.985) + v3(0, -0.004, 0) for (u, P, O, F) in fr]
+    L3 = [Pout - nrm(Pout - Pin) * 0.006 + MAIN.pn * 0.0006 for (Pin, Pout) in fr]
+    F3 = [canopy(ZF + 0.012, max(-0.97, min(0.97, Pout[0] / 0.548 * 0.97))) + v3(0, -0.004, 0) for (Pin, Pout) in fr]
     def shroud(a, b):
-        f = a * n; i = min(n - 1, int(f)); t = f - i
-        A = L3[i] + (L3[i + 1] - L3[i]) * t; Bq = F3[i] + (F3[i + 1] - F3[i]) * t
-        p = A + (Bq - A) * b; p[1] += math.sin(b * math.pi) * 0.010; return p
-    grid(g, n, 8, shroud, 'glareshield', toward=v3(-0.27, 0.6, 0))
-    for sd, i in ((-1, 0), (1, n)):
-        def skirt(a, b):
-            top = lerp(L3[i], F3[i], a); z = top[2]
-            return v3(lerp(top[0], sd * (cw(z) - 0.028), b), lerp(top[1], YS + 0.046, b), z)
-        grid(g, 8, 4, skirt, 'glareshield', toward=cab)
-    # gear and flap gates on the panel; lever and trim slots on the console
-    for (u, v, h) in ((690, 700, 72), (880, 700, 72)):
+        i = int(round(a * n)); A = L3[i]; Bq = F3[i]
+        p = A + (Bq - A) * b; p[1] += math.sin(b * math.pi) * 0.012 * max(0.0, 1 - abs(A[0]) / 0.56); return p
+    grid(g, 8, n, lambda b, a: shroud(a, b), 'glareshield', toward=v3(0, 5.0, -0.9))    # (the sheet's middle face is on top)
+    # gear and flap gates on the panel
+    for (u, v, h) in ((712, 713, 72), (1120, 708, 72)):
         rbox(g, (0.014, 0.004, h * PS), 0.005, 'black', m=MAIN.frame(u, v, -0.001), seg=2, flat=1)
-    for u in (720, 790):
-        rbox(g, (0.010, 0.004, 104 * PSP), 0.004, 'rubber', m=PED.frame(u, 854, -0.0012), seg=1, flat=1)
-    rbox(g, (0.022, 0.004, 116 * PSP), 0.005, 'rubber', m=PED.frame(942, 858, -0.0012), seg=1, flat=1)
 
 
 def belt(g, xc, z0, cush_y, recline):
@@ -270,7 +288,7 @@ def belt(g, xc, z0, cush_y, recline):
 def shell():
     g = Geo(); cab = v3(0, -0.35, 0.2)
     grid(g, 12, 28, lambda u, v: (-0.6 + u * 1.2, YF, ZF + v * (ZR - ZF)), 'carpet', toward=cab)
-    grid(g, 12, 8, lambda u, v: (-0.6 + u * 1.2, YF + v * (YS - YF + 0.05), ZF), 'well', toward=cab)
+    grid(g, 12, 8, lambda u, v: ((-1 + 2 * u) * (cw(ZF) + 0.004), YF + v * (YS - YF), ZF), 'well', toward=cab)
     side_walls(g, cab)
     # roll-over bow behind the front seats and the rear bow, both running down into the canopy frame
     for z, w, d in ((0.47, 0.050, 0.026), (1.60, 0.036, 0.022)):
@@ -321,7 +339,7 @@ def exterior():
     # nose: from the base of the windshield forward
     def nose(u, v):
         a = (-1 + 2 * u) * 0.999; z = ZF - 0.01 - v * 1.75; k = (1 - v ** 2.2) ** 0.55
-        w = cw(ZF) * 1.03 * k; yt = -0.055 - 0.50 * v ** 1.7; yb = YS - 0.03 - 0.36 * v ** 1.3
+        w = cw(ZF) * 1.03 * k; yt = -0.068 - 0.28 * v - 0.30 * v * v; yb = YS - 0.03 - 0.40 * v ** 1.3
         th = a * math.pi / 2
         return v3(w * spw(math.sin(th), 0.8), yb + (yt - yb) * abs(math.cos(th)) ** 0.8, z)
     grid(g, 24, 14, nose, 'skin', toward=v3(0, 3, -2))
@@ -378,8 +396,9 @@ def build():
     objs['exterior'] = C.to_object('exterior', exterior(), parent=root, ao=False)
     for nm, sd in (('prop_L', -1), ('prop_R', 1)):
         objs[nm] = C.to_object(nm, propeller(sd), parent=root, ao=False)
-    objs['panel_face'] = MAIN.face('panel_face', root, nu=30, nv=8, outline=topv)
-    objs['pedestal_face'] = PED.face('pedestal_face', root, nu=4, nv=3, off=-0.0008)
+    objs['panel_face'] = MAIN.face('panel_face', root, nu=56, nv=8, outline=topv)
+    for sid, sp in SUBS.items():
+        objs[sid + '_face'] = sp.face(sid + '_face', root, nu=2, nv=2, off=-0.0008)
     g = Geo(); grid(g, 30, 16, lambda a, b: canopy(ZF + 0.005 + b * (0.47 - ZF - 0.01), -1 + 2 * a), 'glass', toward=v3(0, -0.2, 0))
     objs['glass'] = C.to_object('glass', g, parent=root, ao=False)
     g = Geo(); grid(g, 30, 14, lambda a, b: canopy(0.47 + b * (ZR - 0.47 - 0.005), -1 + 2 * a), 'glass', toward=v3(0, -0.2, 0.5))
@@ -402,22 +421,22 @@ def build():
         ctrl[nm] = dict(pivot=pv, rotate_pitch=dict(axis=[1, 0, 0], unit='deg', min=-18, max=18, note='+ = top aft (pull)'),
                         rotate_roll=dict(axis=[0, 0, -1], unit='deg', min=-17, max=17, note='+ = top right; apply pitch then roll (Euler XZ, as da42-3d.js)'))
     # padded glareshield edge: static, but in front of the live panel, so its own unit (foreground pass in the app)
-    lp = MAIN.p(800, 82, -LIP_F)
+    lp = MAIN.p(800, 144, -LIP_H)
     objs['glare_lip'] = C.to_object('glare_lip', glare_lip(), pivot=lp, parent=root)
     ctrl['glare_lip'] = dict(pivot=lp, translate=dict(axis=[0, 1, 0], positions={'FIXED': 0}), note='does not move')
     # power levers on the engine-control console (pivot behind the face at the slot centre)
-    for nm, u in (('power_L', 720), ('power_R', 790)):
-        piv = PED.p(u, 854, LEV_D); out = -PED.pn
+    pw = SUBS['pw']
+    for nm, u, sd in (('power_L', 720, -1), ('power_R', 790, 1)):
+        piv = pw.p(u, 854, LEV_D); out = -pw.pn
         m = basis(piv, v3(1, 0, 0), out, np.cross(v3(1, 0, 0), out))
-        g = Geo(); rbox(g, (0.007, LEV_D + 0.034, 0.016), 0.003, 'alu', m=M(m, T(0, (LEV_D + 0.034) / 2, 0)), seg=2, flat=1)
-        def knob(q, n):
-            x, y, z = q; return (x, y + 0.004 * (1 - (z / 0.026) ** 2), z)
-        rbox(g, (0.031, 0.034, 0.052), (0.011, 0.013, 0.018), 'knob_black', m=M(m, T(0, LEV_D + 0.044, 0)), seg=5, flat=(1, 1, 3), deform=knob)
+        g = Geo(); rbox(g, (0.007, LEV_D + 0.078, 0.018), 0.003, 'alu', m=M(m, T(0, (LEV_D + 0.078) / 2, 0)), seg=2, flat=1)
+        # the handle: a black bar across the top of the lever, reaching outward
+        rbox(g, (0.058, 0.030, 0.034), (0.012, 0.013, 0.014), 'knob_black', m=M(m, T(sd * 0.016, LEV_D + 0.088, 0)), seg=5, flat=(3, 1, 1))
         objs[nm] = C.to_object(nm, g, pivot=piv, parent=root)
-        ang = lambda v: round(-math.degrees(math.atan((854 - v) * PSP / LEV_D)), 2)
-        ctrl[nm] = dict(pivot=piv, rotate=dict(axis=[1, 0, 0], unit='deg', positions={'MAX': ang(802), 'IDLE': ang(906)}, value_to_angle='angle = −atan((854 − v)·%g/%g), v = 906 − 104·power (panel units); − = knob up/forward' % (PSP, LEV_D), note='modelled at mid travel (0°)'))
+        ang = lambda v: round(-math.degrees(math.atan((854 - v) * pw.ps / LEV_D)), 2)
+        ctrl[nm] = dict(pivot=piv, rotate=dict(axis=[1, 0, 0], unit='deg', positions={'MAX': ang(802), 'IDLE': ang(906)}, value_to_angle='angle = −atan((854 − v)·%g/%g), v = 906 − 104·power (panel units); − = knob up/forward' % (pw.ps, LEV_D), note='modelled at mid travel (0°)'))
     # flap switch: flap-shaped tab in its gate, translates down the panel UP / APP / LDG
-    p = pp(880, 670, -0.002); dn = nrm(MAIN.ey)
+    p = pp(1120, 678, -0.002); dn = nrm(MAIN.ey)
     fm = basis(p, v3(1, 0, 0), -MAIN.pn, dn)
     g = Geo()
     rbox(g, (0.006, 0.02, 0.006), 0.002, 'chrome', m=M(fm, T(0, 0.01, 0)), seg=1, flat=1)
@@ -425,7 +444,7 @@ def build():
     objs['flap_switch'] = C.to_object('flap_switch', g, pivot=p, parent=root)
     ctrl['flap_switch'] = dict(pivot=p, translate=dict(axis=list(np.round(dn, 6)), positions={'UP': 0, 'APP': 30 * PS, 'LDG': 60 * PS}))
     # gear handle: round wheel knob on a rod, translates down the gate (UP modelled)
-    p = pp(690, 670, -0.002)
+    p = pp(712, 683, -0.002)
     g = Geo()
     tube(g, [p, p - MAIN.pn * 0.045], 0.004, 'chrome', sides=8)
     gm = M(basis(p - MAIN.pn * 0.05, v3(1, 0, 0), -MAIN.pn, dn), RZ(math.pi / 2))
@@ -433,11 +452,11 @@ def build():
     objs['gear_handle'] = C.to_object('gear_handle', g, pivot=p, parent=root)
     ctrl['gear_handle'] = dict(pivot=p, translate=dict(axis=list(np.round(dn, 6)), positions={'UP': 0, 'DOWN': 60 * PS}))
     # elevator trim wheel (vertical in the console)
-    wc = PED.p(942, 858, 0.028)
+    wc = SUBS['tw'].p(942, 858, 0.034)
     g = Geo()
-    gear = [((0.048 if k % 2 == 0 else 0.045) * math.cos(2 * math.pi * k / 64), (0.048 if k % 2 == 0 else 0.045) * math.sin(2 * math.pi * k / 64)) for k in range(64)]
+    gear = [((0.056 if k % 2 == 0 else 0.053) * math.cos(2 * math.pi * k / 72), (0.056 if k % 2 == 0 else 0.053) * math.sin(2 * math.pi * k / 72)) for k in range(72)]
     prism(g, gear, 0.016, 'black', m=M(T(*wc), RY(math.pi / 2)))
-    rbox(g, (0.018, 0.006, 0.01), 0.002, 'white', m=M(T(*wc), RX(0.3), T(0, 0.046, 0)), seg=1, flat=1)
+    rbox(g, (0.020, 0.006, 0.01), 0.002, 'white', m=M(T(*wc), RX(0.3), T(0, 0.054, 0)), seg=1, flat=1)
     objs['trim_wheel'] = C.to_object('trim_wheel', g, pivot=wc, parent=root)
     ctrl['trim_wheel'] = dict(pivot=wc, rotate=dict(axis=[1, 0, 0], unit='deg', min=-540, max=540, note='+ = top of wheel moves aft (nose up)'))
     # rudder pedals
@@ -462,14 +481,14 @@ def main():
     raw = '/tmp/blender3d/da42-raw.glb'
     C.export_glb(raw, [root] + list(objs.values()))
     print(C.gltfpack(raw, os.path.join(OUT, 'da42-cockpit.glb')))
-    faces = {'panel_face': MAIN, 'pedestal_face': PED}
+    faces = {'panel_face': MAIN, **{sid + '_face': sp for sid, sp in SUBS.items()}}
     side = dict(
         aircraft='DA42', file='da42-cockpit.glb', units='metres', frame='x right, y up, z aft (forward = −z); same frame as da42-3d.js/cockpit3d.js',
         origin='aircraft centre line at the cabin reference height (9 cm below the left-seat design eye)',
         eye=dict(left=list(EYE_L), right=list(EYE_R)), triangles=tris,
         nodes=sorted([o.name for o in objs.values()] + ['da42_cockpit']),
         faces={k: dict(p.json(), drawing='da42panel.js 1600×980', drawing_size=[1600, 980], uv='u = (x − rect.x)/rect.w, v = (y − rect.y)/rect.h (glTF UV, v down: texture.flipY = false)',
-                       **({'top_edge': 'follows the panel outline of da42-3d.js; UV spans the whole rect'} if k == 'panel_face' else {'note': 'its own plane (da42-3d.js subs: ped), sloping down and aft from the bottom edge of the panel'})) for k, p in faces.items()},
+                       **({'top_edge': 'follows the padded surround of the panel (da42panel.js RIM); UV spans the whole rect'} if k == 'panel_face' else {'note': 'a console group on its own plane (da42-3d.js subs)'})) for k, p in faces.items()},
         controls={k: {kk: (list(np.round(vv, 5)) if isinstance(vv, np.ndarray) else vv) for kk, vv in d.items()} for k, d in ctrl.items()},
         materials_note='PBR (metal/rough) with tiling detail maps on TEXCOORD_0 and a baked AO atlas as occlusionTexture on TEXCOORD_1 (three r128: aoMap via uv2).',
         compression='EXT_meshopt_compression + KHR_mesh_quantization (gltfpack -c); needs GLTFLoader.setMeshoptDecoder(MeshoptDecoder)')

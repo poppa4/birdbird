@@ -331,7 +331,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="avx.js?v=7"></script>
 <script src="panellayers.js?v=2"></script>
 <script src="panelzoom.js?v=6"></script>
-<script src="da42panel.js?v=8"></script>
+<script src="da42panel.js?v=9"></script>
 <script src="da42procs.js?v=5"></script>
 <script src="ownck.js?v=5"></script>
 <script src="otw.js?v=17"></script>
@@ -555,7 +555,7 @@ const Z={s:1,tx:0,ty:0,reg:'overview',lock:false};
 let PZ=null;
 function stageSize(){ return {w:PST.clientWidth,h:PST.clientHeight}; }
 /* 2D: a few large areas to tap */
-const AREA={aTop:[290,92,1020,128],aPfd:[30,205,740,450],aMfd:[770,205,810,450],aLower:[230,632,1150,348]}, AREAS=Object.keys(AREA);
+const AREA={aTop:[150,150,1300,216],aPfd:[60,368,700,316],aMfd:[750,368,790,316],aLower:[70,660,1460,320]}, AREAS=Object.keys(AREA);
 Object.assign(P.REG,AREA);
 function zoomTo(reg,instant,force){
   if(Z.lock&&!force&&reg!==Z.reg) { flash(L({en:'View is locked — unlock to zoom',no:'Visningen er låst — lås opp for å zoome'})); return; }
@@ -583,7 +583,7 @@ function zoomTo(reg,instant,force){
 let OV=null, otwVis=true, otwKey='', otwH=0;
 function ovFit(w,h){ let r=P.REG.overview; if(skyOn()){ const k=DA42P.SKY*(h<520?0.5:1); r=[r[0],r[1]-k,r[2],r[3]+k]; } const s=Math.min(w/r[2],h/r[3]);
   return {s,tx:w/2-(r[0]+r[2]/2)*s,ty:h-P.H*s}; }
-function otwFit(w,h,instant){ const o=OV; if(!o) return; const hh=Math.round(h*0.46), lip=o.ty+DA42P.LIP*o.s, cx=o.tx+510*o.s; // cx: straight ahead of the left-seat pilot (PFD attitude)
+function otwFit(w,h,instant){ const o=OV; if(!o) return; const hh=Math.round(h*0.46), lip=o.ty+DA42P.LIP*o.s, cx=o.tx+463*o.s; // cx: straight ahead of the left-seat pilot (PFD attitude)
   const k=hh+','+lip+','+cx+','+w; if(k!==otwKey){ otwKey=k; otwH=hh; const sk=el('otwSky');
     if(sk) sk.style.setProperty('--hz',Math.round(lip-(w/2)/Math.tan(38*Math.PI/180)*Math.tan(OTW_NOSE*Math.PI/180))+'px');
     if(window.OTW&&OTW.frame) OTW.frame({lip,nose:OTW_NOSE,cx}); }

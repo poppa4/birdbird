@@ -335,13 +335,13 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="glass.js?v=6"></script>
 <script src="avx.js?v=7"></script>
 <script src="panellayers.js?v=2"></script>
-<script src="da42panel.js?v=8"></script>
+<script src="da42panel.js?v=9"></script>
 <script src="da42procs.js?v=5"></script>
 <script src="ownck.js?v=5"></script>
 <script src="otw.js?v=17"></script>
 <script src="panelzoom.js?v=6"></script>
 <script src="cockpit3d.js?v=9"></script>
-<script src="da42-3d.js?v=6"></script>
+<script src="da42-3d.js?v=7"></script>
 <script src="lab.js?v=62"></script>
 <script src="simshell.js?v=11"></script>
 <script>
@@ -708,7 +708,7 @@ function d3Toast(){ if(PST.querySelector('.d3t')) return; const t=document.creat
   t.innerHTML=`<span>${T('3D is running slowly on this device.')} <a href="cockpit.html">${T('Try the classic 2D panel')}</a></span><button aria-label="Close">×</button>`; t.querySelector('button').onclick=()=>t.remove(); PST.appendChild(t); setTimeout(()=>t.remove(),12000); }
 setTimeout(()=>{
   if(D3&&D3.supported()){ try{ otwReady=OTW.init(el('otw')); }catch(e){ otwReady=false; } }
-  if(otwReady){ try{ D3on=D3.init({io:IO,stage:PST,world:P.world,T,canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v')&&!SH.touchOwns(e),onStick:v=>{ inp.stick=v; },onScale:s=>{ Z.s=s; sizeScreens(); },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
+  if(otwReady){ try{ D3on=D3.init({io:IO,stage:PST,world:P.world,svg:P.svg,T,canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v')&&!SH.touchOwns(e),onStick:v=>{ inp.stick=v; },onScale:s=>{ Z.s=s; sizeScreens(); },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
   if(D3on){ Z.lock=false; Z.reg='overview'; IO.toWorld=e=>D3.toWorld(e); setOtw(true); el('bOtw').hidden=true; el('bAhead').hidden=false; D3.lookAhead(true); Z.s=D3.scale(); sizeScreens(); syncAreaUI(); LAB.onLang(()=>D3.relabel()); }
   else { el('otwMsg').textContent=T('3D needs WebGL, which this browser does not offer. Showing the classic panel.'); el('otwMsg').hidden=false; if(!otwReady) setOtw(false); }
   PST.classList.remove('d3wait'); zoomTo(Z.reg,true,true);

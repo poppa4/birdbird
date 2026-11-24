@@ -16,11 +16,15 @@
    0.0
   ]
  },
- "triangles": 74608,
+ "triangles": 75948,
  "nodes": [
+  "alt_face",
+  "ax_face",
   "da42_cockpit",
+  "emg_face",
   "exterior",
   "flap_switch",
+  "fs_face",
   "gear_handle",
   "glare_lip",
   "glass",
@@ -30,105 +34,416 @@
   "pedal_L_r",
   "pedal_R_l",
   "pedal_R_r",
-  "pedestal_face",
   "power_L",
   "power_R",
   "prop_L",
   "prop_R",
+  "pw_face",
+  "rt_face",
   "rudder_pedals",
   "shell",
+  "sl_face",
   "stick_L",
   "stick_R",
-  "trim_wheel"
+  "trim_wheel",
+  "tw_face"
  ],
  "faces": {
   "panel_face": {
    "rect": [
-    18,
-    82,
-    1564,
-    688
+    16,
+    144,
+    1568,
+    634
    ],
    "uv_rect": [
-    18,
-    82,
-    1564,
-    688
+    16,
+    144,
+    1568,
+    634
    ],
    "origin": [
-    -0.592,
-    -0.01,
-    -0.79
+    -0.548,
+    0.01944,
+    -0.70659
    ],
    "ex": [
-    0.00074,
+    0.000685,
     0.0,
     0.0
    ],
    "ey": [
     0.0,
-    -0.000728758,
-    0.0001285
+    -0.000674593,
+    0.000118949
    ],
    "pos": [
-    0.0,
-    -0.320451,
-    -0.735259
+    -0.0,
+    -0.291548,
+    -0.651755
    ],
    "pitch": -10,
    "yaw": 0,
-   "ps": 0.00074,
+   "ps": 0.000685,
    "drawing": "da42panel.js 1600\u00d7980",
    "drawing_size": [
     1600,
     980
    ],
    "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)",
-   "top_edge": "follows the panel outline of da42-3d.js; UV spans the whole rect"
+   "top_edge": "follows the padded surround of the panel (da42panel.js RIM); UV spans the whole rect"
   },
-  "pedestal_face": {
+  "rt_face": {
    "rect": [
-    560,
-    760,
-    480,
-    220
+    696,
+    746,
+    208,
+    64
    ],
    "uv_rect": [
-    560,
-    760,
-    480,
-    220
+    696,
+    746,
+    208,
+    64
    ],
    "origin": [
-    -0.504,
-    -0.318181,
-    -1.092904
+    -0.4424,
+    -0.181243,
+    -0.838697
    ],
    "ex": [
-    0.00063,
+    0.000553,
     0.0,
     0.0
    ],
    "ey": [
     0.0,
-    -0.000333849,
-    0.00053427
+    -0.000452991,
+    0.000317188
    ],
    "pos": [
     0.0,
-    -0.60863,
-    -0.628089
+    -0.53367,
+    -0.591925
    ],
-   "pitch": -58,
+   "pitch": -35,
    "yaw": 0,
-   "ps": 0.00063,
+   "ps": 0.000553,
    "drawing": "da42panel.js 1600\u00d7980",
    "drawing_size": [
     1600,
     980
    ],
    "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)",
-   "note": "its own plane (da42-3d.js subs: ped), sloping down and aft from the bottom edge of the panel"
+   "note": "a console group on its own plane (da42-3d.js subs)"
+  },
+  "sl_face": {
+   "rect": [
+    572,
+    772,
+    112,
+    180
+   ],
+   "uv_rect": [
+    572,
+    772,
+    112,
+    180
+   ],
+   "origin": [
+    -0.61544,
+    0.061657,
+    -1.008777
+   ],
+   "ex": [
+    0.00098,
+    0.0,
+    0.0
+   ],
+   "ey": [
+    0.0,
+    -0.000802769,
+    0.000562105
+   ],
+   "pos": [
+    0.0,
+    -0.63033,
+    -0.524243
+   ],
+   "pitch": -35,
+   "yaw": 0,
+   "ps": 0.00098,
+   "drawing": "da42panel.js 1600\u00d7980",
+   "drawing_size": [
+    1600,
+    980
+   ],
+   "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)",
+   "note": "a console group on its own plane (da42-3d.js subs)"
+  },
+  "pw_face": {
+   "rect": [
+    664,
+    778,
+    190,
+    152
+   ],
+   "uv_rect": [
+    664,
+    778,
+    190,
+    152
+   ],
+   "origin": [
+    -0.459195,
+    -0.647067,
+    -0.91489
+   ],
+   "ex": [
+    0.000605,
+    0.0,
+    0.0
+   ],
+   "ey": [
+    0.0,
+    -8.42e-05,
+    0.000599112
+   ],
+   "pos": [
+    0.0,
+    -0.718973,
+    -0.403248
+   ],
+   "pitch": -82,
+   "yaw": 0,
+   "ps": 0.000605,
+   "drawing": "da42panel.js 1600\u00d7980",
+   "drawing_size": [
+    1600,
+    980
+   ],
+   "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)",
+   "note": "a console group on its own plane (da42-3d.js subs)"
+  },
+  "fs_face": {
+   "rect": [
+    660,
+    900,
+    242,
+    78
+   ],
+   "uv_rect": [
+    660,
+    900,
+    242,
+    78
+   ],
+   "origin": [
+    -0.42174,
+    -0.659956,
+    -0.823181
+   ],
+   "ex": [
+    0.00054,
+    0.0,
+    0.0
+   ],
+   "ey": [
+    0.0,
+    -7.5153e-05,
+    0.000534745
+   ],
+   "pos": [
+    0.0,
+    -0.730525,
+    -0.321056
+   ],
+   "pitch": -82,
+   "yaw": 0,
+   "ps": 0.00054,
+   "drawing": "da42panel.js 1600\u00d7980",
+   "drawing_size": [
+    1600,
+    980
+   ],
+   "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)",
+   "note": "a console group on its own plane (da42-3d.js subs)"
+  },
+  "tw_face": {
+   "rect": [
+    906,
+    740,
+    86,
+    232
+   ],
+   "uv_rect": [
+    906,
+    740,
+    86,
+    232
+   ],
+   "origin": [
+    -0.90155,
+    -0.637529,
+    -0.982753
+   ],
+   "ex": [
+    0.00095,
+    0.0,
+    0.0
+   ],
+   "ey": [
+    0.0,
+    -0.000132214,
+    0.000940755
+   ],
+   "pos": [
+    0.0,
+    -0.750705,
+    -0.177467
+   ],
+   "pitch": -82,
+   "yaw": 0,
+   "ps": 0.00095,
+   "drawing": "da42panel.js 1600\u00d7980",
+   "drawing_size": [
+    1600,
+    980
+   ],
+   "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)",
+   "note": "a console group on its own plane (da42-3d.js subs)"
+  },
+  "ax_face": {
+   "rect": [
+    980,
+    874,
+    80,
+    90
+   ],
+   "uv_rect": [
+    980,
+    874,
+    80,
+    90
+   ],
+   "origin": [
+    -0.816,
+    -0.670374,
+    -0.74905
+   ],
+   "ex": [
+    0.0008,
+    0.0,
+    0.0
+   ],
+   "ey": [
+    0.0,
+    -0.000111338,
+    0.000792214
+   ],
+   "pos": [
+    0.0,
+    -0.772694,
+    -0.021005
+   ],
+   "pitch": -82,
+   "yaw": 0,
+   "ps": 0.0008,
+   "drawing": "da42panel.js 1600\u00d7980",
+   "drawing_size": [
+    1600,
+    980
+   ],
+   "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)",
+   "note": "a console group on its own plane (da42-3d.js subs)"
+  },
+  "emg_face": {
+   "rect": [
+    526,
+    772,
+    68,
+    62
+   ],
+   "uv_rect": [
+    526,
+    772,
+    68,
+    62
+   ],
+   "origin": [
+    -0.556,
+    0.100641,
+    -0.716552
+   ],
+   "ex": [
+    0.0008,
+    0.0,
+    0.0
+   ],
+   "ey": [
+    0.0,
+    -0.000787846,
+    0.000138919
+   ],
+   "pos": [
+    -0.108,
+    -0.532,
+    -0.605
+   ],
+   "pitch": -10,
+   "yaw": 0,
+   "ps": 0.0008,
+   "drawing": "da42panel.js 1600\u00d7980",
+   "drawing_size": [
+    1600,
+    980
+   ],
+   "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)",
+   "note": "a console group on its own plane (da42-3d.js subs)"
+  },
+  "alt_face": {
+   "rect": [
+    1026,
+    772,
+    68,
+    62
+   ],
+   "uv_rect": [
+    1026,
+    772,
+    68,
+    62
+   ],
+   "origin": [
+    -0.74,
+    0.100641,
+    -0.716552
+   ],
+   "ex": [
+    0.0008,
+    0.0,
+    0.0
+   ],
+   "ey": [
+    0.0,
+    -0.000787846,
+    0.000138919
+   ],
+   "pos": [
+    0.108,
+    -0.532,
+    -0.605
+   ],
+   "pitch": -10,
+   "yaw": 0,
+   "ps": 0.0008,
+   "drawing": "da42panel.js 1600\u00d7980",
+   "drawing_size": [
+    1600,
+    980
+   ],
+   "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)",
+   "note": "a console group on its own plane (da42-3d.js subs)"
   }
  },
  "controls": {
@@ -192,9 +507,9 @@
   },
   "glare_lip": {
    "pivot": [
-    0.0,
-    -0.06281,
-    -0.74007
+    -0.0,
+    -0.07249,
+    -0.65992
    ],
    "translate": {
     "axis": [
@@ -210,9 +525,9 @@
   },
   "power_L": {
    "pivot": [
-    -0.0504,
-    -0.72201,
-    -0.71083
+    -0.02359,
+    -0.818,
+    -0.41717
    ],
    "rotate": {
     "axis": [
@@ -222,18 +537,18 @@
     ],
     "unit": "deg",
     "positions": {
-     "MAX": -13.17,
-     "IDLE": 13.17
+     "MAX": -17.46,
+     "IDLE": 17.46
     },
-    "value_to_angle": "angle = \u2212atan((854 \u2212 v)\u00b70.00063/0.14), v = 906 \u2212 104\u00b7power (panel units); \u2212 = knob up/forward",
+    "value_to_angle": "angle = \u2212atan((854 \u2212 v)\u00b70.000605/0.1), v = 906 \u2212 104\u00b7power (panel units); \u2212 = knob up/forward",
     "note": "modelled at mid travel (0\u00b0)"
    }
   },
   "power_R": {
    "pivot": [
-    -0.0063,
-    -0.72201,
-    -0.71083
+    0.01876,
+    -0.818,
+    -0.41717
    ],
    "rotate": {
     "axis": [
@@ -243,18 +558,18 @@
     ],
     "unit": "deg",
     "positions": {
-     "MAX": -13.17,
-     "IDLE": 13.17
+     "MAX": -17.46,
+     "IDLE": 17.46
     },
-    "value_to_angle": "angle = \u2212atan((854 \u2212 v)\u00b70.00063/0.14), v = 906 \u2212 104\u00b7power (panel units); \u2212 = knob up/forward",
+    "value_to_angle": "angle = \u2212atan((854 \u2212 v)\u00b70.000605/0.1), v = 906 \u2212 104\u00b7power (panel units); \u2212 = knob up/forward",
     "note": "modelled at mid travel (0\u00b0)"
    }
   },
   "flap_switch": {
    "pivot": [
-    0.0592,
-    -0.49792,
-    -0.70194
+    0.2192,
+    -0.43759,
+    -0.62397
    ],
    "translate": {
     "axis": [
@@ -264,16 +579,16 @@
     ],
     "positions": {
      "UP": 0,
-     "APP": 0.0222,
-     "LDG": 0.0444
+     "APP": 0.02055,
+     "LDG": 0.0411
     }
    }
   },
   "gear_handle": {
    "pivot": [
-    -0.0814,
-    -0.49792,
-    -0.70194
+    -0.06028,
+    -0.44096,
+    -0.62338
    ],
    "translate": {
     "axis": [
@@ -283,15 +598,15 @@
     ],
     "positions": {
      "UP": 0,
-     "DOWN": 0.0444
+     "DOWN": 0.0411
     }
    }
   },
   "trim_wheel": {
    "pivot": [
-    0.08946,
-    -0.62837,
-    -0.64934
+    -0.00665,
+    -0.78464,
+    -0.18032
    ],
    "rotate": {
     "axis": [

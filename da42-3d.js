@@ -11,8 +11,8 @@ if(!THREE){ G.DA42_3D={on:false,supported:()=>false}; return; }
 const {Builder,bake,toMesh}=CK;
 
 /* ---------- geometry constants ---------- */
-const PS=0.00074, TILT=10*D2R;                     // panel: metres per panel unit, top leans away 10°
-const PO=new THREE.Vector3(-0.592,-0.010,-0.79);   // panel unit (0,0)
+const PS=0.000685, TILT=10*D2R;                    // panel: metres per panel unit (the face is 1.00 m wide, as in the aircraft), top leans away 10°
+const PO=new THREE.Vector3(-0.548,0.01944,-0.70659); // panel unit (0,0)
 const EX=new THREE.Vector3(PS,0,0), EY=new THREE.Vector3(0,-PS*Math.cos(TILT),PS*Math.sin(TILT));
 const PN=new THREE.Vector3().crossVectors(EX,EY).normalize(); // into the panel (away from pilot)
 const pp=(u,v,o)=>new THREE.Vector3().copy(PO).addScaledVector(EX,u).addScaledVector(EY,v).addScaledVector(PN,o||0);
@@ -48,15 +48,14 @@ function buildShell(){
   for(const xc of [-0.27,0.27]){ for(const dx of [-0.09,0.09]){ const m=new THREE.Matrix4().makeRotationX(-0.55).premultiply(new THREE.Matrix4().makeTranslation(xc+dx,-0.95,-0.86)); B.box(0,0,0,0.075,0.16,0.022,0x2b2e33,m); B.box(0,0.05,-0.012,0.08,0.012,0.006,0x6d7379,m); B.box(0,-0.03,-0.012,0.08,0.012,0.006,0x6d7379,m); B.box(0,-0.09,0.03,0.025,0.05,0.04,0x1c1e21,m); }
     B.grid(4,6,(u,v)=>new THREE.Vector3(xc-0.19+u*0.38,YF+0.006,-0.95+v*0.62),0x2a2b2d,{toward:new THREE.Vector3(0,0,0)}); }
   // panel backing (dark silhouette of the panel face, 1 cm behind the live panel)
-  const sh=new THREE.Shape(); sh.moveTo(18,770); sh.lineTo(18,250); sh.quadraticCurveTo(18,140,130,118); sh.quadraticCurveTo(800,46,1470,118); sh.quadraticCurveTo(1582,140,1582,250); sh.lineTo(1582,770); sh.lineTo(18,770);
-  const cs=new THREE.Shape(); cs.moveTo(560,760); cs.lineTo(1040,760); cs.lineTo(1040,980); cs.lineTo(560,980); cs.lineTo(560,760);
-  const pm=new THREE.Matrix4().set(EX.x,EY.x,PN.x,PO.x+PN.x*0.012, EX.y,EY.y,PN.y,PO.y+PN.y*0.012, EX.z,EY.z,PN.z,PO.z+PN.z*0.012, 0,0,0,1);
-  B.geo(new THREE.ShapeGeometry(sh,8),pm,0x2a2e33,false); B.geo(new THREE.ShapeGeometry(cs,2),pm,0x23262a,false);
+  const sh=new THREE.Shape(); sh.moveTo(16,778); sh.lineTo(16,530); sh.bezierCurveTo(16,330,160,215,345,168); sh.bezierCurveTo(500,146,680,144,800,144); sh.bezierCurveTo(920,144,1100,146,1255,168); sh.bezierCurveTo(1440,215,1584,330,1584,530); sh.lineTo(1584,778); sh.lineTo(16,778);
+    const pm=new THREE.Matrix4().set(EX.x,EY.x,PN.x,PO.x+PN.x*0.012, EX.y,EY.y,PN.y,PO.y+PN.y*0.012, EX.z,EY.z,PN.z,PO.z+PN.z*0.012, 0,0,0,1);
+  B.geo(new THREE.ShapeGeometry(sh,8),pm,0x2a2e33,false);
   // under-panel (knee roll) from the face bottom forward
   B.grid(14,2,(u,v)=>{ const p=pp(18+u*1564,770); p.z-=v*0.32; p.y+=v*0.06; return p; },COL.dark,{toward:new THREE.Vector3(0,-1.0,0.2)});
   // glareshield hood: from the panel lip forward to the windshield base
-  const lip=[]; const q=(p0,c,p1,t)=>[(1-t)*(1-t)*p0[0]+2*(1-t)*t*c[0]+t*t*p1[0],(1-t)*(1-t)*p0[1]+2*(1-t)*t*c[1]+t*t*p1[1]];
-  for(let i=0;i<=4;i++) lip.push(q([18,250],[18,140],[130,118],i/4)); for(let i=1;i<=16;i++) lip.push(q([130,118],[800,46],[1470,118],i/16)); for(let i=1;i<=4;i++) lip.push(q([1470,118],[1582,140],[1582,250],i/4));
+  const lip=[]; const q=(p0,a,b,p1,t)=>{ const k=1-t; return [k*k*k*p0[0]+3*k*k*t*a[0]+3*k*t*t*b[0]+t*t*t*p1[0],k*k*k*p0[1]+3*k*k*t*a[1]+3*k*t*t*b[1]+t*t*t*p1[1]]; };
+  for(let i=0;i<=8;i++) lip.push(q([16,530],[16,330],[160,215],[345,168],i/8)); for(let i=1;i<=8;i++) lip.push(q([345,168],[500,146],[680,144],[800,144],i/8)); for(let i=lip.length-2;i>=0;i--) lip.push([1600-lip[i][0],lip[i][1]]);
   const L3=lip.map(([u,v])=>pp(u,v,-0.003)), F3=lip.map(([u])=>{ const a=(u-800)/782; const p=canopy(ZF+0.01,a*0.985); p.y-=0.004; return p; });
   B.grid(lip.length-1,6,(u,v)=>{ const f=u*(lip.length-1), i=Math.min(lip.length-2,Math.floor(f)), t=f-i; const A=L3[i].clone().lerp(L3[i+1],t), Bq=F3[i].clone().lerp(F3[i+1],t); const p=A.lerp(Bq,v); p.y+=Math.sin(v*Math.PI)*0.012; return p; },COL.hood,{toward:new THREE.Vector3(-0.27,0.6,0)});
   // hood cheeks down to the sill beside the panel
@@ -118,23 +117,27 @@ function buildStick(xc){
 G.DA42_3D=CK.make({
   eye:[-0.27,0.09,0],                                // left seat, pilot eye: 9 cm up so the glareshield is ~9° below the horizon
   panel:{ps:PS,tilt:10,o:[PO.x,PO.y,PO.z],w:1600,h:980},
-  views:{ahead:[12,-18,1],short:[10,-23,0.84]},
+  views:{ahead:[13,-22,1],short:[11,-27,0.84]},
+  limits:{pitch:[-68,60]}, // far enough down to see and reach the whole console between the seats
   noKeys:['KeyK'], // K and L set the selected altitude in this aircraft: look down with M
-  snaps:[['panel','Panel'],['left','Left',-78,-14,1],['right','Right',78,-14,1],['ped','Console',14,-46,0.8],['out','Outside',0,-3,1]],
+  snaps:[['panel','Panel'],['left','Left',-78,-14,1],['right','Right',78,-14,1],['ped','Console',16,-62,0.85],['out','Outside',0,-3,1]],
   /* glTF cockpit (models/da42-cockpit.glb): power levers, flap switch, gear handle and trim wheel sit on the panel, so on the
      foreground pass; the sticks and pedals are below it. The flat drawn levers they replace are hidden (touch zones stay) */
-  glb:{id:'da42',v:2,
+  glb:{id:'da42',v:3,
     fg:['glare_lip','power_L','power_R','flap_switch','gear_handle','trim_wheel'],
     grab:['stick_L','stick_R'], blades:['prop'], propDisc:true, direct:['stick_L','stick_R','pedal_L_l','pedal_L_r','pedal_R_l','pedal_R_r'],
     hide:['g.ctl[data-id="pwr"] .lv0','g.ctl[data-id="pwr"] .lv1','g.ctl[data-id="gear"] .mv','g.ctl[data-id="flaps"] .mv','g.ctl[data-id="trim"] .mv.wr'],
     drive(get,st,C){ const sx=st.stick?st.stick.x:0, sy=st.stick?st.stick.y:0, r=st.ctl?st.ctl.rud||0:0, n=v=>+v||0;
-      const bl=i=>{ const e=st.eng&&st.eng[i], r=e?+e.rpm||0:0; return [r>250?1:0,r]; }, pw=p=>-Math.atan((854-(906-104*Math.max(0,Math.min(1,n(p)))))*0.00063/0.14)/D2R, fl=C.flap_switch.translate.positions, gr=C.gear_handle.translate.positions;
+      const bl=i=>{ const e=st.eng&&st.eng[i], r=e?+e.rpm||0:0; return [r>250?1:0,r]; }, pw=p=>-Math.atan((854-(906-104*Math.max(0,Math.min(1,n(p)))))*0.000605/0.10)/D2R, fl=C.flap_switch.translate.positions, gr=C.gear_handle.translate.positions;
       return {stick_L:[0,sy*18,sx*17], stick_R:[0,sy*18,sx*17], power_L:[0,pw(get('pwrL'))], power_R:[0,pw(get('pwrR'))],
         flap_switch:[fl[['UP','APP','LDG'][n(get('flaps'))]]], gear_handle:[gr[n(get('gear'))?'DOWN':'UP']], trim_wheel:[0,n(get('trim'))*540],
         pedal_L_l:[0,r*16], pedal_L_r:[0,-r*16], pedal_R_l:[0,r*16], pedal_R_r:[0,-r*16], blade_L:bl(0), blade_R:bl(1)}; }},
-  /* the engine-control console (drawing rect 560,760 480×220) on its own plane: from the bottom edge of the panel it slopes down
-     and aft between the seats, as the console does in the aircraft (same numbers as tools/blender/da42.py: PED) */
-  subs:[{id:'ped',rect:[560,760,480,220],ps:0.00063,pos:[0,-0.60863,-0.628089],pitch:-58}],
+  /* the engine-control console as in the aircraft: the drawing lays its groups out flat below the panel; here each group is
+     its own plane, where it sits on the console (same numbers as tools/blender/da42.py: SUBS). Small console, sloping down
+     and aft from the bottom edge of the panel: rudder trim (rt), parking brake with cabin heat and defrost (sl). Large console
+     between the seats: power levers (pw), fuel selectors (fs), elevator trim wheel (tw), auxiliary pump switches (ax). Beside
+     the small console under the panel: emergency gear extension (emg) and alternate air (alt) */
+  subs:[{id:'rt',rect:[696,746,208,64],ps:0.000553,pos:[0,-0.53367,-0.59193],pitch:-35},{id:'sl',rect:[572,772,112,180],ps:0.00098,pos:[0,-0.63033,-0.52424],pitch:-35},{id:'pw',rect:[664,778,190,152],ps:0.000605,pos:[0,-0.71897,-0.40325],pitch:-82},{id:'fs',rect:[660,900,242,78],ps:0.00054,pos:[0,-0.73052,-0.32106],pitch:-82},{id:'tw',rect:[906,740,86,232],ps:0.00095,pos:[0,-0.7507,-0.17747],pitch:-82},{id:'ax',rect:[980,874,80,90],ps:0.0008,pos:[0,-0.77269,-0.021],pitch:-82},{id:'emg',rect:[526,772,68,62],ps:0.0008,pos:[-0.108,-0.532,-0.605],pitch:-10},{id:'alt',rect:[1026,772,68,62],ps:0.0008,pos:[0.108,-0.532,-0.605],pitch:-10}],
   build(){
     const shell=toMesh(buildShell()); const sticks=[buildStick(-0.27),buildStick(0.27)];
     return {meshes:[shell,buildGlass(),...sticks],grab:sticks,

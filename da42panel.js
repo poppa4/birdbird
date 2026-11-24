@@ -1,81 +1,94 @@
-/* NORDAP – front-on DA42-style instrument panel drawn in SVG (world units 1600×980).
-   Generic training layout drawn by NORDAP; not a manufacturer drawing. Controls report through io.get/io.set. */
+/* NORDAP – front-on DA42 NG instrument panel drawn in SVG (world units 1600×980).
+   Drawn by NORDAP after the arrangement in the flight manual's instrument panel figure (section 7.4) and cockpit photographs: the
+   arched grey panel in its padded black surround; lighting, emergency switch, backup instruments, compass and ELT along the top;
+   ventilation nozzle and engine switches left of the PFD, audio panel between the displays, de-ice panel, circuit breakers and
+   the second nozzle on the right; the switch row along the bottom. One panel unit is 0.685 mm (the 3D cockpit places it at that
+   scale). The engine-control console is laid out flat below the panel here; the 3D cockpit puts each group where it sits on the
+   console (da42-3d.js). No maker's names or logos. Controls report through io.get/io.set. */
 (function(G){
 'use strict';
-const SKY=420, LIP=82; // 2D: canopy headroom above y=0 with the outside view on; glareshield top on the centre line
+const SKY=420, LIP=144; // 2D: canopy headroom above y=0 with the outside view on; glareshield top on the centre line
 const W=1600, H=980, NS='http://www.w3.org/2000/svg';
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 
+/* ---------- the panel's outline: face (grey) and padded surround (black) ---------- */
+const FACE='M69 770V530C69 360 190 262 350 217C500 196 680 194 800 194C920 194 1100 196 1250 217C1410 262 1531 360 1531 530V770Z';
+const RIM='M16 778V530C16 330 160 215 345 168C500 146 680 144 800 144C920 144 1100 146 1255 168C1440 215 1584 330 1584 530V778Z';
+const STRIP=360; // lower edge of the top strip
+
 /* ---------- regions for zoom ---------- */
 const REG={
-  overview:[10,92,1580,888],
-  top:[290,92,1020,128],
-  pfd:[30,205,800,450],
-  mfd:[770,205,800,450],
-  audio:[700,210,240,420],
-  left:[30,205,330,450],
-  right:[1380,205,200,450],
-  switches:[230,632,620,140],
-  flaps:[820,632,560,140],
-  console:[540,735,520,245]
+  overview:[8,128,1584,852],
+  top:[150,150,1300,216],
+  pfd:[60,370,710,312],
+  mfd:[750,370,790,312],
+  audio:[640,372,170,306],
+  left:[66,395,196,285],
+  right:[1196,385,340,290],
+  switches:[80,662,690,114],
+  flaps:[750,662,770,114],
+  console:[500,735,610,245]
 };
 const REG_ORDER=['switches','flaps','console','top','audio','left','right','pfd','mfd'];
 
 /* ---------- layout: every control ---------- */
 const C=[]; const add=(o)=>{ C.push(o); return o; };
-// top strip: lighting, emergency, standby instruments, ELT
-add({id:'dimInst',t:'rot',x:338,y:160,l:'INSTRUMENT',r:13});
-add({id:'dimFlood',t:'rot',x:392,y:160,l:'FLOOD',r:13});
-[['strobe','STROBE'],['nav','POSITION'],['taxi','TAXI'],['land','LANDING']].forEach(([id,l],i)=>add({id,t:'rocker',x:452+i*44,y:160,l}));
-add({id:'emer',t:'guard',x:648,y:160,l:'EMERGENCY'});
-add({id:'elt',t:'tog3',x:1222,y:168,l:'ELT',vals:['ON','ARM','RESET'],pos:[ -1,0,1 ]});
-// left column
-add({id:'pumpL',t:'rocker',x:105,y:282,l:'L',big:1}); add({id:'pumpR',t:'rocker',x:170,y:282,l:'R',big:1});
-add({id:'voterL',t:'rotsel',x:72,y:470,l:'VOTER L',vals:['ECU A','AUTO','ECU B'],ang:[-50,0,50]});
-add({id:'ecuL',t:'push',x:118,y:472,l:'ECU TEST',r:12});
-add({id:'ecuR',t:'push',x:162,y:472,l:'ECU TEST',r:12});
-add({id:'voterR',t:'rotsel',x:208,y:470,l:'VOTER R',vals:['ECU A','AUTO','ECU B'],ang:[-50,0,50]});
-add({id:'altL',t:'tog',x:100,y:585,l:'L'}); add({id:'altR',t:'tog',x:178,y:585,l:'R'});
-add({id:'micJack',t:'deco',x:60,y:625});
-add({id:'oxy',t:'rot',x:205,y:624,l:'O2 (IF FITTED)',r:8});
-add({id:'ventL',t:'vent',x:138,y:370,r:36,l:'VENT'}); add({id:'ventR',t:'vent',x:1480,y:620,r:36,l:'VENT'});
-add({id:'iceLight',t:'rocker',x:1535,y:530,l:'ICE LT'});
+// top strip: gear warning mute, lighting, emergency switch, backup instruments (drawn in standby()), ELT
+add({id:'hornMute',t:'push',x:292,y:322,l:'GEAR WARN MUTE',r:7});
+add({id:'dimInst',t:'rot',x:345,y:306,l:'INSTRUMENT',r:12});
+add({id:'dimFlood',t:'rot',x:395,y:306,l:'FLOOD',r:12});
+[['land','LANDING'],['taxi','TAXI'],['nav','POSITION'],['strobe','STROBE']].forEach(([id,l],i)=>add({id,t:'rocker',x:446+i*33,y:306,l,ls:5}));
+add({id:'emer',t:'guard',x:590,y:308,l:'EMERGENCY',ls:5});
+add({id:'elt',t:'tog3',x:1192,y:308,l:'ELT',vals:['ON','ARM','RESET'],pos:[ -1,0,1 ]});
+// left of the PFD: ventilation nozzle, ECU voter switches and test buttons, alternator switches
+add({id:'ventL',t:'vent',x:156,y:466,r:34,l:'VENT'});
+add({id:'voterL',t:'rotsel',x:94,y:566,l:'VOTER L',vals:['ECU A','AUTO','ECU B'],ang:[-50,0,50]});
+add({id:'ecuL',t:'push',x:136,y:568,l:'ECU TEST',r:10});
+add({id:'ecuR',t:'push',x:178,y:568,l:'ECU TEST',r:10});
+add({id:'voterR',t:'rotsel',x:220,y:566,l:'VOTER R',vals:['ECU A','AUTO','ECU B'],ang:[-50,0,50]});
+add({id:'altL',t:'tog',x:136,y:634,l:'ALT L',s:5.6}); add({id:'altR',t:'tog',x:178,y:634,l:'ALT R',s:5.6});
+add({id:'micJack',t:'deco',x:112,y:712});
+// below the panel on the left: alternate static valve, oxygen control (if fitted)
+add({id:'altStatic',t:'pull',x:152,y:794,l:'ALT STATIC',blk:1});
+add({id:'oxy',t:'rot',x:102,y:794,l:'O2 (IF FITTED)',r:8,blk:1});
+// right of the MFD: de-ice panel, circuit breakers, ventilation nozzle
+add({id:'deice',t:'rotsel',x:1254,y:430,l:'DE-ICE',vals:['OFF','NORM','HIGH','MAX'],ang:[-60,-20,20,60]});
+add({id:'wshield',t:'push',x:1232,y:486,l:'W/SHIELD',r:8});
+add({id:'iceLight',t:'rocker',x:1276,y:484,l:'ICE LT',ls:5.4});
+add({id:'deiceTest',t:'tog',x:1254,y:548,l:'ANN TEST',s:5.6});
+add({id:'ventR',t:'vent',x:1420,y:506,r:34,l:'VENT',nl:1});
 add({id:'stickL',t:'stick',x:300,y:850,l:'STICK'}); add({id:'stickR',t:'stick',x:1300,y:850,l:'STICK',co:1});
 add({id:'apDisc',t:'sbtn',x:300,y:850,l:'AP DISC',dx:-15,dy:-22,col:'#c62a1d'}); add({id:'trimDn',t:'sbtn',x:300,y:850,l:'TRIM NOSE DN',dx:5,dy:-38,col:'#59616b',r:4}); add({id:'trimUp',t:'sbtn',x:300,y:850,l:'TRIM NOSE UP',dx:5,dy:-28,col:'#59616b',r:4});
-// bottom switch row (under PFD)
-add({id:'altStatic',t:'pull',x:262,y:700,l:'ALT STATIC'});
-add({id:'pitot',t:'tog',x:322,y:700,l:'PITOT HEAT'});
-add({id:'engL',t:'tog',x:384,y:700,l:'L',guardless:1});
-add({id:'start',t:'key',x:440,y:702,l:'START'});
-add({id:'engR',t:'tog',x:496,y:700,l:'R'});
-add({id:'elec',t:'tog',x:556,y:700,l:'ELECT. MASTER',red:1,s:5.6});
-add({id:'avio',t:'tog',x:620,y:700,l:'AVIONIC MASTER',s:5.6});
-add({id:'gear',t:'gear',x:690,y:700,l:'GEAR'});
-add({id:'fireTest',t:'push',x:792,y:690,l:'FIRE TEST',r:9});
-add({id:'hornMute',t:'push',x:792,y:726,l:'GEAR WARN MUTE',r:7});
-// under MFD
-add({id:'flaps',t:'flap',x:880,y:700,l:'FLAPS'});
+// switch row: pitot heat, engine masters and start, electric and avionic master, gear; fuel pumps; flaps
+add({id:'pitot',t:'rocker',x:274,y:704,l:'PITOT HEAT',ls:5.2});
+add({id:'engL',t:'tog',x:334,y:716,l:'LEFT ENGINE',s:5});
+add({id:'start',t:'key',x:404,y:712,l:'START'});
+add({id:'engR',t:'tog',x:474,y:716,l:'RIGHT ENGINE',s:5});
+add({id:'elec',t:'rocker',x:534,y:704,l:'ELECT. MASTER',red:1,ls:4.7});
+add({id:'avio',t:'rocker',x:580,y:704,l:'AV. MASTER',ls:4.7});
+add({id:'fireTest',t:'push',x:616,y:692,l:'FIRE TEST',r:7});
+add({id:'gear',t:'gear',x:712,y:713,l:'GEAR'});
+add({id:'pumpL',t:'rocker',x:862,y:709,l:'L',ls:6}); add({id:'pumpR',t:'rocker',x:894,y:709,l:'R',ls:6});
+add({id:'flaps',t:'flap',x:1120,y:708,l:'FLAPS'});
 // audio panel between displays
 const AUD=[['COM1MIC','COM1 MIC'],['COM1','COM1'],['COM2MIC','COM2 MIC'],['COM2','COM2'],['COM3MIC','COM3 MIC'],['COM3','COM3'],['COM12','COM1/2'],['TEL','TEL'],['PA','PA'],['SPKR','SPKR'],['MKR','MKR/MUTE'],['HISENS','HI SENS'],['DME','DME'],['NAV1','NAV1'],['ADF','ADF'],['NAV2','NAV2'],['AUX','AUX'],['MANSQ','MAN SQ'],['PLAY','PLAY'],['PILOT','PILOT'],['COPLT','COPLT']];
-AUD.forEach(([k,l],i)=>add({id:'aud'+k,t:'abtn',x:i<20?(i%2?838:802):820,y:i<20?248+Math.floor(i/2)*29:540,l}));
-add({id:'audVol',t:'rot',x:820,y:578,l:'VOL',r:13});
-add({id:'audBackup',t:'abtn',x:820,y:614,l:'DISPLAY BACKUP',red:1});
-// right column: circuit breakers and de-ice
+AUD.forEach(([k,l],i)=>add({id:'aud'+k,t:'abtn',x:i<20?(i%2?742:706):724,y:396+Math.floor(i/2)*20.5,l}));
+add({id:'audVol',t:'rot',x:724,y:628,l:'VOL',r:9,nl:1});
+add({id:'audBackup',t:'abtn',x:724,y:657,l:'DISPLAY BACKUP',red:1});
+// circuit breakers: beside the de-ice panel, round the nozzle and in two rows below, as in the aircraft
 const CBS=['ESS BUS','ENG L','ENG R','ECU L A','ECU L B','ECU R A','ECU R B','START','PFD','MFD','COM1','COM2','NAV1','NAV2','XPDR','AUDIO','AUTOPILOT','FLAPS','LDG GEAR','PITOT','FUEL PUMP L','FUEL PUMP R','LIGHTS','AV BUS'];
-CBS.forEach((n,i)=>add({id:'cb'+i,t:'cb',x:1418+(i%4)*40,y:242+Math.floor(i/4)*40,l:n,cb:n}));
-add({id:'deice',t:'rotsel',x:1428,y:540,l:'DE-ICE',vals:['OFF','NORM','HIGH','MAX'],ang:[-60,-20,20,60]});
-add({id:'wshield',t:'push',x:1462,y:540,l:'W/SHIELD',r:9});
-add({id:'deiceTest',t:'tog',x:1500,y:532,l:'ANN TEST',s:6});
-// console
-add({id:'rudTrim',t:'hwheel',x:800,y:772,l:'RUDDER TRIM'});
-add({id:'park',t:'park',x:640,y:812,l:'PARKING BRAKE'});
-add({id:'pwr',t:'power',x:760,y:810,l:'POWER'});
-add({id:'trim',t:'vwheel',x:942,y:858,l:'ELEVATOR TRIM'});
-add({id:'fselL',t:'fsel',x:705,y:938,l:'FUEL L'}); add({id:'fselR',t:'fsel',x:855,y:938,l:'FUEL R'});
-add({id:'auxPumpL',t:'tog',x:1000,y:920,l:'AUX L',s:6.5}); add({id:'auxPumpR',t:'tog',x:1040,y:920,l:'AUX R',s:6.5});
-add({id:'heat',t:'slide',x:600,y:900,l:'CABIN HEAT'}); add({id:'defrost',t:'slide',x:640,y:900,l:'DEFROST'});
-add({id:'altAir',t:'pull',x:1060,y:800,l:'ALTERNATE AIR',lever:1});
-add({id:'gearEmer',t:'pull',x:560,y:800,l:'EMERG GEAR',lever:1,red:1});
+const CBXY=[]; for(let i=0;i<5;i++) CBXY.push([1340+i*30,412]); CBXY.push([1340,452],[1370,452],[1340,492]); for(let i=0;i<6;i++) CBXY.push([1330+i*30,556]); for(let i=0;i<10;i++) CBXY.push([1220+i*30,616]);
+CBS.forEach((n,i)=>add({id:'cb'+i,t:'cb',x:CBXY[i][0],y:CBXY[i][1],l:n,cb:n}));
+// console (laid out flat here; the 3D cockpit lifts each group onto the console between the seats)
+add({id:'rudTrim',t:'hwheel',x:800,y:778,l:'RUDDER TRIM',blk:1});
+add({id:'park',t:'park',x:640,y:812,l:'PARKING BRAKE',blk:1});
+add({id:'pwr',t:'power',x:760,y:810,l:'POWER',blk:1});
+add({id:'trim',t:'vwheel',x:942,y:858,l:'ELEVATOR TRIM',blk:1});
+add({id:'fselL',t:'fsel',x:705,y:938,l:'FUEL L',blk:1}); add({id:'fselR',t:'fsel',x:855,y:938,l:'FUEL R',blk:1});
+add({id:'auxPumpL',t:'tog',x:1000,y:920,l:'AUX L',s:6.5,blk:1}); add({id:'auxPumpR',t:'tog',x:1040,y:920,l:'AUX R',s:6.5,blk:1});
+add({id:'heat',t:'slide',x:600,y:900,l:'CABIN HEAT',blk:1}); add({id:'defrost',t:'slide',x:640,y:900,l:'DEFROST',blk:1});
+add({id:'altAir',t:'pull',x:1060,y:800,l:'ALTERNATE AIR',lever:1,blk:1});
+add({id:'gearEmer',t:'pull',x:560,y:800,l:'EMERG GEAR',lever:1,red:1,blk:1});
 
 /* ---------- SVG building ---------- */
 function lab(x,y,t,o){ o=o||{}; return `<text x="${x}" y="${y}" class="pl ${o.c||''}" style="font-size:calc(var(--ls,1)*${o.s||7.5}px)" text-anchor="${o.a||'middle'}">${esc(t)}</text>`; }
@@ -87,16 +100,16 @@ function ctlSVG(c){
   switch(c.t){
     case 'tog': s=`<circle cx="${x}" cy="${y}" r="9" class="nut"/><circle cx="${x}" cy="${y}" r="5.5" class="nut2"/><g class="mv bat" style="transform-origin:${x}px ${y}px"><rect x="${x-3.6}" y="${y-24}" width="7.2" height="24" rx="3.4" class="${c.red?'batr':'batg'}"/><ellipse cx="${x}" cy="${y-23}" rx="4.6" ry="3" class="${c.red?'batr':'batg'}"/></g>${lab(x,y+33,c.l,{s:c.s||7.5})}${lab(x,y-30,'ON',{s:6,c:'dim'})}`; break;
     case 'tog3': s=`<circle cx="${x}" cy="${y}" r="9" class="nut"/><g class="mv bat" style="transform-origin:${x}px ${y}px"><rect x="${x-3.6}" y="${y-22}" width="7.2" height="22" rx="3.4" class="batg"/><ellipse cx="${x}" cy="${y-21}" rx="4.6" ry="3" class="batg"/></g>${lab(x+14,y-20,'ON',{s:6,a:'start'})}${lab(x+14,y+2,'ARM',{s:6,a:'start'})}${lab(x+14,y+22,'RESET',{s:6,a:'start'})}${lab(x,y-34,c.l)}`; break;
-    case 'rocker': { const w=c.big?24:20, h=c.big?40:34; s=`<rect x="${x-w/2-3}" y="${y-h/2-3}" width="${w+6}" height="${h+6}" rx="4" class="bezel1"/><g class="mv rk"><rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="3" class="rock"/><rect class="rkTop" x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h/2}" rx="3"/><rect class="rkBot" x="${x-w/2}" y="${y}" width="${w}" height="${h/2}" rx="3"/><rect class="rkLed" x="${x-4}" y="${y-h/2+4}" width="8" height="2.5" rx="1"/></g>${lab(x,y+h/2+12,c.l)}`; break; }
-    case 'guard': s=`<circle cx="${x}" cy="${y}" r="9" class="nut"/><g class="mv bat" style="transform-origin:${x}px ${y}px"><rect x="${x-3.6}" y="${y-24}" width="7.2" height="24" rx="3.4" class="batg"/><ellipse cx="${x}" cy="${y-23}" rx="4.6" ry="3" class="batg"/></g><g class="gd" style="transform-origin:${x}px ${y+14}px"><path d="M${x-14} ${y+14}V${y-26}q0-6 6-6h16q6 0 6 6V${y+14}z" class="guardc"/><path d="M${x-10} ${y-20}h20" class="guardl"/></g>${lab(x,y+26,c.l)}`; break;
-    case 'rot': { const r=c.r||13; s=`<circle cx="${x}" cy="${y}" r="${r+3}" class="ring0"/><g class="mv rt" style="transform-origin:${x}px ${y}px"><circle cx="${x}" cy="${y}" r="${r}" class="knob"/><circle cx="${x}" cy="${y}" r="${r-4}" class="knobtop"/><rect x="${x-1.2}" y="${y-r+1}" width="2.4" height="${r*0.6}" class="ptr"/></g>${lab(x,y+r+11,c.l,{s:6.5})}`; break; }
+    case 'rocker': { const w=c.big?24:20, h=c.big?40:34; s=`<rect x="${x-w/2-3}" y="${y-h/2-3}" width="${w+6}" height="${h+6}" rx="4" class="bezel1"/><g class="mv rk"><rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="3" class="${c.red?'rock rockr':'rock'}"/><rect class="rkTop" x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h/2}" rx="3"/><rect class="rkBot" x="${x-w/2}" y="${y}" width="${w}" height="${h/2}" rx="3"/><rect class="rkLed" x="${x-4}" y="${y-h/2+4}" width="8" height="2.5" rx="1"/></g>${lab(x,y+h/2+12,c.l,{s:c.ls||7.5})}`; break; }
+    case 'guard': s=`<circle cx="${x}" cy="${y}" r="9" class="nut"/><g class="mv bat" style="transform-origin:${x}px ${y}px"><rect x="${x-3.6}" y="${y-24}" width="7.2" height="24" rx="3.4" class="batg"/><ellipse cx="${x}" cy="${y-23}" rx="4.6" ry="3" class="batg"/></g><g class="gd" style="transform-origin:${x}px ${y+14}px"><path d="M${x-14} ${y+14}V${y-26}q0-6 6-6h16q6 0 6 6V${y+14}z" class="guardc"/><path d="M${x-10} ${y-20}h20" class="guardl"/></g>${lab(x,y+26,c.l,{s:c.ls||7.5})}`; break;
+    case 'rot': { const r=c.r||13; s=`<circle cx="${x}" cy="${y}" r="${r+3}" class="ring0"/><g class="mv rt" style="transform-origin:${x}px ${y}px"><circle cx="${x}" cy="${y}" r="${r}" class="knob"/><circle cx="${x}" cy="${y}" r="${r-4}" class="knobtop"/><rect x="${x-1.2}" y="${y-r+1}" width="2.4" height="${r*0.6}" class="ptr"/></g>${c.nl?'':lab(x,y+r+11,c.l,{s:6.5})}`; break; }
     case 'rotsel': { const r=13; s=`<circle cx="${x}" cy="${y}" r="${r+2}" class="ring0"/>${c.vals.map((v,i)=>{ const a=(c.ang[i]-90)*Math.PI/180; return `<text x="${x+Math.cos(a)*(r+12)}" y="${y+Math.sin(a)*(r+12)+2}" class="pl" font-size="5.6" text-anchor="middle">${v.replace('ECU ','')}</text>`; }).join('')}<g class="mv rt" style="transform-origin:${x}px ${y}px"><circle cx="${x}" cy="${y}" r="${r}" class="knob"/><path d="M${x-3} ${y+r-2}L${x} ${y-r+2}L${x+3} ${y+r-2}z" class="ptrbar"/></g>${lab(x,y+r+16,c.l,{s:6.5})}`; break; }
     case 'push': { const r=c.r||10; s=`<circle cx="${x}" cy="${y}" r="${r+3}" class="ring0"/><g class="mv pb"><circle cx="${x}" cy="${y}" r="${r}" class="pbtn"/><circle cx="${x-r*0.3}" cy="${y-r*0.35}" r="${r*0.35}" class="spec"/></g>${lab(x,y+r+10,c.l,{s:6})}`; break; }
     case 'abtn': { const w=c.l.length>9?34:30; s=`<g class="mv pb"><rect x="${x-w/2}" y="${y-9}" width="${w}" height="18" rx="2.5" class="${c.red?'abtnr':'abtn'}"/><rect class="aled" x="${x-5}" y="${y-7}" width="10" height="2" rx="1"/><text x="${x}" y="${y+5}" class="pl" font-size="${c.l.length>8?4.4:5.4}" text-anchor="middle">${esc(c.l)}</text></g>`; break; }
     case 'key': s=`<circle cx="${x}" cy="${y}" r="15" class="ring0"/><circle cx="${x}" cy="${y}" r="12" class="keyb"/><g class="mv rt" style="transform-origin:${x}px ${y}px"><rect x="${x-3}" y="${y-18}" width="6" height="36" rx="2.5" class="keyh"/><circle cx="${x}" cy="${y}" r="3" class="nut2"/></g>${lab(x-22,y-14,'L',{s:7})}${lab(x+22,y-14,'R',{s:7})}${lab(x,y-22,'OFF',{s:5.5,c:'dim'})}${lab(x,y+25,c.l)}`; break;
     case 'gear': s=`<rect x="${x-9}" y="${y-36}" width="18" height="72" rx="8" class="slot"/>${lab(x-18,y-28,'UP',{s:6.5,a:'end'})}${lab(x-18,y+33,'DN',{s:6.5,a:'end'})}<g class="mv gk"><rect x="${x-2.2}" y="${y-30}" width="4.4" height="30" class="rod"/><circle cx="${x}" cy="${y-30}" r="11" class="wheelk"/><circle cx="${x}" cy="${y-30}" r="5" class="wheelh"/></g>
-      <g class="glights"><circle class="gl gN" cx="${x+28}" cy="${y-20}" r="4.2"/><circle class="gl gL" cx="${x+22}" cy="${y-9}" r="4.2"/><circle class="gl gR" cx="${x+34}" cy="${y-9}" r="4.2"/><circle class="gl gU" cx="${x+28}" cy="${y+12}" r="4.2"/>${lab(x+28,y+26,'GEAR UNSAFE',{s:4.6})}</g>${lab(x,y+52,c.l)}`; break;
-    case 'flap': s=`<rect x="${x-8}" y="${y-36}" width="16" height="72" rx="7" class="slot"/>${['UP','APP','LDG'].map((v,i)=>lab(x-16,y-30+i*30+2,v,{s:6.5,a:'end'})).join('')}<g class="mv fk"><rect x="${x-14}" y="${y-36}" width="28" height="12" rx="3" class="flapk"/><path d="M${x-10} ${y-30}h20" class="flapl"/></g><g>${['UP','APP','LDG'].map((v,i)=>`<circle class="fl f${i}" cx="${x+28}" cy="${y-30+i*30}" r="4.2"/>`).join('')}</g>${lab(x,y+46,c.l)}`; break;
+      <g class="glights"><circle class="gl gN" cx="${x-48}" cy="${y-14}" r="4.2"/><circle class="gl gL" cx="${x-58}" cy="${y+3}" r="4.2"/><circle class="gl gR" cx="${x-38}" cy="${y+3}" r="4.2"/><circle class="gl gU" cx="${x-80}" cy="${y+16}" r="4.2"/>${lab(x-80,y+29,'UNSAFE',{s:4.6})}${lab(x-48,y-22,'NOSE',{s:4.2})}${lab(x-58,y+14,'LEFT',{s:4.2})}${lab(x-38,y+14,'RIGHT',{s:4.2})}</g>${lab(x,y+52,c.l)}`; break;
+    case 'flap': s=`<rect x="${x-8}" y="${y-36}" width="16" height="72" rx="7" class="slot"/>${['UP','APP','LDG'].map((v,i)=>lab(x-16,y-30+i*30+2,v,{s:6.5,a:'end'})).join('')}<g class="mv fk"><rect x="${x-14}" y="${y-36}" width="28" height="12" rx="3" class="flapk"/><path d="M${x-10} ${y-30}h20" class="flapl"/></g><g>${['UP','APP','LDG'].map((v,i)=>`<circle class="fl f${i}" cx="${x-52}" cy="${y-30+i*30}" r="4.2"/>`).join('')}</g>${lab(x,y+46,c.l)}`; break;
     case 'cb': s=`<circle cx="${x}" cy="${y}" r="8" class="cbcol"/><g class="mv cbk"><circle cx="${x}" cy="${y}" r="6" class="cbh"/></g><text x="${x}" y="${y+16}" class="pl" font-size="4.3" text-anchor="middle">${esc(c.l)}</text>`; break;
     case 'pull': s=c.lever?`<rect x="${x-26}" y="${y-8}" width="52" height="16" rx="6" class="slot"/><g class="mv pk"><rect x="${x-20}" y="${y-6}" width="40" height="12" rx="5" class="${c.red?'batr':'tbar'}"/></g>${lab(x,y+20,c.l,{s:6.5})}`:`<circle cx="${x}" cy="${y}" r="11" class="ring0"/><g class="mv pk" style="transform-origin:${x}px ${y}px"><circle cx="${x}" cy="${y}" r="8.5" class="knob"/><circle cx="${x}" cy="${y}" r="4" class="knobtop"/></g>${lab(x,y+21,c.l,{s:6.2})}`; break;
     case 'slide': s=`<rect x="${x-5}" y="${y-30}" width="10" height="60" rx="4" class="slot"/><g class="mv sk"><rect x="${x-11}" y="${y-6}" width="22" height="12" rx="3" class="tbar"/></g>${lab(x,y+42,c.l,{s:5.4})}`; break;
@@ -109,35 +122,42 @@ function ctlSVG(c){
     case 'vwheel': s=`<rect x="${x-14}" y="${y-58}" width="28" height="116" rx="8" class="slot"/><svg x="${x-10}" y="${y-54}" width="20" height="108" overflow="hidden"><g class="mv wr">${Array.from({length:36},(_,i)=>`<rect x="0" y="${i*6-54}" width="20" height="3" rx="1" class="ridge"/>`).join('')}</g></svg><path d="M${x+16} ${y}h7" class="tomark"/>${lab(x+26,y+2.5,'T/O',{s:6,a:'start'})}${lab(x,y-64,'NOSE DN',{s:5.6})}${lab(x,y+68,'NOSE UP',{s:5.6})}<path class="mv trind" d="M${x-24} ${y}l6-4v8z"/>${lab(x,y+80,c.l,{s:6})}`; break;
     case 'hwheel': s=`<rect x="${x-50}" y="${y-10}" width="100" height="20" rx="8" class="slot"/><svg x="${x-46}" y="${y-7}" width="92" height="14" overflow="hidden"><g class="mv wr">${Array.from({length:32},(_,i)=>`<rect y="0" x="${i*6-48}" width="3" height="14" rx="1" class="ridge"/>`).join('')}</g></svg><path d="M${x} ${y-12}v-5" class="tomark"/><path class="mv trind" d="M${x} ${y+12}l-4 6h8z"/>${lab(x-56,y+3,'L',{s:7,a:'end'})}${lab(x+56,y+3,'R',{s:7,a:'start'})}${lab(x,y+28,c.l,{s:6})}`; break;
     case 'fsel': s=`<circle cx="${x}" cy="${y}" r="20" class="quad"/>${lab(x-25,y+2,'ON',{s:6,a:'end'})}${lab(x,y-25,'XFEED',{s:5.6})}${lab(x+25,y+2,'OFF',{s:6,a:'start',c:'red'})}<path class="fguard" d="M${x+12} ${y-16}l10 8"/><g class="mv rt" style="transform-origin:${x}px ${y}px"><path d="M${x-5} ${y+12}L${x-3} ${y-18}h6L${x+5} ${y+12}z" class="lever"/><circle cx="${x}" cy="${y}" r="5" class="nut2"/></g>${lab(x,y+29,c.l,{s:6.5})}`; break;
-    case 'vent': { const r=c.r; s=`<circle cx="${x}" cy="${y}" r="${r+6}" class="bezel1"/><circle cx="${x}" cy="${y}" r="${r}" class="ventb"/><g class="mv" style="transform-origin:${x}px ${y}px"><circle cx="${x}" cy="${y}" r="${r*0.62}" class="ventc"/>${Array.from({length:8},(_,i)=>`<path d="M${x} ${y}l${Math.cos(i*Math.PI/4)*r*0.6} ${Math.sin(i*Math.PI/4)*r*0.6}" class="vfin"/>`).join('')}<circle cx="${x}" cy="${y}" r="${r*0.18}" class="knobtop"/><rect x="${x-2}" y="${y-r*0.6}" width="4" height="${r*0.3}" class="ptr"/></g>${lab(x,y+r+16,c.l,{s:6})}`; break; }
+    case 'vent': { const r=c.r; s=`<circle cx="${x}" cy="${y}" r="${r+6}" class="bezel1"/><circle cx="${x}" cy="${y}" r="${r}" class="ventb"/><g class="mv" style="transform-origin:${x}px ${y}px"><circle cx="${x}" cy="${y}" r="${r*0.62}" class="ventc"/>${Array.from({length:8},(_,i)=>`<path d="M${x} ${y}l${Math.cos(i*Math.PI/4)*r*0.6} ${Math.sin(i*Math.PI/4)*r*0.6}" class="vfin"/>`).join('')}<circle cx="${x}" cy="${y}" r="${r*0.18}" class="knobtop"/><rect x="${x-2}" y="${y-r*0.6}" width="4" height="${r*0.3}" class="ptr"/></g>${c.nl?'':lab(x,y+r+16,c.l,{s:6})}`; break; }
     case 'stick': s=`<ellipse cx="${x}" cy="${H-14}" rx="44" ry="8" class="boot0"/><path d="M${x-38} ${H-8}Q${x-30} ${H-64} ${x-12} ${H-78}H${x+12}Q${x+30} ${H-64} ${x+38} ${H-8}Z" class="boot"/><g class="mv skg"><path class="shaft" d="M${x} ${H-74}L${x} ${y+40}"/><path d="M${x-17} ${y-30}q0-14 17-14q19 0 19 15l-3 66q-1 8-16 8q-14 0-15-9z" class="grip"/><path d="M${x-12} ${y-14}h24M${x-12} ${y-6}h24M${x-12} ${y+2}h24M${x-12} ${y+10}h24" class="gripl"/></g>${c.co?'':''}`; break;
     case 'sbtn': { const r=c.r||5.5; s=`<g class="mv sbm"><circle cx="${x+c.dx}" cy="${y+c.dy}" r="${r}" fill="${c.col}" stroke="#000"/></g>`; break; }
     case 'deco': s=`<circle cx="${x}" cy="${y}" r="7" class="nut"/><circle cx="${x}" cy="${y}" r="2.6" fill="#050607"/>${lab(x,y+15,'MIC',{s:5})}`; break;
   }
   const role=({vent:'switch',stick:'application',sbtn:'button',tog:'switch',rocker:'switch',guard:'switch',push:'button',abtn:'button',cb:'switch',pull:'switch',park:'switch',gear:'switch'})[c.t]||'slider';
   if(c.t==='deco') return `<g>${s}</g>`;
-  return `<g class="ctl t-${c.t}" data-id="${c.id}" tabindex="0" role="${role}" aria-label="${esc(c.l)}">${s}</g>`;
+  return `<g class="ctl t-${c.t}${c.blk?' blk':''}" data-id="${c.id}" tabindex="0" role="${role}" aria-label="${esc(c.l)}">${s}</g>`;
 }
 
 function standby(){
   // ASI, attitude, altimeter, compass in the top strip
-  const asi=(()=>{ const x=760,y=158,r=44; let t=''; for(let v=40;v<=200;v+=10){ const a=asiAng(v)*Math.PI/180; const L=v%20?5:9; t+=`<path d="M${x+Math.sin(a)*r} ${y-Math.cos(a)*r}L${x+Math.sin(a)*(r-L)} ${y-Math.cos(a)*(r-L)}" class="dtick"/>`; if(v%40===0) t+=`<text x="${x+Math.sin(a)*(r-17)}" y="${y-Math.cos(a)*(r-17)+3}" class="dnum" font-size="8.5" text-anchor="middle">${v}</text>`; }
+  const asi=(()=>{ const x=673,y=296,r=50; let t=''; for(let v=40;v<=200;v+=10){ const a=asiAng(v)*Math.PI/180; const L=v%20?5:9; t+=`<path d="M${x+Math.sin(a)*r} ${y-Math.cos(a)*r}L${x+Math.sin(a)*(r-L)} ${y-Math.cos(a)*(r-L)}" class="dtick"/>`; if(v%40===0) t+=`<text x="${x+Math.sin(a)*(r-17)}" y="${y-Math.cos(a)*(r-17)+3}" class="dnum" font-size="8.5" text-anchor="middle">${v}</text>`; }
     const arc=(a,b,cl,rr)=>{ const A=asiAng(a)*Math.PI/180, B=asiAng(b)*Math.PI/180; return `<path d="M${x+Math.sin(A)*rr} ${y-Math.cos(A)*rr}A${rr} ${rr} 0 ${asiAng(b)-asiAng(a)>180?1:0} 1 ${x+Math.sin(B)*rr} ${y-Math.cos(B)*rr}" class="${cl}"/>`; };
     return `<circle cx="${x}" cy="${y}" r="${r+6}" class="sbz"/><circle cx="${x}" cy="${y}" r="${r}" class="dial"/>${arc(62,113,'awhite',r-2)}${arc(66,151,'agreen',r-4)}${arc(151,188,'ayellow',r-4)}${arc(76,77,'ared',r-2)}${arc(85,86.5,'ablue',r-2)}${t}<text x="${x}" y="${y+16}" class="dnum" font-size="6" text-anchor="middle">KNOTS</text><g class="sbAsi" style="transform-origin:${x}px ${y}px"><path d="M${x-2} ${y+8}L${x} ${y-r+6}L${x+2} ${y+8}z" class="needle"/></g><circle cx="${x}" cy="${y}" r="3.5" class="hub"/>`; })();
-  const att=(()=>{ const x=868,y=158,r=44; return `<circle cx="${x}" cy="${y}" r="${r+6}" class="sbz"/><clipPath id="attc"><circle cx="${x}" cy="${y}" r="${r}"/></clipPath><g clip-path="url(#attc)"><g class="sbAtt" style="transform-origin:${x}px ${y}px"><rect x="${x-120}" y="${y-160}" width="240" height="160" fill="#2f86d6"/><rect x="${x-120}" y="${y}" width="240" height="160" fill="#7b4a22"/><path d="M${x-120} ${y}h240" stroke="#fff" stroke-width="1.5"/>${[-20,-10,10,20].map(p=>`<path d="M${x-(Math.abs(p)===10?10:16)} ${y-p*1.6}h${Math.abs(p)===10?20:32}" stroke="#fff" stroke-width="1.2"/>`).join('')}</g></g><path d="M${x-26} ${y}h16l4 6 4-6h16" class="acsym"/><circle cx="${x}" cy="${y}" r="2" fill="#ffb000"/><path d="M${x} ${y-r+1}l-4 8h8z" fill="#ffb000"/>`; })();
-  const alt=(()=>{ const x=976,y=158,r=44; let t=''; for(let i=0;i<50;i++){ const a=i/50*2*Math.PI; const L=i%5?4:8; t+=`<path d="M${x+Math.sin(a)*r} ${y-Math.cos(a)*r}L${x+Math.sin(a)*(r-L)} ${y-Math.cos(a)*(r-L)}" class="dtick"/>`; if(i%5===0) t+=`<text x="${x+Math.sin(a)*(r-15)}" y="${y-Math.cos(a)*(r-15)+3.2}" class="dnum" font-size="9" text-anchor="middle">${i/5}</text>`; }
+  const att=(()=>{ const x=803,y=296,r=50; return `<circle cx="${x}" cy="${y}" r="${r+6}" class="sbz"/><clipPath id="attc"><circle cx="${x}" cy="${y}" r="${r}"/></clipPath><g clip-path="url(#attc)"><g class="sbAtt" style="transform-origin:${x}px ${y}px"><rect x="${x-120}" y="${y-160}" width="240" height="160" fill="#2f86d6"/><rect x="${x-120}" y="${y}" width="240" height="160" fill="#7b4a22"/><path d="M${x-120} ${y}h240" stroke="#fff" stroke-width="1.5"/>${[-20,-10,10,20].map(p=>`<path d="M${x-(Math.abs(p)===10?10:16)} ${y-p*1.6}h${Math.abs(p)===10?20:32}" stroke="#fff" stroke-width="1.2"/>`).join('')}</g></g><path d="M${x-26} ${y}h16l4 6 4-6h16" class="acsym"/><circle cx="${x}" cy="${y}" r="2" fill="#ffb000"/><path d="M${x} ${y-r+1}l-4 8h8z" fill="#ffb000"/>`; })();
+  const alt=(()=>{ const x=933,y=296,r=50; let t=''; for(let i=0;i<50;i++){ const a=i/50*2*Math.PI; const L=i%5?4:8; t+=`<path d="M${x+Math.sin(a)*r} ${y-Math.cos(a)*r}L${x+Math.sin(a)*(r-L)} ${y-Math.cos(a)*(r-L)}" class="dtick"/>`; if(i%5===0) t+=`<text x="${x+Math.sin(a)*(r-15)}" y="${y-Math.cos(a)*(r-15)+3.2}" class="dnum" font-size="9" text-anchor="middle">${i/5}</text>`; }
     return `<circle cx="${x}" cy="${y}" r="${r+6}" class="sbz"/><circle cx="${x}" cy="${y}" r="${r}" class="dial"/>${t}<rect x="${x+8}" y="${y+6}" width="22" height="9" rx="1" fill="#000" stroke="#555" stroke-width=".6"/><text class="sbKol dnum" x="${x+19}" y="${y+13}" font-size="6.5" text-anchor="middle">1013</text><g class="sbAlt1" style="transform-origin:${x}px ${y}px"><path d="M${x-3} ${y+6}L${x} ${y-20}L${x+3} ${y+6}z" class="needle"/></g><g class="sbAlt0" style="transform-origin:${x}px ${y}px"><path d="M${x-1.6} ${y+8}L${x} ${y-r+5}L${x+1.6} ${y+8}z" class="needle"/></g><circle cx="${x}" cy="${y}" r="3.5" class="hub"/>`; })();
-  const cmp=(()=>{ const x=1100,y=150; let t=''; for(let d=0;d<720;d+=10){ const lx=d*1.6; const lb={0:'N',90:'E',180:'S',270:'W',360:'N',450:'E',540:'S',630:'W'}[d]; t+=`<path d="M${lx} ${12}v${d%30?4:7}" stroke="#ddd" stroke-width=".8"/>${d%30===0?`<text x="${lx}" y="30" fill="#eee" font-size="${lb?10:7}" text-anchor="middle" font-family="IBM Plex Sans,sans-serif">${lb||((d%360)/10)}</text>`:''}`; }
-    return `<rect x="${x-46}" y="${y-30}" width="92" height="64" rx="14" class="sbz"/><svg x="${x-34}" y="${y-18}" width="68" height="40" overflow="hidden"><rect width="68" height="40" fill="#0e1012"/><g class="sbCmp">${t}</g></svg><path d="M${x} ${y-20}v42" stroke="#ff7a00" stroke-width="1.3"/><text x="${x}" y="${y+46}" class="pl" font-size="6.5" text-anchor="middle">STBY COMPASS</text>`; })();
+  const cmp=(()=>{ const x=1054,y=296; let t=''; for(let d=0;d<720;d+=10){ const lx=d*1.6; const lb={0:'N',90:'E',180:'S',270:'W',360:'N',450:'E',540:'S',630:'W'}[d]; t+=`<path d="M${lx} ${12}v${d%30?4:7}" stroke="#ddd" stroke-width=".8"/>${d%30===0?`<text x="${lx}" y="30" fill="#eee" font-size="${lb?10:7}" text-anchor="middle" font-family="IBM Plex Sans,sans-serif">${lb||((d%360)/10)}</text>`:''}`; }
+    return `<rect x="${x-46}" y="${y-30}" width="92" height="64" rx="14" class="sbz"/><svg x="${x-34}" y="${y-18}" width="68" height="40" overflow="hidden"><rect width="68" height="40" fill="#0e1012"/><g class="sbCmp">${t}</g></svg><path d="M${x} ${y-20}v42" stroke="#ff7a00" stroke-width="1.3"/>`; })();
   const U=x=>'<g class="dynu">'+x+'</g>'; // moving units: own paint layer (panellayers.js)
-  return U(asi)+U(att)+U(alt)+U(cmp)+lab(760,220,'STBY AIRSPEED',{s:6})+lab(868,220,'STBY ATTITUDE',{s:6})+lab(976,220,'STBY ALTIMETER',{s:6});
+  return U(asi)+U(att)+U(alt)+U(cmp);
 }
 function asiAng(v){ return v<40?0:20+(Math.min(v,200)-40)/160*310; }
 
 function panelSVG(){
   const vent=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r+6}" class="bezel1"/><circle cx="${x}" cy="${y}" r="${r}" class="ventb"/><circle cx="${x}" cy="${y}" r="${r*0.62}" class="ventc"/>${Array.from({length:8},(_,i)=>`<path d="M${x} ${y}l${Math.cos(i*Math.PI/4)*r*0.6} ${Math.sin(i*Math.PI/4)*r*0.6}" class="vfin"/>`).join('')}<circle cx="${x}" cy="${y}" r="${r*0.18}" class="knobtop"/>`;
-  return `<svg class="psvg" viewBox="0 0 ${W} ${H}" xmlns="${NS}" aria-hidden="false">
+  return `<svg class="psvg ng" viewBox="0 0 ${W} ${H}" xmlns="${NS}" aria-hidden="false">
 <defs>
+ <linearGradient id="gNG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9acae"/><stop offset=".5" stop-color="#989b9e"/><stop offset="1" stop-color="#86898c"/></linearGradient>
+ <linearGradient id="gRockR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ee5a44"/><stop offset="1" stop-color="#b93322"/></linearGradient>
+ <style>.psvg.ng .pl{fill:#0d0f11;filter:none}.psvg.ng .pl.red{fill:#a8231a}.psvg.ng .grpl{stroke:#0d0f11;stroke-opacity:.6}
+.psvg.ng .t-abtn .pl,.psvg.ng .blk .pl,.psvg.ng .placard .pl{fill:#eef2f4}.psvg.ng .blk .pl.red{fill:#ff8b7d}
+.psvg.ng .ngp{fill:#fff;fill-opacity:.045;stroke:#000;stroke-opacity:.42;stroke-width:1}.psvg.ng .ngb{fill:#16181b;stroke:#000;stroke-width:1}
+.psvg.ng .rockr{fill:url(#gRockR)}.psvg.ng .cbcol{fill-opacity:.0}.psvg.ng .t-cb.out .cbcol{fill-opacity:.95}
+.stage.d3 .psvg .only2d{display:none}</style>
  <linearGradient id="gPanel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3f45"/><stop offset=".55" stop-color="#2c3035"/><stop offset="1" stop-color="#23272b"/></linearGradient>
  <linearGradient id="gSub" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#474d54"/><stop offset="1" stop-color="#363b41"/></linearGradient>
  <linearGradient id="gGlare" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16181b"/><stop offset=".8" stop-color="#0d0f11"/><stop offset="1" stop-color="#1d2024"/></linearGradient>
@@ -154,39 +174,34 @@ function panelSVG(){
 </defs>
 <!-- canopy frame -->
 <path d="M0 0H${W}V300C1500 120 1250 60 800 56C350 60 100 120 0 300Z" class="frame" opacity=".0"/>
-<path d="M-10 420C40 200 120 110 230 70L250 0H-10Z" class="frame"/><path d="M${W+10} 420C${W-40} 200 ${W-120} 110 ${W-230} 70L${W-250} 0H${W+10}Z" class="frame"/>
+<path d="M-10 0H34C16 190 6 370 12 560H-10Z" class="frame"/><path d="M${W+10} 0H${W-34}C${W-16} 190 ${W-6} 370 ${W-12} 560H${W+10}Z" class="frame"/>
 <!-- canopy bow over the windshield: seen when the 2D overview shows more canopy (SKY) -->
 <path d="M-10 4C60 -120 330 ${30-SKY} 800 ${30-SKY}S${W-60} -120 ${W+10} 4" class="frame" style="fill:none" stroke="#0c0e10" stroke-width="34"/>
-<!-- glareshield and panel face -->
-<path d="M18 770V250Q18 140 130 118Q800 46 1470 118Q1582 140 1582 250V770Z" fill="url(#gGlare)" filter="url(#fShadow)"/>
-<path d="M34 765V262Q34 170 136 152Q800 86 1464 152Q1566 170 1566 262V765Z" fill="url(#gPanel)"/>
-<path d="M34 765V262Q34 170 136 152Q800 86 1464 152Q1566 170 1566 262V765Z" fill="none" stroke="#000" stroke-opacity=".5" stroke-width="2"/>
-<path d="M136 152Q800 86 1464 152" fill="none" stroke="#fff" stroke-opacity=".07" stroke-width="2"/>
+<!-- padded surround and panel face -->
+<clipPath id="ngFace"><path d="${FACE}"/></clipPath>
+<path d="${RIM}" fill="url(#gGlare)" filter="url(#fShadow)"/>
+<path d="${FACE}" fill="url(#gNG)"/>
+<g clip-path="url(#ngFace)"><rect x="0" y="100" width="${W}" height="${STRIP-100}" fill="#fff" fill-opacity=".05"/><path d="M0 ${STRIP}H${W}" stroke="#000" stroke-opacity=".5" stroke-width="1.6"/><path d="M0 ${STRIP+1.6}H${W}" stroke="#fff" stroke-opacity=".2"/>
+<path d="M0 672H${W}" stroke="#000" stroke-opacity=".5" stroke-width="1.6"/><path d="M0 673.6H${W}" stroke="#fff" stroke-opacity=".2"/><path d="M758 672V770M992 672V770" stroke="#000" stroke-opacity=".4" stroke-width="1.2"/></g>
+<path d="${FACE}" fill="none" stroke="#000" stroke-opacity=".6" stroke-width="2"/>
 <!-- top strip -->
-${plate(306,104,990,124,12)}${screw(316,114)}${screw(1286,114)}${screw(316,218)}${screw(1286,218)}
-${lab(424,128,'LIGHTS',{s:6.5,c:'gp'})}<path d="M326 131h80M442 131h170" class="grpl"/>
-${plate(1192,128,70,82,6,'sub2')}
+${lab(470,279,'LIGHTS',{s:6,c:'gp'})}<path d="M326 281h118M496 281h56" class="grpl"/>
+${plate(1168,266,62,84,5,'ngp')}
+<rect x="1108" y="296" width="46" height="26" rx="2" fill="#e9e6da" stroke="#555" stroke-width=".8"/><path d="M1112 303h38M1112 309h38M1112 315h38M1124 298v22M1138 298v22" stroke="#777" stroke-width=".5"/>
 ${standby()}
-<!-- left column -->
-${plate(48,232,182,388,10)}
-${lab(138,248,'FUEL PUMPS',{s:6.5,c:'gp'})}
-
-${plate(56,424,166,120,6,'sub2')}${lab(98,436,'L ENGINE',{s:6})}${lab(180,436,'R ENGINE',{s:6})}
-${lab(138,560,'ALTERNATOR',{s:6.5,c:'gp'})}
-<!-- right column -->
-${plate(1400,222,160,262,8)}${lab(1480,230,'CIRCUIT BREAKERS',{s:6,c:'gp'})}
-${plate(1400,494,160,70,8,'sub2')}${lab(1480,506,'DE-ICE (IF FITTED)',{s:5.6,c:'gp'})}
-
+<!-- left of the PFD -->
+<!-- right of the MFD: de-ice panel -->
+${plate(1208,392,92,198,6,'ngp')}${lab(1254,404,'DE-ICE (IF FITTED)',{s:5,c:'gp'})}
 <!-- audio panel -->
-${plate(784,226,72,400,8,'sub2')}
+${plate(686,383,74,287,6,'ngb')}
 <!-- switch row -->
-${plate(240,650,580,104,8)}${lab(440,664,'ENGINE MASTER',{s:6.5,c:'gp'})}<path d="M372 667h30M478 667h30" class="grpl"/>
-${plate(838,650,540,104,8)}
-<g class="placard">${plate(950,664,250,74,4,'plc')}${lab(1075,678,'OPERATING LIMITS (KIAS)',{s:6.3})}${lab(960,694,'VMCA 71 · VYSE 85 · VNE 188',{s:6.3,a:'start'})}${lab(960,708,'VFE APP 133 · VFE LDG 113',{s:6.3,a:'start'})}${lab(960,722,'VLO EXT 188 / RET 152 · VLE 188',{s:6.3,a:'start'})}${lab(1290,700,'TRAINING USE ONLY',{s:6.5})}${lab(1290,714,'Follow the AFM and your SOP',{s:5.6})}</g>
-<!-- centre console -->
-<path d="M590 765H1010L1040 980H560Z" fill="url(#gCons)" stroke="#000" stroke-opacity=".6"/>
-<path d="M600 772H1000" stroke="#fff" stroke-opacity=".06"/>
-${plate(500,770,90,60,6,'sub2')}${plate(1015,770,92,60,6,'sub2')}
+${lab(878,683,'FUEL PUMPS',{s:5.6,c:'gp'})}
+<g class="placard">${plate(1186,679,318,62,4,'plc')}${lab(1196,691,'OPERATING LIMITS (KIAS)',{s:5.8,a:'start'})}${lab(1196,703,'VMCA 71 · VYSE 85 · VNE 188',{s:5.8,a:'start'})}${lab(1196,714,'VFE APP 133 · VFE LDG 113',{s:5.8,a:'start'})}${lab(1196,725,'VLO EXT 188 / RET 152 · VLE 188',{s:5.8,a:'start'})}${lab(1494,703,'TRAINING USE ONLY',{s:6,a:'end'})}${lab(1494,714,'Follow the AFM and your SOP',{s:5.2,a:'end'})}</g>
+<!-- centre console (2D: laid out flat) -->
+<path class="only2d" d="M590 772H1010L1040 980H560Z" fill="url(#gCons)" stroke="#000" stroke-opacity=".6"/>
+<path class="only2d" d="M600 778H1000" stroke="#fff" stroke-opacity=".06"/>
+<rect class="only2d sub2" x="500" y="772" width="90" height="58" rx="6"/><rect class="only2d sub2" x="1015" y="772" width="92" height="58" rx="6"/>
+<rect class="only2d sub2" x="74" y="772" width="112" height="50" rx="6"/>
 <g class="ctls">${C.map(ctlSVG).join('')}</g>
 </svg>`;
 }
@@ -195,7 +210,7 @@ ${plate(500,770,90,60,6,'sub2')}${plate(1015,770,92,60,6,'sub2')}
 function build(stage,io){
   const world=document.createElement('div'); world.className='world'; world.style.width=W+'px'; world.style.height=H+'px';
   world.innerHTML=panelSVG()+
-   `<div class="gdu" id="bzP" style="left:242px;top:228px;width:536px;height:400px"></div><div class="gdu" id="bzM" style="left:862px;top:228px;width:536px;height:400px"></div>`;
+   `<div class="gdu" id="bzP" style="left:244px;top:383px;width:536px;height:351px;transform:scale(.817);transform-origin:0 0"></div><div class="gdu" id="bzM" style="left:764px;top:383px;width:536px;height:351px;transform:scale(.817);transform-origin:0 0"></div>`;
   /* the panel sits in an unscaled full-stage wrapper; CSS composites it while the outside view is drawn behind the panel, so the
      WebGL canvas below does not split the panel into overlap layers (the panel itself keeps its scale and stays sharp) */
   const wlay=document.createElement('div'); wlay.className='wlay'; wlay.appendChild(world);
