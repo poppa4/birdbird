@@ -402,9 +402,11 @@ _dk = int(np.argmin(cen[:K - 3].sum(1))); _small = np.array([DIAGO.get(int(o_), 
 cen = np.vstack([cen, cen[_dk]]); lab[(lab == _dk) & _small[:len(lab)]] = len(cen) - 1; cen[_dk] = np.array([52.0, 60.0, 73.0])
 # The seats' shells, backs, headrests and armrests are part of the lining object and had its pale paint, so the seats looked like
 # unpainted casts. Inside the two seat volumes that paint becomes the seats' blue-grey cover.
-_lt = int(np.argmin(np.linalg.norm(cen[:K - 3] - np.array([71.0, 85.0, 104.0]), axis=1))); cen = np.vstack([cen, [54.0, 67.0, 90.0]])
+_lt = int(np.argmin(np.linalg.norm(cen[:K - 3] - np.array([71.0, 85.0, 104.0]), axis=1))); cen = np.vstack([cen, [54.0, 67.0, 90.0], [30.0, 35.0, 46.0]])
 for f_, (x_, z_) in FXZ.items():
-    if f_ < len(lab) and lab[f_] == _lt and 0.24 < abs(x_) < 0.84 and 0.22 < z_ < 1.15 and FY[f_] < 0.80: lab[f_] = len(cen) - 1
+    if f_ >= len(lab) or not (0.24 < abs(x_) < 0.84 and 0.22 < z_ < 1.15 and FY[f_] < 0.80): continue
+    if lab[f_] == _lt: lab[f_] = len(cen) - 2
+    elif lab[f_] == _dk and FY[f_] > -0.30: lab[f_] = len(cen) - 1   # harness straps, buckle and seat pan frame: dark
 PAL = cen / 255.0; print('materials', np.round(cen).astype(int).tolist(), 'area share', np.round(np.bincount(lab, weights=FA, minlength=K) / FA.sum(), 2).tolist())
 hdr = {'S': 16000, 'groups': [], 'lmax': LMAX}; blob = b''
 COS = np.cos(np.radians(72))
