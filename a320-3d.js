@@ -231,7 +231,7 @@ function init(o){
   /* ---- sharp panels (desktop): each panel rendered on its own at 4000 px per metre (img/cockpits/<ac>-3d-<panel>.webp) becomes a
      static texture, uploaded once; the lit legends and switch positions move to a transparent layer just in front of it, so a
      switch press repaints only that light layer. Phones and small-memory devices keep the sheet. ---- */
-  const HI=CF3?CF3.hi:{base:'img/cockpits/a320-3d-',keys:['ovh','front','ped'],v:4};
+  const HI=CF3?CF3.hi:{base:'img/cockpits/a320-3d-',keys:['ovh','front','ped'],v:5};
   let lastPainter=null;
   function loadHi(){ if(!HI||mobile||(navigator.deviceMemory&&navigator.deviceMemory<4)) return; const maxT=Math.min(o.R.capabilities.maxTextureSize||4096,phone()?4096:8192); /* phones: at most 4096 px a side (memory) */
     let chain=Promise.resolve();

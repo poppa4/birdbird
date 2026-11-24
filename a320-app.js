@@ -866,7 +866,7 @@ function layout(instant){
 }
 function apply(instant){ WORLD.classList.toggle('anim',!instant); WORLD.style.transform=`translate(${Z.tx.toFixed(1)}px,${Z.ty.toFixed(1)}px) scale(${Z.s.toFixed(4)})`; hiRes(); fitSoon(); }
 let fitT=0; function fitSoon(){ clearTimeout(fitT); fitT=setTimeout(()=>{ DISP.forEach(d=>{ d.t=99; }); OV.forEach(c=>{ if(c.t==='fcu') c.sig=''; }); },360); }
-const IMG=CF?CF.img:['img/cockpits/a320-deck-1500.webp?v=3','img/cockpits/a320-deck-3000.webp?v=3'];
+const IMG=CF?CF.img:['img/cockpits/a320-deck-1500.webp?v=4','img/cockpits/a320-deck-3000.webp?v=4'];
 function hiRes(){ const need=Z.s*(devicePixelRatio||1)>1.55; const img=$('deck'); const src=need?IMG[1]:IMG[0]; if(need&&!img.src.endsWith('3000.webp')){ const im=new Image(); im.decoding='async'; im.src=src; im.decode().then(()=>{ img.src=src; }).catch(()=>{}); } }
 function view(r){ if(!REG[r]) return; Z.reg=r; if(D3&&CK&&CK.LOOK[r]) CK.LOOK[r](); layout(false); }
 new ResizeObserver(()=>layout(true)).observe(ST);
