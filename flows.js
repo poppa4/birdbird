@@ -188,6 +188,9 @@ function flowSel() { const s = $('fsel'), S = acKey(cur), mineS = FL.filter(f =>
   s.value = cur ? (cur.std ? 'std:' + cur.std : cur.ex ? 'ex:' + cur.ac : cur.id) : ''; }
 const phIx = p => { const i = F.PHASES.findIndex(x => x[0] === p); return i < 0 ? 99 : i; }, phN = p => { const x = F.PHASES.find(y => y[0] === p); return x ? L({ en: x[1], no: x[2] }) : ''; };
 /* a NORDAP flow opens as read-only, like an example: practise it at once; Build offers a copy to change */
+/* the flow a first visit opens: a short one everybody knows (before take-off, 6-8 steps), not the long cockpit preparation
+   at the top of the list; the long ones are a tap away in the flow list */
+function starter(acId) { const L_ = F.stdList().filter(y => y.ac === acId); return ['bto', 'bps', 'start', 'ast'].map(k => L_.find(y => y.id.endsWith(':' + k) && y.n <= 12)).find(Boolean) || L_.slice().sort((a, b) => a.n - b.n)[0]; }
 function stdGet(id) { const S = F.stdList().find(x => x.id === id), f = S && F.stdFlow(id, A, document.documentElement.lang === 'nb'); if (!f) return null; f.ex = true; f.std = id; f.stdSrc = S.src; return f; }
 async function quick(f) { if (!f) return; if (f !== cur) await open(f); if (mode !== 'practise') setMode('practise'); let k = 'flow'; try { k = localStorage.getItem('bb-flows-lvl') || 'flow'; } catch (e) {} pStart(['flow', 'draw', 'exam'].includes(k) ? k : 'flow'); toStage(); }
 async function open(f) { stopAll(); cur = f; try { if (f && A.get(f.ac)) localStorage.setItem('bb-flows-ac', f.ac); } catch (e) {} UNDO.length = 0; snap(); sel = null; placing = null; hidden = {}; role = f ? f.roles[0] : null; imgFor = null; await bg(); if (f && ac) { const B = JSON.stringify(f.steps.map(s => [s.x, s.y])); snapAll(); if (B !== JSON.stringify(f.steps.map(s => [s.x, s.y]))) save(); } fit(); draw(); flowSel(); panel(); setMode(mode);
@@ -771,7 +774,7 @@ function init() { load(); wirePanel(); manWire();
   // from a cockpit page (#ac=b200): your newest flow on that cockpit, else its example
   const ha = location.hash.match(/#ac=([\w-]+)/); if (!first && ha && (A.get(ha[1]) || A.photo(ha[1]))) { first = FL.find(f => f.ac === ha[1]) || F.example(ha[1], A); history.replaceState(null, '', location.pathname); }
   const hf = location.hash.match(/#flow=([\w-]+)/); if (!first && hf) { first = FL.find(x => x.id === hf[1]) || null; history.replaceState(null, '', location.pathname); }   // from My workspace
-  if (!first) { let last = ''; try { last = localStorage.getItem('bb-flows-last') || ''; } catch (e) {} first = last.startsWith('std:') ? stdGet(last.slice(4)) || F.example(myAc(), A) : last.startsWith('ex:') ? F.example(last.slice(3), A) : FL.find(f => f.id === last) || FL[0] || (x => x && stdGet(x.id))(F.stdList().find(y => y.ac === myAc())) || F.example(myAc(), A); }
+  if (!first) { let last = ''; try { last = localStorage.getItem('bb-flows-last') || ''; } catch (e) {} first = last.startsWith('std:') ? stdGet(last.slice(4)) || F.example(myAc(), A) : last.startsWith('ex:') ? F.example(last.slice(3), A) : FL.find(f => f.id === last) || FL[0] || (x => x && stdGet(x.id))(starter(myAc())) || F.example(myAc(), A); }
   open(first).then(() => { const rm = location.hash.match(/room=([\w-]+)/); let back = null; try { back = JSON.parse(sessionStorage.getItem('bb-flows-room') || 'null'); } catch (e) {}
     if (rm) { setMode('together'); if (back && back.code === rm[1]) rJoin(back.code, back.me); }
     else if (back && back.code) { if (back.host) { RM.code = back.code; RM.me = back.me; RM.host = true; RM.role = back.role; rPoll(); } else rJoin(back.code, back.me); } });
