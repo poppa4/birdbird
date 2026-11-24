@@ -33,7 +33,7 @@ const qp=new URLSearchParams(location.search); if(qp.get('start')) UI.start=qp.g
 const RANGES=[10,20,40,80,160,320], MODES=['ROSE ILS','ROSE VOR','ROSE NAV','ARC','PLAN'];
 
 function reset(kind){
-  UI.start=kind; try{ localStorage.setItem(SKEY,kind); }catch(e){}
+  UI.start=kind; if(typeof ACK!=='undefined'&&ACK) ACK.reset(kind); try{ localStorage.setItem(SKEY,kind); }catch(e){}
   if(kind==='cold'){
     A=Y.create({cold:true,gpu:true}); M=F.create({N:820,E:215}); M.psi=M.chi=270*D2R;
   } else if(kind==='ready'){
@@ -864,6 +864,20 @@ if(SH){ SH.init(); CH=SH.chrome({paused:()=>UI.paused,pause,restart:()=>reset(UI
   SH.pane('sp',el=>{ if(CF&&CF.speedsPane){ CF.speedsPane(el,X); return; } const s=M.spds||{}; const r=(t,v)=>`<div class="row"><span>${t}</span><b>${v==null?'—':Math.round(v)+' kt'}</b></div>`;
     el.innerHTML='<div class="sgrp">Speeds at '+(A.gw/1000).toFixed(1)+' t</div>'+r('V1',K.d.v1)+r('VR',K.d.vr)+r('V2',K.d.v2)+r('VS1G (this config)',s.vs1g)+r('VLS',s.vls)+r('F',s.F)+r('S',s.S)+r('Green dot',s.gd)+r('VFE (this config)',s.vfe)+r('VMO','350')+'<p class="pdisc">MMO 0.82. VLE 280 kt, VLO 250 kt (retraction 220 kt). VFE: 1 230, 1+F 215, 2 200, 3 185, FULL 177 kt.</p>'; });
 }
+/* the Checklist tab (a320ck.js): the standard A320 normal checklist or the student's own, ticked from the systems' state */
+var ACK=null;
+if(!CF&&window.A320CK&&$('tabCk')){ try{ ACK=A320CK.mount({box:$('tabCk'),L:x=>LB.L?LB.L(x):(x&&x.en)||x,X,start:()=>UI.start,show:(id,t)=>showCtl(id,t)});
+    if(SH) SH.pane('ck',()=>{ if(ACK) ACK.render(); }); if(LB.onLang) LB.onLang(()=>{ if(ACK) ACK.render(); });
+    if(CH&&CH.setDrawer&&innerWidth>=1100&&innerHeight>=560) CH.setDrawer(true); }catch(e){ console.warn('A320 checklist',e); ACK=null; } }
+/* Show me: turn the view to a control and ring it */
+function showCtl(id,txt){ const c=CT.find(q=>q.id===id&&q.r)||(RECT[id]?{id,r:RECT[id].slice(1,5)}:null); if(!c||!c.r) return;
+  const cx=c.r[0]+c.r[2]/2, cy=c.r[1]+c.r[3]/2;
+  if(D3){ if(CK&&CK.focus) CK.focus(cx,cy); if(HL) HL.flash(c); setTimeout(()=>tip(c,txt),400); return; }
+  let best=null, ba=1e12; for(const k in REG){ const r=REG[k]; if(cx>=r[0]&&cx<=r[0]+r[2]&&cy>=r[1]&&cy<=r[1]+r[3]&&r[2]*r[3]<ba){ ba=r[2]*r[3]; best=k; } }
+  if(best) view(best);
+  setTimeout(()=>{ const b=VP.getBoundingClientRect(), sb=ST.getBoundingClientRect(), p=4, el=document.createElement('div'); el.className='a3ring';
+    Object.assign(el.style,{left:(c.r[0]*Z.s+Z.tx+b.left-sb.left-p)+'px',top:(c.r[1]*Z.s+Z.ty+b.top-sb.top-p)+'px',width:(c.r[2]*Z.s+2*p)+'px',height:(c.r[3]*Z.s+2*p)+'px'});
+    ST.appendChild(el); setTimeout(()=>el.remove(),3600); tip(c,txt); },420); }
 $('apSel').value=UI.start; $('apSel').onchange=()=>reset($('apSel').value);
 /* live outside view: on by default, off on phones (the King Air rule: a small strip of sky is not worth half the GPU there; they
    get the static sky until the … menu turns it on). Off keeps the window, painted. */
@@ -1045,7 +1059,7 @@ function frame(t){
     simTick(dt); soundTick(dt); soundSlow(dt);
     if(cockpitVis){ otwTick(); displayTick(dt); ovT+=dt; if(ovT>0.1||dirty.all){ ovT=0; dirty.all=false; overlayTick(); } }
     statT+=dt; if(statT>0.5){ statT=0; setStat(); }
-    GOV.tick(dt);
+    GOV.tick(dt); if(ACK) ACK.tick(dt);
     fpsN++; fpsT+=dt; fpsMs+=performance.now()-t0; if(fpsT>1){ const p=$('perfm'); if(!p.hidden) p.textContent=`${Math.round(fpsN/fpsT)} fps · ${(fpsMs/fpsN).toFixed(1)} ms/frame\nquality level ${GOV.lvl}`; fpsN=0; fpsT=0; fpsMs=0; }
   }
   requestAnimationFrame(frame);

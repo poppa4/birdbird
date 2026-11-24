@@ -60,8 +60,8 @@
         <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.<a class="rotback" href="training.html">← Back to NORDAP</a></div></div>
       </div>
       <aside class="drawer" id="drawer" aria-label="Procedures"><div class="din">
-        <div class="tabs" role="tablist" aria-label="Procedures"><button data-t="fl" class="on" role="tab" aria-selected="true">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
-        <div id="tabFl"></div><div id="tabSp" hidden></div>
+        <div class="tabs" role="tablist" aria-label="Procedures"><button data-t="ck" class="on" role="tab" aria-selected="true">Checklist</button><button data-t="fl" role="tab" aria-selected="false">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
+        <div id="tabCk"></div><div id="tabFl" hidden></div><div id="tabSp" hidden></div>
       </div></aside>
     </div>
   </section>
@@ -106,7 +106,7 @@
     </table>
   </section>
 
-  <p class="note simnote">Training aid, not a certified simulator or a substitute for the aircraft's approved documents. No procedures are included: use your operator's FCOM, QRH and SOP.</p>
+  <p class="note simnote">Training aid, not a certified simulator or a substitute for the aircraft's approved documents. The built-in checklist is generic and for practice: use your operator's FCOM, QRH, checklist and SOP.</p>
   <p class="note">Not affiliated with Airbus, CFM or any operator. The flight deck picture is rendered from the FlightGear A320-family model (GPL-2.0, see <a href="sources.html">data sources</a>); the display formats are our own drawings. Numbers are typical values for learning.</p>
 </div>
 
@@ -121,7 +121,9 @@
 <script src="a320fm.js?v=5"></script>
 <script src="a320disp.js?v=3"></script>
 <script src="a320mcdu.js?v=2"></script>
+<script src="ownck.js?v=4"></script>
+<script src="a320ck.js?v=2"></script>
 <script src="a320-3d.js?v=30"></script>
-<script src="a320-app.js?v=27"></script>
+<script src="a320-app.js?v=28"></script>
 </body>
 </html>
