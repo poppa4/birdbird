@@ -1,7 +1,7 @@
 """Build the 3D cockpit shell for the A320 3D page (a320-3d.html) from the FlightGear A320-family flight deck model
 (github.com/legoboyvdlp/A320-family, GPL-2.0; Models/FlightDeck/res/fd_complete.ac and its textures).
-Everything that sits on one of the panel planes is left out (the page draws those panels from the rendered pictures, with
-the live lights and screens); what is kept is the structure around them: glareshield, windshield and window frames, side
+Every face that panels.py put a panel picture on is left out (taken.json; the page draws those from the rendered pictures, with
+the live lights and screens), and so are the small parts on the panels; what is kept is the structure around them: glareshield, windshield and window frames, side
 walls, pedestal and console bodies, sidesticks, tillers, seats, floor and ceiling.
 Output (a derived work, GPL-2.0 as well): models/a320-shell.bin and models/a320-shell-<texture>.jpg.
 Binary: 4-byte header length + JSON header, then per group: Int16 positions (x,y,z / S), Uint16 uv (normalised to the
@@ -109,26 +109,28 @@ def refine(F, emin=0.08, tol=0.10, levels=5):
             else: out.append((tri, n))
         print('  refine', lev, len(F), '->', len(out)); F = out
     return F
-for o in O:
+TAKEN = set(map(tuple, json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'taken.json')))['taken']))  # faces the panels carry (panels.py)
+for oi, o in enumerate(O):
     if o['tex'] not in TEX: continue
     v = o['v']; diag = np.linalg.norm(v.max(0) - v.min(0))
     if diag < 0.10 and len(o['faces']) < 400: continue
     if SKIP.search(o['name']) and diag < 0.6: continue
     if re.search(r'(?i)^(hud|efb|headset|sfl)|glass', o['name']): continue  # HUD, EFBs, headsets, sun blinds, glass
     rep, off = o['rep'], o['off']; g = G[o['tex']]
-    for mat, idx, uvs, flags in o['faces']:
+    for fi, (mat, idx, uvs, flags) in enumerate(o['faces']):
+        if (oi, fi) in TAKEN: continue
         P = v[idx]; ctr = P.mean(0); inside = False
-        # faces whose texture is the bright green of the lamp / marking areas show as stray lime lines on the consoles: skip
+        # (the bright green lamp / marking areas of the textures are painted over in the saved pictures below: skipping those
+        # faces left holes to the outside)
         tu = np.mean([uvs[j][0] * rep[0] + off[0] for j in range(len(idx))]) % 1; tv = 1 - (np.mean([uvs[j][1] * rep[1] + off[1] for j in range(len(idx))]) % 1)
         px = TXP[o['tex']].getpixel((min(TXP[o['tex']].width - 1, int(tu * TXP[o['tex']].width)), min(TXP[o['tex']].height - 1, int(tv * TXP[o['tex']].height))))
-        if px[1] > 150 and px[1] > px[0] + 60 and px[1] > px[2] + 40: continue
         for bi, (c, n, up, x, W, H) in enumerate(B[:3]):  # side consoles: the model's own geometry is kept
             d = ctr - c; dn = d @ (-n)
             if abs(d @ x) < W / 2 + 0.01 and abs(d @ up) < H / 2 + 0.01 and -0.03 < dn < (0.32 if bi == 1 else 0.12):
                 # only what the panel picture can show: faces turned towards its view. A face seen edge-on from there (the top of
                 # the glareshield, the sides of the panel bodies) is not in the picture at all, so it stays in the shell.
                 fn = np.cross(P[1] - P[0], P[2] - P[0]); fl = np.linalg.norm(fn)
-                if fl < 1e-12 or abs(fn @ n) / fl > 0.42 or diag < 0.25: inside = True; break
+                if fl < 1e-12 or diag < 0.25: inside = True; break   # small parts on a panel are in its picture; structure is left out only where panels.py took it
         if inside: continue
         nrm = np.cross(P[1] - P[0], P[2] - P[0]); ln = np.linalg.norm(nrm)
         if ln < 1e-12: continue
@@ -183,6 +185,18 @@ for t, g in G.items():
         # a white mask picture in the atlas that the pedestal's side wall is mapped to: it showed as a white slab beside the
         # pedestal. The real wall is plain dark lining.
         ImageDraw.Draw(im).rectangle(tuple(v * k for v in (618, 216, 702, 280)), fill=(30, 32, 36))
+    # the bright green lamp and marking areas of the source textures: painted in the lining's colour, so they do not show as lime slivers
+    A = np.asarray(im).astype(np.int16); lime = (A[..., 1] > 140) & (A[..., 1] > A[..., 0] + 50) & (A[..., 1] > A[..., 2] + 35)
+    # large pure-white areas (mask pictures in the atlas that pocket edges and wall panels are mapped to) show as white slabs:
+    # painted in the lining's colour too; small white marks (lettering) are kept
+    from scipy.ndimage import label as _label
+    wh = (A.min(-1) > 238); lab, nl = _label(wh)
+    if nl:
+        big = np.nonzero(np.bincount(lab.ravel())[1:] > 0.00012 * wh.size)[0] + 1; wm = np.isin(lab, big)
+        if wm.any(): A[wm] = (58, 66, 78); im = Image.fromarray(A.astype(np.uint8))
+    if lime.any():
+        from scipy.ndimage import binary_dilation
+        lime = binary_dilation(lime, iterations=3); A[lime] = (58, 66, 78); im = Image.fromarray(A.astype(np.uint8))
     im.save(os.path.join(OUT, f'a320-shell-{name}.jpg'), quality=82, optimize=True)
     print(t, 'verts', len(P), 'tris', len(I) // 3)
 # the same bake on a grid over each rendered panel (the page multiplies the panel picture by it)

@@ -52,3 +52,14 @@ miss the model take the nearest hit's height, so the picture's own outline cuts 
 grid cell that spans a step of more than 16 mm is drawn flat with walls to its neighbours instead of as a slanted face.
 `shell.py` keeps the sidesticks and tillers whole, keeps faces that the panel pictures see edge-on, and paints out a white mask
 picture in `fd_other.png` that the pedestal's side wall is mapped to.
+
+## Panels as real geometry (2026-11-24)
+
+The height-field surface (`depth.py`, `models/a320-relief.bin`) is gone: a grid of heights cannot hold an edge, so every corner,
+lip and joint came out as steps. `panels.py` writes the model's own faces instead, with the panel pictures projected back onto
+them (`models/a320-panels.bin`, about 25 000 triangles for the three panels where the grid needed 460 000), and `taken.json`,
+the list of faces it took. `shell.py` leaves out exactly those faces, so each face of the model is drawn once: by the panels
+(picture) or by the shell (the model's texture). Order: `python3 panels.py <res> ../../models`, then
+`python3 shell.py <res> ../../models`. The heights in the same file are only for placing the screens and levers and for clicks.
+The page keeps a plain dark tub below the window sills and a lining-coloured roof behind everything, so a gap in the model
+never shows the ground or the sky.
