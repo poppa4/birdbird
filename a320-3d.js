@@ -104,19 +104,17 @@ function init(o){
   { const bm=new THREE.MeshBasicMaterial({color:0x2d3747,side:THREE.DoubleSide}), bp=[], q4=(a,b,c,d)=>bp.push(a,b,c,a,c,d), d=0.035, X2=XW+d, cy=(z)=>ceilAt(0,z)+d;
     const XR=0.80; q4(v3(-XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zB),zB),v3(-XR,cy(zB),zB));   // roof (inboard of the side windows)
     q4(v3(-X2,yF,zB+d),v3(X2,yF,zB+d),v3(X2,cy(zB),zB+d),v3(-X2,cy(zB),zB+d));                                      // back wall
+    // beside the main panel: the panel's own plane carried outboard to the side walls, from the panel's top edge down, a little
+    // behind the picture. This closes the gap between the panel's outboard edge and the wall below the windshield sill.
+    const PP=(sx,ty)=>fv.C.clone().addScaledVector(fv.EX,sx).addScaledVector(fv.EY,ty).addScaledVector(fv.FN,-0.015);
+    for(const sg of [-1,1]){ const a=sg*(fv.W/2-0.03), o=sg*(fv.W/2+0.45), tT=fv.H/2-0.005, tB=-fv.H/2-0.45;
+      q4(PP(a,tB),PP(o,tB),PP(o,tT-0.22),PP(a,tT-0.05)); }   // the windshield sill drops outboard: keep below it
     const g=new THREE.BufferGeometry(), arr=new Float32Array(bp.length*3); bp.forEach((v,i)=>{ arr[i*3]=v.x; arr[i*3+1]=v.y; arr[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(arr,3)); BACK.add(new THREE.Mesh(g,bm)); }
   // windshield: centre post, two side posts, the frame along the sill and along the top
   for(const x of [0,-0.80,0.80]) bar(v3(x,gy,gz),v3(x*1.08,yT,zF),x?0.05:0.04,C_.frame);
   for(const sg of [-1,1]) bar(v3(sg*XW*0.98,gy,gz),v3(sg*XW*0.98,yT,zF),0.06,C_.frame);
   bar(v3(-XW,gy+0.01,gz),v3(XW,gy+0.01,gz),0.03,C_.frame); bar(v3(-XW,yT-0.01,zF),v3(XW,yT-0.01,zF),0.05,C_.frame);
   for(const k in quads){ const q=quads[k], g=new THREE.BufferGeometry(), arr=new Float32Array(q.p.length*3); q.p.forEach((v,i)=>{ arr[i*3]=v.x; arr[i*3+1]=v.y; arr[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(arr,3)); ROOM.add(new THREE.Mesh(g,q.mat)); }
-  /* ---- gap patches (models/a320-holes.json, built by tools/render-a320/holes.py): every direction from the pilot's eye that
-     leaves the cockpit through a gap between the FlightGear pieces (not through a window) gets a patch 2.6 m out, shaded like
-     the structure around it. They sit behind all of the cockpit, so they only show where there was nothing. ---- */
-  if(!CF3) fetch('models/a320-holes.json').then(r=>r.ok?r.json():Promise.reject(r.status)).then(h=>{ const n=h.p.length/3, g=new THREE.BufferGeometry(), cl=new Float32Array(n*3);
-    for(let i=0;i<n;i++){ const b=h.c[Math.floor(i/6)], k=0.42+0.5*b; cl[i*3]=0.60*k; cl[i*3+1]=0.66*k; cl[i*3+2]=0.75*k; }
-    g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(h.p),3)); g.setAttribute('color',new THREE.BufferAttribute(cl,3));
-    const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide})); m.frustumCulled=false; m.renderOrder=-1; scene.add(m); }).catch(e=>console.warn('A320 gaps',e));
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
