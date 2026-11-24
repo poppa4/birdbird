@@ -124,7 +124,7 @@ LEVERS = {'rev_l', 'thr_l_body', 'thr_l_button', 'rev_r', 'thr_r_body', 'thr_r_b
 # model itself: the old post is cut at 12 stations along its axis and the new section is the smallest rounded rectangle that
 # holds it (5 mm clear), with the sizes smoothed to a straight taper. The old post's faces inside the new one are left out.
 PAD = 0.004
-def post(p0, p1, R=0.10, NR=28):
+def post(p0, p1, R=0.10, NR=28, foot=0.0):
     p0, p1 = np.array(p0, float), np.array(p1, float); a = p1 - p0; Lh = np.linalg.norm(a); a /= Lh; mid = (p0 + p1) / 2
     v = np.array([0.0, 0.70, 0.40]) - mid; v -= (v @ a) * a; v /= np.linalg.norm(v); u = np.cross(a, v)          # v: towards the cockpit, u: across
     ts, ext = [], []
@@ -135,9 +135,11 @@ def post(p0, p1, R=0.10, NR=28):
         if len(q) < 6: continue
         ts.append(t); ext.append([np.percentile(q @ u, 10), np.percentile(q @ u, 90), np.percentile(q @ v, 6), np.percentile(q @ v, 94)])
     ts = np.array(ts); ext = np.array(ext); fit = [np.polyfit(ts, np.median(np.stack([ext[:, k], np.roll(ext[:, k], 1), np.roll(ext[:, k], -1)]), 0), 1) for k in range(4)]
-    rings = []; tt = np.linspace(-0.04, 1.04, 14)
+    # the foot: below the window the post widens in a smooth curve into the sill (a moulded boot over the model's wedge plates)
+    rings = []; tt = np.concatenate([np.linspace(-foot, -0.04, 7)[:-1], np.linspace(-0.04, 1.04, 14)]) if foot else np.linspace(-0.04, 1.04, 14)
     for t in tt:
-        u0, u1, v0, v1 = (np.polyval(f, t) for f in fit); u0 -= PAD; u1 += PAD; v0 -= PAD; v1 += PAD
+        fl = 0.035 * ((-0.04 - t) / (foot - 0.04)) ** 2 if foot and t < -0.04 else 0.0
+        u0, u1, v0, v1 = (np.polyval(f, t) for f in fit); u0 -= PAD + fl; u1 += PAD + fl; v0 -= PAD + fl; v1 += PAD + fl
         cu, cv, hw, hh = (u0 + u1) / 2, (v0 + v1) / 2, (u1 - u0) / 2, (v1 - v0) / 2; r = 0.42 * min(hw, hh); ring = []
         for k in range(NR):
             th = 2 * np.pi * k / NR; cx, sx = np.cos(th), np.sin(th)
@@ -147,7 +149,7 @@ def post(p0, p1, R=0.10, NR=28):
     return dict(p0=p0, a=a, L=Lh, u=u, v=v, fit=fit, rings=rings)
 POSTS = []
 for p0, p1 in (((-0.915, 0.40, -0.41), (-0.77, 0.88, 0.0)), ((-1.30, 0.40, 0.32), (-0.99, 0.88, 0.36))):
-    POSTS.append(post(p0, p1)); POSTS.append(post((-p0[0],) + p0[1:], (-p1[0],) + p1[1:]))
+    POSTS.append(post(p0, p1, foot=0.20)); POSTS.append(post((-p0[0],) + p0[1:], (-p1[0],) + p1[1:], foot=0.20))
 POSTS.append(post((0, 0.45, -0.865), (0, 0.88, -0.41)))
 # ---- window headers, rebuilt the same way, part by part. Along the top of each window the model has a frame lip and a padded
 # beam, each a box of flat plates. Every part of the model that runs along a header as a beam (cut at 12 stations: present in
@@ -377,7 +379,7 @@ for _ in range(6):
     if not ch: break
 PAL = cen / 255.0; print('materials', np.round(cen).astype(int).tolist(), 'area share', np.round(np.bincount(lab, weights=FA, minlength=K) / FA.sum(), 2).tolist())
 hdr = {'S': 16000, 'groups': [], 'lmax': LMAX}; blob = b''
-COS = np.cos(np.radians(52))
+COS = np.cos(np.radians(72))
 for t, g in G.items():
     if not g['F']: continue
     g['F'] = refine([f_ for f_ in g['F'] if not DEAD[int(round(f_[0][0][1][0]))]])
