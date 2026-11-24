@@ -276,12 +276,12 @@
 .th-t:not(.th-feat) b{font-size:19px}
 .th-t:not(.th-feat) span{font-size:13.5px;color:#B9C7D5}
 .th-t .meta{color:#7FB2E5;font-weight:600}
-.th-feat{grid-column:1/4;grid-row:1}
+.th-feat{grid-column:1/3;grid-row:1}
 .th-feat img{object-position:50% 30%}
-.th-feat::after{background:linear-gradient(90deg,rgba(9,16,26,.94) 0%,rgba(9,16,26,.82) 36%,rgba(9,16,26,.2) 62%,rgba(9,16,26,0) 78%),linear-gradient(180deg,rgba(9,16,26,0) 55%,rgba(9,16,26,.5) 100%)}
-.th-feat .th-tx{top:0;bottom:auto;padding:30px 32px;max-width:430px}
+.th-feat::after{background:linear-gradient(90deg,rgba(9,16,26,.95) 0%,rgba(9,16,26,.88) 48%,rgba(9,16,26,.35) 75%,rgba(9,16,26,.1) 100%),linear-gradient(180deg,rgba(9,16,26,0) 55%,rgba(9,16,26,.5) 100%)}
+.th-feat .th-tx{top:0;bottom:auto;padding:28px 28px;max-width:380px}
 .th-feat .k{display:inline-block;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12.5px;font-weight:600}
-.th-feat b{margin-top:14px;font-size:clamp(34px,3.2vw,46px);font-stretch:84%;line-height:.98;letter-spacing:-.025em}
+.th-feat b{margin-top:14px;font-size:clamp(32px,2.9vw,42px);font-stretch:84%;line-height:.98;letter-spacing:-.025em}
 .th-feat span{font-size:15.5px;color:#DCE4EC;margin-top:10px}
 .th-go{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:22px}
 .th-go a,.th-go em{font-style:normal}
@@ -290,7 +290,7 @@
 .th-lk{color:#fff!important;font-weight:600;font-size:14.5px;text-decoration:underline;text-underline-offset:4px;text-decoration-color:rgba(255,255,255,.5)}
 .th-feat .stretch{position:absolute;inset:0;z-index:0}
 .th-feat .th-tx{z-index:1}
-.th-flow{grid-column:4/5;grid-row:1}
+.th-flow{grid-column:3/5;grid-row:1}
 .th-flow img{object-position:50% 40%}
 .th-s1{grid-column:1/2;grid-row:2}.th-s2{grid-column:2/3;grid-row:2}.th-s3{grid-column:3/4;grid-row:2}.th-s4{grid-column:4/5;grid-row:2}
 .th-s1 img{object-position:50% 50%;background:#F4F6F7}.th-s2 img{object-position:40% 50%}.th-s3 img{object-position:50% 0}.th-s4 img{object-position:50% 25%;background:#fff}
@@ -354,6 +354,21 @@
   .th-ac{grid-template-columns:minmax(0,1fr)}
 }
 @media (prefers-reduced-motion:reduce){.th-t img{transition:none}.th-t:hover img{transform:none}}
+
+.th-flow{display:block!important;background:#0E1319!important}
+.th-flow .ft-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.th-flow::after{display:block!important;content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(9,16,26,0) 45%,rgba(9,16,26,.88) 100%)}
+.th-flow .th-tx{position:absolute!important;left:0;right:0;bottom:0;z-index:2;background:none!important;border:0!important;padding:16px 20px 18px!important}
+.th-flow .ft-now{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:14px;color:#fff}
+.th-flow .ft-now i{flex:0 0 auto;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#F2C230;color:#13202A;font-style:normal;font-weight:700;font-size:13px}
+.th-flow .ft-now span{margin:0!important;color:#fff!important;font-size:14px!important;transition:opacity .25s}
+.th-flow .ft-tag{position:absolute;top:14px;left:16px;z-index:2;padding:3px 10px;border-radius:999px;background:rgba(9,16,26,.7);font-size:12.5px;font-weight:600;color:#fff}
+.ft-lines line{stroke:#F2C230;stroke-width:2.6;stroke-linecap:round}
+.ft-dots circle{fill:#F2C230;stroke:#0E1319;stroke-width:2}
+.ft-dots text{font:700 15px var(--f-body,system-ui);fill:#13202A;text-anchor:middle;dominant-baseline:central}
+.ft-dots g{transform-box:fill-box;transform-origin:center;animation:ftIn .35s ease-out both}
+@keyframes ftIn{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@media (max-width:600px){.th-grid>.th-flow{height:300px!important;flex-direction:column!important}.th-flow .ft-tag{display:none}}
 </style>
 </head>
 <body data-title="Training hub">
@@ -371,7 +386,11 @@
         <div class="th-tx"><span class="k" data-tx="fK">Cockpit trainer</span><b data-tx="fH">Fly the A320</b><span data-tx="fP">The systems behind every switch and your checklist beside the panel. It starts in the air.</span>
           <div class="th-go"><a class="th-btn" href="a320.html" data-tx="fGo">Start</a><a class="th-lk" href="#simulators" data-tx="fAlt">Other aircraft</a></div></div>
       </div>
-      <a class="th-t th-flow" href="flows.html"><img src="img/training/hub-flows-640.webp" srcset="img/training/hub-flows-640.webp 640w, img/training/hub-flows-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The flow trainer: the A320 overhead panel with a flow drawn step by step." data-alt-no="Flow-treneren: A320-overheadpanelet med en flow tegnet steg for steg." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tFl">Flow trainer</b><span data-tx="tFlL">Every flow drawn on the real cockpit.</span><small data-tx="tFlM">13 aircraft</small></div></a>
+      <a class="th-t th-flow" href="flows.html" id="ftDemo" aria-label="Flow trainer: the A320 preliminary cockpit preparation, played step by step." data-aria-no="Flow-trener: forberedende cockpitklargjøring for A320, spilt av steg for steg.">
+        <svg class="ft-svg" viewBox="145 1200 680 478" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><image href="img/cockpits/a320-deck-1500.webp" x="0" y="0" width="1000" height="1678"/><g class="ft-lines"></g><g class="ft-dots"></g></svg>
+        <span class="ft-tag" data-tx="ftTag">A320 · Cockpit preparation</span>
+        <div class="th-tx"><b data-tx="tFl">Flow trainer</b><div class="ft-now" aria-hidden="true"><i>1</i><span>PM ENG MASTER 1 and 2 – OFF</span></div><small data-tx="tFlM">13 aircraft</small></div>
+      </a>
       <a class="th-t th-s1" href="ifr.html"><img src="img/training/hub-ifr-640.webp" srcset="img/training/hub-ifr-640.webp 640w, img/training/hub-ifr-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="Exercises in the IFR trainer: track to the station, intercept, NDB, DME arc, holds and the ILS." data-alt-no="Øvelser i IFR-treneren: til stasjonen, avskjæring, NDB, DME-bue, venteoppsett og ILS." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tIf">IFR trainer</b><span data-tx="tIfL">One procedure at a time.</span><small data-tx="tIfM">46 exercises</small></div></a>
       <a class="th-t th-s2" href="radio.html"><img src="img/training/hub-radio-640.webp" srcset="img/training/hub-radio-640.webp 640w, img/training/hub-radio-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="Gate to gate: a whole flight with ATC, from the planning room to the apron." data-alt-no="Gate to gate: en hel flyging med ATC, fra planleggingsrommet til oppstillingsplassen." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tRa">Radio</b><span data-tx="tRaL">Out loud, gate to gate.</span><small data-tx="tRaM">Gate to gate · drills</small></div></a>
       <a class="th-t th-s3" href="mcdu.html"><img src="img/training/hub-mcdu-640.webp" srcset="img/training/hub-mcdu-640.webp 640w, img/training/hub-mcdu-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The A320 MCDU trainer with the cockpit preparation task." data-alt-no="A320 MCDU-treneren med oppgaven for cockpitklargjøring." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tAv">Avionics trainers</b><span data-tx="tAvL">MCDU, FMC and GNS 530.</span><small data-tx="tAvM">A320 · 737 · GNS 530</small></div></a>
@@ -652,7 +671,7 @@ LAB.add({},{'Training':'Trening'});
 LAB.tx({
  h1:'Treningshub', lede:'Cockpiter, flows, IFR, radio og briefing på ett sted. Alt kjører i nettleseren.',
  fK:'Cockpittrener', fH:'Fly A320', fP:'Systemene bak hver bryter og sjekklisten ved siden av panelet. Starter i luften.', fGo:'Start', fAlt:'Andre fly',
- tFl:'Flow-trener', tFlL:'Hver flow tegnet i den ekte cockpiten.', tFlM:'13 flytyper',
+ tFl:'Flow-trener', ftTag:'A320 · Cockpitklargjøring', tFlL:'Hver flow tegnet i den ekte cockpiten.', tFlM:'13 flytyper',
  tIf:'IFR-trener', tIfL:'Én prosedyre om gangen.', tIfM:'46 øvelser',
  tRa:'Radio', tRaL:'Høyt, fra gate til gate.', tRaM:'Gate to gate · driller',
  tAv:'Avionikktrenere', tAvL:'MCDU, FMC og GNS 530.', tAvM:'A320 · 737 · GNS 530',
@@ -736,6 +755,32 @@ function attrs(){ const no=LAB.lang==='no';
   document.querySelectorAll('[data-alt-no]').forEach(e=>{ if(e._en===undefined) e._en=e.alt; e.alt=no?e.dataset.altNo:e._en; });
   const x=document.querySelector('.tv-idx'); if(x) x.setAttribute('aria-label',no?'På denne siden':'On this page'); }
 LAB.start('training');
+(function flowDemo(){ const box=document.getElementById('ftDemo'); if(!box) return;
+  const P=[[485, 1411, "ENG MASTER 1 and 2 – OFF"], [500, 1436, "ENG MODE selector – NORM"], [372, 1440, "Weather radar – OFF"], [406, 1440, "PWS – OFF"], [588, 1018, "Landing gear lever – DOWN"], [370, 744, "Wipers – OFF"], [467, 571, "Battery voltage – CHECK"], [488, 568, "BAT 1 – AUTO"], [500, 568, "BAT 2 – AUTO"], [526, 606, "EXT PWR – ON"], [419, 1319, "RMP – CHECK ON and SET"], [500, 436, "APU FIRE pb – IN and guarded"], [516, 455, "APU FIRE TEST – PERFORM"], [500, 739, "APU MASTER SW – ON"], [500, 763, "APU START – ON"], [500, 680, "Air conditioning panel – SET"], [526, 606, "EXT PWR – AS RQRD"], [329, 465, "IR 1 MODE – NAV"], [384, 465, "IR 2 MODE – NAV"], [356, 465, "IR 3 MODE – NAV"], [563, 736, "Cockpit lights – AS RQRD"], [508, 1065, "Oxygen, hydraulic and oil – CHECK"], [549, 1453, "Flaps – CHECK position"], [451, 1455, "Speed brake – RETRACTED"], [509, 1556, "Parking brake – ON"], [630, 1036, "ACCU PRESS – CHECK"], [498, 146, "Emergency equipment – CHECK"]];
+  const svg=box.querySelector('svg'), gl=box.querySelector('.ft-lines'), gd=box.querySelector('.ft-dots'), capN=box.querySelector('.ft-now i'), capT=box.querySelector('.ft-now span');
+  const NS='http://www.w3.org/2000/svg', W=1000, H=1678, VW=680, VH=510;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const vb=(x,y,w,h)=>svg.setAttribute('viewBox',`${x.toFixed(1)} ${y.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`);
+  const view=i=>{ const [x,y]=P[i]; return [Math.min(W-VW,Math.max(0,x-VW/2)),Math.min(H-VH,Math.max(0,y-VH*0.42)),VW,VH]; };
+  const full=[0,0,W,H*1.0];
+  const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  function dot(i){ const [x,y]=P[i]; const g=document.createElementNS(NS,'g'); g.innerHTML=`<circle cx="${x}" cy="${y}" r="13"/><text x="${x}" y="${y+.5}">${i+1}</text>`; gd.appendChild(g); }
+  function line(i){ const [a,b]=P[i-1],[c,d]=P[i]; const l=document.createElementNS(NS,'line'); l.setAttribute('x1',a);l.setAttribute('y1',b);l.setAttribute('x2',c);l.setAttribute('y2',d);
+    const len=Math.hypot(c-a,d-b); l.style.strokeDasharray=len; l.style.strokeDashoffset=len; gl.appendChild(l); return [l,len]; }
+  function cap(i){ capT.style.opacity=0; setTimeout(()=>{ capN.textContent=i+1; capT.textContent='PM '+P[i][2]; capT.style.opacity=1; },180); }
+  if(reduce){ vb(...full); P.forEach((_,i)=>{ if(i) line(i)[0].style.strokeDashoffset=0; dot(i); }); capN.textContent=P.length; capT.textContent='27 steps · cockpit preparation'; return; }
+  let cur=view(0), i=0, visible=true, timer=0;
+  new IntersectionObserver(e=>{ visible=e[0].isIntersecting; if(visible&&!timer) step(); },{threshold:.15}).observe(box);
+  function move(to,ms,onT,done){ const from=cur.slice(), t0=performance.now();
+    (function f(now){ const t=Math.min(1,(now-t0)/ms), k=ease(t); cur=from.map((v,j)=>v+(to[j]-v)*k); vb(...cur); onT&&onT(k); if(t<1) requestAnimationFrame(f); else done&&done(); })(t0); }
+  function reset(){ gl.innerHTML=''; gd.innerHTML=''; i=0; }
+  function step(){ timer=0; if(!visible) return;
+    if(i>=P.length){ move(full,1400,null,()=>{ timer=setTimeout(()=>{ reset(); move(view(0),1400,null,()=>{ dot(0); cap(0); i=1; timer=setTimeout(step,1100); }); },2600); }); return; }
+    if(i===0){ vb(...cur); dot(0); cap(0); i=1; timer=setTimeout(step,1100); return; }
+    const [l,len]=line(i), k0=i; cap(k0);
+    move(view(k0),950,k=>{ l.style.strokeDashoffset=len*(1-k); },()=>{ dot(k0); i++; timer=setTimeout(step,650); });
+  }
+})();
 (function cont(){ let v=null; try{ v=JSON.parse(localStorage.getItem('bb-last-trn')||'null'); }catch(e){}
   const box=document.getElementById('thCont'); if(!box||!v||!v.h) return;
   const TH={'c172.html':'sim-c172-thumb','cockpit.html':'sim-da42-thumb','b200.html':'sim-b200-thumb','a320.html':'sim-a320-thumb','c172-3d.html':'sim-c172-thumb','da42-3d.html':'sim-da42-thumb','b200-3d.html':'sim-b200-thumb','a320-3d.html':'sim-a320-thumb'};
