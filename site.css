@@ -112,10 +112,10 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 .site .logo svg{width:28px;height:28px;display:block}
 .site .logo img.seal{width:42px;height:42px;display:block;flex:0 0 auto}
 .site .logo .lgx,.sitefoot .fb .logo .lgx{display:flex;flex-direction:column;gap:6px;width:auto;font:inherit;letter-spacing:0}
-.site .logo .lg,.sitefoot .fb .logo .lg{display:block;width:136px;height:19px}
+.site .logo .lg,.sitefoot .fb .logo .lg{display:block;width:136px;height:20.4px}
 .site .logo .lg-w,.sitefoot .fb .logo .lg-w{display:none}
 .site .logo .lgx small,.sitefoot .fb .logo .lgx small{display:block;margin:0;font-family:var(--f-body);font-stretch:100%;font-weight:600;font-size:8px;letter-spacing:.11em;text-transform:uppercase;line-height:1;color:var(--ink-2);white-space:nowrap}
-.sitefoot .fb .logo .lg{width:150px;height:21px}
+.sitefoot .fb .logo .lg{width:150px;height:22.4px}
 .sitefoot .fb .logo .lgx small{font-size:8.8px}
 .site .logo span:not(.lgx){font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:21px;letter-spacing:.07em;line-height:1;width:113.9px;white-space:nowrap}
 .site .logo span:not(.lgx) small{display:block;margin-top:4px;font-family:var(--f-body);font-stretch:100%;font-weight:600;font-size:9.5px;letter-spacing:.02em;line-height:1;color:var(--ink-2)}
@@ -499,5 +499,5 @@ body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
 p.mstat{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:12px 0 0;max-width:none}
 p.mstat a{font-size:13.5px;margin-left:4px;color:var(--accent)}
 /* the NORDAP logo on phones: the tagline set to the logo's width so the Menu button keeps its place on the first line */
-@media (max-width:520px){.site .logo .lg{width:124px;height:17.4px}.site .logo .lgx{gap:5px}.site .logo .lgx small{font-size:7.4px;letter-spacing:.1em}}
+@media (max-width:520px){.site .logo .lg{width:124px;height:18.6px}.site .logo .lgx{gap:5px}.site .logo .lgx small{font-size:7.4px;letter-spacing:.1em}}
 @media (max-width:359px){.site .logo .lgx small{display:none}}
