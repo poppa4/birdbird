@@ -36,8 +36,8 @@ tc=nt.nodes.new('ShaderNodeTexCoord'); sep=nt.nodes.new('ShaderNodeSeparateXYZ')
 nt.links.new(tc.outputs['Generated'],sep.inputs[0]); 
 nt.links.new(tc.outputs['Normal'],sep.inputs[0])
 mm=nt.nodes.new('ShaderNodeMath'); mm.operation='MULTIPLY'; mm.inputs[1].default_value=-1.0; nt.links.new(sep.outputs['Y'],mm.inputs[0]); nt.links.new(mm.outputs[0],ramp.inputs['Fac'])
-cr=ramp.color_ramp; cr.elements[0].position=0.0; cr.elements[0].color=(1.0,0.45,0.16,1); cr.elements[1].position=0.22; cr.elements[1].color=(0.015,0.05,0.20,1)
-for p,col in ((0.008,(0.98,0.66,0.40,1)),(0.022,(0.50,0.58,0.78,1)),(0.05,(0.20,0.38,0.78,1)),(0.11,(0.06,0.17,0.50,1))): e=cr.elements.new(p); e.color=col
+cr=ramp.color_ramp; cr.elements[0].position=0.0; cr.elements[0].color=(0.42,0.62,0.92,1); cr.elements[1].position=0.20; cr.elements[1].color=(0.03,0.13,0.50,1)
+for p,col in ((0.02,(0.28,0.50,0.90,1)),(0.06,(0.14,0.36,0.82,1)),(0.12,(0.07,0.24,0.68,1))): e=cr.elements.new(p); e.color=col
 nt.links.new(ramp.outputs['Color'],bg.inputs['Color']); bg.inputs['Strength'].default_value=1.0; nt.links.new(bg.outputs[0],out.inputs['Surface'])
 # warm panel flood lights under the glareshield + soft fill
 def area(name,loc,rot,size,energy,col):

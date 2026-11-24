@@ -36,9 +36,9 @@ Needs Python 3 with `bpy` (Blender as a module), `numpy`, `Pillow`, `playwright`
 windshield and window frames, walls, consoles, sidesticks, tillers, seats, floor), without glass, sun blinds, HUD, EFBs and
 details under about 6 cm². A derived work of the model, GPL-2.0 as well.
 
-## Front page picture (dusk)
+## Front page picture
 
-`img/front/a320-dusk2-*.webp` (front page laptop, Training hub) is a Cycles render of the same `fd.blend` from the centre of the
-flight deck, with NORDAP's display drawings (`scr/*.png`) as emissive screens, the DCDUs and MCDUs lit, glass hidden, a dusk sky and warm panel flood:
+`img/front/a320-day-*.webp` (front page laptop, Training hub) is a Cycles render of the same `fd.blend` from the centre of the
+flight deck, with NORDAP's display drawings (`scr/*.png`) as emissive screens, the DCDUs and MCDUs lit, glass hidden, a clear blue sky and warm panel flood:
 `python dcdu.py` (DCDU display), then `python dusk.py -- 2000 32 out.png 1.05 0.60 0 -0.55 0.30 0 32` (camera x y z, target x y z, lens mm), then cropped to 16:10.
 A derived work of the model, GPL-2.0 as well.
