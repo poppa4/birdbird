@@ -63,3 +63,11 @@ the list of faces it took. `shell.py` leaves out exactly those faces, so each fa
 `python3 shell.py <res> ../../models`. The heights in the same file are only for placing the screens and levers and for clicks.
 The page keeps a plain dark tub below the window sills and a lining-coloured roof behind everything, so a gap in the model
 never shows the ground or the sky.
+
+## Clean materials for the structure (2026-11-24)
+
+The FlightGear textures (2048 px atlases with painted wear, marks, lettering and grain) looked blurred, chipped and blotchy at
+cockpit distance. `shell.py` no longer ships them: each face gets the median colour of its texture area, those colours fall
+into a few materials (five paints, seat fabric, carpet, glareshield leather), small islands of a second material are removed,
+and the material colour times the baked light is written per vertex (`models/a320-shell.bin`, one draw call, no textures).
+The sun patches are gone from the bake (per-vertex shadows read as dents); a soft key from the windshield gives the form.

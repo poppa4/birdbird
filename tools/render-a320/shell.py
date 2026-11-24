@@ -22,7 +22,7 @@ B = []
 for k, (c, n, up, W, H) in V.items():
     c, n, up = map(lambda v: np.array(v, float), (c, n, up)); n /= np.linalg.norm(n); up = up - up.dot(n) * n; up /= np.linalg.norm(up); B.append((c, n, up, np.cross(up, -n), W, H))
 TEX = {'fd_main.png': 2048, 'fd_other.png': 2048, 'fd_leather.png': 1024, 'fabric2.png': 64, 'carpet2.png': 512}  # fd_glare = window glass: left out
-SKIP = re.compile(r'(?i)hud|efb|headset|screw|plug|extinguisher|checklist|torch|cable|_lt\b|knb|btn|breaker')
+SKIP = re.compile(r'(?i)hud|efb|headset|screw|plug|extinguisher|checklist|torch|cable|knb|btn|breaker')
 WHOLE = re.compile(r'(?i)^(sidestick|tiller)')  # hand controls: finely modelled (the grip is all small faces), kept whole or the grip has holes
 import trimesh
 OV, OF = [], []
@@ -34,7 +34,7 @@ for o in O:
     OV.append(o['v'])
 OVa = np.concatenate(OV); OCC = trimesh.Trimesh(vertices=np.stack([-OVa[:, 2], OVa[:, 1], OVa[:, 0]], 1), faces=np.array(OF), process=False)
 RAY = trimesh.ray.ray_pyembree.RayMeshIntersector(OCC)
-rng = np.random.default_rng(7); NS = 96
+rng = np.random.default_rng(7); NS = 160
 SUN = np.array([-0.50, 0.62, -0.60]); SUN /= np.linalg.norm(SUN)  # sun ahead and to the left, 38° up (three frame)
 def bake(P, N, sun=1.0):
     # ambient: cosine-weighted hemisphere around N, the share of rays that leave the deck (reach the windows) within 3 m;
@@ -68,6 +68,14 @@ def shade(b, sun=1.0):
     col = np.stack([A * 1.03 + S * 1.10, A * 1.00 + S * 1.00, A * 0.95 + S * 0.86], 1)
     return np.clip(col, 0, 1.6)  # no more than 1.6x the texture: light texels would burn out to white
 TXP = {t: Image.open(os.path.join(RES, t)).convert('RGB').resize((512, 512)) for t in TEX}
+TXA = {}
+for t, im_ in TXP.items():
+    a_ = np.asarray(im_).astype(np.int16)
+    bad = ((a_[..., 1] > 140) & (a_[..., 1] > a_[..., 0] + 50) & (a_[..., 1] > a_[..., 2] + 35)) | (a_.min(-1) > 238)   # lime marking areas, white masks
+    a_[bad] = (58, 66, 78); TXA[t] = a_
+_r = np.random.default_rng(3).random((16, 4)); SAMP = _r ** 1.5
+FCOL, FAREA, FOBJ = [], [], []
+FTEX = []; FY = []; FEDG = []; EDGE = collections.defaultdict(list)
 G = collections.defaultdict(lambda: {'F': []})
 EMAX = 0.30  # m: faces are first cut to 30 cm; refine() then cuts further only where the baked light changes across them
 def split(tri, n, d=0):
@@ -86,7 +94,7 @@ def refine(F, emin=0.08, tol=0.10, levels=5):
         new = [i for i, k in enumerate(ks) if k not in cache]
         if new:
             P_ = np.array([pts[i][0] for i in new]); N_ = np.array([pts[i][1] for i in new])
-            v = shade(bake(P_, N_))[:, 1]
+            v = shade(bake(P_, N_, 0))[:, 1]
             for i, x in zip(new, v): cache[ks[i]] = x
         return np.array([cache[k] for k in ks])
     for lev in range(levels):
@@ -113,10 +121,12 @@ TAKEN = set(map(tuple, json.load(open(os.path.join(os.path.dirname(os.path.abspa
 for oi, o in enumerate(O):
     if o['tex'] not in TEX: continue
     v = o['v']; diag = np.linalg.norm(v.max(0) - v.min(0))
-    if diag < 0.10 and len(o['faces']) < 400: continue
+    # simple small fittings are kept (leaving them out left holes with chipped edges where they sit in the lining); finely
+    # modelled small parts and the screws, plugs and breakers are left out
+    if diag < 0.10 and 200 < len(o['faces']) < 400: continue
     if SKIP.search(o['name']) and diag < 0.6: continue
     if re.search(r'(?i)^(hud|efb|headset|sfl)|glass', o['name']): continue  # HUD, EFBs, headsets, sun blinds, glass
-    rep, off = o['rep'], o['off']; g = G[o['tex']]
+    rep, off = o['rep'], o['off']; g = G['flat']; tim = TXA[o['tex']]
     for fi, (mat, idx, uvs, flags) in enumerate(o['faces']):
         if (oi, fi) in TAKEN: continue
         P = v[idx]; ctr = P.mean(0); inside = False
@@ -135,11 +145,68 @@ for oi, o in enumerate(O):
         nrm = np.cross(P[1] - P[0], P[2] - P[0]); ln = np.linalg.norm(nrm)
         if ln < 1e-12: continue
         area = sum(np.linalg.norm(np.cross(P[j] - P[0], P[j + 1] - P[0])) for j in range(1, len(P) - 1)) / 2
-        if area < MINA and np.linalg.norm(P.max(0) - P.min(0)) < 0.03 and not WHOLE.search(o['name']): continue  # tiny detail (bolts, edges of small parts): invisible at cockpit distance
+        if area < 1e-9 or (area < MINA and np.linalg.norm(P.max(0) - P.min(0)) < 0.03 and len(o['faces']) > 80 and not WHOLE.search(o['name'])): continue  # tiny detail (bolts, edges of small parts): invisible at cockpit distance
         nrm /= ln; T = np.stack([-P[:, 2], P[:, 1], P[:, 0]], 1); nT = np.array([-nrm[2], nrm[1], nrm[0]])
-        UVs = [(uvs[j][0] * rep[0] + off[0], 1 - (uvs[j][1] * rep[1] + off[1])) for j in range(len(idx))]
+        UVs = np.array([(uvs[j][0] * rep[0] + off[0], 1 - (uvs[j][1] * rep[1] + off[1])) for j in range(len(idx))])
+        # the face's own colour: the median of the texture over the face (16 points), so marks, chips, grain and lettering in the
+        # source textures drop out and what is left is the material's colour
+        w = SAMP[:, :len(idx)] if len(idx) <= 4 else np.full((1, len(idx)), 1 / len(idx)); w = w / w.sum(1, keepdims=True); q = (w @ UVs) % 1
+        px = tim[np.minimum(511, (q[:, 1] * 512).astype(int)), np.minimum(511, (q[:, 0] * 512).astype(int))].astype(float)
+        fid = len(FCOL); FCOL.append(np.median(px, 0)); FAREA.append(area); FOBJ.append(oi); FTEX.append(o['tex']); FY.append(float(ctr[1])); UVs = [(fid, 0)] * len(idx)
+        qk = [tuple(np.round(p_ * 2000).astype(int)) for p_ in P]; ed = []
+        for j in range(len(qk)):
+            ek = tuple(sorted((qk[j], qk[(j + 1) % len(qk)]))); ed.append((ek, float(np.linalg.norm(P[j] - P[(j + 1) % len(P)])))); EDGE[ek].append(fid)
+        FEDG.append(ed)
         for j in range(1, len(idx) - 1):
             g['F'] += split([(T[0], UVs[0]), (T[j], UVs[j]), (T[j + 1], UVs[j + 1])], nT)
+# ---- materials: the face colours fall into a handful of clean ones (k-means, area-weighted); an object that is almost all one
+# material is given that material throughout ----
+FC = np.array(FCOL); FA = np.array(FAREA); FO = np.array(FOBJ); FT = np.array(FTEX); K = 5
+# seat fabric, carpet and the glareshield's leather are each one material (their textures are patterns); the painted parts
+# (fd_main, fd_other) fall into K colours
+SPEC = ['fabric2.png', 'carpet2.png', 'fd_leather.png']; pm = ~np.isin(FT, SPEC); PC, PA = FC[pm], FA[pm]
+cen = [PC[np.argmax(PA)]]
+for _ in range(K - 1): cen.append(PC[np.argmax(np.min([np.linalg.norm(PC - c, axis=1) for c in cen], 0) * (PA > np.median(PA)))])
+cen = np.array(cen)
+for _ in range(30):
+    pl = np.argmin(np.linalg.norm(PC[:, None] - cen[None], axis=2), 1)
+    for k in range(K):
+        m = pl == k
+        if m.any(): cen[k] = (PC[m] * PA[m, None]).sum(0) / PA[m].sum()
+lab = np.zeros(len(FC), int); lab[pm] = pl
+for i_, t_ in enumerate(SPEC):
+    m = FT == t_; lab[m] = K + i_; cen = np.vstack([cen, (FC[m] * FA[m, None]).sum(0) / max(1e-9, FA[m].sum()) if m.any() else [60, 60, 60]])
+K = len(cen)
+# a few faces of a painted part mapped to the fabric or carpet texture (patches on the headrests and posts): the part's own paint
+for oi in np.unique(FO):
+    m = FO == oi; sh = np.bincount(lab[m], weights=FA[m], minlength=K); tot = sh.sum()
+    for k in (K - 3, K - 2):
+        if 0 < sh[k] < 0.35 * tot:
+            sh2 = sh.copy(); sh2[K - 3:] = 0
+            if sh2.sum() > 0: lab[m & (lab == k)] = sh2.argmax()
+    # the seats: fabric on the cushions only; patches of it on the seat backs and headrests take the seat's own cover
+    hi_ = m & (lab == K - 3) & (np.array(FY) > 0.40)
+    if hi_.any():
+        sh2 = sh.copy(); sh2[K - 3:] = 0
+        if sh2.sum() > 0: lab[hi_] = sh2.argmax()
+hi_ = (lab == K - 3) & (np.array(FY) > 0.40)   # straps and patches in fabric above the cushions: the light cover colour
+if hi_.any(): lab[hi_] = int(np.argmin(np.linalg.norm(cen[:K - 3] - np.array([71, 85, 104]), axis=1)))
+# islands: a face that is bordered mostly (60 % of its outline) by one other material takes that material; repeated, this
+# removes the small patches of a second texture the source model has on seats, lining and posts, and keeps real two-tone parts
+for _ in range(6):
+    ch = 0
+    for f, eds in enumerate(FEDG):
+        tot = collections.Counter(); per = 0.0
+        for ek, ln in eds:
+            per += ln
+            for g_ in EDGE[ek]:
+                if g_ != f: tot[lab[g_]] += ln
+        if not tot: continue
+        c, w = tot.most_common(1)[0]
+        if c != lab[f] and w >= 0.6 * per: lab[f] = c; ch += 1
+    print('  islands', ch)
+    if not ch: break
+PAL = cen / 255.0; print('materials', np.round(cen).astype(int).tolist(), 'area share', np.round(np.bincount(lab, weights=FA, minlength=K) / FA.sum(), 2).tolist())
 hdr = {'S': 16000, 'groups': [], 'lmax': LMAX}; blob = b''
 COS = np.cos(np.radians(38))
 for t, g in G.items():
@@ -154,12 +221,12 @@ for t, g in G.items():
     for tri, n in g['F']:
         for p, uv in tri:
             pk = tuple((p * 16000).round().astype(int)); sn = sum(a * m for m, a in at[pk] if m @ n > COS); sn = sn / max(1e-9, np.linalg.norm(sn))
-            nq = tuple((sn * 127).round().astype(int)); k = (pk, (round(uv[0], 5), round(uv[1], 5)), nq)
+            nq = tuple((sn * 127).round().astype(int)); uv = (int(lab[int(round(uv[0]))]), 0); k = (pk, uv, nq)
             if k not in key: key[k] = len(Pl); Pl.append(pk); UVl.append(uv); Nl.append(nq)
             I.append(key[k])
     P = np.array(Pl, np.int16); UV = np.array(UVl, np.float64); N = np.array(Nl, np.int8); I = np.array(I)
     Pf = P.astype(np.float64) / 16000; Nf = N.astype(np.float64); Nf /= np.maximum(1e-6, np.linalg.norm(Nf, axis=1, keepdims=True))
-    b = list(bake(Pf, Nf))
+    b = list(bake(Pf, Nf, 0)); KEY = np.array([0.0, 0.55, -0.83]); b[2] = np.clip(Nf @ KEY, 0, 1) * 0.45 + np.clip(Nf[:, 1], 0, 1) * 0.15
     # smooth the bake over the mesh (neighbours through the triangles): less ray noise, no blotches across cut-up faces
     tri = I.reshape(-1, 3); nb = len(P)
     for it in range(3):
@@ -169,35 +236,16 @@ for t, g in G.items():
                 np.add.at(acc, tri[:, a_], b[q][tri[:, c_]]); np.add.at(cnt, tri[:, a_], 1)
             b[q] = np.where(cnt > 0, 0.5 * b[q] + 0.5 * acc / np.maximum(cnt, 1), b[q])
     col = shade(b)
+    col = col * PAL[UV[:, 0].astype(int)]
     N4 = np.zeros((len(P), 4), np.uint8); N4[:, :3] = np.clip(col / LMAX * 255, 0, 255).round()
-    lo, hi = UV.min(0), UV.max(0); span = np.maximum(hi - lo, 1e-9); Q = np.round((UV - lo) / span * 65535).astype(np.uint16)
+    UV = UV * 0.0; lo, hi = UV.min(0), UV.max(0); span = np.maximum(hi - lo, 1e-9); Q = np.round((UV - lo) / span * 65535).astype(np.uint16)
     big = len(P) > 65535; I = I.astype(np.uint32 if big else np.uint16)
-    name = os.path.splitext(t)[0]
+    name = 'flat'
     parts = [P.tobytes(), Q.tobytes(), N4.tobytes(), I.tobytes()]
     def pad(b): return b + b'\0' * ((-len(b)) % 4)
     off = len(blob); blob += b''.join(pad(p) for p in parts)
     hdr['groups'].append({'tex': name, 'nv': int(len(P)), 'ni': int(len(I)), 'i32': bool(big), 'uv': [float(lo[0]), float(lo[1]), float(span[0]), float(span[1])], 'off': off,
                           'sizes': [len(pad(p)) for p in parts]})
-    im = Image.open(os.path.join(RES, t)).convert('RGB'); s = TEX[t]
-    if im.width > s: im = im.resize((s, s), Image.LANCZOS)
-    if t == 'fd_other.png':  # an airline emblem on the captain's window post in the source texture: painted out with the post's colour
-        from PIL import ImageDraw; k = im.width / 2048; ImageDraw.Draw(im).ellipse(tuple(v * k for v in (1368, 19, 1402, 53)), fill=(73, 86, 105))
-        # a white mask picture in the atlas that the pedestal's side wall is mapped to: it showed as a white slab beside the
-        # pedestal. The real wall is plain dark lining.
-        ImageDraw.Draw(im).rectangle(tuple(v * k for v in (618, 216, 702, 280)), fill=(30, 32, 36))
-    # the bright green lamp and marking areas of the source textures: painted in the lining's colour, so they do not show as lime slivers
-    A = np.asarray(im).astype(np.int16); lime = (A[..., 1] > 140) & (A[..., 1] > A[..., 0] + 50) & (A[..., 1] > A[..., 2] + 35)
-    # large pure-white areas (mask pictures in the atlas that pocket edges and wall panels are mapped to) show as white slabs:
-    # painted in the lining's colour too; small white marks (lettering) are kept
-    from scipy.ndimage import label as _label
-    wh = (A.min(-1) > 238); lab, nl = _label(wh)
-    if nl:
-        big = np.nonzero(np.bincount(lab.ravel())[1:] > 0.00012 * wh.size)[0] + 1; wm = np.isin(lab, big)
-        if wm.any(): A[wm] = (58, 66, 78); im = Image.fromarray(A.astype(np.uint8))
-    if lime.any():
-        from scipy.ndimage import binary_dilation
-        lime = binary_dilation(lime, iterations=3); A[lime] = (58, 66, 78); im = Image.fromarray(A.astype(np.uint8))
-    im.save(os.path.join(OUT, f'a320-shell-{name}.jpg'), quality=82, optimize=True)
     print(t, 'verts', len(P), 'tris', len(I) // 3)
 # the same bake on a grid over each rendered panel (the page multiplies the panel picture by it)
 hdr['panels'] = {}
