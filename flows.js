@@ -190,7 +190,10 @@ function flowSel() { const s = $('fsel'), S = acKey(cur), mineS = FL.filter(f =>
    the open one marked; abnormal and memory items last. One tap opens a flow. The short starter is marked "Start here". */
 const short = (n, ph) => { const t = n.split(' · '); return t.length > 1 && ph.toLowerCase().startsWith(t[0].toLowerCase().slice(0, 12)) ? t.slice(1).join(' · ').replace(/^./, c => c.toUpperCase()) : n; };
 function phaseBar(stdS, mineS, no) { let bar = $('fphase'); if (!bar) { bar = document.createElement('nav'); bar.id = 'fphase'; bar.className = 'fph'; document.querySelector('.ftop').after(bar);
-    bar.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; const s = $('fsel'); s.value = b.dataset.v; s.dispatchEvent(new Event('change')); }); }
+    bar.addEventListener('click', async e => { const b = e.target.closest('button[data-v]'); if (!b) return; const v = b.dataset.v, m = mode, k = P.on ? P.kind : null;
+      /* a flow picked on the timeline starts at once: it plays from its first step, or, while practising, the same practice starts on it */
+      await open(v.startsWith('std:') ? stdGet(v.slice(4)) : v.startsWith('ex:') ? F.example(v.slice(3), A) : FL.find(f => f.id === v));
+      if (!cur || !cur.steps.length) return; if (m === 'practise' && k) { pStart(k); toStage(); return; } if (m === 'build' || m === 'together') return; setMode('watch'); wPlay(); }); }
   bar.setAttribute('aria-label', L({ en: 'Flows through the flight', no: 'Flows gjennom flygingen' }));
   const st = stdS.length ? starter(stdS[0].ac) : null, curV = cur ? (cur.std ? 'std:' + cur.std : cur.ex ? 'ex:' + cur.ac : cur.id) : '';
   const chip = (v, name, n, extra) => `<button type="button" data-v="${esc(v)}"${v === curV ? ' aria-current="true"' : ''}>${extra || ''}<span>${esc(name)}</span><i>${n}</i></button>`;
@@ -205,7 +208,7 @@ const phIx = p => { const i = F.PHASES.findIndex(x => x[0] === p); return i < 0 
 function starter(acId) { const L_ = F.stdList().filter(y => y.ac === acId); return ['bto', 'bps', 'start', 'ast'].map(k => L_.find(y => y.id.endsWith(':' + k) && y.n <= 12)).find(Boolean) || L_.slice().sort((a, b) => a.n - b.n)[0]; }
 function stdGet(id) { const S = F.stdList().find(x => x.id === id), f = S && F.stdFlow(id, A, document.documentElement.lang === 'nb'); if (!f) return null; f.ex = true; f.std = id; f.stdSrc = S.src; return f; }
 async function quick(f) { if (!f) return; if (f !== cur) await open(f); if (mode !== 'practise') setMode('practise'); let k = 'flow'; try { k = localStorage.getItem('bb-flows-lvl') || 'flow'; } catch (e) {} pStart(['flow', 'draw', 'exam'].includes(k) ? k : 'flow'); toStage(); }
-async function open(f) { stopAll(); cur = f; try { if (f && A.get(f.ac)) localStorage.setItem('bb-flows-ac', f.ac); } catch (e) {} UNDO.length = 0; snap(); sel = null; placing = null; hidden = {}; role = f ? f.roles[0] : null; imgFor = null; await bg(); if (f && ac) { const B = JSON.stringify(f.steps.map(s => [s.x, s.y])); snapAll(); if (B !== JSON.stringify(f.steps.map(s => [s.x, s.y]))) save(); } fit(); draw(); flowSel(); panel(); setMode(mode);
+async function open(f) { stopAll(); W.i = 0; W.done = false; W.cur = null; cur = f; try { if (f && A.get(f.ac)) localStorage.setItem('bb-flows-ac', f.ac); } catch (e) {} UNDO.length = 0; snap(); sel = null; placing = null; hidden = {}; role = f ? f.roles[0] : null; imgFor = null; await bg(); if (f && ac) { const B = JSON.stringify(f.steps.map(s => [s.x, s.y])); snapAll(); if (B !== JSON.stringify(f.steps.map(s => [s.x, s.y]))) save(); } fit(); draw(); flowSel(); panel(); setMode(mode);
   try { localStorage.setItem('bb-flows-last', f ? (f.std ? 'std:' + f.std : f.ex ? 'ex:' + f.ac : f.id) : ''); if (f && A.get(f.ac)) localStorage.setItem('bb-flows-ac', f.ac); } catch (e) {} }
 function stepRow(s) { const other = cur.steps.filter(x => x.r !== s.r && x.k !== 'event'), i = cur.steps.indexOf(s);
   return `<li class="fs${sel === s.id ? ' on' : ''}${F.placed(s) || s.k !== 'act' ? '' : ' unp'}" data-s="${s.id}" style="--c:${col(s.r)}">` +
