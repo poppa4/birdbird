@@ -125,7 +125,7 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=3').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=4').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
@@ -145,7 +145,7 @@ function init(o){
   const disp=[];
   for(const d of o.displays){ const [x,y,w,h]=d.r, c=toP(x+w/2,y+h/2,0.0015); const k=viewOf(x+w/2,y+h/2); if(!c||!k) continue; const v=VIEWS[k];
     const tex=new THREE.CanvasTexture(d.cv); tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false;
-    const m=new THREE.Mesh(new THREE.PlaneGeometry(w/v.r[2]*v.W,h/v.r[3]*v.H),new THREE.MeshBasicMaterial({map:tex}));
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(w/v.r[2]*v.W,h/v.r[3]*v.H),new THREE.MeshBasicMaterial({map:tex,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-14}));
     m.matrixAutoUpdate=false; m.matrix.copy(basis(v)).setPosition(c); scene.add(m); m.geometry.computeBoundingSphere(); disp.push({d,tex,m,c,wm:w/v.r[2]*v.W}); d.tex=tex; d.mesh=m; }
   /* ---- the panels' depth: height fields from models/a320-relief.bin (see HM above); the screens move onto their surface ---- */
   const RELIEF=CF3?Promise.resolve(false):fetch('models/a320-relief.bin?v=4').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
@@ -160,7 +160,13 @@ function init(o){
       const nv=mx*my;
       g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(nv*3).fill(1),3)); g.computeBoundingSphere();
       const old=p.mesh.geometry; p.mesh.geometry=g; if(p.ov) p.ov.geometry=g; old.dispose(); }
-    for(const x of disp){ const [dx,dy,dw,dh]=x.d.r, c=toP(dx+dw/2,dy+dh/2,0.0015); if(c){ x.c=c; x.m.matrix.setPosition(c); } }
+    /* the screens follow the surface: a small grid whose points sit 1.5 mm above the height field (a flat screen on a sloped
+       part of the panel, such as the MCDUs on the pedestal, stood out of the surface at one edge and sank into it at the other) */
+    for(const x of disp){ const [dx,dy,dw,dh]=x.d.r, cx=dx+dw/2, cy=dy+dh/2, k=viewOf(cx,cy); if(!k||!HM[k]) continue; const v=VIEWS[k], r=v.r, sx=v.W/r[2], sy=v.H/r[3];
+      const n=8, g=new THREE.PlaneGeometry(dw*sx,dh*sy,n,n), pa=g.attributes.position.array;
+      for(let i=0;i<pa.length;i+=3){ const wx=cx+pa[i]/sx, wy=cy-pa[i+1]/sy; pa[i+2]=hAt(k,(wx-r[0])/r[2],(wy-r[1])/r[3])+0.0015; }
+      g.computeBoundingSphere(); const old=x.m.geometry; x.m.geometry=g; old.dispose();
+      const c0=toP(cx,cy,-hAt(k,(cx-r[0])/r[2],(cy-r[1])/r[3])); x.m.matrix.setPosition(c0); x.c=toP(cx,cy,0.0015); }
     return true; }).catch(e=>{ console.warn('A320 panel depth',e); return false; });
   /* ---- camera ---- */
   const frus=new THREE.Frustum(), pm=new THREE.Matrix4(), sph=new THREE.Sphere();

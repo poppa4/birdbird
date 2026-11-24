@@ -63,9 +63,9 @@ def shade(b, sun=1.0):
     # the FlightGear textures are dark (made for a strong scene light): lifted here so the lining reads as the light
     # blue-grey of the real flight deck, with the windows' light, the contact shade and the sun on top
     A = (0.97 + 0.80 * amb ** 0.5) * (1 - 0.25 * con)
-    S = 0.70 * dr * sun
+    S = 0.35 * dr * sun
     col = np.stack([A * 1.03 + S * 1.10, A * 1.00 + S * 1.00, A * 0.95 + S * 0.86], 1)
-    return np.clip(col, 0, LMAX)
+    return np.clip(col, 0, 1.6)  # no more than 1.6x the texture: light texels would burn out to white
 TXP = {t: Image.open(os.path.join(RES, t)).convert('RGB').resize((512, 512)) for t in TEX}
 G = collections.defaultdict(lambda: {'F': []})
 EMAX = 0.30  # m: faces are first cut to 30 cm; refine() then cuts further only where the baked light changes across them
