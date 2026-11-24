@@ -392,6 +392,27 @@
 .th-ac .all:hover{background:#17324F!important}
 @media (max-width:600px){.th-t:not(.th-feat):not(.th-flow) img{margin:8px 0 8px 8px;width:112px;flex:0 0 112px;border-radius:5px;height:80px!important}}
 @media (prefers-reduced-motion:reduce){.th-t,.th-t img,.th-tx b::after{transition:none!important}}
+
+/* the rail as separate cards: Continue (dark, with Resume), Quick start (module tag, arrow), Flight Intelligence, Type rating */
+.th-rail{background:none!important;border:0!important;border-radius:0;overflow:visible;gap:12px}
+.th-rail section{border:1px solid var(--rl)!important;border-radius:10px;background:var(--sheet,#fff);padding:14px 16px}
+.th-rail h2{font-size:12px!important;letter-spacing:.08em!important;text-transform:uppercase;color:var(--i2)!important;margin-bottom:10px!important}
+.th-rail section.th-cont{background:var(--nv,#0B1E34);border-color:var(--nv,#0B1E34)!important}
+.th-rail section.th-cont h2{color:#9FB6CC!important}
+.th-cont a{color:#fff!important;flex-wrap:wrap}
+.th-cont b{color:#fff}.th-cont span{color:#B9C9D8!important}
+.th-cont img{width:72px!important;height:45px!important;border-radius:5px}
+.th-cont em{margin-left:auto;font-style:normal;font-weight:700;font-size:13.5px;padding:7px 12px;border-radius:6px;background:#fff;color:var(--nv,#0B1E34)}
+.th-cont a:hover em{background:#E6EEF5}
+.th-qs{display:flex;flex-direction:column;gap:6px}
+.th-qs a{display:flex!important;align-items:center;justify-content:flex-start!important;gap:10px!important;padding:8px 10px!important;border:1px solid var(--rule-2,#E4E9EA)!important;border-radius:8px;font-size:14px!important}
+.th-qs li:first-child a{border-top:1px solid var(--rule-2,#E4E9EA)!important}
+.th-qs a::after{content:"→";margin-left:auto;color:var(--i2);transition:transform .15s}
+.th-qs a:hover{border-color:var(--accent,#1F5A8F)!important}.th-qs a:hover::after{transform:translateX(3px)}
+.th-qs .tg{flex:0 0 auto;min-width:50px;text-align:center;padding:2px 7px;border-radius:999px;font-size:11px!important;font-weight:800;letter-spacing:.04em;color:#fff!important}
+.th-qs .t1{background:#1F5A8F}.th-qs .t2{background:#2E7D5B}.th-qs .t3{background:#5A4FA0}.th-qs .t4{background:#A0522D}.th-qs .t5{background:#B7791F}
+@media (max-width:1100px){.th-rail{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}.th-rail .th-cont{grid-column:1/-1}}
+@media (max-width:600px){.th-rail{grid-template-columns:minmax(0,1fr)}}
 </style>
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
@@ -417,16 +438,16 @@
       </a>
       <a class="th-t th-s1" href="ifr.html"><img src="img/training/hub2-ifr-640.webp" srcset="img/training/hub2-ifr-640.webp 640w, img/training/hub2-ifr-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="Above the clouds in the IFR trainer: nothing to see outside, the instruments take you through." data-alt-no="Over skyene i IFR-treneren: ingenting å se ute, instrumentene tar deg gjennom." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tIf">IFR trainer</b><span data-tx="tIfL">One procedure at a time.</span><small data-tx="tIfM">46 exercises</small></div></a>
       <a class="th-t th-s2" href="radio.html"><img src="img/training/hub2-radio-640.webp" srcset="img/training/hub2-radio-640.webp 640w, img/training/hub2-radio-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="A clearance from the tower and the pilot's readback, each element checked: route, altitude, squawk and callsign." data-alt-no="En klarering fra tårnet og pilotens readback, hvert element sjekket: rute, høyde, squawk og kallesignal." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tRa">Radio</b><span data-tx="tRaL">Out loud, gate to gate.</span><small data-tx="tRaM">Gate to gate · drills</small></div></a>
-      <a class="th-t th-s3" href="mcdu.html"><img src="img/training/hub-mcdu-640.webp" srcset="img/training/hub-mcdu-640.webp 640w, img/training/hub-mcdu-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The A320 MCDU trainer with the cockpit preparation task." data-alt-no="A320 MCDU-treneren med oppgaven for cockpitklargjøring." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tAv">MCDU trainer</b><span data-tx="tAvL">A320 FMGS, from preparation to approach.</span><small data-tx="tAvM">A320 · 737 · GNS 530</small></div></a>
+      <a class="th-t th-s3" href="mcdu.html"><img src="img/training/hub-mcdu-640.webp" srcset="img/training/hub-mcdu-640.webp 640w, img/training/hub-mcdu-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The avionics trainers, starting with the A320 MCDU on the cockpit preparation task." data-alt-no="A320 MCDU-treneren med oppgaven for cockpitklargjøring." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tAv">Avionics trainers</b><span data-tx="tAvL">Starting with the A320 MCDU.</span><small data-tx="tAvM">A320 · 737 · GNS 530</small></div></a>
       <a class="th-t th-s4" href="briefing.html"><img src="img/training/hub2-brief-640.webp" srcset="img/training/hub2-brief-640.webp 640w, img/training/hub2-brief-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="NORDAP's departure briefing model, T-RIBETS: threats, runway, instruments, bugs, emergencies, transition altitude and safe altitude." data-alt-no="NORDAPs modell for avgangsbriefing, T-RIBETS: trusler, rullebane, instrumenter, bugs, nødsituasjoner, overgangshøyde og sikker høyde." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tBr">Briefing</b><span data-tx="tBrL">Brief out loud, get it scored.</span><small data-tx="tBrM">Departures and approaches</small></div></a>
       <aside class="th-rail" aria-label="Your hub" data-aria-no="Din hub">
-        <section class="th-cont"><h2 data-tx="rC">Continue</h2><div id="thCont"><a href="ifr.html"><img src="img/training/hub2-ifr-640.webp" alt=""><div><b data-tx="rCn">IFR trainer</b><span data-tx="rCs">New here? Start with exercise 1.</span></div></a></div></section>
+        <section class="th-cont"><h2 data-tx="rC">Continue</h2><div id="thCont"><a href="ifr.html"><img src="img/training/hub2-ifr-640.webp" alt=""><div><b data-tx="rCn">IFR trainer</b><span data-tx="rCs">New here? Start with exercise 1.</span></div><em data-tx="rGo">Start →</em></a></div></section>
         <section><h2 data-tx="rQ">Quick start</h2><ul class="th-qs">
-          <li><a href="a320.html"><b data-tx="q1">A320 approach checklist</b><span>A320</span></a></li>
-          <li><a href="ifr.html"><b data-tx="q2">Track to the station</b><span>IFR</span></a></li>
-          <li><a href="mcdu.html"><b data-tx="q3">Set up the FMS</b><span>MCDU</span></a></li>
-          <li><a href="radio.html"><b data-tx="q4">IFR training flight</b><span data-tx="q4s">Radio</span></a></li>
-          <li><a href="flows.html"><b data-tx="q5">Cockpit preparation flow</b><span>Flows</span></a></li>
+          <li><a href="a320.html"><span class="tg t1">A320</span><b data-tx="q1">A320 approach checklist</b></a></li>
+          <li><a href="ifr.html"><span class="tg t2">IFR</span><b data-tx="q2">Track to the station</b></a></li>
+          <li><a href="mcdu.html"><span class="tg t3">MCDU</span><b data-tx="q3">Set up the FMS</b></a></li>
+          <li><a href="radio.html"><span class="tg t4" data-tx="q4s">Radio</span><b data-tx="q4">IFR training flight</b></a></li>
+          <li><a href="flows.html"><span class="tg t5">Flows</span><b data-tx="q5">Before takeoff flow</b></a></li>
         </ul></section>
         <section><h2>Flight Intelligence</h2><form class="th-ask" action="fi.html" method="get" role="search"><label class="vh" for="thAsk" data-tx="rA">Ask Flight Intelligence</label><input id="thAsk" name="q" type="text" maxlength="500" autocomplete="off" placeholder="Ask about a procedure or a rule" data-ph-no="Spør om en prosedyre eller en regel"><button type="submit" data-tx="rAgo">Ask</button></form></section>
         <section><h2 data-tx="rT">Type rating and checks</h2><div class="th-more"><a href="typerating.html" data-tx="m1">Type rating</a><a href="simcheck.html" data-tx="m2">A320 sim assessment</a><a href="checkride.html" data-tx="m3">Check preparation</a><a href="radio-drills.html" data-tx="m4">Radio drills</a></div></section>
@@ -661,10 +682,10 @@ LAB.tx({
  tFl:'Flow-trener', ftTag:'A320 · Før avgang', tFlL:'Hver flow tegnet i den ekte cockpiten.', tFlM:'13 flytyper',
  tIf:'IFR-trener', tIfL:'Én prosedyre om gangen.', tIfM:'46 øvelser',
  tRa:'Radio', tRaL:'Høyt, fra gate til gate.', tRaM:'Gate to gate · driller',
- tAv:'MCDU-trener', tAvL:'A320 FMGS, fra klargjøring til innflyging.', tAvM:'A320 · 737 · GNS 530',
+ tAv:'Avionikktrenere', tAvL:'Først ut: A320-MCDU-en.', tAvM:'A320 · 737 · GNS 530',
  tBr:'Briefing', tBrL:'Brief høyt og få det vurdert.', tBrM:'Avganger og innflyginger',
- rC:'Fortsett', rCn:'IFR-trener', rCs:'Ny her? Start med øvelse 1.', rQ:'Hurtigstart',
- q1:'A320 innflygingssjekkliste', q2:'Til stasjonen', q3:'Sett opp FMS', q4:'IFR-treningsflyging', q4s:'Radio', q5:'Flow for cockpitklargjøring',
+ rC:'Fortsett', rCn:'IFR-trener', rCs:'Ny her? Start med øvelse 1.', rGo:'Start →', rQ:'Hurtigstart',
+ q1:'A320 innflygingssjekkliste', q2:'Til stasjonen', q3:'Sett opp FMS', q4:'IFR-treningsflyging', q4s:'Radio', q5:'Flow før avgang',
  rA:'Spør Flight Intelligence', rAgo:'Spør', rT:'Typerating og sjekker',
  m1:'Typerating', m2:'A320 simulatortest', m3:'Kontrollforberedelse', m4:'Radiodriller', m5:'737 FMC',
  a1:'Enmotors stempel', a2:'Tomotors stempel, glass', a3:'Tomotors turboprop', a4:'Jetfly', aAll:'Alle moduler i detalj ↓',
@@ -776,7 +797,7 @@ LAB.start('training');
   const no=LAB.lang==='no'; const ago=Math.max(0,Math.round((Date.now()-(v.at||Date.now()))/864e5));
   const when=ago===0?(no?'I dag':'Today'):ago===1?(no?'I går':'Yesterday'):(no?`For ${ago} dager siden`:`${ago} days ago`);
   const NO={'IFR trainer':'IFR-trener','MCDU trainer':'MCDU-trener','737 FMC trainer':'737 FMC-trener','GNS 530 trainer':'GNS 530-trener','Radio drills':'Radiodriller','Type rating':'Typerating','A320 sim assessment':'A320 simulatortest','Check preparation':'Kontrollforberedelse'}; const base=(v.l||'').replace(/ 3D$/,''); const lbl=(no&&NO[base]?NO[base]:base)+(/ 3D$/.test(v.l||'')?' 3D':'');
-  box.innerHTML=`<a href="${v.h}"><img src="${img}" alt=""><div><b>${lbl.replace(/[<>&]/g,'')}</b><span>${when}</span></div></a>`;
+  box.innerHTML=`<a href="${v.h}"><img src="${img}" alt=""><div><b>${lbl.replace(/[<>&]/g,'')}</b><span>${when}</span></div><em>${no?'Fortsett →':'Resume →'}</em></a>`;
 })();
 attrs(); LAB.onLang(attrs);
 })();
