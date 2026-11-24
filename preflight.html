@@ -490,14 +490,24 @@
 .pf .pf-flow i{margin-top:2px}
 
 /* the four small cards: title and line start at the same height in every card, whatever the length of the line */
-@media (min-width:601px){.pf .th-grid>.th-t:not(.th-feat) .th-tx{height:132px;display:flex!important;flex-direction:column;justify-content:flex-start;padding:46px 64px 0 18px!important}}
 .pf .th-ac b,.pf .th-ac span{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis}
-.pf .th-grid>.th-t:not(.th-feat) .th-tx{background:linear-gradient(180deg,rgba(6,14,26,0) 0%,rgba(6,14,26,.82) 30%,rgba(6,14,26,.96) 100%)!important}
+
+.pf .th-feat picture{display:contents}
+/* the four small cards: the screenshot on top, the title and line on a solid band below, never text over a screenshot */
+.pf .th-grid>.th-t:not(.th-feat){display:flex!important;flex-direction:column;background:#0B1626!important}
+.pf .th-grid>.th-t:not(.th-feat) img{position:static!important;inset:auto!important;flex:1 1 0;min-height:0;height:auto!important;width:100%!important;object-fit:cover;z-index:0}
+.pf .th-grid>.th-t:not(.th-feat) .th-tx{position:relative!important;inset:auto!important;flex:0 0 auto;background:#0B1626!important;border-top:1px solid rgba(160,190,225,.18)!important;padding:12px 60px 14px 16px!important}
+.pf .th-grid>.th-t:not(.th-feat) .th-tx b{font-size:18px}
+.pf .th-grid>.th-t:not(.th-feat) .th-tx span{margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf .th-grid>.th-t:not(.th-feat) .th-tx::after{bottom:auto!important;top:50%;margin-top:-17px}
+@media (max-width:600px){.pf .th-grid>.th-t:not(.th-feat){height:230px!important;min-height:0!important}
+  .pf .th-feat picture img{height:200px}}
+@media (max-width:600px){.pf .th-grid>.th-t:not(.th-feat){flex-direction:column!important}.pf .th-grid>.th-t:not(.th-feat) img{flex:1 1 0!important;width:100%!important;height:auto!important;margin:0!important;border-radius:0!important}}
 </style>
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
 <body data-title="Preflight">
-<script src="site.js?v=132"></script>
+<script src="site.js?v=133"></script>
 <main class="tv pf" id="main">
 
   <div class="th">
@@ -512,21 +522,21 @@
       <li><a href="prep.html"><i>4</i><span><b data-tx="s4">Brief and print</b><small data-tx="s4s">Brief it, then print or save</small></span></a></li>
     </ol>
     <div class="th-grid">
-      <div class="th-t th-feat th-route"><img src="img/preflight/route-1400.webp" srcset="img/preflight/route-1000.webp 1000w, img/preflight/route-1400.webp 1400w" sizes="(max-width:1100px) 100vw, 640px" alt="Simulate the flight in Route Explorer: the route in 3D over satellite imagery, across the mountains towards Sogndal." data-alt-no="Simuler flygingen i Route Explorer: ruten i 3D over satellittbilder, over fjellet mot Sogndal." decoding="async">
+      <div class="th-t th-feat th-route"><picture><source media="(max-width:600px)" srcset="img/preflight/route-m-900.webp"><img src="img/preflight/route-1400.webp" srcset="img/preflight/route-1000.webp 1000w, img/preflight/route-1400.webp 1400w" sizes="(max-width:1100px) 100vw, 640px" alt="Simulate the flight in Route Explorer: the route in 3D over satellite imagery, across the mountains towards Sogndal." data-alt-no="Simuler flygingen i Route Explorer: ruten i 3D over satellittbilder, over fjellet mot Sogndal." decoding="async"></picture>
         <a class="stretch" href="route.html" tabindex="-1" aria-hidden="true"></a>
         <div class="th-tx"><span class="k" data-tx="rK">Step 1 · See the route</span><b data-tx="rH">Route Explorer</b><span class="l" data-tx="rP">See what lies along the line, before you fly it.</span>
           <ul class="pf-ok"><li data-tx="rB1">Highest terrain under the route</li><li data-tx="rB2">Fly it in 3D over satellite imagery</li><li data-tx="rB3">One button sends it to the pack</li></ul>
           <div class="th-go"><a class="th-btn" href="route.html" data-tx="rGo2">Open the map</a></div></div>
       </div>
-      <div class="th-t th-feat"><img src="img/preflight/pack-1600.webp" srcset="img/preflight/pack-1000.webp 1000w, img/preflight/pack-1600.webp 1600w" sizes="(max-width:1100px) 100vw, 760px" alt="An IFR briefing pack from Oslo to Stockholm: the cover page with the contents, on a stack of pages." data-alt-no="En IFR-briefingpakke fra Oslo til Stockholm: forsiden med innholdet, på en bunke med sider." fetchpriority="high" decoding="async">
+      <div class="th-t th-feat"><picture><source media="(max-width:600px)" srcset="img/preflight/pack-m-900.webp"><img src="img/preflight/pack-1600.webp" srcset="img/preflight/pack-1000.webp 1000w, img/preflight/pack-1600.webp 1600w" sizes="(max-width:1100px) 100vw, 760px" alt="An IFR briefing pack from Oslo to Stockholm: the cover page with the contents, on a stack of pages." data-alt-no="En IFR-briefingpakke fra Oslo til Stockholm: forsiden med innholdet, på en bunke med sider." fetchpriority="high" decoding="async"></picture>
         <a class="stretch" href="prep.html" tabindex="-1" aria-hidden="true"></a>
         <div class="th-tx"><span class="k" data-tx="fK">Step 2 · The paperwork</span><b data-tx="fH">Briefing pack</b><span data-tx="fP">Everything for one flight, page by page.</span>
           <ul class="pf-ok"><li data-tx="fB1">VFR or IFR, ready to fill in</li><li data-tx="fB2">NOTAM, weather, fuel, mass and balance</li><li data-tx="fB3">Prints as a booklet or a PDF</li></ul>
           <div class="th-go"><a class="th-btn" href="prep.html" data-tx="fGo">Open the pack</a><a class="th-lk" href="sheets.html" data-tx="fAlt">Kneeboard sheets</a></div></div>
       </div>
       <a class="th-t th-s1" href="weather.html"><img src="img/preflight/wx-640.webp" srcset="img/preflight/wx-640.webp 640w, img/preflight/wx-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The METAR and TAF for Oslo Gardermoen, with a VFR status badge." data-alt-no="METAR og TAF for Oslo Gardermoen, med et VFR-merke." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tWx">Weather</b><span data-tx="tWxL">METAR, TAF and forecast.</span></div></a>
-      <a class="th-t th-s2" href="planning.html"><img src="img/preflight/nav-640.webp" srcset="img/preflight/nav-640.webp 640w, img/preflight/nav-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The navigation log with four legs and the wind triangle for the first leg." data-alt-no="Navigasjonsloggen med fire etapper og vindtrekanten for den første." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tNl">Navigation log</b><span data-tx="tNlL">Headings, times, fuel.</span></div></a>
-      <a class="th-t th-s3" href="sun.html"><img src="img/preflight/sun-640.webp" srcset="img/preflight/sun-640.webp 640w, img/preflight/sun-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="Civil twilight, sunrise and sunset at Torp, and the day as a bar from night to daylight." data-alt-no="Sivilt tussmørke, soloppgang og solnedgang på Torp, og døgnet som en stolpe fra natt til dagslys." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tSu">Sun and twilight</b><span data-tx="tSuL">When night begins.</span></div></a>
+      <a class="th-t th-s2" href="sun.html"><img src="img/preflight/sun-640.webp" srcset="img/preflight/sun-640.webp 640w, img/preflight/sun-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="Civil twilight, sunrise and sunset at Torp, and the day as a bar from night to daylight." data-alt-no="Sivilt tussmørke, soloppgang og solnedgang på Torp, og døgnet som en stolpe fra natt til dagslys." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tSu">Sun and twilight</b><span data-tx="tSuL">When night begins.</span></div></a>
+      <a class="th-t th-s3" href="planning.html"><img src="img/preflight/nav-640.webp" srcset="img/preflight/nav-640.webp 640w, img/preflight/nav-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The navigation log with four legs and the wind triangle for the first leg." data-alt-no="Navigasjonsloggen med fire etapper og vindtrekanten for den første." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tNl">Navigation log</b><span data-tx="tNlL">Headings, times, fuel.</span></div></a>
       <a class="th-t th-s4" href="sheets.html"><img src="img/preflight/sheets-640.webp" srcset="img/preflight/sheets-640.webp 640w, img/preflight/sheets-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="Two A5 kneeboard sheets: the VFR operational flight plan and the IFR kneeboard." data-alt-no="To A5-kneeboardark: VFR operativ flygeplan og IFR-kneeboardet." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tKb">Kneeboards</b><span data-tx="tKbL">VFR, IFR and risk sheets.</span></div></a>
       <aside class="th-rail" aria-label="Your preparation" data-aria-no="Din forberedelse">
         <section class="th-cont"><h2 data-tx="cC">Continue</h2><div id="pfCont"><a href="prep.html"><img src="img/preflight/pack-thumb.webp" alt=""><div><b data-tx="cN">Briefing pack</b><span data-tx="cS">New here? Start a pack for your next flight.</span></div><em data-tx="cGo">Start →</em></a></div></section>
@@ -633,8 +643,8 @@
     </div>
     <ul class="tv-more-l">
       <li><a href="weather.html"><span class="t"><b data-tx="t1">Weather</b></span><span class="d" data-tx="t1d">METAR, TAF and SIGMET now, the forecast up to 14 days, and every report decoded line by line.</span><span class="ar" aria-hidden="true">→</span></a></li>
+      <li><a href="sun.html"><span class="t"><b data-tx="t3">Sun and twilight</b></span><span class="d" data-tx="t3d">Sunrise, sunset and civil twilight at any European aerodrome, local time and UTC. Part of Weather.</span><span class="ar" aria-hidden="true">→</span></a></li>
       <li><a href="planning.html"><span class="t"><b data-tx="t2">Navigation log</b></span><span class="d" data-tx="t2d">The wind triangle per leg, fuel, and the ICAO flight plan format.</span><span class="ar" aria-hidden="true">→</span></a></li>
-      <li><a href="sun.html"><span class="t"><b data-tx="t3">Sun and twilight</b></span><span class="d" data-tx="t3d">Sunrise, sunset and civil twilight at any European aerodrome, local time and UTC.</span><span class="ar" aria-hidden="true">→</span></a></li>
       <li><a href="sheets.html"><span class="t"><b data-tx="t4">Kneeboard sheets</b></span><span class="d" data-tx="t4d">Blank A5 sheets: the VFR operational flight plan, the IFR kneeboard and a risk assessment.</span><span class="ar" aria-hidden="true">→</span></a></li>
       <li><a href="essentials.html"><span class="t"><b data-tx="t5">VFR and IFR essentials</b></span><span class="d" data-tx="t5d">The rules and numbers you look up most, on one page.</span><span class="ar" aria-hidden="true">→</span></a></li>
     </ul>
@@ -680,7 +690,7 @@ LAB.tx({
  tH:'Verktøy for dagen', tP:'Sidene du åpner ved siden av pakken.',
  t1:'Vær', t1d:'METAR, TAF og SIGMET nå, varselet opptil 14 dager frem, og hver melding dekodet linje for linje.',
  t2:'Navigasjonslogg', t2d:'Vindtrekanten per etappe, drivstoff og ICAO-formatet for flygeplanen.',
- t3:'Sol og tussmørke', t3d:'Soloppgang, solnedgang og sivilt tussmørke på enhver europeisk flyplass, i lokal tid og UTC.',
+ t3:'Sol og tussmørke', t3d:'Soloppgang, solnedgang og sivilt tussmørke på enhver europeisk flyplass, i lokal tid og UTC. En del av Vær.',
  t4:'Kneeboard-ark', t4d:'Tomme A5-ark: VFR operativ flygeplan, IFR-kneeboardet og en risikovurdering.',
  t5:'Det viktigste i VFR og IFR', t5d:'Reglene og tallene du slår opp oftest, på én side.',
  note:'Et hjelpemiddel for forberedelse, ikke en kilde. Sjekk hvert tall mot AIP, flyhåndboken, offisielt vær og NOTAM, og operatørens prosedyrer.', noteGo:'Datakilder og lisenser'

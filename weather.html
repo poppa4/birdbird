@@ -65,7 +65,7 @@
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
 <body data-title="Weather">
-<script src="site.js?v=132"></script>
+<script src="site.js?v=133"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -75,7 +75,7 @@
     </div>
     <div class="hright"><div class="status ok" id="stat" hidden>Decoded</div></div>
   </header>
-  <nav class="wxtabs" aria-label="Weather"><a href="weather.html" data-w="now" class="on">Now</a><a href="outlook.html" data-w="fc">Forecast</a><a href="weather.html#decode" data-w="dec">Decode and practise</a></nav>
+  <nav class="wxtabs" aria-label="Weather"><a href="weather.html" data-w="now" class="on">Now</a><a href="outlook.html" data-w="fc">Forecast</a><a href="weather.html#decode" data-w="dec">Decode and practise</a><a href="sun.html" data-w="sun">Sun and twilight</a></nav>
   <nav class="snav" id="wxsn" aria-label="Sections" hidden><a href="#decode">Decode</a><a href="#xwind">Crosswind</a><a href="#codes">Codes</a><a href="#quiz">Practise</a></nav>
 
   <section class="card livecard" id="live">
@@ -139,7 +139,7 @@ const NOd={
  'The codes you meet most':'Kodene du møter oftest','Ten questions on reports generated for you. New reports every round.':'Ti spørsmål på meldinger som lages for deg. Nye meldinger hver runde.',
  'The report shown first and the buttons above are made-up practice reports. The Now tab fetches the real one.':'Meldingen som vises først, og knappene over, er oppdiktede øvingsmeldinger. Fanen Nå henter den ekte.',
  'Training tool. The reports used as examples and in the practice are made up. For flight planning, use the official briefing service.':'Opplæringsverktøy. Meldingene i eksemplene og øvingen er oppdiktet. Bruk den offisielle briefingtjenesten til flyplanlegging.',
- 'Decoded':'Dekodet','Weather':'Vær','The weather at an aerodrome now, the forecast for the days ahead, and METAR and TAF decoded line by line.':'Været på en flyplass nå, varselet for dagene fram, og METAR og TAF dekodet linje for linje.','Now':'Nå','Forecast':'Varsel','Decode and practise':'Dekod og øv','At the aerodrome now':'På flyplassen nå','Show':'Vis','The latest METAR and TAF, SIGMETs in force over the aerodrome, the freezing level and the radar. Tap a report to decode it line by line. For flight, the official briefing decides.':'Siste METAR og TAF, SIGMET i kraft over flyplassen, frysenivået og radaren. Trykk på en melding for å dekode den linje for linje. Før flyging er det offisiell briefing som gjelder.','Check the report':'Sjekk meldingen','Latest report for':'Siste melding for'
+ 'Decoded':'Dekodet','Weather':'Vær','The weather at an aerodrome now, the forecast for the days ahead, and METAR and TAF decoded line by line.':'Været på en flyplass nå, varselet for dagene fram, og METAR og TAF dekodet linje for linje.','Now':'Nå','Forecast':'Varsel','Decode and practise':'Dekod og øv','Sun and twilight':'Sol og tussmørke','At the aerodrome now':'På flyplassen nå','Show':'Vis','The latest METAR and TAF, SIGMETs in force over the aerodrome, the freezing level and the radar. Tap a report to decode it line by line. For flight, the official briefing decides.':'Siste METAR og TAF, SIGMET i kraft over flyplassen, frysenivået og radaren. Trykk på en melding for å dekode den linje for linje. Før flyging er det offisiell briefing som gjelder.','Check the report':'Sjekk meldingen','Latest report for':'Siste melding for'
 };
 LAB.add({},NOd);
 

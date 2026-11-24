@@ -46,11 +46,15 @@
 .tw{overflow-x:auto}
 #year{width:100%;height:auto;display:block;margin-top:10px}
 .utc{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2)}
+.wxtabs{display:flex;gap:2px;margin:22px 0 0;border-bottom:1px solid var(--rule);overflow-x:auto}
+.wxtabs a{padding:10px 18px 9px;font-weight:600;font-size:15.5px;color:var(--ink-2);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.wxtabs a:hover{color:var(--ink)}.wxtabs a.on{color:var(--ink);border-bottom-color:var(--accent)}
+.wxtabs{margin-bottom:18px}
 </style>
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
 <body data-title="Sun and twilight">
-<script src="site.js?v=132"></script>
+<script src="site.js?v=133"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -59,6 +63,7 @@
       <p>Sunrise, sunset and twilight at any European aerodrome, in the aerodrome's local time and in UTC. Civil twilight decides when night begins for VFR.</p>
     </div>
   </header>
+  <nav class="wxtabs" aria-label="Weather"><a href="weather.html" data-w="now">Now</a><a href="outlook.html" data-w="fc">Forecast</a><a href="weather.html#decode" data-w="dec">Decode and practise</a><a href="sun.html" data-w="sun" class="on" aria-current="page">Sun and twilight</a></nav>
 
   <section class="card" id="today">
     <div class="sunin">
@@ -96,7 +101,7 @@
 'use strict';
 const {L,el}=LAB;
 LAB.add({},{
- 'NORDAP · Flight planning':'NORDAP · Flyplanlegging','Sun and twilight':'Sol og tussmørke',
+ 'NORDAP · Flight planning':'NORDAP · Flyplanlegging','Sun and twilight':'Sol og tussmørke','Now':'Nå','Forecast':'Varsel','Decode and practise':'Dekod og øv',
  "Sunrise, sunset and twilight at any European aerodrome, in the aerodrome's local time and in UTC. Civil twilight decides when night begins for VFR.":'Soloppgang, solnedgang og tussmørke for enhver europeisk flyplass, i flyplassens lokaltid og i UTC. Sivilt tussmørke avgjør når det blir natt for VFR.',
  'ICAO code':'ICAO-kode','Date':'Dato','Night':'Natt','Astronomical twilight':'Astronomisk tussmørke','Nautical twilight':'Nautisk tussmørke','Civil twilight':'Sivilt tussmørke','Sun above the horizon':'Sola over horisonten',
  'Night (EASA): from the end of evening civil twilight to the beginning of morning civil twilight. Your operator, the aerodrome or a national authority may set other limits.':'Natt (EASA): fra slutten av kveldens sivile tussmørke til begynnelsen av morgenens sivile tussmørke. Operatøren, flyplassen eller nasjonale myndigheter kan ha andre grenser.',

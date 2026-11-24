@@ -135,7 +135,7 @@ details.olhow p{max-width:80ch;margin:8px 0 0}
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
 <body data-title="Weather forecast">
-<script src="site.js?v=132"></script>
+<script src="site.js?v=133"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -144,7 +144,7 @@ details.olhow p{max-width:80ch;margin:8px 0 0}
       <p>Cloud base, ceiling, wind, freezing level and icing at any aerodrome, hour by hour up to 14 days ahead, from several weather models. A model estimate, not an official forecast.</p>
     </div>
   </header>
-  <nav class="wxtabs" aria-label="Weather"><a href="weather.html" data-w="now">Now</a><a href="outlook.html" data-w="fc" class="on">Forecast</a><a href="weather.html#decode" data-w="dec">Decode and practise</a></nav>
+  <nav class="wxtabs" aria-label="Weather"><a href="weather.html" data-w="now">Now</a><a href="outlook.html" data-w="fc" class="on">Forecast</a><a href="weather.html#decode" data-w="dec">Decode and practise</a><a href="sun.html" data-w="sun">Sun and twilight</a></nav>
   <section class="card" id="ask">
     <div class="olin">
       <label for="icao">ICAO</label><input id="icao" maxlength="4" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ENTO">
@@ -185,7 +185,7 @@ details.olhow p{max-width:80ch;margin:8px 0 0}
 'use strict';
 const {L,el}=LAB;
 LAB.add({},{
- 'NORDAP · Flight planning':'NORDAP · Flyplanlegging','Weather forecast':'Værvarsel','Weather':'Vær','Now':'Nå','Forecast':'Varsel','Decode and practise':'Dekod og øv',
+ 'NORDAP · Flight planning':'NORDAP · Flyplanlegging','Weather forecast':'Værvarsel','Weather':'Vær','Now':'Nå','Forecast':'Varsel','Decode and practise':'Dekod og øv','Sun and twilight':'Sol og tussmørke',
  'Cloud base, ceiling, wind, freezing level and icing at any aerodrome, hour by hour up to 14 days ahead, from several weather models. A model estimate, not an official forecast.':'Skybase, ceiling, vind, frysenivå og ising på enhver flyplass, time for time opptil 14 dager fram, fra flere værmodeller. Et modellestimat, ikke en offisiell prognose.',
  'Date':'Dato','Local time':'Lokal tid','Cloud profile':'Skyprofil','Around the aerodrome':'Rundt flyplassen','Radius':'Radius','Winds aloft':'Vind i høyden','Runways':'Baner','Models':'Modeller','Compare aerodromes':'Sammenlign flyplasser','Alternates or other aerodromes':'Alternativer eller andre flyplasser',
  'Icing likely':'Ising sannsynlig','Freezing level (0 °C)':'Frysenivå (0 °C)','Heights above the aerodrome':'Høyder over flyplassen','How it is worked out':'Slik regnes det ut',

@@ -21,8 +21,8 @@
   const TRN=[['training.html','Overview'],['cockpit.html','DA42'],['b200.html','King Air B200'],['a320.html','Airbus A320'],['ifr.html','IFR trainer'],['mcdu.html','MCDU trainer'],['briefing.html','Briefing'],['radio-drills.html','Radio drills'],['radio.html','Gate to gate'],['typerating.html','Type rating'],['simcheck.html','A320 sim assessment'],['checkride.html','Check preparation']];
   const checkMode=page==='fi.html'&&/[?&]mode=check/.test(location.search);
   /* Preflight: the briefing pack and Route Explorer under one roof, with the same kind of sub-nav as the Training hub */
-  const PLG=[['preflight.html','Overview'],['prep.html','Briefing pack'],['route.html','Route Explorer'],['weather.html','Weather'],{g:'Tools',items:[['planning.html','Navigation log'],['sun.html','Sun and twilight'],['sheets.html','Kneeboard sheets'],['essentials.html','VFR and IFR essentials']]}];
-  const PLN=[['preflight.html','Overview'],['prep.html','Briefing pack'],['route.html','Route Explorer'],['weather.html','Weather'],['planning.html','Navigation log'],['sun.html','Sun and twilight'],['sheets.html','Kneeboard sheets'],['essentials.html','VFR and IFR essentials']];
+  const PLG=[['preflight.html','Overview'],['prep.html','Briefing pack'],['route.html','Route Explorer'],['weather.html','Weather'],{g:'Tools',items:[['planning.html','Navigation log'],['sheets.html','Kneeboard sheets'],['essentials.html','VFR and IFR essentials']]}];
+  const PLN=[['preflight.html','Overview'],['prep.html','Briefing pack'],['route.html','Route Explorer'],['weather.html','Weather'],['sun.html','Sun and twilight'],['planning.html','Navigation log'],['sheets.html','Kneeboard sheets'],['essentials.html','VFR and IFR essentials']];
   const trn=TRN.some(x=>x[0]===page)||['c172-3d.html','da42-3d.html','b200-3d.html','a320-3d.html','b737-3d.html'].includes(page)||checkMode, pln=PLN.some(x=>x[0]===page)||page==='outlook.html';
   const D3={'c172.html':'c172-3d.html','cockpit.html':'da42-3d.html','b200.html':'b200-3d.html','a320.html':'a320-3d.html','b737.html':'b737-3d.html'}; try{ if(trn&&page!=='training.html'){ const hit=TRN.find(x=>x[0]===page||D3[x[0]]===page); if(hit) localStorage.setItem('bb-last-trn',JSON.stringify({h:page,l:hit[1]+(D3[hit[0]]===page?' 3D':''),at:Date.now()})); } }catch(e){} const trnOn=h=> h===page || D3[h]===page || (checkMode&&h==='checkride.html');
   /* language before first paint: the header, sub-nav and footer are written in the right language at once (lab.js keeps it in sync) */
@@ -167,7 +167,7 @@
         document.addEventListener('click',e=>{ if(!ac.contains(e.target)) close(); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!am.hidden){ close(); ab.focus(); } }); } }
     if(trn||pln){ let sn=document.querySelector('nav.trnav'); if(!sn){ sn=document.createElement('nav'); sn.className='trnav'; head.insertAdjacentElement('afterend',sn); }
       sn.setAttribute('aria-label',t(trn?'Training hub':'Preflight'));
-      { const isOn=trn?trnOn:(h=>h===page||(h==='weather.html'&&page==='outlook.html')), TRG=trn?TRG0:PLG; const on=h=>isOn(h)?' class="on" aria-current="page"':'';
+      { const isOn=trn?trnOn:(h=>h===page||(h==='weather.html'&&(page==='outlook.html'||page==='sun.html'))), TRG=trn?TRG0:PLG; const on=h=>isOn(h)?' class="on" aria-current="page"':'';
         sn.innerHTML='<div class="in">'+TRG.map((x,i)=>{ if(Array.isArray(x)) return `<a href="${x[0]}"${on(x[0])}>${t(x[1])}</a>`;
           const act=x.items.some(it=>isOn(it[0])), cur=x.items.find(it=>isOn(it[0]));
           return `<button type="button" class="tg${act?' on':''}" aria-expanded="false" aria-haspopup="true" data-g="${i}">${t(x.g)}${cur?`<span class="cur">${t(cur[1])}</span>`:''}<svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg></button>`; }).join('')+'</div>'+
