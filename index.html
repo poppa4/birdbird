@@ -63,8 +63,20 @@
 .dv-lap img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;object-position:50% 0;border-radius:3px;background:#0B0F14}
 .dv-lap .base{position:relative;height:clamp(10px,1.3vw,16px);margin:0 -5%;background:linear-gradient(180deg,#E3E8ED 0%,#C3CCD4 60%,#A9B3BC 100%);border-radius:0 0 14px 14px;box-shadow:0 18px 30px -18px rgba(11,30,52,.5)}
 .dv-lap .base::before{content:"";position:absolute;top:0;left:50%;width:16%;height:38%;margin-left:-8%;background:#B4BEC7;border-radius:0 0 8px 8px}
-.dv-tab{position:absolute;left:0;bottom:0;width:30%;padding:2.4%;background:#11161D;border-radius:22px;box-shadow:0 0 0 1px #2A323C inset,0 30px 60px -24px rgba(11,30,52,.6)}
-.dv-tab img{display:block;width:100%;height:auto;aspect-ratio:1640/2360;border-radius:12px;background:#fff}
+.dv-tab{position:absolute;left:0;bottom:0;width:34%;padding:2.4%;background:#11161D;border-radius:22px;box-shadow:0 0 0 1px #2A323C inset,0 30px 60px -24px rgba(11,30,52,.6)}
+.ft{position:relative;display:flex;flex-direction:column;aspect-ratio:3/4;border-radius:12px;overflow:hidden;background:#0E1319;color:#E8EEF3}
+.ft-top{display:flex;flex-direction:column;gap:1px;padding:7% 8% 4%;font-size:clamp(8px,.8vw,11px);line-height:1.25;background:#0E1319;border-bottom:1px solid #222B35}
+.ft-top b{font-family:var(--disp);font-stretch:88%;font-size:1.25em;font-weight:700;color:#fff}
+.ft-top span{color:#93A4B6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ft-svg{flex:1;display:block;width:100%;min-height:0}
+.ft-lines line{stroke:#F2C230;stroke-width:2.2;stroke-linecap:round}
+.ft-dots circle{fill:#F2C230;stroke:#0E1319;stroke-width:2}
+.ft-dots text{font:700 15px var(--f-body,system-ui);fill:#13202A;text-anchor:middle;dominant-baseline:central}
+.ft-dots g{transform-box:fill-box;transform-origin:center;animation:ftIn .35s ease-out both}
+@keyframes ftIn{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+.ft-cap{display:flex;align-items:center;gap:8px;padding:5% 7% 6%;font-size:clamp(8.5px,.82vw,12px);line-height:1.3;background:#0E1319;border-top:1px solid #222B35;min-height:3.6em}
+.ft-cap i{flex:0 0 auto;display:grid;place-items:center;width:2em;height:2em;border-radius:50%;background:#F2C230;color:#13202A;font-style:normal;font-weight:700}
+.ft-cap span{transition:opacity .25s}
 
 /* ---------- 2. Product switcher ---------- */
 .fp-sw{padding:104px 0 0}
@@ -223,7 +235,7 @@
   .fp-facts{grid-template-columns:repeat(3,minmax(0,1fr));font-size:12.5px;margin-top:32px!important}
   .fp-facts li{padding:0 10px}.fp-facts b{font-size:21px}
   .dv-lap .scr{border-radius:10px 10px 4px 4px}
-  .dv-tab{border-radius:12px}.dv-tab img{border-radius:6px}
+  .dv-tab{border-radius:12px;width:44%}.ft{border-radius:7px;aspect-ratio:4/5}.ft-top span{display:none}.ft-top{padding:6% 8% 4%;font-size:9.5px}.ft-cap{font-size:9.5px;padding:5% 6%}
   .fp-sw{padding-top:64px}
   .fp-tab{padding:13px 0 13px 14px}.fp-tab b{font-size:19px}
   .fp-sec{padding-top:52px}
@@ -261,7 +273,11 @@
       </div>
       <figure class="fp-devs">
         <div class="dv-lap"><div class="scr"><img class="" src="img/front/dv-a320-1600.webp" srcset="img/front/dv-a320-1000.webp 1000w, img/front/dv-a320-1600.webp 1600w, img/front/dv-a320-2400.webp 2400w" sizes="(max-width:1100px) 92vw, 760px" width="1600" height="1000" decoding="async" fetchpriority="high" alt="The main instrument panel of the A320 in NORDAP's cockpit trainer: PFDs, NDs, ECAM and the FCU." data-alt-no="Hovedinstrumentpanelet i A320 i NORDAPs cockpittrener: PFD-er, ND-er, ECAM og FCU."></div><div class="base"></div></div>
-        <div class="dv-tab"><img src="img/front/dv-brief-700.webp" srcset="img/front/dv-brief-420.webp 420w, img/front/dv-brief-700.webp 700w" sizes="(max-width:1100px) 28vw, 240px" width="700" height="1007" decoding="async" alt="The cover of an IFR briefing pack for a DA42 from ENGM to ESSA." data-alt-no="Forsiden til en IFR-briefingpakke for DA42 fra ENGM til ESSA."></div>
+        <div class="dv-tab"><div class="ft" id="ftDemo" aria-label="The flow trainer playing the A320 preliminary cockpit preparation, step by step." data-aria-no="Flow-treneren spiller av forberedende cockpitklargjøring for A320, steg for steg." role="img">
+          <div class="ft-top"><b>Flow trainer</b><span>A320 · Cockpit preparation</span></div>
+          <svg class="ft-svg" viewBox="300 1150 400 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><image href="img/cockpits/a320-deck-1500.webp" x="0" y="0" width="1000" height="1678"/><g class="ft-lines"></g><g class="ft-dots"></g></svg>
+          <div class="ft-cap" aria-hidden="true"><i>1</i><span>ENG MASTER 1 and 2 – OFF</span></div>
+        </div></div>
       </figure>
     </div>
   </section>
@@ -396,6 +412,32 @@ function all(){ const no=LAB.lang==='no'; areas();
   document.querySelectorAll('[data-aria-no]').forEach(e=>{ if(e._ena===undefined) e._ena=e.getAttribute('aria-label'); e.setAttribute('aria-label',no?e.dataset.ariaNo:e._ena); });
 }
 LAB.start('home');
+(function flowDemo(){ const box=document.getElementById('ftDemo'); if(!box) return;
+  const P=[[485, 1411, "ENG MASTER 1 and 2 – OFF"], [500, 1436, "ENG MODE selector – NORM"], [372, 1440, "Weather radar – OFF"], [406, 1440, "PWS – OFF"], [588, 1018, "Landing gear lever – DOWN"], [370, 744, "Wipers – OFF"], [467, 571, "Battery voltage – CHECK"], [488, 568, "BAT 1 – AUTO"], [500, 568, "BAT 2 – AUTO"], [526, 606, "EXT PWR – ON"], [419, 1319, "RMP – CHECK ON and SET"], [500, 436, "APU FIRE pb – IN and guarded"], [516, 455, "APU FIRE TEST – PERFORM"], [500, 739, "APU MASTER SW – ON"], [500, 763, "APU START – ON"], [500, 680, "Air conditioning panel – SET"], [526, 606, "EXT PWR – AS RQRD"], [329, 465, "IR 1 MODE – NAV"], [384, 465, "IR 2 MODE – NAV"], [356, 465, "IR 3 MODE – NAV"], [563, 736, "Cockpit lights – AS RQRD"], [508, 1065, "Oxygen, hydraulic and oil – CHECK"], [549, 1453, "Flaps – CHECK position"], [451, 1455, "Speed brake – RETRACTED"], [509, 1556, "Parking brake – ON"], [630, 1036, "ACCU PRESS – CHECK"], [498, 146, "Emergency equipment – CHECK"]];
+  const svg=box.querySelector('svg'), gl=box.querySelector('.ft-lines'), gd=box.querySelector('.ft-dots'), capN=box.querySelector('.ft-cap i'), capT=box.querySelector('.ft-cap span');
+  const NS='http://www.w3.org/2000/svg', W=1000, H=1678, VW=400, VH=520;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const vb=(x,y,w,h)=>svg.setAttribute('viewBox',`${x.toFixed(1)} ${y.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`);
+  const view=i=>{ const [x,y]=P[i]; return [Math.min(W-VW,Math.max(0,x-VW/2)),Math.min(H-VH,Math.max(0,y-VH*0.55)),VW,VH]; };
+  const full=[0,0,W,H*1.0];
+  const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  function dot(i){ const [x,y]=P[i]; const g=document.createElementNS(NS,'g'); g.innerHTML=`<circle cx="${x}" cy="${y}" r="13"/><text x="${x}" y="${y+.5}">${i+1}</text>`; gd.appendChild(g); }
+  function line(i){ const [a,b]=P[i-1],[c,d]=P[i]; const l=document.createElementNS(NS,'line'); l.setAttribute('x1',a);l.setAttribute('y1',b);l.setAttribute('x2',c);l.setAttribute('y2',d);
+    const len=Math.hypot(c-a,d-b); l.style.strokeDasharray=len; l.style.strokeDashoffset=len; gl.appendChild(l); return [l,len]; }
+  function cap(i){ capT.style.opacity=0; setTimeout(()=>{ capN.textContent=i+1; capT.textContent='PM '+P[i][2]; capT.style.opacity=1; },180); }
+  if(reduce){ vb(...full); P.forEach((_,i)=>{ if(i) line(i)[0].style.strokeDashoffset=0; dot(i); }); capN.textContent=P.length; capT.textContent='27 steps · cockpit preparation'; return; }
+  let cur=view(0), i=0, visible=true, timer=0;
+  new IntersectionObserver(e=>{ visible=e[0].isIntersecting; if(visible&&!timer) step(); },{threshold:.15}).observe(box);
+  function move(to,ms,onT,done){ const from=cur.slice(), t0=performance.now();
+    (function f(now){ const t=Math.min(1,(now-t0)/ms), k=ease(t); cur=from.map((v,j)=>v+(to[j]-v)*k); vb(...cur); onT&&onT(k); if(t<1) requestAnimationFrame(f); else done&&done(); })(t0); }
+  function reset(){ gl.innerHTML=''; gd.innerHTML=''; i=0; }
+  function step(){ timer=0; if(!visible) return;
+    if(i>=P.length){ move(full,1400,null,()=>{ timer=setTimeout(()=>{ reset(); move(view(0),1400,null,()=>{ dot(0); cap(0); i=1; timer=setTimeout(step,1100); }); },2600); }); return; }
+    if(i===0){ vb(...cur); dot(0); cap(0); i=1; timer=setTimeout(step,1100); return; }
+    const [l,len]=line(i), k0=i; cap(k0);
+    move(view(k0),950,k=>{ l.style.strokeDashoffset=len*(1-k); },()=>{ dot(k0); i++; timer=setTimeout(step,650); });
+  }
+})();
 (function tabs(){ const T=[...document.querySelectorAll('.fp-tab')], I=[...document.querySelectorAll('#sw-scr .scr>img')]; if(!T.length) return;
   function pick(i,focus){ T.forEach((t,j)=>{ const on=j===i; t.setAttribute('aria-selected',on); t.tabIndex=on?0:-1; }); I.forEach((m,j)=>m.classList.toggle('on',j===i)); if(focus) T[i].focus(); }
   T.forEach((t,i)=>{ t.addEventListener('click',e=>{ if(e.target.closest('a')) return; pick(i); });
