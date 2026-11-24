@@ -35,3 +35,10 @@ Needs Python 3 with `bpy` (Blender as a module), `numpy`, `Pillow`, `playwright`
 `models/a320-shell-*.jpg` textures from the same model: everything that is not on one of the rendered panel planes (glareshield,
 windshield and window frames, walls, consoles, sidesticks, tillers, seats, floor), without glass, sun blinds, HUD, EFBs and
 details under about 6 cm². A derived work of the model, GPL-2.0 as well.
+
+## Front page picture (dusk)
+
+`img/front/a320-dusk-*.webp` (front page laptop, Training hub) is a Cycles render of the same `fd.blend` from the centre of the
+flight deck, with NORDAP's display drawings (`scr/*.png`) as emissive screens, glass hidden, a dusk sky and warm panel flood:
+`python dusk.py -- 2000 32 out.png 0.62 0.56 0 -0.55 0.36 0 23` (camera x y z, target x y z, lens mm), then cropped to 16:10.
+A derived work of the model, GPL-2.0 as well.
