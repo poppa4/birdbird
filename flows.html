@@ -208,6 +208,10 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
 .fsteps3 button[data-step="3"]{border-left:1px solid var(--ink)}
 #fmenu hr{border:0;border-top:1px solid var(--rule-2,#DCE3E4);margin:4px 0}
 #fstart.tl .fflow,#fstart.tl #fgo2{display:none}
+.fnow small.why{display:block;margin-top:2px;font-size:13px;font-weight:500;color:#C9D6E2}
+.pwhy{display:flex;flex-direction:column;gap:2px;margin:-2px 0 8px;padding:7px 10px;border-left:3px solid var(--c,#3CCB7F);background:rgba(60,203,127,.08);border-radius:0 6px 6px 0;font-size:13px;line-height:1.35}
+.pwhy b{font-size:12.5px}.pwhy span{color:var(--ink-2,#4C5B66)}
+.fpq .pwhy{background:rgba(60,203,127,.14);margin:0 0 8px}.fpq .pwhy b{color:#fff}.fpq .pwhy span{color:#D3DEE8}
 </style>
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
@@ -303,7 +307,8 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=56"></script>
+<script src="flowwhy.js?v=1"></script>
+<script src="flows.js?v=58"></script>
 <script src="flowlib.js?v=6"></script>
 <script src="reqplane.js?v=3"></script>
 </body>
