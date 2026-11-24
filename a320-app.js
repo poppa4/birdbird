@@ -984,6 +984,9 @@ function buildCtl3D(){
       flaps:{p:[0.08696,-0.18768,-0.08],a:[0,0,1]},spd:{p:[0.08696,-0.20617,0.0811],a:[0,0,1],s:[1,0,-1]}},
     ang:{thr0:()=>UI.tla[0],thr1:()=>UI.tla[1],flaps:()=>14*A.sw.flapLv,spd:()=>45*A.sw.spdBrk},mv:{spd:()=>A.sw.spArm?-0.006:0}};
   const LV3=LD&&CK.addLevers?CK.addLevers(LD):null;
+  /* the controls stand out of the panels as real 3D parts (a320-3d.js addRelief) */
+  if(CK.addRelief&&!CF&&!/norelief/.test(location.search)){ const KIND={pb:'pb',mom:'pb',ann:'pb',sel:'knob',knob:'knob',tog:'tog',key:'key',mkey:'key'};
+    CK.addRelief(CT.filter(c=>c.r&&KIND[c.t]&&c.r[2]>2&&c.r[3]>2&&c.r[2]<60&&c.r[3]<60).map(c=>({r:c.r,k:KIND[c.t]}))); }
   function setLev3(){ if(!LV3) return; for(const k in LD.ang) LV3.set(k,Math.round(LD.ang[k]()*10)/10,LD.mv&&LD.mv[k]?LD.mv[k]():0); }
   function knobAng(c){ return c.t==='sel'?c.ang[A.sw[c.k]]:c.t==='selF'?c.ang[c.get()]:c.t==='cont'?c.ang(A.sw[c.k]):c.ang(); }
   function setKnob(i){ const o=knobs[i], a=knobAng(o.c); if(a==null||a===o.last) return false; o.last=a; KM.setMatrixAt(i,frame(o.pl,-a*Math.PI/180,ZA,o.r,o.r,o.r*0.9,0.0004)); return true; }
