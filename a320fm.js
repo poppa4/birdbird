@@ -292,6 +292,9 @@ function step(M,dt,sys){
   // ----- FBW normal law: sidestick -> load factor demand (pitch), roll rate demand (roll)
   const ap=A.ap1||A.ap2;
   let sy=C.sy, sx=C.sx;
+  /* auto-fly (a320auto.js): a second pilot flying by hand. It gives way to the AP when that is engaged and to any input on the sidestick. */
+  const AU=M.auto&&M.auto.on?M.auto:null;
+  if(AU&&M.gnd&&Math.abs(C.sy)<0.02&&AU.sy) sy=AU.sy;
   if(ap&&(Math.abs(C.sy)>0.55||Math.abs(C.sx)>0.55)){ A.ap1=A.ap2=false; M.events.push('apdisc-forced'); }
   const apAct=(A.ap1||A.ap2);
   const flapsOut=M.conf>0;
@@ -312,7 +315,7 @@ function step(M,dt,sys){
     // longitudinal forces on the ground
     const CD=AC.CD0+c.dCD+AC.k*CL*CL*0.6+gearCD+spCD;
     const D=qd*AC.S*CD, N=Math.max(0,W-L);
-    let brk=Math.max(C.brkL,C.brkR);
+    let brk=Math.max(C.brkL,C.brkR,AU?AU.brk||0:0);
     if(C.park) brk=1;
     // autobrake: LO 1.7, MED 3.0 m/s² from touchdown (with ground spoilers); MAX on an RTO above 72 kt
     if(M.gsplr&&C.abrk>0) M.abLatch=true;
@@ -324,7 +327,7 @@ function step(M,dt,sys){
     M.tas=Math.max(0,M.tas+ax*dt);
     if(M.tas<0.05&&brk>0.3) M.tas=0;
     // steering: tiller up to 75° (below 20 kt, fading to 0 at 70 kt), pedals ±6°; yaw rate = V·tan(δ)/wheelbase
-    const tilA=75*clamp(1-(M.gs/KT-20)/50,0,1), steer=(C.tiller*tilA+C.rud*6*clamp(1-(M.gs/KT-100)/40,0,1))*D2R;
+    const tilA=75*clamp(1-(M.gs/KT-20)/50,0,1), tilC=C.tiller+(AU?AU.til||0:0), rudC=C.rud+(AU?AU.rud||0:0), steer=(clamp(tilC,-1,1)*tilA+clamp(rudC,-1,1)*6*clamp(1-(M.gs/KT-100)/40,0,1))*D2R;
     const sysNWS=!sys||(sys.hyd.y>1500);
     const r=sysNWS?M.tas*Math.tan(steer)/AC.wheelbase:0;
     const rudYaw=C.rud*0.02*clamp((M.ias-40)/80,0,1)+(M.asym/(AC.T0*2))*-0.015*clamp(M.ias/80,0,1);
@@ -341,7 +344,9 @@ function step(M,dt,sys){
     const cosPhi=Math.cos(M.phi), cg=Math.cos(M.gam);
     let nzD;
     const vAlpha=M.ias<sp.vaprot+2;
-    if(apAct&&A.gamC!=null){ // the AP flies a flight path angle
+    const auP=!apAct&&AU&&AU.gamC!=null&&Math.abs(sy)<0.02&&law!=='CONV';
+    if(auP){ const e=AU.gamC-M.gam; nzD=cg/Math.max(0.5,cosPhi)+clamp(e*M.tas/g0*1.2,-0.35,0.35); M.fbw.gamHold=null; M.fbw.flare=false; }
+    else if(apAct&&A.gamC!=null){ // the AP flies a flight path angle
       const e=A.gamC-M.gam; nzD=cg/Math.max(0.5,cosPhi)+clamp(e*M.tas/g0*1.2,-0.35,0.35);
       if(A.vert==='FLARE'||A.vert==='ROLL OUT') nzD=cg/Math.max(0.5,cosPhi)+clamp(e*M.tas/g0*1.5,-0.3,0.3);
     } else if(law==='CONV'){ // conventional controls (737): the column adds load factor; speed stability about the trimmed speed; no auto trim, no bank compensation
@@ -399,6 +404,7 @@ function step(M,dt,sys){
     let pD;
     const phiLim=(M.fbw.protA||M.fbw.hsp?45:67)*D2R;
     if(apAct&&A.phiC!=null) pD=clamp((A.phiC-M.phi)*0.6,-5*D2R,5*D2R);
+    else if(AU&&AU.phiC!=null&&Math.abs(sx)<0.02&&law==='NORMAL'){ pD=clamp((AU.phiC-M.phi)*0.6,-5*D2R,5*D2R); M.fbw.phiHold=null; }
     else if(Math.abs(sx)>0.02){ pD=sx*15*D2R; M.fbw.phiHold=null; }
     else { if(M.fbw.phiHold==null) M.fbw.phiHold=M.phi; if(Math.abs(M.phi)>33*D2R) M.fbw.phiHold=Math.sign(M.phi)*33*D2R; pD=clamp((M.fbw.phiHold-M.phi)*1.2,-5*D2R,5*D2R); }
     if(law!=='NORMAL'&&!apAct) pD=sx*15*D2R+(Math.abs(sx)<0.02?M.asym/(AC.T0)*-0.02:0);

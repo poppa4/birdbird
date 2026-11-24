@@ -40,7 +40,8 @@
       <a class="cbhome" href="training.html" aria-label="NORDAP: training overview"><span aria-hidden="true">‹</span><b>NORDAP</b></a>
       <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html">DA42</option><option value="b200.html">King Air B200</option><option value="c172.html">Cessna 172</option><option value="a320.html" selected>Airbus A320</option></select>
       <span class="dseg" role="group" aria-label="View"><a href="a320.html">2D</a><a href="a320-3d.html" class=on aria-current=page>3D <small>beta</small></a></span>
-      <select class="cb afsel" id="apSel" aria-label="Start"><option value="air">✈︎ In the air, 5,000 ft</option><option value="cold">✈︎ Cold and dark</option><option value="ready">✈︎ Ready for take-off</option><option value="appr">✈︎ ILS 36, 12 NM</option></select>
+      <select class="cb afsel" id="apSel" aria-label="Start"><option value="air">✈︎ In the air, 5,000 ft</option><option value="cold">✈︎ Cold and dark</option><option value="ready">✈︎ Ready for take-off</option><option value="appr">✈︎ ILS 36, 12 NM</option><option value="stand">✈︎ On the stand, engines running</option><option value="climb">✈︎ After take-off, 1,600 ft</option><option value="down">✈︎ Downwind, 3,000 ft</option></select>
+      <button class="cb afb" id="bAuto" type="button" aria-pressed="false" hidden>Auto-fly</button>
       <span class="vseg" role="group" aria-label="Look"><button class="cb" data-v="ovhd" type="button">Overhead</button><button class="cb on" data-v="main" type="button">Panel</button><button class="cb" data-v="ped" type="button">Pedestal</button></span>
       <button class="cb" id="bDrawer" type="button" aria-pressed="false">Procedures</button>
       <button class="cb" id="bPause" type="button">Pause</button>
@@ -118,12 +119,13 @@
 <script src="simshell.js?v=11"></script>
 <script src="a320t.js?v=1"></script>
 <script src="a320sys.js?v=3"></script>
-<script src="a320fm.js?v=5"></script>
+<script src="a320fm.js?v=6"></script>
 <script src="a320disp.js?v=3"></script>
 <script src="a320mcdu.js?v=2"></script>
 <script src="ownck.js?v=4"></script>
-<script src="a320ck.js?v=2"></script>
+<script src="a320ck.js?v=5"></script>
+<script src="a320auto.js?v=3"></script>
 <script src="a320-3d.js?v=30"></script>
-<script src="a320-app.js?v=28"></script>
+<script src="a320-app.js?v=31"></script>
 </body>
 </html>
