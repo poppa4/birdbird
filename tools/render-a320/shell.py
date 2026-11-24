@@ -5,9 +5,10 @@ the live lights and screens); what is kept is the structure around them: glaresh
 walls, pedestal and console bodies, sidesticks, tillers, seats, floor and ceiling.
 Output (a derived work, GPL-2.0 as well): models/a320-shell.bin and models/a320-shell-<texture>.jpg.
 Binary: 4-byte header length + JSON header, then per group: Int16 positions (x,y,z / S), Uint16 uv (normalised to the
-group's uv box), Uint8 baked light (r,g,b,0), Uint16 or Uint32 indices. Lighting is baked: each vertex gets the share of
-sky it sees through the windows (32 rays against the whole deck, embree), so corners, the footwell and the underside of the
-glareshield are darker. The header also carries the same bake on a grid over each rendered panel (hdr.panels). Frame: three.js (x right, y up, z aft) = (-z, y, x) of the model.
+group's uv box), Uint8 baked light (r,g,b,0), Uint16 or Uint32 indices. Lighting is baked (embree, 96 rays a vertex): the share of
+sky each vertex sees through the windows, a contact shade from what lies within 25 cm (corners, gaps, under lips) and the
+sun through the windows with its shadows; big faces are cut to 10 cm first and normals are smoothed within 38°, and the
+bake is smoothed over the mesh, so the light runs across the surfaces instead of changing face by face. The header also carries the same bake on a grid over each rendered panel (hdr.panels). Frame: three.js (x right, y up, z aft) = (-z, y, x) of the model.
 Run: python3 shell.py /path/to/A320-family/Models/FlightDeck/res /path/to/birdbird/models"""
 import sys, re, json, struct, os, numpy as np, collections
 sys.path.insert(0, os.path.dirname(__file__)); import ac3d
@@ -32,26 +33,48 @@ for o in O:
     OV.append(o['v'])
 OVa = np.concatenate(OV); OCC = trimesh.Trimesh(vertices=np.stack([-OVa[:, 2], OVa[:, 1], OVa[:, 0]], 1), faces=np.array(OF), process=False)
 RAY = trimesh.ray.ray_pyembree.RayMeshIntersector(OCC)
-rng = np.random.default_rng(7); NS = 32
-def bake(P, N):
-    # cosine-weighted hemisphere around N; light = share of rays that leave the deck (reach the windows) within 3 m
-    out = np.zeros(len(P))
-    for s0 in range(0, len(P), 4000):
-        p = P[s0:s0 + 4000]; n = N[s0:s0 + 4000]; k = len(p)
+rng = np.random.default_rng(7); NS = 96
+SUN = np.array([-0.50, 0.62, -0.60]); SUN /= np.linalg.norm(SUN)  # sun ahead and to the left, 38° up (three frame)
+def bake(P, N, sun=1.0):
+    # ambient: cosine-weighted hemisphere around N, the share of rays that leave the deck (reach the windows) within 3 m;
+    # contact shade: the share of rays that hit something within 25 cm (corners, gaps, under lips); sun: a shadow ray
+    amb = np.zeros(len(P)); con = np.zeros(len(P)); dr = np.zeros(len(P))
+    for s0 in range(0, len(P), 3000):
+        p = P[s0:s0 + 3000]; n = N[s0:s0 + 3000]; k = len(p)
         u1 = rng.random((k, NS)); u2 = rng.random((k, NS)); r = np.sqrt(u1); th = 2 * np.pi * u2
         a = np.where(np.abs(n[:, :1]) < 0.9, np.array([[1, 0, 0]]), np.array([[0, 1, 0]]))
         t1 = np.cross(n, a); t1 /= np.linalg.norm(t1, axis=1, keepdims=True); t2 = np.cross(n, t1)
         d = (t1[:, None] * (r * np.cos(th))[..., None] + t2[:, None] * (r * np.sin(th))[..., None] + n[:, None] * np.sqrt(1 - u1)[..., None]).reshape(-1, 3)
         o = np.repeat(p + n * 0.003, NS, axis=0)
-        hit = np.zeros(len(o), bool); loc, ri, ti = RAY.intersects_location(o, d, multiple_hits=False)
-        if len(ri): dist = np.linalg.norm(loc - o[ri], axis=1); hit[ri[dist < 3.0]] = True
-        sky = 1 - hit.reshape(k, NS).mean(1)
-        # light from above counts a little more (the windshield and the overhead light), the floor a little less
-        up = np.clip(n[:, 1], -1, 1); out[s0:s0 + 4000] = sky * (0.9 + 0.1 * up)
-    return out
-def shade(v): return np.clip(0.52 + 0.95 * v ** 0.55, 0, 1.12)
+        dist = np.full(len(o), np.inf); loc, ri, ti = RAY.intersects_location(o, d, multiple_hits=False)
+        if len(ri): dist[ri] = np.linalg.norm(loc - o[ri], axis=1)
+        dist = dist.reshape(k, NS)
+        sky = (dist >= 3.0).mean(1); near = (dist < 0.25).mean(1)
+        up = np.clip(n[:, 1], -1, 1); amb[s0:s0 + k] = sky * (0.9 + 0.1 * up); con[s0:s0 + k] = near
+        if sun:
+            ns = n @ SUN; lit = ns > 0.02; sd = np.zeros(k)
+            if lit.any():
+                oo = p[lit] + n[lit] * 0.004; hit = RAY.intersects_any(oo, np.repeat(SUN[None], len(oo), 0)); sd[lit] = np.where(hit, 0, ns[lit])
+            dr[s0:s0 + k] = sd
+    return amb, con, dr
+LMAX = 2.4
+def shade(b, sun=1.0):
+    amb, con, dr = b
+    # the FlightGear textures are dark (made for a strong scene light): lifted here so the lining reads as the light
+    # blue-grey of the real flight deck, with the windows' light, the contact shade and the sun on top
+    A = (0.97 + 0.80 * amb ** 0.5) * (1 - 0.25 * con)
+    S = 0.70 * dr * sun
+    col = np.stack([A * 1.03 + S * 1.10, A * 1.00 + S * 1.00, A * 0.95 + S * 0.86], 1)
+    return np.clip(col, 0, LMAX)
 TXP = {t: Image.open(os.path.join(RES, t)).convert('RGB').resize((512, 512)) for t in TEX}
-G = collections.defaultdict(lambda: {'key': {}, 'P': [], 'UV': [], 'N': [], 'I': []})
+G = collections.defaultdict(lambda: {'F': []})
+EMAX = 0.10  # m: big faces are cut up so the baked light can change across them (corners, sun patches)
+def split(tri, n, d=0):
+    e = [np.linalg.norm(tri[(i + 1) % 3][0] - tri[i][0]) for i in range(3)]; i = int(np.argmax(e))
+    if e[i] <= EMAX or d > 9: return [(tri, n)]
+    a, b, c = tri[i], tri[(i + 1) % 3], tri[(i + 2) % 3]
+    m = ((a[0] + b[0]) / 2, ((a[1][0] + b[1][0]) / 2, (a[1][1] + b[1][1]) / 2))
+    return split([a, m, c], n, d + 1) + split([m, b, c], n, d + 1)
 for o in O:
     if o['tex'] not in TEX: continue
     v = o['v']; diag = np.linalg.norm(v.max(0) - v.min(0))
@@ -74,21 +97,38 @@ for o in O:
         area = sum(np.linalg.norm(np.cross(P[j] - P[0], P[j + 1] - P[0])) for j in range(1, len(P) - 1)) / 2
         if area < MINA and np.linalg.norm(P.max(0) - P.min(0)) < 0.03: continue  # tiny detail (bolts, edges of small parts): invisible at cockpit distance
         nrm /= ln; T = np.stack([-P[:, 2], P[:, 1], P[:, 0]], 1); nT = np.array([-nrm[2], nrm[1], nrm[0]])
-        nq = tuple((nT * 127).round().astype(int))
-        ids = []
-        for j in range(len(idx)):
-            uv = (uvs[j][0] * rep[0] + off[0], 1 - (uvs[j][1] * rep[1] + off[1]))
-            key = (tuple((T[j] * 16000).round().astype(int)), (round(uv[0], 5), round(uv[1], 5)), nq)
-            if key not in g['key']: g['key'][key] = len(g['P']); g['P'].append(key[0]); g['UV'].append(uv); g['N'].append(nq)
-            ids.append(g['key'][key])
-        for j in range(1, len(ids) - 1): g['I'] += [ids[0], ids[j], ids[j + 1]]
-hdr = {'S': 16000, 'groups': [], 'lmax': 1.12}; blob = b''
+        UVs = [(uvs[j][0] * rep[0] + off[0], 1 - (uvs[j][1] * rep[1] + off[1])) for j in range(len(idx))]
+        for j in range(1, len(idx) - 1):
+            g['F'] += split([(T[0], UVs[0]), (T[j], UVs[j]), (T[j + 1], UVs[j + 1])], nT)
+hdr = {'S': 16000, 'groups': [], 'lmax': LMAX}; blob = b''
+COS = np.cos(np.radians(38))
 for t, g in G.items():
-    if not g['I']: continue
-    P = np.array(g['P'], np.int16); UV = np.array(g['UV'], np.float64); N = np.array(g['N'], np.int8); I = np.array(g['I'])
+    if not g['F']: continue
+    # smooth normals: at each position, the area-weighted mean of the face normals within 38° of this face's normal
+    at = collections.defaultdict(list)
+    for tri, n in g['F']:
+        ar = np.linalg.norm(np.cross(tri[1][0] - tri[0][0], tri[2][0] - tri[0][0])) / 2 + 1e-9
+        for p, uv in tri: at[tuple((p * 16000).round().astype(int))].append((n, ar))
+    key, Pl, UVl, Nl, I = {}, [], [], [], []
+    for tri, n in g['F']:
+        for p, uv in tri:
+            pk = tuple((p * 16000).round().astype(int)); sn = sum(a * m for m, a in at[pk] if m @ n > COS); sn = sn / max(1e-9, np.linalg.norm(sn))
+            nq = tuple((sn * 127).round().astype(int)); k = (pk, (round(uv[0], 5), round(uv[1], 5)), nq)
+            if k not in key: key[k] = len(Pl); Pl.append(pk); UVl.append(uv); Nl.append(nq)
+            I.append(key[k])
+    P = np.array(Pl, np.int16); UV = np.array(UVl, np.float64); N = np.array(Nl, np.int8); I = np.array(I)
     Pf = P.astype(np.float64) / 16000; Nf = N.astype(np.float64); Nf /= np.maximum(1e-6, np.linalg.norm(Nf, axis=1, keepdims=True))
-    L = shade(bake(Pf, Nf)); col = np.stack([L * 0.98, L * 1.0, L * 1.04], 1)  # a slightly cool sky
-    N4 = np.zeros((len(P), 4), np.uint8); N4[:, :3] = np.clip(col / 1.12 * 255, 0, 255).round()
+    b = list(bake(Pf, Nf))
+    # smooth the bake over the mesh (neighbours through the triangles): less ray noise, no blotches across cut-up faces
+    tri = I.reshape(-1, 3); nb = len(P)
+    for it in range(3):
+        for q in range(3):
+            acc = np.zeros(nb); cnt = np.zeros(nb)
+            for a_, c_ in ((0, 1), (1, 2), (2, 0), (1, 0), (2, 1), (0, 2)):
+                np.add.at(acc, tri[:, a_], b[q][tri[:, c_]]); np.add.at(cnt, tri[:, a_], 1)
+            b[q] = np.where(cnt > 0, 0.5 * b[q] + 0.5 * acc / np.maximum(cnt, 1), b[q])
+    col = shade(b)
+    N4 = np.zeros((len(P), 4), np.uint8); N4[:, :3] = np.clip(col / LMAX * 255, 0, 255).round()
     lo, hi = UV.min(0), UV.max(0); span = np.maximum(hi - lo, 1e-9); Q = np.round((UV - lo) / span * 65535).astype(np.uint16)
     big = len(P) > 65535; I = I.astype(np.uint32 if big else np.uint16)
     name = os.path.splitext(t)[0]
@@ -110,7 +150,7 @@ for (k, (c, n, up, W, H)), (c_, n_, up_, x_, W_, H_) in zip(V.items(), B):
         for i in range(nx + 1):
             q = c_ + (i / nx - 0.5) * W * x_ + (0.5 - j / ny) * H * up_ + (-n_) * 0.004
             pts.append([-q[2], q[1], q[0]]); nn = -n_; nrm.append([-nn[2], nn[1], nn[0]])
-    Lp = shade(bake(np.array(pts), np.array(nrm)))
+    Lp = np.clip(0.52 + 0.95 * bake(np.array(pts), np.array(nrm), 0)[0] ** 0.55, 0, 1.12)
     hdr['panels'][k] = {'nx': nx, 'ny': ny, 'v': [round(float(min(1.0, x * 1.02)), 3) for x in Lp]}
 h = json.dumps(hdr).encode(); h += b' ' * ((-len(h)) % 4)
 open(os.path.join(OUT, 'a320-shell.bin'), 'wb').write(struct.pack('<I', len(h)) + h + blob)

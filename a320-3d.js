@@ -59,7 +59,7 @@ function init(o){
      windows left open. Corners come from the panel planes themselves, so every piece meets its neighbour. ---- */
   const ROOM=new THREE.Group(); scene.add(ROOM);
   const M_=c=>new THREE.MeshBasicMaterial({color:c,side:THREE.DoubleSide});
-  const C_={wall:M_(0x3e4a57),wallD:M_(0x2f3842),ceil:M_(0x46525f),frame:M_(0x1f252c),floor:M_(0x1a1f25),coam:M_(0x23292f)};
+  const C_={wall:M_(0x8592a2),wallD:M_(0x5f6b7a),ceil:M_(0x8e9aa8),frame:M_(0x1f252c),floor:M_(0x1a1f25),coam:M_(0x23292f)};
   const PTS=[], quads={};
   function quad(a,b,c,d,mat){ const k=mat.uuid; (quads[k]=quads[k]||{mat,p:[]}).p.push(a,b,c,a,c,d); }
   function bar(p0,p1,w,mat){ const ax=p1.clone().sub(p0), len=ax.length(); ax.normalize(); let side=new THREE.Vector3().crossVectors(ax,new THREE.Vector3(0,0,1)); if(side.lengthSq()<1e-4) side.set(1,0,0); side.normalize().multiplyScalar(w/2); const nrm=new THREE.Vector3().crossVectors(side,ax).normalize().multiplyScalar(w/2);
@@ -108,7 +108,7 @@ function init(o){
      the FlightGear shell has loaded and fills the gaps that model leaves between its pieces (the shell leaves out what sits on
      the panel planes), so no sky shows through the roof or the corners. The windows stay open. ---- */
   const BACK=new THREE.Group(); scene.add(BACK);
-  { const bm=new THREE.MeshBasicMaterial({color:0x2d3747,side:THREE.DoubleSide}), bp=[], q4=(a,b,c,d)=>bp.push(a,b,c,a,c,d), d=0.035, X2=XW+d, cy=(z)=>ceilAt(0,z)+d;
+  { const bm=new THREE.MeshBasicMaterial({color:0x6d7a8a,side:THREE.DoubleSide}), bp=[], q4=(a,b,c,d)=>bp.push(a,b,c,a,c,d), d=0.035, X2=XW+d, cy=(z)=>ceilAt(0,z)+d;
     const XR=0.80; q4(v3(-XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zB),zB),v3(-XR,cy(zB),zB));   // roof (inboard of the side windows)
     q4(v3(-X2,yF,zB+d),v3(X2,yF,zB+d),v3(X2,cy(zB),zB+d),v3(-X2,cy(zB),zB+d));                                      // back wall
     // beside the main panel: the panel's own plane carried outboard to the side walls, from the panel's top edge down, a little
@@ -125,7 +125,7 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch(CF3?CF3.shell:'models/a320-shell.bin').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=2').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
