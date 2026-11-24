@@ -16,7 +16,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#EDF1EE">
-<link rel="preload" as="image" href="img/front/labs/pof-1120.webp" imagesrcset="img/front/labs/pof-640.webp 640w, img/front/labs/pof-1120.webp 1120w" imagesizes="(max-width:1100px) 100vw, 700px" type="image/webp">
+<link rel="preload" as="image" href="img/front/hero-tunnel-1400.webp" imagesrcset="img/front/hero-tunnel-900.webp 900w, img/front/hero-tunnel-1400.webp 1400w, img/front/hero-tunnel-2000.webp 2000w" imagesizes="(max-width:1100px) 100vw, 66vw" type="image/webp">
 <link rel="stylesheet" href="lab.css?v=15">
 <link rel="stylesheet" href="site.css?v=37">
 <style>
@@ -40,26 +40,40 @@
 .fp-btn.pri{background:var(--nv);color:#fff}.fp-btn.pri:hover{background:var(--nv2)}
 .fp-btn.sec{background:var(--sh);color:var(--nv)}.fp-btn.sec:hover{background:#F1F4F7}
 
-/* ---------- 1. Welcome ---------- */
-.fp-hero{padding:64px 0 72px;border-bottom:1px solid var(--rl)}
-.fp-hero .fp-wrap{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:40px 64px;align-items:center}
-.fp-hero h1{margin-top:0;font-size:clamp(42px,5vw,72px);line-height:.98;letter-spacing:-.03em}
-.fp-tag{margin-top:14px!important;font-family:var(--disp);font-stretch:88%;font-size:clamp(21px,2vw,27px);font-weight:600;line-height:1.2;color:var(--stl)}
-.fp-lede{margin-top:18px!important;font-size:18px;line-height:1.55;color:var(--i2);max-width:30em}
+/* ---------- 1. Welcome: a plate from the wind tunnel lab, full width ---------- */
+.fp-hero{position:relative;margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl));padding:0 var(--gr) 0 var(--gl);
+  background:linear-gradient(180deg,#F4F6F8 0%,#EBEFF2 100%);border-bottom:1px solid var(--rl);overflow:hidden}
+.fp-plate{position:absolute;top:0;bottom:0;right:0;left:31%;margin:0}
+.fp-plate img{display:block;width:100%;height:100%;object-fit:cover;object-position:40% 45%;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 10%);mask-image:linear-gradient(90deg,transparent 0,#000 10%)}
+.fp-hero .fp-wrap{min-height:clamp(520px,44vw,660px);display:flex;flex-direction:column;justify-content:center;padding:72px 0 140px}
+.fp-copy{position:relative;max-width:540px}
+.fp-hero h1{font-size:clamp(52px,6.6vw,100px);font-weight:750;font-stretch:80%;line-height:.92;letter-spacing:-.035em}
+.fp-hero h1 span{display:block}
+.fp-tag{margin-top:20px!important;font-family:var(--disp);font-stretch:88%;font-size:clamp(20px,1.8vw,25px);font-weight:600;line-height:1.2;color:var(--stl)}
+.fp-lede{margin-top:12px!important;font-size:18px;line-height:1.55;color:var(--i2);max-width:27em}
 .fp-act{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
-.fp-shot{margin:0;background:var(--nv);border-radius:4px;overflow:hidden;box-shadow:0 1px 0 var(--rl),0 24px 48px -28px rgba(11,30,52,.45)}
-.fp-shot a{display:block}
-.fp-shot img{display:block;width:100%;height:auto;aspect-ratio:1120/700}
-.fp-shot figcaption{display:flex;justify-content:space-between;gap:16px;padding:11px 16px;font-size:13.5px;line-height:1.45;color:#B9C7D5;border-top:1px solid rgba(255,255,255,.1)}
-.fp-shot figcaption b{color:#fff;font-weight:600}
-.fp-shot figcaption a{display:inline-flex;align-items:center;gap:6px;color:#fff;font-weight:600;text-decoration:none;white-space:nowrap}
+.fp-cap{position:absolute;right:0;bottom:92px;max-width:360px;margin:0!important;font-size:13px;line-height:1.45;color:var(--i2);text-align:right}
+.fp-cap a{color:var(--nv);font-weight:600;text-underline-offset:3px;white-space:nowrap}
 
-/* ---------- 2. The platform ---------- */
+/* ---------- 2. The platform: one index sheet that overlaps the plate, then the two parts people open first ---------- */
+.fp-idx{position:relative;z-index:2;margin-top:-64px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));list-style:none;padding:0;
+  background:var(--sh);border:1px solid var(--rl);border-radius:4px;box-shadow:0 28px 50px -34px rgba(11,30,52,.45)}
+.fp-idx li{position:relative;border-left:1px solid var(--rl)}
+.fp-idx li:nth-child(3n+1){border-left:0}
+.fp-idx li:nth-child(n+4){border-top:1px solid var(--rl)}
+.fp-idx a{display:block;height:100%;padding:22px 26px 24px;text-decoration:none;color:inherit;transition:background-color .15s}
+.fp-idx a:hover{background:#F6F8FA}
+.fp-idx a:focus-visible{outline:2px solid var(--nv);outline-offset:-2px}
+.fp-idx b{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-stretch:88%;font-size:21px;font-weight:700;line-height:1.15;color:var(--nv)}
+.fp-idx b .ar{opacity:0;transform:translateX(-4px);transition:opacity .15s,transform .15s}
+.fp-idx a:hover b .ar,.fp-idx a:focus-visible b .ar{opacity:1;transform:none}
+.fp-idx a>span{display:block;margin-top:6px;font-size:15px;line-height:1.45;color:var(--i2)}
 .fp-sec{padding:72px 0 0}
 .fp-sec>.fp-wrap>header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:12px 40px;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--rl)}
 .fp-sec h2{font-size:clamp(28px,2.8vw,40px);line-height:1.05}
 .fp-sec header p{color:var(--i2);font-size:16px;max-width:34em}
-.fp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.fp-feat{margin-top:40px;display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:20px}
 .fp-it{position:relative;display:flex;flex-direction:column;background:var(--sh);border:1px solid var(--rl);border-radius:4px;overflow:hidden;transition:border-color .15s,box-shadow .15s}
 .fp-it:hover{border-color:#AEBBC6;box-shadow:0 14px 30px -22px rgba(11,30,52,.4)}
 .fp-it:focus-within{outline:2px solid var(--nv);outline-offset:2px}
@@ -69,13 +83,13 @@
 .fp-it .pic small{position:absolute;right:0;bottom:0;padding:2px 7px;font-size:10.5px;color:rgba(255,255,255,.85);background:rgba(11,30,52,.6)}
 .fp-it .pic small a{color:inherit}
 .fp-it .tx{display:flex;flex-direction:column;gap:8px;padding:18px 20px 20px;flex:1}
-.fp-it h3{font-size:23px;line-height:1.15;letter-spacing:-.01em}
+.fp-it h3{font-size:24px;line-height:1.15;letter-spacing:-.01em}
 .fp-it h3 a{text-decoration:none}
 .fp-it h3 a::after{content:"";position:absolute;inset:0}
 .fp-it .tx>p{color:var(--i2);font-size:15.5px;line-height:1.5}
 .fp-it .go{margin-top:auto;padding-top:8px;display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--nv)}
 .fp-it:hover .go .ar{transform:translateX(3px)}
-.fp-it.wide{grid-column:span 2;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.fp-it.wide{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .fp-it.wide .pic{aspect-ratio:auto;min-height:100%}
 .fp-it.wide .pic img{position:absolute;inset:0;object-position:50% 40%}
 .fp-it.wide .tx{padding:26px 28px}
@@ -84,7 +98,6 @@
 .fp-areas li{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:5px 0;border-top:1px solid var(--rule-2,#E4E9EA);break-inside:avoid;line-height:1.3}
 .fp-areas a{color:var(--ink);text-decoration:none}.fp-areas a:hover{text-decoration:underline;text-underline-offset:3px}
 .fp-areas span{font-family:var(--mono);font-size:11.5px;color:var(--i3);white-space:nowrap}
-
 /* ---------- 3. Flight Intelligence ---------- */
 .fp-fi .fp-wrap{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:32px 64px;align-items:start}
 .fp-fi .txt h2{font-size:clamp(28px,2.8vw,40px);line-height:1.05}
@@ -174,33 +187,35 @@
 .fp-about nav a{color:var(--nv);font-weight:600;text-underline-offset:3px}
 
 @media (max-width:1100px){
-  .fp-hero .fp-wrap,.fp-fi .fp-wrap{grid-template-columns:minmax(0,1fr)}
-  .fp-hero .fp-copy{max-width:640px}
-  .fp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .fp-it.wide{grid-column:span 2}
+  .fp-fi .fp-wrap{grid-template-columns:minmax(0,1fr)}
+  .fp-cap{display:none}
+  .fp-idx{margin-top:-32px}
+  .fp-hero .fp-wrap{min-height:0;padding:36px 0 72px}
+  .fp-plate{position:relative;left:auto;margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl))}
+  .fp-plate img{height:auto;aspect-ratio:2000/979;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 14%);mask-image:linear-gradient(180deg,transparent 0,#000 14%)}
+  .fp-feat{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:800px){
+  .fp-hero .fp-wrap{padding:28px 0 64px}
+  .fp-idx{margin-top:-30px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .fp-idx li,.fp-idx li:nth-child(n){border-left:0;border-top:1px solid var(--rl)}
+  .fp-idx li:nth-child(even){border-left:1px solid var(--rl)}
+  .fp-idx li:nth-child(-n+2){border-top:0}
+  .fp-idx a{padding:16px 16px 18px}
+  .fp-idx b{font-size:18px}.fp-idx a>span{font-size:13.5px}
 }
 @media (max-width:700px){
   .fp{font-size:16px}
-  .fp-hero{padding:36px 0 44px}
-  .fp-hero h1{font-size:clamp(40px,11vw,52px)}
+  .fp-hero h1{font-size:clamp(46px,13vw,60px)}
   .fp-lede{font-size:16.5px}
   .fp-act .fp-btn{flex:1 1 auto;justify-content:center}
-  .fp-shot figcaption{flex-direction:column;gap:6px;font-size:13px}
   .fp-sec{padding-top:52px}
-  .fp-grid{grid-template-columns:minmax(0,1fr);gap:14px}
-  .fp-it.wide{grid-column:auto;display:flex}
+  .fp-feat{margin-top:28px;gap:14px}
+  .fp-it.wide{display:flex}
   .fp-it.wide .pic{aspect-ratio:16/10;min-height:0}
   .fp-it.wide .tx{padding:18px 20px 20px}.fp-it.wide h3{font-size:25px}
-  .fp-std{grid-template-columns:minmax(0,1fr)}
   .fp-areas{display:none}
-  .fp-it:not(.wide){display:grid;grid-template-columns:38% minmax(0,1fr)}
-  .fp-it:not(.wide) .pic{aspect-ratio:auto;min-height:100%}
-  .fp-it:not(.wide) .pic img{position:absolute;inset:0}
-  .fp-it:not(.wide) .pic small{font-size:9.5px;padding:1px 5px}
-  .fp-it:not(.wide) .tx{gap:6px;padding:14px 14px 15px}
-  .fp-it:not(.wide) h3{font-size:19px}
-  .fp-it:not(.wide) .tx>p{font-size:14.5px;line-height:1.45}
-  .fp-it:not(.wide) .go{font-size:14px;padding-top:4px}
+  .fp-std{grid-template-columns:minmax(0,1fr)}
   .fp-about{padding:22px 20px}
 }
 @media (max-width:640px){
@@ -217,27 +232,35 @@
 <script src="site.js?v=125"></script>
 <main class="fp" id="main">
 
-  <!-- 1. Welcome, next to a working lab -->
+  <!-- 1. Welcome, on a plate from the wind tunnel lab -->
   <section class="fp-hero" aria-labelledby="fp-h1">
+    <figure class="fp-plate">
+      <img src="img/front/hero-tunnel-1400.webp" srcset="img/front/hero-tunnel-900.webp 900w, img/front/hero-tunnel-1400.webp 1400w, img/front/hero-tunnel-2000.webp 2000w" sizes="(max-width:1100px) 100vw, 66vw" width="2000" height="979" fetchpriority="high" decoding="async" alt="The A320 in the Virtual Labs wind tunnel: surface pressure in colour, streamlines over the wing and labels for stagnation, suction, transition, upwash, downwash and the tip vortex." data-alt-no="A320 i vindtunnelen i Virtual Labs: overflatetrykk i farger, strømlinjer over vingen og merker for stagnasjon, sug, omslag, oppvind, nedvind og vingespissvirvel.">
+    </figure>
     <div class="fp-wrap">
       <div class="fp-copy">
-        <h1 id="fp-h1" data-tx="h1">Welcome to NORDAP</h1>
+        <h1 id="fp-h1"><span data-tx="h1a">Welcome</span> <span data-tx="h1b">to NORDAP</span></h1>
         <p class="fp-tag" data-tx="tag">The Nordic Aviation Platform</p>
         <p class="fp-lede" data-tx="lede">From aviation theory and regulations to interactive training and flight preparation.</p>
         <div class="fp-act"><a class="fp-btn pri" href="lab.html" data-tx="b1">Open Virtual Labs</a><a class="fp-btn sec" href="flows.html" data-tx="b2">Flow trainer</a></div>
       </div>
-      <figure class="fp-shot">
-        <a href="tunnel.html" tabindex="-1" aria-hidden="true"><img src="img/front/labs/pof-1120.webp" srcset="img/front/labs/pof-640.webp 640w, img/front/labs/pof-1120.webp 1120w" sizes="(max-width:1100px) 100vw, 700px" width="1120" height="700" fetchpriority="high" decoding="async" alt="The A320 in the Virtual Labs wind tunnel: surface pressure in colour, streamlines around the wing, and labels for stagnation, suction, transition and the tip vortex." data-alt-no="A320 i vindtunnelen i Virtual Labs: overflatetrykk i farger, strømlinjer rundt vingen, og merker for stagnasjon, sug, omslag og vingespissvirvel."></a>
-        <figcaption><span data-tx="cap"><b>Wind tunnel, Virtual Labs.</b> The A320 at 4.8° angle of attack: surface pressure and streamlines, computed in the browser.</span><a href="tunnel.html"><span data-tx="capGo">Open the lab</span><svg class="ar" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a></figcaption>
-      </figure>
+      <p class="fp-cap"><span data-tx="cap">The A320 at 4.8° angle of attack in the wind tunnel lab, computed in your browser.</span> <a href="tunnel.html" data-tx="capGo">Open the lab</a></p>
     </div>
   </section>
 
   <!-- 2. The platform -->
-  <section class="fp-sec" aria-labelledby="h-pl">
+  <section aria-labelledby="h-pl">
     <div class="fp-wrap">
-      <header><h2 id="h-pl" data-tx="hPl">The platform</h2><p data-tx="pPl">Six parts that work together, from understanding the theory to preparing the flight.</p></header>
-      <div class="fp-grid">
+      <h2 class="vh" id="h-pl" data-tx="hPl">The platform</h2>
+      <ul class="fp-idx">
+        <li><a href="lab.html"><b><span class="nm">Virtual Labs</span><svg class="ar" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></b><span data-tx="x1">Working models of the EASA ATPL theory subjects.</span></a></li>
+        <li><a href="flows.html"><b><span class="nm">Flows</span><svg class="ar" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></b><span data-tx="x2">Learn your airline’s flows on the real cockpit.</span></a></li>
+        <li><a href="training.html"><b><span class="nm" data-tx="n3">Cockpit trainers</span><svg class="ar" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></b><span data-tx="x3">From the Cessna 172 to the A320, in 2D and 3D.</span></a></li>
+        <li><a href="prep.html"><b><span class="nm" data-tx="n4">Briefing pack</span><svg class="ar" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></b><span data-tx="x4">One ordered pack per flight, printed as a booklet.</span></a></li>
+        <li><a href="route.html"><b><span class="nm">Route Explorer</span><svg class="ar" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></b><span data-tx="x5">The route on a VFR map, with airspace and terrain.</span></a></li>
+        <li><a href="fi.html"><b><span class="nm">Flight Intelligence</span><svg class="ar" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></b><span data-tx="x6">Answers from EASA rules and your own documents.</span></a></li>
+      </ul>
+      <div class="fp-feat">
         <article class="fp-it wide">
           <div class="pic"><img src="img/front/labs/met-1120.webp" srcset="img/front/labs/met-640.webp 640w, img/front/labs/met-1120.webp 1120w" sizes="(max-width:700px) 100vw, 520px" width="1120" height="700" loading="lazy" decoding="async" alt="A mature cumulonimbus in the thunderstorm lab, with the anvil, overshooting top, mammatus and gust front labelled." data-alt-no="En moden cumulonimbus i tordenværslabben, med ambolt, overskytende topp, mammatus og kastfront merket."></div>
           <div class="tx"><h3><a href="lab.html">Virtual Labs</a></h3>
@@ -250,24 +273,6 @@
           <div class="tx"><h3><a href="flows.html">Flows</a></h3>
             <p data-tx="t2">Learn your airline’s flows by heart on the real cockpit, alone or with your partner.</p>
             <span class="go"><span data-tx="g2">Open the flow trainer</span><svg class="ar" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></div>
-        </article>
-        <article class="fp-it">
-          <div class="pic"><img src="img/front/sim-a320-panel-760.webp" srcset="img/front/sim-a320-panel-760.webp 760w, img/front/sim-a320-panel-1400.webp 1400w" sizes="(max-width:700px) 100vw, 400px" width="760" height="475" loading="lazy" decoding="async" alt="The A320 cockpit trainer: PFDs, NDs, ECAM and the FCU." data-alt-no="A320-cockpittreneren: PFD-er, ND-er, ECAM og FCU."></div>
-          <div class="tx"><h3><a href="training.html" data-tx="h3c">Cockpit trainers</a></h3>
-            <p data-tx="t3">Working cockpits from the Cessna 172 to the A320, with the systems behind every switch. In the browser, in 2D and 3D.</p>
-            <span class="go"><span data-tx="g3">Go to Training</span><svg class="ar" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></div>
-        </article>
-        <article class="fp-it">
-          <div class="pic"><img src="img/front/briefing-560.webp" srcset="img/front/briefing-560.webp 560w, img/front/briefing-1120.webp 1120w" sizes="(max-width:700px) 100vw, 400px" width="560" height="626" loading="lazy" decoding="async" style="object-position:50% 0" alt="The cover of an IFR briefing pack from ENGM to ESSA with its contents." data-alt-no="Forsiden til en IFR-briefingpakke fra ENGM til ESSA med innholdsfortegnelsen."></div>
-          <div class="tx"><h3><a href="prep.html" data-tx="h3d">Briefing pack</a></h3>
-            <p data-tx="t4">One pack per flight in a fixed order: NOTAM, weather, minima, performance, fuel, mass and balance. Printed as a booklet.</p>
-            <span class="go"><span data-tx="g4">Make a briefing pack</span><svg class="ar" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></div>
-        </article>
-        <article class="fp-it">
-          <div class="pic"><img src="img/front/route-sat-700.webp" srcset="img/front/route-sat-700.webp 700w, img/front/route-sat-1400.webp 1400w" sizes="(max-width:700px) 100vw, 400px" width="700" height="394" loading="lazy" decoding="async" alt="A route drawn over the mountains of western Norway in Route Explorer." data-alt-no="En rute tegnet over fjellene på Vestlandet i Route Explorer."><small>© Esri, Maxar, Earthstar Geographics</small></div>
-          <div class="tx"><h3><a href="route.html">Route Explorer</a></h3>
-            <p data-tx="t5">Draw the route on a VFR map and read the airspace and the terrain under it, in 2D or 3D.</p>
-            <span class="go"><span data-tx="g5">Open Route Explorer</span><svg class="ar" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></div>
         </article>
       </div>
     </div>
@@ -332,16 +337,14 @@
 const {L,el}=LAB;
 LAB.add({},{'Examples':'Eksempler','Ask Flight Intelligence':'Spør Flight Intelligence'});
 LAB.tx({
- h1:'Velkommen til NORDAP', tag:'Den nordiske luftfartsplattformen',
+ h1a:'Velkommen', h1b:'til NORDAP', tag:'Den nordiske luftfartsplattformen',
  lede:'Fra luftfartsteori og regelverk til interaktiv trening og forberedelse til flyging.',
  b1:'Åpne Virtual Labs', b2:'Flow-trener',
- cap:'<b>Vindtunnel, Virtual Labs.</b> A320 med 4,8° angrepsvinkel: overflatetrykk og strømlinjer, beregnet i nettleseren.', capGo:'Åpne labben',
- hPl:'Plattformen', pPl:'Seks deler som henger sammen, fra å forstå teorien til å forberede flygingen.',
+ cap:'A320 med 4,8° angrepsvinkel i vindtunnel-labben, beregnet i nettleseren din.', capGo:'Åpne labben',
+ hPl:'Plattformen',
+ x1:'Fungerende modeller i EASA ATPL-teorifagene.', x2:'Lær flyselskapets flows i den ekte cockpiten.', n3:'Cockpittrenere', x3:'Fra Cessna 172 til A320, i 2D og 3D.', n4:'Briefingpakke', x4:'Én ordnet pakke per flyging, skrevet ut som et hefte.', x5:'Ruten på et VFR-kart, med luftrom og terreng.', x6:'Svar fra EASA-regelverket og dine egne dokumenter.',
  t1:'Fungerende modeller i EASA ATPL-teorifagene. Endre en verdi og se flyet, motoren eller været reagere.', g1:'Alle labber',
  t2:'Lær flyselskapets flows utenat i den ekte cockpiten, alene eller med makkeren din.', g2:'Åpne flow-treneren',
- h3c:'Cockpittrenere', t3:'Fungerende cockpiter fra Cessna 172 til A320, med systemene bak hver bryter. I nettleseren, i 2D og 3D.', g3:'Gå til Trening',
- h3d:'Briefingpakke', t4:'Én pakke per flyging i fast rekkefølge: NOTAM, vær, minima, ytelse, drivstoff, masse og balanse. Skrevet ut som et hefte.', g4:'Lag en briefingpakke',
- t5:'Tegn ruten på et VFR-kart og les luftrommet og terrenget under den, i 2D eller 3D.', g5:'Åpne Route Explorer',
  pFi:'Spør om teori, regelverk eller ditt eget fly. Svarene kommer fra EASA Easy Access Rules og fra AFM, QRH og SOP du legger til, hver med avsnittet eller siden de bygger på.',
  d1t:'Regelverk kun fra EASA', d1:'Hver henvisning oppgir forskriften og revisjonen.',
  d2t:'Dine egne dokumenter', d2:'Leses og lagres i nettleseren din, ikke på en server.',
