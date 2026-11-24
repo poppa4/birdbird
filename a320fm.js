@@ -239,7 +239,7 @@ function targetSpeed(M,sp){ const A=M.ap, h=M.h/FT;
   let v;
   if(A.vert==='SRS') v=A.v2+10;
   else if(A.clbPh&&M.conf>=1) v=Math.min(250,sp.vmax-5);
-  else if(A.appr||A.vert.startsWith('G/S')||A.vert==='LAND'||A.vert==='FLARE'||M.conf>=1&&!A.gaMode) v=M.conf>=4?Math.max(sp.vls+5,A.vapp):M.conf===3?sp.F+0:M.conf>=2?sp.F:M.conf===1?sp.S:sp.gd;
+  else if(A.appr||A.apprPh||A.vert.startsWith('G/S')||A.vert==='LAND'||A.vert==='FLARE'||M.conf>=1&&!A.gaMode) v=M.conf>=4?Math.max(sp.vls+5,A.vapp):M.conf===3?sp.F+0:M.conf>=2?sp.F:M.conf===1?sp.S:sp.gd;
   else if(h<10000) v=Math.max(250,sp.gd);
   else v=Math.min(300,casFromTas(0.78*isa(M.h,M.oatDev).a,M.h,M.oatDev)/KT);
   if(M.conf>=1&&!A.gaMode&&A.vert!=='SRS') v=Math.min(v,sp.vmax-5);
