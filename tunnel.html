@@ -984,7 +984,7 @@ const NO2EN={
 'Snittets posisjon bak vingetuppen':'Slice position behind the wingtip','Tverrsnitt {x} korder bak tuppen':'Cross-flow slice {x} chords behind the tip','Tverrsnitt {x} korder foran tuppen':'Cross-flow slice {x} chords ahead of the tip',
 'Fart i snittet':'Speed in the slice','Fart |V|/V∞ · kt':'Speed |V|/V∞ · kt','Linjer':'Lines','Hastighetsunderskudd i kjølvannet':'Velocity deficit in the wake','Akselerasjon over vingen':'Acceleration over the wing',
 'Modell: potensialstrøm fra virvelgitter og kildepaneler (usynlig, ingen turbulens); separert kjølvann fra profilenes stallmodell.':'Model: potential flow from a vortex lattice and source panels (inviscid, no turbulence); separated wake from the section stall model.',
-'{n} strømlinjer':'{n} streamlines','Linjer fra hele spennet, skroget og tippvirvlene.':'Lines from the whole span, the fuselage and the tip vortices.','Tett rundt tuppen: se tippvirvelen rulle seg opp.':'Dense around the tip: watch the tip vortex roll up.','Rundt skroget, vingeroten og halen.':'Around the fuselage, wing root and tail.','Snittstasjon langs spennet':'Slice station along the span','Cp flate':'Cp surface','V/V∞ · kt linjer':'V/V∞ · kt lines','Sug på oversiden':'Suction on the upper side',
+'{n} strømlinjer':'{n} streamlines','Lokal fart V/V∞ · kt':'Local speed V/V∞ · kt','Linjer fra hele spennet, skroget og tippvirvlene.':'Lines from the whole span, the fuselage and the tip vortices.','Tett rundt tuppen: se tippvirvelen rulle seg opp.':'Dense around the tip: watch the tip vortex roll up.','Rundt skroget, vingeroten og halen.':'Around the fuselage, wing root and tail.','Snittstasjon langs spennet':'Slice station along the span','Cp flate':'Cp surface','V/V∞ · kt linjer':'V/V∞ · kt lines','Sug på oversiden':'Suction on the upper side',
 // fly, profiler, forurensning
 ' · typiske verdier, omtrentlig geometri':' · typical values, approximate geometry','Konfigurasjon':'Configuration','Tilbakestill visning':'Reset view',
 'Trykkfelt':'Pressure field','Fargefelt':'Colour field','Trykk Cp':'Pressure Cp','Fart V/V∞':'Speed V/V∞',
@@ -1471,6 +1471,20 @@ cpMat.onBeforeCompile=sh=>{
       vec4 diffuseColor=vec4(pow(cc,vec3(2.2)),opacity);`);
 };
 cpMat.extensions={derivatives:true};
+/* Strømlinjer-fanen: flaten farget etter lokal fart på flaten, V/V∞ = √(1 − Cp), på SAMME skala og fargekart som linjene.
+   Én skala for alt i bildet: samme farge = samme fart, enten det er på flaten eller i luften (rødt = raskt, blått = sakte). */
+const vsU={vmin:{value:0.75},vmax:{value:1.25},cmapId:{value:1},iso:{value:1}};
+const vSurfMat=new THREE.MeshStandardMaterial({roughness:0.5,metalness:0.0,envMapIntensity:0.35,side:THREE.DoubleSide});
+vSurfMat.onBeforeCompile=sh=>{
+  Object.assign(sh.uniforms,vsU,{cmin:{value:-1.5},cmax:{value:1},neutral:{value:0}});
+  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float cp; varying float vCp;').replace('#include <begin_vertex>','#include <begin_vertex>\nvCp=cp;');
+  sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying float vCp; uniform float iso; uniform float vmin; uniform float vmax;'+GLSL_CMAP)
+    .replace('vec4 diffuseColor = vec4( diffuse, opacity );',`float vs=sqrt(max(0.0,1.0-vCp)); float tq=clamp((vs-vmin)/(vmax-vmin),0.0,1.0); vec3 cc=cmap(tq);
+      float f1=vs*20.0, w1=fwidth(f1), d1=abs(fract(f1-0.5)-0.5); float l1=1.0-smoothstep(0.0,w1*1.2,d1);
+      cc*=1.0-iso*0.16*l1*step(w1,0.45);
+      vec4 diffuseColor=vec4(pow(cc,vec3(2.2)),opacity);`);
+};
+vSurfMat.extensions={derivatives:true};
 // modellakk: hvit med klarlakk; teksturer for skrog, vinge og haleflater
 const PaintM=QL.physical? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
 const paintOpt=m=>Object.assign({color:0xffffff,roughness:0.34,metalness:0.0,envMapIntensity:0.85},QL.physical?{clearcoat:0.55,clearcoatRoughness:0.18}:{},m||{});
@@ -1870,8 +1884,9 @@ function lightDim(k){ if(k===LDIM) return; LDIM=k; applyLights(); }
 const lineMat=CFD.lineMaterial(THREE,false), glowMat=CFD.lineMaterial(THREE,true), tubeMat=CFD.tubeMaterial(THREE);
 const lineMesh=new THREE.Mesh(new THREE.BufferGeometry(),tubeMat); lineMesh.frustumCulled=false; lineMesh.renderOrder=3; overlay.add(lineMesh);
 const glowMesh=new THREE.Mesh(lineMesh.geometry,glowMat); glowMesh.frustumCulled=false; glowMesh.renderOrder=2; overlay.add(glowMesh);
+function vSurfOn(){ return st.view==='stream' && st.surfCp && st.cby!=='cp' && st.cby!=='solid'; }
 function visUniforms(){
-  cpRange(); cpU.cmin.value=CPMIN;
+  cpRange(); cpU.cmin.value=CPMIN; vsU.vmin.value=VMIN; vsU.vmax.value=VMAX; vsU.cmapId.value=cmFor('lines'); vsU.iso.value=st.iso?1:0;
   const cl=cmFor('lines');
   for(const m of [lineMat,glowMat,tubeMat]){ const u=m.uniforms; u.width.value=st.lineW*(m===glowMat?5:1); u.bright.value=st.lineB*(m===glowMat?0.45:1); u.pulse.value=st.pulse?(m===tubeMat?0.8:1):0; u.pulseRate.value=2.4; u.cmapId.value=cl; u.cmin.value=CPMIN; u.cmax.value=CPMAX; u.vmin.value=VMIN; u.vmax.value=VMAX; }
   sliceMat.uniforms.iso.value=st.iso?1:0; tubeMat.uniforms.neutral.value=st.vcon?0.6:0.75;
@@ -1972,12 +1987,14 @@ function seedsW(forSmoke){
     else { tipRings([0.05,0.11,0.18,0.27,0.38,0.52],Math.round(14*Math.sqrt(q))); for(let i=0;i<dirs.length;i++) rowOf.push(-1); }
     var rowsOut=Int16Array.from(rowOf);
   }
-  return {seeds:Float32Array.from(out), dirs:Uint8Array.from(dirs), rows:smoke? null : rowsOut, chain, Xr, x0:toW(Xr,H,0)[0], world, smoke, kind:rake, steps:st.env==='cfd'?340:240, ex:st.exag};
+  const bx0=smoke? Xr : flowBounds().x0;
+  return {seeds:Float32Array.from(out), dirs:Uint8Array.from(dirs), rows:smoke? null : rowsOut, chain, Xr, bx0, x0:smoke? toW(Xr,H,0)[0] : bx0*ca+P0.x, world, smoke, kind:rake, steps:st.env==='cfd'?340:260, back:smoke? undefined : BACK_STEPS(), ex:st.exag};
 }
 /* Tette strømlinjer (Strømlinjer-fanen): hundrevis av frø like foran forkanten langs spennet (over og under
    stagnasjonslinjen, tettest nær flaten), i ringer rundt starten av tippvirvelen og i ringer rundt skroget. Alle
    integreres begge veier (RK4), så linjene går fra raken oppstrøms gjennom kjølvannet. Antallet tilpasses enheten. */
 const NLINES=LOW?300:900;
+const BACK_STEPS=()=>Math.ceil((P0.x-flowBounds().x0+4)/LH);
 function seedsDense(){
   const w=wing, s=w.s, FT=FL.FT, sides=st.mirror?[1,-1]:[1], ns=sides.length;
   const N=Math.round(Math.min(1700,NLINES*st.dens)), out=[], dirs=[];
@@ -2008,9 +2025,10 @@ function seedsDense(){
   // rekkefølge: tilfeldig (fast), så de første bitene fra workeren allerede dekker hele flyet jevnt
   const n=dirs.length, ord=[...Array(n).keys()].sort((a,b)=>hash(a,101)-hash(b,101)), S=new Float32Array(n*3);
   ord.forEach((o,k)=>{ S[3*k]=out[3*o]; S[3*k+1]=out[3*o+1]; S[3*k+2]=out[3*o+2]; });
-  const al=res.alpha*DEG, ca=Math.cos(al), sa=Math.sin(al), Xr=noseWorldX()-2.6;
-  // kort stykke oppstrøms (linjene tones inn like foran flyet) og et par flylengder nedstrøms
-  return {seeds:S, dirs:new Uint8Array(n).fill(2), rows:null, chain:[], Xr, x0:Xr*ca+P0.x, world:[], smoke:false, kind:'dense', steps:st.env==='cfd'?190:170, back:26, ex:st.exag};
+  const al=res.alpha*DEG, ca=Math.cos(al), Xr=flowBounds().x0;
+  // som i CFD: linjene integreres bakover helt til innløpet (tunnelens innløp / ytre rand av beregningsdomenet)
+  // og fremover gjennom kjølvannet til utløpet — de starter ikke midt i luften foran flyet
+  return {seeds:S, dirs:new Uint8Array(n).fill(2), rows:null, chain:[], Xr, x0:Xr*ca+P0.x, world:[], smoke:false, kind:'dense', steps:st.env==='cfd'?300:260, back:BACK_STEPS(), ex:st.exag};
 }
 /* strømlinjer per α: ferdige linjesett lagres (LRU), så α-glideren og «Fly inn i stall» kan gå tilbake uten ny integrasjon */
 const LCACHE=new Map(), LCMAX=LOW?8:16;
@@ -2019,7 +2037,7 @@ function startTrace(){
   tracePending=false; if(!FIELD.ready) return;
   const rib=st.view==='stream'&&st.seed==='rake'&&st.ribbons, dense=st.view==='stream'&&st.seed!=='rake', sd=rib? seedsRibbon() : dense? seedsDense() : seedsW();
   if(dense){ if(!smokeVis()) rakeGroup.visible=false; gizmo.visible=false; } else showRake(sd);
-  const bnd=Object.assign(flowBounds(),{x0:sd.Xr}); FL.setBounds(bnd);
+  const bnd=Object.assign(flowBounds(),{x0:sd.bx0!=null? sd.bx0 : sd.Xr}); FL.setBounds(bnd);
   const key=lineKey(sd), hit=LCACHE.get(key);
   TW.meta={id:TW.id+1,rows:sd.rows,smoke:sd.smoke,key,parts:[],dense,ribbon:rib};
   if(hit&&!rib){ LCACHE.delete(key); LCACHE.set(key,hit); TW.id++; TW.busy=false; job=null; if(TW.w) TW.w.postMessage({type:'cancel'}); acceptLines(Object.assign({},hit,{id:TW.id,smoke:false})); busyUI(); return; }
@@ -2070,7 +2088,7 @@ function acceptLines(r){
   rakeGizmo(starts, TW.meta&&TW.meta.id===r.id? TW.meta.rows : null);
   if(smoke) return;
   if(TW.meta&&TW.meta.ribbon&&TW.meta.id===r.id){ autoRange(r); acceptRibbons(r); lineMesh.visible=glowMesh.visible=false; haveLines=true; return; }
-  { autoRange(r); lineMesh.geometry.dispose(); lineMesh.geometry=CFD.lineGeometry(THREE,L,{fadeIn:st.view==='stream'?1.6:st.env==='cfd'?2.2:1.2,fadeOut:st.view==='stream'?5:2.6}); glowMesh.geometry=lineMesh.geometry; }
+  { autoRange(r); lineMesh.geometry.dispose(); lineMesh.geometry=CFD.lineGeometry(THREE,L,{fadeIn:st.env==='cfd'?3:0.5,fadeOut:st.view==='stream'?5:2.6}); glowMesh.geometry=lineMesh.geometry; }
   haveLines=true;
 }
 
@@ -2418,7 +2436,7 @@ function refreshFlow(){
   const cpOn= v==='cp' || (st.surfCp && v!=='smoke' && v!=='tufts');   // trykkfeltet på flyet (røyk og ulltråder: lakkert modell)
   setEnv();   // studio/mørk avhenger av fanen (røyk er alltid mørk)
   const clay=studioOn();
-  for(const o of [wingMesh,...cpMeshes]) if(o) o.material= cpOn? cpMat : (st.oil? oilBaseMat : clay? clayMat : o.userData.paint);
+  for(const o of [wingMesh,...cpMeshes]) if(o) o.material= cpOn? (vSurfOn()? vSurfMat : cpMat) : (st.oil? oilBaseMat : clay? clayMat : o.userData.paint);
   wingCp(); bodyCp();   // også uten trykkfelt: sonden leser Cp
   const ribOn=linesOn&&v==='stream'&&st.seed==='rake'&&st.ribbons; ribMesh.visible=ribOn&&ribMesh.visible;
   lineMesh.visible=linesOn&&!ribOn; glowMesh.visible=linesOn&&!ribOn&&QL.glow&&!studioOn(); SMK.group.visible=smoke;
@@ -2446,7 +2464,7 @@ function setLegend(){
   const show=!SHOT && (v==='cp'||v==='stream'||v==='slice'||v==='vortex'||smk); el.hidden=!show; if(!show) return;
   const sl=v==='slice', tas=out.tas||st.ias, a0=VMIN, a1=VMAX, vs=[a1,(1+a1)/2,1,(1+a0)/2,a0];
   const cps=[]; const stp=CPMIN<-2.6?1:0.5; for(let c=CPMAX;c>=CPMIN-1e-9;c-=stp) cps.push(+c.toFixed(2));
-  const lines=v==='stream'||v==='vortex'||sl||smk, surf=v==='cp'||(st.surfCp&&(v==='stream'||v==='vortex'));
+  const lines=v==='stream'||v==='vortex'||sl||smk, vsurf=vSurfOn(), surf=!vsurf&&(v==='cp'||(st.surfCp&&(v==='stream'||v==='vortex')));
   const cpLines=!sl&&!smk&&lines&&st.cby==='cp', solid=!sl&&!smk&&lines&&st.cby==='solid';
   const ms=cmFor('surf'), ml= sl? (SL.cmap!=null?SL.cmap:cmFor('s-v')) : cpLines? ms : cmFor('lines');
   const fmt=x=>(x>0?'+':'')+nf(x,1).replace('-','−');
@@ -2455,7 +2473,7 @@ function setLegend(){
   document.getElementById('cbL').innerHTML=(surf||cpLines)? cps.map(cp=>`<span style="top:${((1-cpT(cp))*100).toFixed(2)}%">${Math.abs(cp)<1e-9?'0':fmt(cp)}</span>`).join('') : '';
   let rt='', r2='';
   if(sl&&SL.ticks){ rt=SL.ticks.map(q=>`<span style="top:${((1-(q.v-SL.lo)/(SL.hi-SL.lo))*100).toFixed(2)}%">${q.t}</span>`).join(''); r2=SL.title||''; }
-  else if(rightOn){ rt=vs.map(q=>`<span style="top:${((1-(q-a0)/(a1-a0))*100).toFixed(2)}%">${nf(q,2)} · ${nf(q*tas,0)}</span>`).join(''); r2=smk? T('V/V∞ · kt røyk') : T('V/V∞ · kt linjer'); }
+  else if(rightOn){ rt=vs.map(q=>`<span style="top:${((1-(q-a0)/(a1-a0))*100).toFixed(2)}%">${nf(q,2)} · ${nf(q*tas,0)}</span>`).join(''); r2=smk? T('V/V∞ · kt røyk') : vsurf? T('Lokal fart V/V∞ · kt') : T('V/V∞ · kt linjer'); }
   document.getElementById('cbR').innerHTML=rt;
   document.getElementById('cbarTitle').textContent= surf&&cpLines? LL({en:'Cp surface + lines',no:'Cp flate + linjer'}) : surf? T('Cp flate') : cpLines? LL({en:'Cp lines',no:'Cp linjer'}) : '';
   document.getElementById('cbarTitle2').textContent=r2;
