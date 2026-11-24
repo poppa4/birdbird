@@ -45,7 +45,7 @@
   /* the header carries the same seal as the footer */
   const sealHead='<img src="logo-seal.webp" width="42" height="42" alt="" class="seal">';
   /* the NORDAP logo (2026-11-24): the N with its swoosh and the wordmark, navy on light pages, white on navy (front page) */
-  const brand=(c)=>`<span class="lgx ${c||''}"><img class="lg lg-n" src="img/brand/nordap-logo-navy.svg?v=2" width="136" height="20" alt=""><img class="lg lg-w" src="img/brand/nordap-logo-white.svg?v=2" width="136" height="20" alt=""><small>Nordic Aviation Platform</small></span>`;
+  const brand=(c)=>`<span class="lgx ${c||''}"><img class="lg lg-n" src="img/brand/nordap-logo-navy.svg?v=3" width="136" height="20" alt=""><img class="lg lg-w" src="img/brand/nordap-logo-white.svg?v=3" width="136" height="20" alt=""><small>Nordic Aviation Platform</small></span>`;
 
   /* ---------- rang og progresjon (lokalt; klar for synk mot konto senere) ---------- */
   const PK='naeroson-prog';

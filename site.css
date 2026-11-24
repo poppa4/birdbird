@@ -506,3 +506,7 @@ p.mstat a{font-size:13.5px;margin-left:4px;color:var(--accent)}
 .sitefoot .fb a.logo .lgx{background:none!important;height:auto!important}
 .sitefoot .fb a.logo img.lg{display:block;width:150px!important;height:22.4px!important;max-height:22.4px;object-fit:contain;background:none!important}
 .sitefoot .fb a.logo img.lg-w{display:none!important}
+/* Safari: an image in a flex column keeps its intrinsic height as its minimum unless told otherwise (the logo SVGs once had
+   no intrinsic size, so Safari used 150 px): the logo images take only the height they are given */
+.lgx img{min-height:0!important;flex:0 0 auto!important}
+.sitefoot .fb a.logo .lgx{display:block!important}.sitefoot .fb a.logo .lgx small{margin-top:6px}
