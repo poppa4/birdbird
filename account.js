@@ -408,11 +408,9 @@
     const s = document.createElement('style'); s.id = 'bbacct-css';
     s.textContent = `
 .site .mytr[data-acct],.site nav a.mob[data-acct]{position:relative}
-.site .mytr[data-acct]::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 8px 1px 0;vertical-align:middle;background:var(--ok,#2E7D4F)}
-.site .mytr[data-acct=sync]::before{background:var(--info,#1D4E9E)}
-.site .mytr[data-acct=err]::before{background:var(--caution,#B7791F)}
-.site nav a.mob[data-acct]::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:8px;vertical-align:middle;background:var(--ok,#2E7D4F)}
-.site nav a.mob[data-acct=err]::after{background:var(--caution,#B7791F)}
+/* no dot while all is well: only a paused sync is marked (amber), so you know to check the Account page */
+.site .mytr[data-acct=err]::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 8px 1px 0;vertical-align:middle;background:var(--caution,#B7791F)}
+.site nav a.mob[data-acct=err]::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:8px;vertical-align:middle;background:var(--caution,#B7791F)}
 .bbacct-toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:120;max-width:min(440px,calc(100vw - 24px));background:var(--ink,#13202A);color:#fff;border-radius:var(--radius,3px);padding:12px 14px;display:flex;gap:12px;align-items:center;box-shadow:var(--shadow-pop,0 8px 24px rgba(0,0,0,.2));font-size:14px;line-height:1.4}
 .bbacct-toast b{display:block;font-size:14.5px}.bbacct-toast span{color:var(--rule,#C6D0D3);font-size:13px}
 .bbacct-toast button{flex:0 0 auto;font:inherit;font-weight:600;font-size:13px;background:#fff;color:var(--ink,#13202A);border:0;border-radius:var(--radius,3px);padding:7px 11px;cursor:pointer}
