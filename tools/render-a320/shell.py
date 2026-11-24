@@ -198,7 +198,7 @@ def in_post(pt, oi=None):   # pt in the page's frame
     for b in HEADS:
         if b['obj'] != oi: continue
         d = pt - b['p0']; t = (d @ b['a']) / b['L']
-        if t < -0.05 or t > 1.05: continue
+        if t < -0.12 or t > 1.12: continue   # a little past the ends: the old beam's end cap stuck out of the new one as a spike
         u0, u1, v0, v1 = (np.polyval(f, t) for f in b['fit']); pu, pv = d @ b['u'], d @ b['v']
         if u0 - 0.02 < pu < u1 + 0.02 and v0 - 0.02 < pv < v1 + 0.02: return True
     for b in POSTS:
@@ -289,6 +289,15 @@ for oi, o in enumerate(O):
 POST_OI = next(i for i, o in enumerate(O) if o['name'] == 'WindowCpt')
 for b in POSTS + HEADS:
     rg = b['rings']; NR = len(rg[0])
+    for ring, sgn in ((rg[0], -1), (rg[-1], 1)):   # closed ends: an open loft end showed the inside and the old parts behind it
+        c_ = sum(ring) / NR
+        for k in range(NR):
+            q = [c_, ring[k], ring[(k + 1) % NR]]; n_ = np.cross(q[1] - q[0], q[2] - q[0]); ln_ = np.linalg.norm(n_)
+            if ln_ < 1e-12: continue
+            n_ /= ln_
+            if n_ @ (b['a'] * sgn) < 0: q = q[::-1]; n_ = -n_
+            fid = len(FCOL); FCOL.append(b.get('col', np.array([71.0, 85.0, 104.0]))); FAREA.append(ln_); FOBJ.append(POST_OI); FTEX.append(b.get('tex', 'fd_other.png')); FY.append(0.0); FEDG.append([])
+            G['flat']['F'].append(([(q[0], (fid, 0)), (q[1], (fid, 0)), (q[2], (fid, 0))], n_))
     for i in range(len(rg) - 1):
         for k in range(NR):
             q = [rg[i][k], rg[i][(k + 1) % NR], rg[i + 1][(k + 1) % NR], rg[i + 1][k]]; n_ = np.cross(q[1] - q[0], q[2] - q[0]); ln_ = np.linalg.norm(n_)
