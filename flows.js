@@ -771,11 +771,15 @@ function init() { load(); wirePanel(); manWire();
   // a shared link (#f=…) opens as a copy in My flows
   const h = location.hash.match(/#f=([\w-]+)/); let first = null;
   if (h) { const f = F.decode(h[1]); if (f) { if (!FL.some(x => x.id === f.id)) { FL.unshift(f); save(); } first = FL.find(x => x.id === f.id); history.replaceState(null, '', location.pathname); setTimeout(() => msg(f.ac === 'img' ? L({ en: 'Flow opened from a link. It was drawn on a photo: add your own cockpit picture under Cockpit.', no: 'Flowen er åpnet fra en lenke. Den er tegnet på et bilde: legg til ditt eget cockpitbilde under Cockpit.' }) : L({ en: 'Flow opened from a link and saved in My flows.', no: 'Flowen er åpnet fra en lenke og lagret i Mine flows.' }), 'ok'), 300); } }
+  /* a first visit (no flow opened before, none of your own, no link): the short starter flow plays itself step by step,
+     one highlighted control at a time, as the flow apps' study modes do; Practise is the next step. Static tours or a
+     wall of steps teach less than watching the flow once and then doing it. */
+  let fresh = false; try { fresh = !localStorage.getItem('bb-flows-last') && !FL.length && !location.hash; } catch (e) {}
   // from a cockpit page (#ac=b200): your newest flow on that cockpit, else its example
   const ha = location.hash.match(/#ac=([\w-]+)/); if (!first && ha && (A.get(ha[1]) || A.photo(ha[1]))) { first = FL.find(f => f.ac === ha[1]) || F.example(ha[1], A); history.replaceState(null, '', location.pathname); }
   const hf = location.hash.match(/#flow=([\w-]+)/); if (!first && hf) { first = FL.find(x => x.id === hf[1]) || null; history.replaceState(null, '', location.pathname); }   // from My workspace
   if (!first) { let last = ''; try { last = localStorage.getItem('bb-flows-last') || ''; } catch (e) {} first = last.startsWith('std:') ? stdGet(last.slice(4)) || F.example(myAc(), A) : last.startsWith('ex:') ? F.example(last.slice(3), A) : FL.find(f => f.id === last) || FL[0] || (x => x && stdGet(x.id))(starter(myAc())) || F.example(myAc(), A); }
-  open(first).then(() => { const rm = location.hash.match(/room=([\w-]+)/); let back = null; try { back = JSON.parse(sessionStorage.getItem('bb-flows-room') || 'null'); } catch (e) {}
+  open(first).then(() => { if (fresh && cur && cur.steps.length <= 12) { setMode('watch'); setTimeout(() => { if (mode === 'watch' && !W.on) wPlay(); }, 900); } const rm = location.hash.match(/room=([\w-]+)/); let back = null; try { back = JSON.parse(sessionStorage.getItem('bb-flows-room') || 'null'); } catch (e) {}
     if (rm) { setMode('together'); if (back && back.code === rm[1]) rJoin(back.code, back.me); }
     else if (back && back.code) { if (back.host) { RM.code = back.code; RM.me = back.me; RM.host = true; RM.role = back.role; rPoll(); } else rJoin(back.code, back.me); } });
   // newer flows from the account (another device): take them in without a reload; an edit made in the last second is saved first
