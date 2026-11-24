@@ -1479,15 +1479,16 @@ cpMat.onBeforeCompile=sh=>{
       vec4 diffuseColor=vec4(pow(cc,vec3(2.2)),opacity);`);
 };
 cpMat.extensions={derivatives:true};
-/* Strømlinjer-fanen: flaten farget etter lokal fart på flaten, V/V∞ = √(1 − Cp), på SAMME skala og fargekart som linjene.
+/* Avløst sone (sf): fart ved flaten ≈ 0,3 V∞ (sakte, resirkulerende), ikke √(1 − Cp).
+   Strømlinjer-fanen: flaten farget etter lokal fart på flaten, V/V∞ = √(1 − Cp), på SAMME skala og fargekart som linjene.
    Én skala for alt i bildet: samme farge = samme fart, enten det er på flaten eller i luften (rødt = raskt, blått = sakte). */
 const vsU={vmin:{value:0.75},vmax:{value:1.25},cmapId:{value:1},iso:{value:1}};
 const vSurfMat=new THREE.MeshStandardMaterial({roughness:0.5,metalness:0.0,envMapIntensity:0.35,side:THREE.DoubleSide});
 vSurfMat.onBeforeCompile=sh=>{
   Object.assign(sh.uniforms,vsU,{cmin:{value:-1.5},cmax:{value:1},neutral:{value:0}});
-  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float cp; varying float vCp;').replace('#include <begin_vertex>','#include <begin_vertex>\nvCp=cp;');
-  sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying float vCp; uniform float iso; uniform float vmin; uniform float vmax;'+GLSL_CMAP)
-    .replace('vec4 diffuseColor = vec4( diffuse, opacity );',`float vs=sqrt(max(0.0,1.0-vCp)); float tq=clamp((vs-vmin)/(vmax-vmin),0.0,1.0); vec3 cc=cmap(tq);
+  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float cp; attribute float sf; varying float vCp; varying float vSf;').replace('#include <begin_vertex>','#include <begin_vertex>\nvCp=cp; vSf=sf;');
+  sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying float vCp; varying float vSf; uniform float iso; uniform float vmin; uniform float vmax;'+GLSL_CMAP)
+    .replace('vec4 diffuseColor = vec4( diffuse, opacity );',`float vs=mix(sqrt(max(0.0,1.0-vCp)),0.3,clamp(vSf,0.0,1.0)); float tq=clamp((vs-vmin)/(vmax-vmin),0.0,1.0); vec3 cc=cmap(tq);
       float f1=vs*20.0, w1=fwidth(f1), d1=abs(fract(f1-0.5)-0.5); float l1=1.0-smoothstep(0.0,w1*1.2,d1);
       cc*=1.0-iso*0.16*l1*step(w1,0.45);
       vec4 diffuseColor=vec4(pow(cc,vec3(2.2)),opacity);`);
@@ -1518,7 +1519,7 @@ mat.fan=(function(){ const N=256,c=T3D.cv(N,N),g=c.getContext('2d'); g.fillStyle
 const cpMeshes=[];
 function addMesh(geo,m,cp){
   const o=new THREE.Mesh(geo,m); o.castShadow=true; o.receiveShadow=true; body.add(o);
-  if(cp!==false && m!==mat.dark && m!==mat.metal && m!==mat.ti && m!==mat.fan){ if(!geo.attributes.cp) geo.setAttribute('cp',new THREE.BufferAttribute(new Float32Array(geo.attributes.position.count),1)); o.userData.paint=m; cpMeshes.push(o); }
+  if(cp!==false && m!==mat.dark && m!==mat.metal && m!==mat.ti && m!==mat.fan){ if(!geo.attributes.cp){ geo.setAttribute('cp',new THREE.BufferAttribute(new Float32Array(geo.attributes.position.count),1)); geo.setAttribute('sf',new THREE.BufferAttribute(new Float32Array(geo.attributes.position.count),1)); } o.userData.paint=m; cpMeshes.push(o); }
   return o; }
 function geoFrom(pos,idx){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx); g.computeVertexNormals(); return g; }
 function gridIndex(rows,cols,closeCols){ const idx=[];
@@ -1559,6 +1560,7 @@ function buildWingMesh(){
   // UV: siste (dupliserte) kolonne er bakkant underside → u=1
   const uv=g.attributes.uv; for(let i=0;i<S;i++) uv.setX(i*(M+1)+M,1);
   g.setAttribute('cp',new THREE.BufferAttribute(new Float32Array(g.attributes.position.count),1));
+  g.setAttribute('sf',new THREE.BufferAttribute(new Float32Array(g.attributes.position.count),1));   // andel avløst strømning (0–1) på oversiden
   g.userData.base=base; g.userData.C=M+1;
   const m=new THREE.Mesh(g,mat.wing); m.castShadow=true; m.receiveShadow=true; m.userData.paint=mat.wing; return m;
 }
@@ -1723,13 +1725,16 @@ function clearBody(){ while(body.children.length){ const o=body.children.pop(); 
 /* ---- trykk på overflaten (separasjonspunktet per stripe: FL.sepFrac, samme logikk som profilsnittet) ---- */
 function wingCp(){
   if(!wingMesh||!res) return;
-  const g=wingMesh.geometry, cpa=g.attributes.cp.array, base=g.userData.base, C=g.userData.C, N=wing.N, S=N+1;
+  const g=wingMesh.geometry, cpa=g.attributes.cp.array, sfa=g.attributes.sf? g.attributes.sf.array : null, base=g.userData.base, C=g.userData.C, N=wing.N, S=N+1;
   const stripCp=FL.stripCp;   // samme Cp som strømlinjene nær flaten bruker
+  // avløst sone på oversiden (bak separasjonslinjen): der går luften nær flaten sakte og virvlende, selv om trykket er lavt
+  const sepAt=(j,x)=>{ const xs=FL.sepFrac(j); return xs>=1? 0 : Math.max(0,Math.min(1,(x-xs)/0.06+0.5)); };
   for(let i=0;i<S;i++){
     const ja=Math.max(0,i-1), jb=Math.min(N-1,i);
-    for(let k=0;k<C;k++){ const kk=k%(C-1), x=base[kk][2], up=kk<Q; cpa[i*C+k]=0.5*(stripCp(ja,x,up)+stripCp(jb,x,up)); }
+    for(let k=0;k<C;k++){ const kk=k%(C-1), x=base[kk][2], up=kk<Q; cpa[i*C+k]=0.5*(stripCp(ja,x,up)+stripCp(jb,x,up));
+      if(sfa) sfa[i*C+k]= up? 0.5*(sepAt(ja,x)+sepAt(jb,x)) : 0; }
   }
-  g.attributes.cp.needsUpdate=true;
+  g.attributes.cp.needsUpdate=true; if(sfa) g.attributes.sf.needsUpdate=true;
 }
 /* vingeramme-posisjoner og -normaler for alle Cp-flater (én gang per geometri), så Cp kan regnes raskt for hver α */
 function prepBodyCp(){
