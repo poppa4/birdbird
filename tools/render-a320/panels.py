@@ -15,6 +15,8 @@ Output models/a320-panels.bin: uint32 header length, JSON header, then per view 
 1/10 mm, row by row from the picture's top; for placing screens, levers and clicks) and the mesh: int16 positions in the view's
 frame (x right, y up, z out of the panel, 1/20 mm), uint16 uv, uint32 indices."""
 import sys, os, re, json, struct, collections, numpy as np, trimesh
+from PIL import Image
+Image.MAX_IMAGE_PIXELS = None
 from scipy.ndimage import median_filter
 sys.path.insert(0, os.path.dirname(__file__)); import ac3d
 RES, OUT = sys.argv[1].rstrip('/') + '/', sys.argv[2]
@@ -109,11 +111,14 @@ for k, (c, n, up, W, H, near, low) in VIEWS.items():
         kk = (tuple(np.round(p * hdr['ps']).astype(int)), tag if tag is not None else tuple(np.round(uv * 65535).astype(int)))
         if kk not in key: key[kk] = len(P); P.append(kk[0]); UV.append(uv)
         return key[kk]
-    nflat = 0
+    nflat = 0; PIC = np.asarray(Image.open(os.path.join(OUT, '..', 'img', 'cockpits', 'a320-3d-%s.webp' % k)).convert('RGB')).astype(int)
     for t in taken[k]:
         d = TV[TF[t]] - c; L = np.stack([d @ x, d @ up, -(d @ n)], 1)
         flat = abs(FN[t] @ n) < 0.42
         if flat: m = hits[k][t] - c; fuv = np.clip(np.array([(m @ x) / W + 0.5, (m @ up) / H + 0.5]), 0.001, 0.999); nflat += 1
+        if flat:
+            px = PIC[min(PIC.shape[0] - 1, int((1 - fuv[1]) * PIC.shape[0])), min(PIC.shape[1] - 1, int(fuv[0] * PIC.shape[1]))]
+            if px[1] > 120 and px[1] > px[0] + 40 and px[1] > px[2] + 30: continue   # a lime marking area of the model's texture
         poly = clip(list(L), (W, H))
         if len(poly) < 3: continue
         ids = [vert(p, fuv if flat else np.clip(np.array([p[0] / W + 0.5, p[1] / H + 0.5]), 0, 1), None) for p in poly]

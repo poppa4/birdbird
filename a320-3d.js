@@ -113,11 +113,6 @@ function init(o){
     q4(v3(-X2,yF,zB+d),v3(X2,yF,zB+d),v3(X2,cy(zB),zB+d),v3(-X2,cy(zB),zB+d));
     for(const sg of [-1,1]){ q4(v3(sg*XR,cy(zF-0.05),zF-0.05),v3(sg*X2,cy(zF-0.05),zF-0.05),v3(sg*X2,cy(zB),zB),v3(sg*XR,cy(zB),zB));      // roof, outboard part
       q4(v3(sg*X2,wT0+0.09,wZa),v3(sg*X2,wT0+0.09,zB),v3(sg*X2,cy(zB),zB),v3(sg*X2,cy(zF-0.05),wZa)); }                              // side walls above the side windows                                      // back wall
-    // beside the main panel: the panel's own plane carried outboard to the side walls, from the panel's top edge down, a little
-    // behind the picture. This closes the gap between the panel's outboard edge and the wall below the windshield sill.
-    const PP=(sx,ty)=>fv.C.clone().addScaledVector(fv.EX,sx).addScaledVector(fv.EY,ty).addScaledVector(fv.FN,-0.09);
-    for(const sg of [-1,1]){ const a=sg*(fv.W/2-0.03), o=sg*(fv.W/2+0.45), tT=fv.H/2-0.005, tB=-fv.H/2-0.45;
-      q4(PP(a,tB),PP(o,tB),PP(o,tT-0.22),PP(a,tT-0.05)); }   // the windshield sill drops outboard: keep below it
     const g=new THREE.BufferGeometry(), arr=new Float32Array(bp.length*3); bp.forEach((v,i)=>{ arr[i*3]=v.x; arr[i*3+1]=v.y; arr[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(arr,3)); BACK.add(new THREE.Mesh(g,bm));
     /* below the windshield sill: a dark tub (wall behind the main panel, side walls, floor) a little outside the structure, so a
        gap between two parts of the model shows dark lining and never the ground outside */
@@ -135,7 +130,7 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=7').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=8').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
@@ -158,7 +153,7 @@ function init(o){
     const m=new THREE.Mesh(new THREE.PlaneGeometry(w/v.r[2]*v.W,h/v.r[3]*v.H),new THREE.MeshBasicMaterial({map:tex,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-14}));
     m.matrixAutoUpdate=false; m.matrix.copy(basis(v)).setPosition(c); scene.add(m); m.geometry.computeBoundingSphere(); disp.push({d,tex,m,c,wm:w/v.r[2]*v.W}); d.tex=tex; d.mesh=m; }
   /* ---- the panels' depth: height fields from models/a320-relief.bin (see HM above); the screens move onto their surface ---- */
-  const RELIEF=CF3?Promise.resolve(false):fetch('models/a320-panels.bin?v=1').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  const RELIEF=CF3?Promise.resolve(false):fetch('models/a320-panels.bin?v=2').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl;
     for(const k in hdr.views){ const p=P[k], hv=hdr.views[k]; if(!p) continue; let o=base+hv.off; const n=hv.nx*hv.ny, raw=new Int16Array(buf.slice(o,o+n*2)), a=new Float32Array(n);
       for(let i=0;i<n;i++) a[i]=raw[i]/hdr.hs;
@@ -252,11 +247,11 @@ function init(o){
   /* real 3D levers (thrust, flaps, speed brake, gear) from the flight-deck model; each turns about its own axis from the model.
      def: {url, g:{name:{p:[x,y,z] pivot, a:[x,y,z] axis}}} in model frame. Returns set(name, degrees, shift metres). */
   function addLevers(def){ const L={}; const ready=fetch(def.url).then(r=>r.arrayBuffer()).then(buf=>{ const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl;
-      const mat=new THREE.MeshPhongMaterial({vertexColors:true,shininess:38,specular:0x3a3f45}); mat.color.setScalar(0.8);
+      const mat=new THREE.MeshBasicMaterial({vertexColors:true}); /* no lights in the scene: the form is shaded into the colours below (soft light from the windshield and from above), and black parts are a dark grey so their shape reads */
       for(const g of hdr.groups){ const d=def.g[g.name]; if(!d||!g.nv) continue; let o=base+g.off; const P=new Float32Array(buf,o,g.nv*3); o+=g.sizes[0]; const N=new Int8Array(buf,o,g.nv*3); o+=g.sizes[1]; const C=new Uint8Array(buf,o,g.nv*3);
         const pos=new Float32Array(g.nv*3), nor=new Float32Array(g.nv*3), piv=V(...d.p);
         for(let i=0;i<g.nv;i++){ const x=P[i*3],y=P[i*3+1],z=P[i*3+2]; pos[i*3]=-z-piv.x; pos[i*3+1]=y-piv.y; pos[i*3+2]=x-piv.z; nor[i*3]=-N[i*3+2]/127; nor[i*3+1]=N[i*3+1]/127; nor[i*3+2]=N[i*3]/127; }
-        const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(pos,3)); geo.setAttribute('normal',new THREE.BufferAttribute(nor,3)); geo.setAttribute('color',new THREE.BufferAttribute(C,3,true));
+        const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(pos,3)); geo.setAttribute('normal',new THREE.BufferAttribute(nor,3)); const col=new Float32Array(g.nv*3); for(let i=0;i<g.nv;i++){ const nx=nor[i*3], ny=nor[i*3+1], nz=nor[i*3+2], l=0.50+0.34*Math.max(0,ny)+0.30*Math.max(0,-nz*0.83+ny*0.55)+0.08*Math.abs(nx); for(let k=0;k<3;k++) col[i*3+k]=Math.min(1,(0.085+0.915*C[i*3+k]/255)*l); } geo.setAttribute('color',new THREE.BufferAttribute(col,3));
         const m=new THREE.Mesh(geo,mat), grp=new THREE.Group(); grp.position.copy(piv); grp.add(m); scene.add(grp);
         const ax=V(...d.a).normalize(), sh=d.s?V(...d.s).normalize():null; L[g.name]={grp,ax,sh,piv,deg:null,mv:null}; } });
     const qq=new THREE.Quaternion();

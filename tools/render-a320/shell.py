@@ -191,6 +191,33 @@ for oi in np.unique(FO):
         if sh2.sum() > 0: lab[hi_] = sh2.argmax()
 hi_ = (lab == K - 3) & (np.array(FY) > 0.40)   # straps and patches in fabric above the cushions: the light cover colour
 if hi_.any(): lab[hi_] = int(np.argmin(np.linalg.norm(cen[:K - 3] - np.array([71, 85, 104]), axis=1)))
+# lettering and placards: the near-white paint is the source textures' label strips and markings (rows of pale dashes on the
+# breaker panels, strips on the sills), and large red faces are placards whose text is gone. Both take the paint around them
+# (PLAC, resolved with the islands below); small red parts (the sidestick buttons) stay red.
+PW = int(np.argmin(np.linalg.norm(cen[:K - 3] - 205, axis=1))); PR = int(np.argmax(cen[:K - 3, 0] - cen[:K - 3, 1]))
+DIAGO = {oi: float(np.linalg.norm(np.ptp(O[oi]['v'], 0))) for oi in np.unique(FO)}
+LIGHTS = [k for k in range(K - 3) if cen[k].min() > 110]   # pale greys: lettering strips; the baked light lifts them to near white
+plac = np.isin(lab, LIGHTS) | ((lab == PR) & (cen[PR][0] > cen[PR][1] + 80) & (FA > 4e-4))
+# a small part is one material: its dominant one (corner faces of brackets and clips mapped to another paint showed as chips)
+for oi in np.unique(FO):
+    m = FO == oi
+    if DIAGO[oi] < 0.30:
+        sh = np.bincount(lab[m & ~plac], weights=FA[m & ~plac], minlength=K)
+        if sh.sum() > 0 and sh.max() >= 0.55 * sh.sum(): lab[m & ~plac & (lab != PR)] = sh.argmax()   # small red parts (buttons) keep their red
+DARK = int(np.argmin(cen[:K - 3].sum(1)))
+for _ in range(40):
+    todo = np.nonzero(plac)[0]
+    if not len(todo): break
+    done = 0
+    for f in todo:
+        tot = collections.Counter()
+        for ek, ln in FEDG[f]:
+            for g_ in EDGE[ek]:
+                if g_ != f and not plac[g_]: tot[lab[g_]] += ln
+        if tot: lab[f] = tot.most_common(1)[0][0]; plac[f] = False; done += 1
+    if not done: break
+for oi in np.unique(FO[plac]):   # no painted neighbour at all: the part's own dominant paint, else dark
+    m = FO == oi; sh = np.bincount(lab[m & ~plac], weights=FA[m & ~plac], minlength=K); lab[m & plac] = sh.argmax() if sh.sum() > 0 else DARK
 # islands: a face that is bordered mostly (60 % of its outline) by one other material takes that material; repeated, this
 # removes the small patches of a second texture the source model has on seats, lining and posts, and keeps real two-tone parts
 for _ in range(6):
