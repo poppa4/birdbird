@@ -38,7 +38,7 @@ details under about 6 cm². A derived work of the model, GPL-2.0 as well.
 
 ## Front page picture (dusk)
 
-`img/front/a320-dusk-*.webp` (front page laptop, Training hub) is a Cycles render of the same `fd.blend` from the centre of the
-flight deck, with NORDAP's display drawings (`scr/*.png`) as emissive screens, glass hidden, a dusk sky and warm panel flood:
-`python dusk.py -- 2000 32 out.png 0.62 0.56 0 -0.55 0.36 0 23` (camera x y z, target x y z, lens mm), then cropped to 16:10.
+`img/front/a320-dusk2-*.webp` (front page laptop, Training hub) is a Cycles render of the same `fd.blend` from the centre of the
+flight deck, with NORDAP's display drawings (`scr/*.png`) as emissive screens, the DCDUs and MCDUs lit, glass hidden, a dusk sky and warm panel flood:
+`python dcdu.py` (DCDU display), then `python dusk.py -- 2000 32 out.png 1.05 0.60 0 -0.55 0.30 0 32` (camera x y z, target x y z, lens mm), then cropped to 16:10.
 A derived work of the model, GPL-2.0 as well.

@@ -19,6 +19,14 @@ for i,(nm,sx,sy,w,h) in enumerate(SCR):
     T=nt.nodes.new('ShaderNodeTexImage'); T.image=bpy.data.images.load(f'/home/claude/rend/scr/{nm}.png'); T.interpolation='Cubic'
     E=nt.nodes.new('ShaderNodeEmission'); E.inputs['Strength'].default_value=1.6; O=nt.nodes.new('ShaderNodeOutputMaterial')
     nt.links.new(T.outputs['Color'],E.inputs['Color']); nt.links.new(E.outputs[0],O.inputs['Surface']); me.materials.append(M)
+# lit DCDUs and MCDUs (the model's screens use a 0-1 UV square)
+def lit(obname,img,strength=1.3):
+    o=bpy.data.objects[obname]; M=bpy.data.materials.new(obname+'_lit'); M.use_nodes=True; nt=M.node_tree; nt.nodes.clear()
+    T=nt.nodes.new('ShaderNodeTexImage'); T.image=bpy.data.images.load(img); T.interpolation='Cubic'
+    E=nt.nodes.new('ShaderNodeEmission'); E.inputs['Strength'].default_value=strength; O=nt.nodes.new('ShaderNodeOutputMaterial')
+    nt.links.new(T.outputs['Color'],E.inputs['Color']); nt.links.new(E.outputs[0],O.inputs['Surface']); o.data.materials.clear(); o.data.materials.append(M)
+for n in ('dcduScreenL','dcduScreenR'): lit(n,'/home/claude/rend/scr/dcdu.png')
+for n in ('mcdu1.screen','mcdu2.screen'): lit(n,'/home/claude/rend/scr/mcdu.png')
 # hide glass/visors so the sky shows
 for o in bpy.data.objects:
     if o.type=='MESH' and any(m and ('glass' in m.name or 'visor' in m.name) for m in o.data.materials): o.hide_render=True
