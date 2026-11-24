@@ -137,6 +137,8 @@ function vsScale(g,D){
   for(const v of [-6000,-2000,-1000,-500,500,1000,2000,6000]){ const y=yOf(v); L(g,x,y,x+12,y,C.w,3); if(Math.abs(v)!==500&&Math.abs(v)!==6000) T(g,String(Math.abs(v)/1000),x+15,y+10,C.w,26); }
   L(g,x,cy,x+18,cy,C.y,4);
   if(!D.adrOK||!D.irOK){ T(g,'V/S',x+30,cy,C.r,30,'center',700); return; }
+  if(D.raAdv){ /* TCAS RA: red where the V/S must not be, green where it should be */ const r=D.raAdv, yl=yOf(r.lo), yh=yOf(r.hi);
+    if(r.sense==='CLIMB'){ FR(g,x,yOf(r.lo),14,yOf(-6000)-yOf(r.lo),C.r); FR(g,x,yh,14,yl-yh,C.g); } else { FR(g,x,yOf(6000),14,yOf(r.hi)-yOf(6000),C.r); FR(g,x,yh,14,yl-yh,C.g); } }
   const y=yOf(clamp(D.vs,-6000,6000)); const col=Math.abs(D.vs)>6000||(D.ra<1000&&D.vs<-2000)?C.a:C.g;
   L(g,x+60,cy,x+16,y,col,5);
   if(Math.abs(D.vs)>=200){ FR(g,x+6,y+(D.vs>0?-46:8),50,36,'#000'); T(g,String(Math.round(Math.abs(D.vs)/100)).padStart(2,'0'),x+31,y+(D.vs>0?-18:36),col,30,'center',700); }
@@ -193,7 +195,10 @@ function nd(g,cv,D){
     if(f.vor){ g.strokeStyle=C.m; g.lineWidth=3; g.beginPath(); g.moveTo(x-12,y); g.lineTo(x+12,y); g.moveTo(x,y-12); g.lineTo(x,y+12); g.stroke(); if(D.filt.vord) T(g,f.id,x+16,y+26,C.m,26); continue; }
     if(!D.filt.wpt&&!f.fp) continue; g.save(); g.translate(x,y); g.rotate(Math.PI/4); R(g,-8,-8,16,16,f.fp?(act?C.w:C.g):C.m,3); g.restore(); T(g,f.id,x+16,y+26,f.fp?(act?C.w:C.g):C.m,26); } }
   if(D.fpln&&D.fpln.length>1){ g.strokeStyle=C.g; g.lineWidth=3; g.beginPath(); D.fpln.forEach((p,i)=>{ const [x,y]=toXY(p.N,p.E); i?g.lineTo(x,y):g.moveTo(x,y); }); g.stroke(); }
-  // traffic would go here (TCAS); weather radar is off on the ground
+  // TCAS traffic: open diamond (other), filled (proximate), amber circle (TA), red square (RA), relative altitude in hundreds of feet
+  if(D.tfc) for(const t of D.tfc){ const [x,y]=toXY(t.N,t.E); const col=t.type==='ra'?C.r:t.type==='ta'?C.a:C.w; g.fillStyle=col; g.strokeStyle=col; g.lineWidth=3;
+    if(t.type==='ra') g.fillRect(x-11,y-11,22,22); else if(t.type==='ta'){ g.beginPath(); g.arc(x,y,12,0,7); g.fill(); } else { g.beginPath(); g.moveTo(x,y-13); g.lineTo(x+11,y); g.lineTo(x,y+13); g.lineTo(x-11,y); g.closePath(); t.type==='prox'?g.fill():g.stroke(); }
+    const rel=(t.rel>=0?'+':'-')+String(Math.abs(t.rel)).padStart(2,'0'); T(g,rel,x,t.rel>=0?y-20:y+40,col,26,'center'); }
   g.restore();
   // compass
   g.strokeStyle=C.w; g.lineWidth=3;

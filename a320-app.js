@@ -107,7 +107,7 @@ function syncCtl(){
 let acc=0, sysAcc=0;
 function simTick(dt){
   if(UI.paused||UI.crashed) return;
-  keysStep(dt); gamepad(); if(AFY) AFY.tick(dt);
+  keysStep(dt); gamepad(); if(AFY) AFY.tick(dt); if(GPW) GPW.tick(dt);
   acc+=dt; const h=1/60; let n=0;
   while(acc>=h&&n<6){ syncCtl(); F.step(M,h,A); sysAcc+=h; if(sysAcc>=0.05){ sysStep(sysAcc); sysAcc=0; } acc-=h; n++; }
   if(acc>h*6) acc=0;
@@ -276,6 +276,8 @@ function defs(){
   // ---- GPWS ----
   for(const [id,k] of [['GPWS|TERR','gpwsT'],['GPWS|GPWS SYS','gpwsS'],['GPWS|G/S MODE','gpwsGs'],['GPWS|FLAP MODE','gpwsF']]) pb(id,k,['FAULT','a',()=>false],['OFF','w',()=>!S_(k)]);
   pb('GPWS|LDG FLAP 3','ldgF3',null,['ON','b',()=>!!S_('ldgF3')]);
+  // glareshield PULL UP / GPWS lights; pushing cancels the glideslope alert
+  for(const s of ['CPT','F/O']) ann('GPWS G/S '+s+'|GPWS G/S '+s,['PULL UP','r',()=>!!GPW&&GPW.light()==='pull'],['G/S','a',()=>!!GPW&&GPW.light()==='gpws'],{click:()=>{ if(GPW) GPW.gsCancel(); }});
   // ---- AIR COND ----
   sel('AIR COND|PACK FLOW','pkFlow',['LO','NORM','HI'],[-55,0,55]);
   for(const [id,k] of [['AIR COND|TEMP CKPT','tCk'],['AIR COND|TEMP FWD CAB','tFwd'],['AIR COND|TEMP AFT CAB','tAft']]) CT.push({id,t:'cont',k,lo:0,hi:1,step:0.1,ang:v=>-135+v*270});
@@ -552,17 +554,18 @@ function dispData(d){
     let msg='', msgC=DSP.C.a;
     if(M.fbw.law!=='NORMAL'&&!M.gnd) { msg=M.fbw.law==='DIRECT'?'USE MAN PITCH TRIM':''; }
     if(M.stall&&!M.gnd){ msg='STALL'; msgC=DSP.C.r; }
+    { const gm=GPW&&GPW.pfdMsg(); if(gm){ msg=gm[0]; msgC=DSP.C.r; } }
     return {pwr,attOK,adrOK:!!adrOK,irOK,phi:M.phi*R2D,th:M.th*R2D,beta:(M.beta||0)*R2D,ias:M.ias,alt,vs:M.vs/FPM,hdg,trk,ra:M.ra/FT,gnd:M.gnd,conf:M.conf,
       vls:sp.vls,vaprot:sp.vaprot,vamax:sp.vamax,vmax:sp.vmax,F:sp.F,S:sp.S,gd:sp.gd,v1:K.d.v1,vr:K.d.vr,vfeN:sp.vfeN,spdTgt:M.gnd&&!ap.vert?K.d.v2:ap.tgtSpd,spdMan:ap.spd.man,trend:(M.accel||0)*10,mach:M.mach,
       selAlt:ap.alt.v,std:E.std,qnh:E.std?1013:E.qnh,selHdg:(ap.lat==='HDG'||ap.lat==='TRK'||ap.hdg.preset)?ap.hdg.v:null,fd:fdOn&&!!(ap.lat||ap.vert),fdOn:true,fdPitch:fdP,fdRoll:fdR,
       fpv:ap.hdg.trk,drift:w180(trk-hdg),gam:M.gam*R2D,ls,loc:M.nav.loc,gs:M.nav.gs,dme:M.nav.dme,lsCrs:K.d.ilsCrs,lsId:K.d.ilsId,lsFreq:K.d.ilsFreq,fma:fmaA,dh:dh&&dh!=='NO'?dh:0,
-      dhTxt:dh!=null?(dh==='NO'?'NO DH':'DH '+dh):mda?'MDA '+mda:'',pfdMsg:msg,pfdMsgC:msgC,stick:M.gnd&&(A.eng[0].run||A.eng[1].run)?{x:M.ctl.sx,y:M.ctl.sy}:null};
+      dhTxt:dh!=null?(dh==='NO'?'NO DH':'DH '+dh):mda?'MDA '+mda:'',raAdv:GPW?GPW.ra():null,pfdMsg:msg,pfdMsgC:msgC,stick:M.gnd&&(A.eng[0].run||A.eng[1].run)?{x:M.ctl.sx,y:M.ctl.sy}:null};
   }
   if(d.k==='nd'){
     const fx=[]; for(const k in FIX){ const f=FIX[k]; if(k==='RW36') continue; fx.push({id:k,N:f.N,E:f.E,vor:k==='ASN'}); }
     const nav=M.nav&&M.nav.fp; const fp=K.fpln.length?K.fpln.map(p=>({N:p.N,E:p.E})):null; K.fpln.forEach(p=>{ const f=fx.find(x=>x.id===p.id); if(f) f.fp=true; else if(!p.rwy) fx.push({id:p.id,N:p.N,E:p.E,fp:true}); });
     const mode=MODES[E.mode]; const W=M.wind;
-    return {pwr,irOK,mode,range:RANGES[E.range],N:M.N,E:M.E,hdg,trk,selHdg:(ap.lat==='HDG'||ap.lat==='TRK'||ap.hdg.preset)?ap.hdg.v:null,gs:M.gs/KT,tas:M.tas/KT,windDir:W.dir,windSpd:W.spd,
+    return {tfc:GPW?GPW.traffic():null,pwr,irOK,mode,range:RANGES[E.range],N:M.N,E:M.E,hdg,trk,selHdg:(ap.lat==='HDG'||ap.lat==='TRK'||ap.hdg.preset)?ap.hdg.v:null,gs:M.gs/KT,tas:M.tas/KT,windDir:W.dir,windSpd:W.spd,
       fixes:fx,fpln:mode==='ROSE ILS'||mode==='ROSE VOR'?null:fp&&fp.slice(Math.max(0,K.act-1)),toWpt:nav?nav.toWpt:null,toDist:nav?nav.toDist:null,toBrg:nav?nav.toBrg:null,lsOn:UI.ls[side]||ap.appr||ap.loc,loc:M.nav.loc,lsCrs:K.d.ilsCrs,lsFreq:K.d.ilsFreq,lsId:K.d.ilsId,
       filt:{wpt:E.filt==='wpt',vord:E.filt==='vord'||E.filt==='ndb'},rwyLen:F.RWY.len,vor1:E.adf1===2?'ASN':null,vor2:E.adf2===2?'ASN':null,ndMsg:M.gnd&&!K.fpln.length&&mode!=='ROSE ILS'?'':''};
   }
@@ -872,12 +875,12 @@ function setStat(){ const s=$('stat'); if(!s) return; const t=UI.crashed?T('Cras
 function pause(){ UI.paused=!UI.paused; setStat(); if(CH) CH.sync(); }
 let CH=null;
 if(SH){ SH.init(); CH=SH.chrome({paused:()=>UI.paused,pause,restart:()=>reset(UI.start),sound:()=>UI.sound,setSound:v=>{ UI.sound=v; },refit:()=>layout(true)});
-  SH.pane('fl',el=>{ const L_=[['v1cut','Engine 1 failure at V1 (next take-off)'],['hydGY','Green + yellow hydraulics (G+Y SYS LO PR)'],['eng1','Engine 1 failure'],['fire1','Engine 1 fire'],['fire2','Engine 2 fire'],['fireApu','APU fire'],['gen1','Generator 1'],['idg1','IDG 1 oil pressure'],['acBus1','AC BUS 1'],['bothGen','Both generators'],['hydG','Green hydraulics'],['hydY','Yellow hydraulics'],['edp1','Engine 1 pump (green)'],['fuelL1','Left tank pump 1'],['bleed1','Engine 1 bleed'],['pack1','Pack 1'],['elac1','ELAC 1'],['sec1','SEC 1'],['ir1','IR 1'],['decomp','Decompression'],['cabLeak','Slow cabin leak']];
+  SH.pane('fl',el=>{ const L_=[['v1cut','Engine 1 failure at V1 (next take-off)'],['hydGY','Green + yellow hydraulics (G+Y SYS LO PR)'],['eng1','Engine 1 failure'],['fire1','Engine 1 fire'],['fire2','Engine 2 fire'],['fireApu','APU fire'],['gen1','Generator 1'],['idg1','IDG 1 oil pressure'],['acBus1','AC BUS 1'],['bothGen','Both generators'],['hydG','Green hydraulics'],['hydY','Yellow hydraulics'],['edp1','Engine 1 pump (green)'],['fuelL1','Left tank pump 1'],['bleed1','Engine 1 bleed'],['pack1','Pack 1'],['elac1','ELAC 1'],['sec1','SEC 1'],['ir1','IR 1'],['decomp','Decompression'],['cabLeak','Slow cabin leak'],['ws','Windshear (next approach or take-off, below 1,000 ft)'],['tcas','TCAS intruder (head-on, about your level)']];
     el.innerHTML='<div class="sgrp">'+T('Failures')+'</div><div class="fbtns">'+L_.map(([k,t])=>`<button type="button" data-f="${k}" class="${A.fail[k]?'on':''}">${t}</button>`).join('')+'<button type="button" class="rs" data-f="__clr">Clear all failures</button></div>';
     el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=b.dataset.f;
       if(k==='v1cut'){ UI.v1cut=!UI.v1cut; A.fail.v1cut=UI.v1cut; say(UI.v1cut?'Engine 1 will fail at V1 on the next take-off':'V1 cut cancelled'); el.querySelectorAll('button[data-f]').forEach(x=>x.classList.toggle('on',!!A.fail[x.dataset.f])); return; }
       if(k==='hydGY'){ const on=!A.fail.hydGY; A.fail.hydGY=on; A.fail.hydG=on; A.fail.hydY=on; el.querySelectorAll('button[data-f]').forEach(x=>x.classList.toggle('on',!!A.fail[x.dataset.f])); return; }
-      if(k==='__clr'){ UI.v1cut=false; A.fail={}; A.idgOK=[true,true]; A.eng.forEach(e=>{ e.fail=false; e.fire=false; }); A.apu.fire=false; A.irs.forEach(r=>{ if(r.st===4) r.st=0; }); } else { A.fail[k]=!A.fail[k]; if(k==='decomp'&&A.fail[k]) say('Decompression'); }
+      if(k==='__clr'){ UI.v1cut=false; A.fail={}; if(GPW) GPW.reset(); A.idgOK=[true,true]; A.eng.forEach(e=>{ e.fail=false; e.fire=false; }); A.apu.fire=false; A.irs.forEach(r=>{ if(r.st===4) r.st=0; }); } else { A.fail[k]=!A.fail[k]; if(k==='decomp'&&A.fail[k]) say('Decompression'); }
       el.querySelectorAll('button[data-f]').forEach(x=>x.classList.toggle('on',!!A.fail[x.dataset.f])); }); });
   SH.pane('sp',el=>{ if(CF&&CF.speedsPane){ CF.speedsPane(el,X); return; } const s=M.spds||{}; const r=(t,v)=>`<div class="row"><span>${t}</span><b>${v==null?'—':Math.round(v)+' kt'}</b></div>`;
     el.innerHTML='<div class="sgrp">Speeds at '+(A.gw/1000).toFixed(1)+' t</div>'+r('V1',K.d.v1)+r('VR',K.d.vr)+r('V2',K.d.v2)+r('VS1G (this config)',s.vs1g)+r('VLS',s.vls)+r('F',s.F)+r('S',s.S)+r('Green dot',s.gd)+r('VFE (this config)',s.vfe)+r('VMO','350')+'<p class="pdisc">MMO 0.82. VLE 280 kt, VLO 250 kt (retraction 220 kt). VFE: 1 230, 1+F 215, 2 200, 3 185, FULL 177 kt.</p>'; });
@@ -889,6 +892,8 @@ if(!CF&&window.A320CK&&$('tabCk')){ try{ ACK=A320CK.mount({box:$('tabCk'),L:x=>L
     { const DK='nordap.a320drawer'; let pr=null; try{ pr=localStorage.getItem(DK); }catch(e){}
       if(CH&&CH.setDrawer&&(pr==='1'||(pr==null&&innerWidth>=1100&&innerHeight>=560))) CH.setDrawer(true);
       const bD=$('bDrawer'); if(bD) bD.addEventListener('click',()=>setTimeout(()=>{ try{ localStorage.setItem(DK,$('drawer').classList.contains('open')?'1':'0'); }catch(e){} },0)); } }catch(e){ console.warn('A320 checklist',e); ACK=null; } }
+/* GPWS, reactive windshear and TCAS (a320gpws.js) */
+var GPW=null; if(!CF&&window.A320GPWS){ GPW=A320GPWS.create(X,{say:t=>{ if(UI.sound) say2(t); }}); }
 /* auto-fly (a320auto.js): a second pilot flies by hand while the student works the checklists; the AP stays the student's */
 var AFY=null;
 if(!CF&&window.A320AUTO){ AFY=A320AUTO.create(X,{L:x=>LB.L?LB.L(x):(x&&x.en)||x,say:m=>say(m,'',3600),changed:()=>afBan(true),phase:ph=>{ const k={hold:'lineup',down:'appr',final:'ldg',exit:'aldg'}[ph]; if(k&&ACK&&ACK.open) ACK.open(k); }});
