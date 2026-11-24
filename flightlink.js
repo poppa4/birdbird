@@ -54,7 +54,6 @@
   /* which sim to fly. The sims have one training airport, so this is practice of the procedure, not the destination. */
   const SIMS = [
     { k: 'da42', re: /\bda\s*-?\s*42|twin\s*star/i, href: 'cockpit.html?s=air&p=ils', en: 'DA42', no: 'DA42' },
-    { k: 'c172', re: /\bc(essna)?\s*-?\s*172|skyhawk/i, href: 'c172.html?s=air&p=ils', en: 'C172', no: 'C172' },
     { k: 'b200', re: /\bb\s*-?\s*200|king\s*air|\bbe\s*20\b/i, href: 'b200.html?s=air&p=ils', en: 'King Air B200', no: 'King Air B200' }
   ];
   function simFor(type, typeKey) {

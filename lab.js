@@ -295,8 +295,7 @@
   const P_=(u,w,en,no,sen,sno)=>({u,w,n:t2(en,no),s:t2(sen,sno)});
   const PRAC={
    radionav:[P_('ifr.html?ex=ndb','ifr','Track to a beacon (NDB)','Følg en kurs inn til et fyr (NDB)','Heading + needle, then correct for the wind.','Heading + nål, og korriger så for vinden.'),
-     P_('ifr.html?ex=dme','ifr','Fly a DME arc','Fly en DME-bue','Hold a fixed distance round the station.','Hold fast avstand rundt stasjonen.'),
-     P_('c172.html?s=air&p=ndb','c172','NDB approach','NDB-innflyging','Fly the NDB 36 approach on the ADF.','Fly NDB 36-innflygingen på ADF-en.')],
+     P_('ifr.html?ex=dme','ifr','Fly a DME arc','Fly en DME-bue','Hold a fixed distance round the station.','Hold fast avstand rundt stasjonen.')],
    hold:[P_('ifr.html?ex=holdEntry','ifr','Holding entry','Inngang til holding','Pick direct, parallel or teardrop and fly it.','Velg direkte, parallell eller teardrop og fly den.'),
      P_('cockpit.html?s=air&p=hold','da42','Hold at RONAX','Holding ved RONAX','A full hold in the DA42, by hand or on autopilot.','En hel holding i DA42, for hånd eller på autopilot.'),
      P_('ifr.html?ex=ils','ifr','ILS approach','ILS-innflyging','Localiser, glide slope, DA and the missed approach.','Localiser, glidebane, DA og avbrutt innflyging.')],
@@ -305,8 +304,7 @@
      P_('ifr.html?ex=star','ifr','Arrival (STAR)','Innflygingsrute (STAR)','Waypoint to waypoint, each at its altitude.','Waypoint til waypoint, hver i riktig høyde.')],
    af:[P_('b200.html?s=air&p=ils&af=1','b200','ILS 36 on auto-fly','ILS 36 med autofly','Watch the modes arm and capture, then take over.','Se modusene armeres og fange, og ta så over.'),
      P_('cockpit.html?s=air&p=rnp_lv&af=1','da42','LNAV/VNAV on auto-fly','LNAV/VNAV med autofly','A baro-VNAV path flown by the automation.','En baro-VNAV-bane fløyet av automatikken.')],
-   gyro:[P_('c172.html?s=vac','c172','Vacuum failure','Vakuumsvikt','The attitude and heading gyros run down: partial panel.','Holdnings- og kursgyroen spinner ned: delvis panel.'),
-     P_('ifr.html?ex=ppTrack','ifr','Partial panel: track to the station','Delvis panel: følg en kurs inn','Compass and clock, no heading indicator.','Kompass og klokke, uten kursgyro.')],
+   gyro:[P_('ifr.html?ex=ppTrack','ifr','Partial panel: track to the station','Delvis panel: følg en kurs inn','Compass and clock, no heading indicator.','Kompass og klokke, uten kursgyro.')],
    gnav:[P_('ifr.html?ex=mathNav','ifr','Mental maths: navigation','Hoderegning: navigasjon','1 in 60, wind correction and lead.','1 av 60, vindkorreksjon og forsprang.'),
      P_('ifr.html?ex=trackIn','ifr','Track to the station','Følg en kurs inn til stasjonen','The wind triangle, flown on a VOR needle.','Vindtrekanten, fløyet på en VOR-nål.')],
    fpl:[P_('ifr.html?ex=mathApp','ifr','Mental maths: descents','Hoderegning: nedstigning','Top of descent and rate of descent.','Toppen av nedstigningen og sinkrate.')],
@@ -314,11 +312,8 @@
      P_('b200.html?s=efato','b200','Engine failure at rotation','Motorstans ved rotasjon','Autofeather, rudder and V2 in a turboprop twin.','Autofløying, sideror og V2 i et turboprop-tomotors fly.')],
    perf:[P_('cockpit.html?s=takeoff','da42','Take-off','Avgang','Rotate, climb and clean up at the right speeds.','Roter, stig og rydd opp ved riktige farter.'),
      P_('b200.html?s=efato','b200','Engine failure at rotation','Motorstans ved rotasjon','Continue the take-off and hold V2.','Fortsett starten og hold V2.')],
-   engines:[P_('c172.html?s=carbice','c172','Carburettor icing in cruise','Forgasserising i marsj','Spot the RPM drop and use carb heat.','Se turtallsfallet og bruk forgasservarme.'),
-     P_('b200.html?s=start','b200','Engine start','Motorstart','A turboprop start: N1, ITT and fuel flow.','En turbopropstart: N1, ITT og drivstoffstrøm.')],
-   jets:[P_('c172.html?s=alt','c172','Alternator failure','Generatorsvikt','Read the ammeter and shed the electrical load.','Les amperemeteret og kutt strømforbruket.')],
+   engines:[P_('b200.html?s=start','b200','Engine start','Motorstart','A turboprop start: N1, ITT and fuel flow.','En turbopropstart: N1, ITT og drivstoffstrøm.')],
    press:[P_('b200.html?s=press','b200','Pressurisation loss','Tap av kabintrykk','Masks on, then the emergency descent.','Masker på, og så nøddnedstigning.')],
-   hazards:[P_('c172.html?s=carbice','c172','Carburettor icing in cruise','Forgasserising i marsj','Icing you cannot see from the window.','Ising du ikke ser fra vinduet.')],
    tunnel:[P_('cockpit.html?s=stall','da42','Stall','Stall','Feel the buffet, then recover.','Kjenn buffeten, og ta deg ut.')],
    stab:[P_('cockpit.html?s=steep','da42','Steep turns','Krappe svinger','45° of bank: load factor and back pressure.','45° krengning: lastfaktor og baktrykk.')],
    forces:[P_('cockpit.html?s=steep','da42','Steep turns','Krappe svinger','More bank, more lift needed, higher stall speed.','Mer krengning, mer løft, høyere stallfart.')]};

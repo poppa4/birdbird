@@ -42,12 +42,12 @@
   const routeTitle = r => { const rw = (r.pts || []).filter(x => x.t === 'rwy').map(x => x.n); return (r.title || '').trim() || (rw.length ? [rw[0], rw[rw.length - 1]].filter((v, i, a) => i === 0 || v !== a[0]).join(' – ') : t('Untitled route', 'Rute uten navn')); };
   const realPack = p => { const f = p && p.f || {}; return !!(f.depapt || f.destapt || f.reg || f.type || (p.title || '').trim() || (f.heading || '').trim()); };
   function guessTypeKey(s) { s = String(s || ''); return /172/.test(s) ? 'c172' : /da[\s-]?42/i.test(s) ? 'da42' : /b200|king\s?air/i.test(s) ? 'b200' : /pa[\s-]?28|warrior|archer|cherokee/i.test(s) ? 'pa28' : /da[\s-]?40/i.test(s) ? 'da40' : /p2006/i.test(s) ? 'p2006t' : /pa[\s-]?34|seneca/i.test(s) ? 'pa34' : /a3(19|20|21)/i.test(s) ? 'a320' : 'other'; }
-  const TRAINER = { 'c172.html': ['Cessna 172 trainer', 'Cessna 172-trener'], 'cockpit.html': ['DA42 simulator', 'DA42-simulator'], 'b200.html': ['King Air B200 trainer', 'King Air B200-trener'], 'simcheck.html': ['A320 sim assessment', 'A320 simulatortest'] };
+  const TRAINER = { 'cockpit.html': ['DA42 simulator', 'DA42-simulator'], 'b200.html': ['King Air B200 trainer', 'King Air B200-trener'], 'simcheck.html': ['A320 sim assessment', 'A320 simulatortest'] };
 
   /* ---------- "Use in the trainer": a checklist or SOP document becomes the student's own checklist in a cockpit trainer.
      Only the index (type -> document id and name) is written ('bb-ownck', synced as a setting); the trainer reads the text
      from this device's document store, so the document itself never leaves the device. ---------- */
-  const OCK_TR = [['DA42', 'cockpit.html'], ['C172', 'c172.html'], ['B200', 'b200.html']];
+  const OCK_TR = [['DA42', 'cockpit.html'], ['B200', 'b200.html']];
   function useInTrainer(type, id) {
     const d = item(id); if (!d) return;
     try { const o = JSON.parse(localStorage.getItem('bb-ownck') || '{}') || {}; o[type] = { src: 'doc', id, name: d.name || '', score: (o[type] && o[type].score) || 0 }; localStorage.setItem('bb-ownck', JSON.stringify(o));

@@ -22,7 +22,7 @@
   const SPEEDS_ME = ['VMCA', 'VR', 'VX', 'VY', 'VYSE', 'VA', 'VFE', 'VLO', 'VLE', 'VNO', 'VNE', 'VS0', 'VS1'];
   const SPEEDS_TP = ['VMCA', 'V1', 'VR', 'V2', 'VYSE', 'VA', 'VFE', 'VLO', 'VLE', 'VMO', 'MMO', 'VS0', 'VS1'];
   const AIRCRAFT_TYPES = [
-    { k: 'c172', name: 'Cessna 172', trainer: 'c172.html', speeds: SPEEDS_SE },
+    { k: 'c172', name: 'Cessna 172', trainer: null, speeds: SPEEDS_SE },
     { k: 'da42', name: 'Diamond DA42', trainer: 'cockpit.html', speeds: SPEEDS_ME },
     { k: 'b200', name: 'King Air B200', trainer: 'b200.html', speeds: SPEEDS_TP },
     { k: 'pa28', name: 'Piper PA-28', trainer: null, speeds: SPEEDS_SE },
