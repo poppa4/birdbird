@@ -76,8 +76,9 @@
 .fguide li{display:flex;gap:9px;align-items:flex-start;cursor:pointer;padding:6px;border-radius:8px}.fguide li:hover{background:#fff}
 .fguide li>i{font-style:normal;font-weight:800;flex:0 0 26px;height:26px;line-height:26px;text-align:center;border-radius:50%;background:var(--ink);color:#fff;font-size:13px}
 .fguide b{display:block;font-size:14px}.fguide span{font-size:13px;color:var(--ink-2);line-height:1.35}.fpq .btn:disabled{opacity:.4;cursor:default}
-.fextag{position:absolute;top:8px;left:8px;z-index:4;background:#F2A623;color:#0B0F12;font:800 11px var(--f-mono,monospace);letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:5px;pointer-events:none}
+.fextag{position:absolute;top:8px;right:8px;z-index:4;background:#F2A623;color:#0B0F12;font:800 11px var(--f-mono,monospace);letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:5px;pointer-events:none}
 #app.pon .fextag{display:none}
+#fnow:not([hidden])~.fextag,.fwrap:has(#fnow:not([hidden])) .fextag{top:auto;bottom:56px}
 .fexnote{background:#FFF4DC;border:1px solid #F2C46B;border-radius:10px;padding:10px 12px;margin:0 0 12px;font-size:14px;line-height:1.45}.fexnote .frow{margin:8px 0 0}.fexnote .fsg{grid-template-columns:1fr!important;margin:8px 0 0}
 .fguide li.on{background:#fff;box-shadow:0 0 0 1.5px var(--ink)}.fguide .fgx{cursor:default}.fguide .fgx:hover{background:none}
 @media (max-width:760px){.fguide{grid-template-columns:1fr}.fguide .fgx{justify-content:flex-end}}
@@ -200,6 +201,7 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
 .fph button[aria-current]{background:var(--navy,#0B1E34);border-color:var(--navy,#0B1E34);color:#fff}
 .fph button[aria-current] i{background:rgba(255,255,255,.18);color:#fff}.fph button[aria-current] em{color:#8FE3B5}
 @media (max-width:640px){.fph li{min-width:140px}.fph button{font-size:13px}}
+.fnext{display:flex;flex-direction:column;gap:6px;margin:0 0 12px;padding:12px 14px;border:1px solid #9FD9B8;border-radius:8px;background:#EEF9F2}.fnext b{font-size:16px}.fnext span{font-size:14px;color:var(--ink-2,#4C5B66)}.fnext .btn{align-self:flex-start;margin-top:4px}
 </style>
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
@@ -294,7 +296,7 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=53"></script>
+<script src="flows.js?v=54"></script>
 <script src="flowlib.js?v=6"></script>
 <script src="reqplane.js?v=3"></script>
 </body>

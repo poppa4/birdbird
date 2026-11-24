@@ -269,7 +269,7 @@ function panel(scroll) { modeHint(); const p = $('fpanel'); $('app').classList.t
     $('vwatch').onclick = () => { setMode('watch'); wPlay(); }; $('vprint').onclick = () => { const b = document.querySelector('#fmenu [data-a=print]'); if (b) b.click(); };
     p.querySelectorAll('.fvl .fs').forEach(li => li.onclick = () => { sel = sel === li.dataset.s ? null : li.dataset.s; draw(); p.querySelectorAll('.fvl .fs').forEach(x => x.classList.toggle('on', x.dataset.s === sel)); });
   } else if (mode === 'watch') {
-    p.innerHTML = `<div class="frow"><button class="btn pri" id="wplay">${W.on ? '❚❚ ' + L({ en: 'Pause', no: 'Pause' }) : '▶ ' + L({ en: 'Play', no: 'Spill av' })}</button><button class="btn" id="wrst">↺ ${L({ en: 'From the start', no: 'Fra start' })}</button>` +
+    p.innerHTML = (W.done && !W.on ? `<div class="fnext"><b>${esc(L({ en: 'Your turn', no: 'Din tur' }))}</b><span>${esc(L({ en: 'Tap each step on the cockpit, in order. Hints come if you need them.', no: 'Trykk hvert steg i cockpiten, i rekkefølge. Du får hint om du trenger det.' }))}</span><button class="btn pri" id="wnext">▶ ${esc(L({ en: 'Practise this flow', no: 'Øv på denne flowen' }))}</button></div>` : '') + `<div class="frow"><button class="btn pri" id="wplay">${W.on ? '❚❚ ' + L({ en: 'Pause', no: 'Pause' }) : '▶ ' + L({ en: 'Play', no: 'Spill av' })}</button><button class="btn" id="wrst">↺ ${L({ en: 'From the start', no: 'Fra start' })}</button>` +
       `<label>${L({ en: 'Show', no: 'Vis' })} <select id="wrole"><option value="">${L({ en: 'All roles', no: 'Alle roller' })}</option>${cur.roles.map(r => `<option${W.role === r ? ' selected' : ''}>${r}</option>`).join('')}</select></label>` +
       `<label>${L({ en: 'Speed', no: 'Fart' })} <select id="wsp">${[[2.6, L({ en: 'Slow', no: 'Sakte' })], [1.6, L({ en: 'Normal', no: 'Normal' })], [0.9, L({ en: 'Fast', no: 'Rask' })]].map(([v, n]) => `<option value="${v}"${W.dt == v ? ' selected' : ''}>${n}</option>`).join('')}</select></label>` +
       `<label><input type="checkbox" id="wspk"${W.speak ? ' checked' : ''}> ${L({ en: 'Read aloud', no: 'Les høyt' })}</label></div>` +
@@ -333,7 +333,7 @@ function wirePanel() { const p = $('fpanel');
     if (b.id === 'fsop') return sopDialog(); if (b.id === 'fpdfb') return $('fpdf').click(); if (b.id === 'fundo') return undo();
 
     if (b.id === 'fnote') { noteMode = true; msg(L({ en: 'Tap the panel where the note goes.', no: 'Trykk på panelet der notatet skal stå.' })); return; }
-    if (b.id === 'wplay') { W.on ? wPause() : wPlay(); return; } if (b.id === 'wrst') { wReset(); wPlay(); return; }
+    if (b.id === 'wnext') { W.done = false; return quick(cur); } if (b.id === 'wplay') { W.on ? wPause() : wPlay(); return; } if (b.id === 'wrst') { wReset(); wPlay(); return; }
     if (b.id === 'ropen') return rOpen(); if (b.id === 'rjoin') { const c = ($('rjc').value || '').toLowerCase().replace(/^.*[#?&](room|c)=/, '').replace(/[^a-z0-9-]/g, ''); if (c) rJoin(c); return; }
     if (b.id === 'ragain') return rStart(true); if (b.id === 'rleave') return rLeave(); if (b.id === 'rstart') return rStart(true); if (b.id === 'rreset') { rSend({ t: 'reset' }); P.on = false; P.live = false; RM.live = false; pq(); draw(); panel(); return; }
     if (b.id === 'rcopy') { const l = location.origin + location.pathname + '#room=' + RM.code; navigator.clipboard.writeText(l).then(() => msg(L({ en: 'Link copied.', no: 'Lenken er kopiert.' }), 'ok'), () => prompt('', l)); return; }
@@ -363,9 +363,9 @@ function sopDialog() { const d = $('dsop'); $('soptxt').value = ''; d.showModal(
 const W = { on: false, i: 0, dt: 1.6, role: '', speak: false, t: null, cur: null };
 function wList() { return cur.steps.filter(s => !W.role || s.r === W.role); }
 function wReset() { wPause(); W.i = 0; W.cur = null; banner(); draw({ upto: 0 }); }
-function wPlay() { if (!cur || !cur.steps.length) return; if (W.i >= wList().length) W.i = 0; W.on = true; if ($('stage').clientWidth < 600 && zoom < 1.5) setZoom(2.2); panel(); toStage(); wStep(); }
+function wPlay() { if (!cur || !cur.steps.length) return; W.done = false; if (W.i >= wList().length) W.i = 0; W.on = true; if ($('stage').clientWidth < 600 && zoom < 1.5) setZoom(2.2); panel(); toStage(); wStep(); }
 function wPause() { W.on = false; clearTimeout(W.t); if (window.speechSynthesis) speechSynthesis.cancel(); if (mode === 'watch') panel(); }
-function wStep() { if (!W.on) return; const S = wList(); if (W.i >= S.length) { W.on = false; banner(); W.cur = null; draw({ role: W.role || undefined }); panel(); return; }
+function wStep() { if (!W.on) return; const S = wList(); if (W.i >= S.length) { W.on = false; W.done = true; banner(); W.cur = null; draw({ role: W.role || undefined }); panel(); return; }
   const s = S[W.i]; W.cur = s.id; W.i++; const ids = new Set(S.slice(0, W.i).map(x => x.id)); draw({ only: ids, anim: s.id });
   if (s.k === 'call') banner(L({ en: 'Checklist commanded', no: 'Sjekkliste kommandert' }), `${s.r}: ${s.t}`, col(s.r)); else if (s.k === 'event') banner(L({ en: 'Check', no: 'Sjekk' }), s.t, '#9AA5B1'); else if (!F.placed(s)) banner(L({ en: 'Not placed yet', no: 'Ikke plassert ennå' }), s.r + ': ' + s.t, '#D98E12'); else banner();
   now(s); const li = $('fpanel').querySelector(`.fs[data-s="${s.id}"]`); $('fpanel').querySelectorAll('.fs.on').forEach(x => x.classList.remove('on')); if (li) { li.classList.add('on'); inPanel(li); }
@@ -374,7 +374,7 @@ function wStep() { if (!W.on) return; const S = wList(); if (W.i >= S.length) { 
   W.t = setTimeout(wStep, W.dt * 1000 * (s.k === 'call' ? 1.6 : 1)); }
 function now(s) { const n = $('fnow'); if (!s) { n.hidden = true; return; } n.hidden = false; n.style.setProperty('--c', col(s.r)); n.innerHTML = `<span class="fbdg${s.k === 'call' ? ' call' : ''}">${s.k === 'event' ? '⚑' : esc(F.badge(cur, s))}</span><b>${esc(s.r)}</b> ${esc(s.t || '')}${s.n ? `<small>${esc(s.n)}</small>` : ''}`; }
 function banner(h, t, c) { const b = $('fban'); if (!h) { b.hidden = true; return; } b.hidden = false; b.style.setProperty('--c', c || '#3CCB7F'); b.innerHTML = `<i>⇆</i><b>${esc(h)}</b><span>${esc(t || '')}</span>`; }
-function follow(s) { if (zoom <= 1.05) return; const st = $('stage'), svg = $('cv'), k = svg.clientWidth / 1000; const x = s.x * k - st.clientWidth / 2, y = s.y * k - st.clientHeight / 2; st.scrollTo({ left: x, top: y, behavior: 'smooth' }); }
+function follow(s) { const st0 = $('stage'); if (zoom <= 1.05 && st0.scrollHeight <= st0.clientHeight + 4 && st0.scrollWidth <= st0.clientWidth + 4) return; const st = $('stage'), svg = $('cv'), k = svg.clientWidth / 1000; const x = s.x * k - st.clientWidth / 2, y = s.y * k - st.clientHeight / 2; st.scrollTo({ left: x, top: y, behavior: 'smooth' }); }
 
 /* ---------- practise ---------- */
 const REV = 'bb-flows-rev', rev = () => { try { return JSON.parse(localStorage.getItem(REV) || '{}') || {}; } catch (e) { return {}; } }, isDue = f => { const o = rev()[f.id]; return !!o && o.due <= Date.now(); };
