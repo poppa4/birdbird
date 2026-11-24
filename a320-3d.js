@@ -22,6 +22,7 @@ const VIEWS=CF3?CF3.VIEWS:{
   ped:{c:[-0.02289,-0.07831,0],n:[-0.13,-0.99,0],up:[-1,0,0],W:0.58,H:0.886,r:[323.2,1138.2,353.7,540.2]},
   sideL:{c:[-0.22,0.08,0.95],n:[0,-0.62,0.78],up:[-1,0,0],W:0.44,H:0.40,r:[24.4,1243.9,118.1,107.3]},
   sideR:{c:[-0.22,0.08,-0.95],n:[0,-0.62,-0.78],up:[-1,0,0],W:0.44,H:0.40,r:[857.5,1243.9,118.1,107.3]}};
+if(!CF3) delete VIEWS.front.cut; /* the panels are the model's own faces now: nothing is drawn where the picture is empty, and cutting the picture's background out made holes in the glareshield's lip (the ground showed through as green slivers) */
 for(const k in VIEWS){ const v=VIEWS[k]; const n=new THREE.Vector3(...v.n).normalize(); let up=new THREE.Vector3(...v.up); up.addScaledVector(n,-up.dot(n)).normalize();
   const x=new THREE.Vector3().crossVectors(up,n.clone().negate());
   v.C=V(...v.c); v.N=V(n.x,n.y,n.z); v.EY=V(up.x,up.y,up.z); v.EX=V(x.x,x.y,x.z); v.FN=v.N.clone().negate(); }
@@ -130,7 +131,7 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=9').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=10').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
@@ -227,7 +228,7 @@ function init(o){
   /* ---- sharp panels (desktop): each panel rendered on its own at 4000 px per metre (img/cockpits/<ac>-3d-<panel>.webp) becomes a
      static texture, uploaded once; the lit legends and switch positions move to a transparent layer just in front of it, so a
      switch press repaints only that light layer. Phones and small-memory devices keep the sheet. ---- */
-  const HI=CF3?CF3.hi:{base:'img/cockpits/a320-3d-',keys:['ovh','front','ped'],v:3};
+  const HI=CF3?CF3.hi:{base:'img/cockpits/a320-3d-',keys:['ovh','front','ped'],v:4};
   let lastPainter=null;
   function loadHi(){ if(!HI||mobile||(navigator.deviceMemory&&navigator.deviceMemory<4)) return; const maxT=Math.min(o.R.capabilities.maxTextureSize||4096,phone()?4096:8192); /* phones: at most 4096 px a side (memory) */
     let chain=Promise.resolve();
@@ -251,7 +252,7 @@ function init(o){
       for(const g of hdr.groups){ const d=def.g[g.name]; if(!d||!g.nv) continue; let o=base+g.off; const P=new Float32Array(buf,o,g.nv*3); o+=g.sizes[0]; const N=new Int8Array(buf,o,g.nv*3); o+=g.sizes[1]; const C=new Uint8Array(buf,o,g.nv*3);
         const pos=new Float32Array(g.nv*3), nor=new Float32Array(g.nv*3), piv=V(...d.p);
         for(let i=0;i<g.nv;i++){ const x=P[i*3],y=P[i*3+1],z=P[i*3+2]; pos[i*3]=-z-piv.x; pos[i*3+1]=y-piv.y; pos[i*3+2]=x-piv.z; nor[i*3]=-N[i*3+2]/127; nor[i*3+1]=N[i*3+1]/127; nor[i*3+2]=N[i*3]/127; }
-        const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(pos,3)); geo.setAttribute('normal',new THREE.BufferAttribute(nor,3)); const col=new Float32Array(g.nv*3); for(let i=0;i<g.nv;i++){ const nx=nor[i*3], ny=nor[i*3+1], nz=nor[i*3+2], l=0.50+0.34*Math.max(0,ny)+0.30*Math.max(0,-nz*0.83+ny*0.55)+0.08*Math.abs(nx); for(let k=0;k<3;k++) col[i*3+k]=Math.min(1,(0.085+0.915*C[i*3+k]/255)*l); } geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+        const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(pos,3)); geo.setAttribute('normal',new THREE.BufferAttribute(nor,3)); const col=new Float32Array(g.nv*3); for(let i=0;i<g.nv;i++){ const nx=nor[i*3], ny=nor[i*3+1], nz=nor[i*3+2], l=0.50+0.34*Math.max(0,ny)+0.30*Math.max(0,-nz*0.83+ny*0.55)+0.08*Math.abs(nx); for(let k=0;k<3;k++) col[i*3+k]=Math.min(1,(0.17+0.83*C[i*3+k]/255)*(0.35+0.75*l)); } geo.setAttribute('color',new THREE.BufferAttribute(col,3));
         const m=new THREE.Mesh(geo,mat), grp=new THREE.Group(); grp.position.copy(piv); grp.add(m); scene.add(grp);
         const ax=V(...d.a).normalize(), sh=d.s?V(...d.s).normalize():null; L[g.name]={grp,ax,sh,piv,deg:null,mv:null}; } });
     const qq=new THREE.Quaternion();

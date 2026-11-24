@@ -117,6 +117,8 @@ def refine(F, emin=0.08, tol=0.10, levels=5):
             else: out.append((tri, n))
         print('  refine', lev, len(F), '->', len(out)); F = out
     return F
+PROUDSET = {r[0] for r in json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'proud.json')))['proud']}
+LEVERS = {'rev_l', 'thr_l_body', 'thr_l_button', 'rev_r', 'thr_r_body', 'thr_r_button', 'FlapsLever', 'FlapsLever_low', 'SpdBrk', 'gear_lever'}
 TAKEN = set(map(tuple, json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'taken.json')))['taken']))  # faces the panels carry (panels.py)
 for oi, o in enumerate(O):
     if o['tex'] not in TEX: continue
@@ -147,7 +149,10 @@ for oi, o in enumerate(O):
                 # only what the panel picture can show: faces turned towards its view. A face seen edge-on from there (the top of
                 # the glareshield, the sides of the panel bodies) is not in the picture at all, so it stays in the shell.
                 fn = np.cross(P[1] - P[0], P[2] - P[0]); fl = np.linalg.norm(fn)
-                if fl < 1e-12 or diag < 0.25: inside = True; break   # small parts on a panel are in its picture; structure is left out only where panels.py took it
+                # on a panel, only the parts whose picture lies flat on it are left out (the proud knobs, switches and guards of
+                # proud.json, and the levers the page draws itself). Every other face that panels.py did not take stays here: leaving
+                # all small parts out opened cracks under the glareshield and between the panels and the consoles.
+                if fl < 1e-12 or oi in PROUDSET or o['name'] in LEVERS: inside = True; break
         if inside: continue
         nrm = np.cross(P[1] - P[0], P[2] - P[0]); ln = np.linalg.norm(nrm)
         if ln < 1e-12: continue
