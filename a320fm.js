@@ -271,7 +271,7 @@ function step(M,dt,sys){
   M.conf=confIndex(M); M.flapLv=C.flapLv;
   // gear: 10 s cycle on green hydraulics
   const gUp=C.gearLv===0;
-  if(!M.gnd&&(!sys||sys.hyd.g>1500)) M.gear=toward(M.gear,gUp?0:1,0.1,dt);
+  if(!M.gnd&&(C.gearGrav||!sys||sys.hyd.g>1500)) M.gear=toward(M.gear,gUp&&!C.gearGrav?0:1,0.1,dt); // gravity extension needs no hydraulics
   M.gearUp=M.gear<0.01; M.gearDown=M.gear>0.99;
   // speed brake / ground spoilers
   const both=[0,1].map(i=>M.tla[i]<=0.5);

@@ -321,6 +321,7 @@ function air(A,dt,air){
   let rate=air.gnd?500:(air.vs>0?clamp(air.vs*0.27,300,750):clamp(air.vs*0.27,-750,-300));
   let tgt=target;
   if(flowIn<0.2||A.fail.decomp||A.fail.cabLeak){ tgt=air.alt; rate=A.fail.decomp?30000:(A.fail.cabLeak?1200:1500); }
+  if(!S.pressMode&&!air.gnd&&!A.fail.decomp){ const v=S.manVs||0; tgt=v>0?air.alt:v<0?-1000:X.cab; rate=v?1000:0; } // MAN: the pilot drives the outflow valve with the V/S CTL switch
   X.cab=toward(X.cab,tgt,Math.abs(rate)/60,dt);
   X.cab=Math.min(X.cab,Math.max(air.alt,A.env.elev||0));
   X.dp=Math.max(0,pAt(X.cab)-pAt(air.alt));

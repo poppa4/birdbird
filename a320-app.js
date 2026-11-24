@@ -98,7 +98,7 @@ function sysStep(dt){
 }
 function syncCtl(){
   const S=A.sw, C=M.ctl, I=UI.inp;
-  C.park=S.park; C.flapLv=S.flapLv; C.gearLv=S.gearLv; C.spd=S.spdBrk; C.spArm=S.spArm; C.abrk=S.abrk;
+  C.park=S.park; C.flapLv=S.flapLv; C.gearLv=S.gearLv; C.gearGrav=!!(A.misc&&A.misc.grav>=3); C.spd=S.spdBrk; C.spArm=S.spArm; C.abrk=S.abrk;
   C.tla=CF&&CF.tla?CF.tla():[UI.tla[0],UI.tla[1]];
   let sx=I.sx, sy=I.sy; if(I.stick){ sx=I.stick.x; sy=I.stick.y; } if(I.gp){ if(Math.abs(I.gp.x)>Math.abs(sx)) sx=I.gp.x; if(Math.abs(I.gp.y)>Math.abs(sy)) sy=I.gp.y; }
   C.sx=sx; C.sy=sy; C.rud=I.rud; C.tiller=I.rud*0.6+I.tiller; C.brkL=C.brkR=I.brk;
@@ -177,7 +177,8 @@ function gamepad(){ const gps=navigator.getGamepads?navigator.getGamepads():[]; 
 /* ================= sound ================= */
 let AC=null;
 function ctx(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return AC; }
-function tone(f,t0,d,v,type){ const a=ctx(); if(!a) return; const o=a.createOscillator(), g=a.createGain(); o.type=type||'sine'; o.frequency.value=f; g.gain.setValueAtTime(0,a.currentTime+t0); g.gain.linearRampToValueAtTime(v,a.currentTime+t0+0.01); g.gain.exponentialRampToValueAtTime(0.0008,a.currentTime+t0+d); o.connect(g); g.connect(a.destination); o.start(a.currentTime+t0); o.stop(a.currentTime+t0+d+0.05); }
+const spkV=()=>{ const m=!CF&&A&&A.misc; return m?Math.max(m.spk[0],m.spk[1]):1; };
+function tone(f,t0,d,v,type){ const a=ctx(); if(!a) return; v*=spkV(); if(v<=0) return; const o=a.createOscillator(), g=a.createGain(); o.type=type||'sine'; o.frequency.value=f; g.gain.setValueAtTime(0,a.currentTime+t0); g.gain.linearRampToValueAtTime(v,a.currentTime+t0+0.01); g.gain.exponentialRampToValueAtTime(0.0008,a.currentTime+t0+d); o.connect(g); g.connect(a.destination); o.start(a.currentTime+t0); o.stop(a.currentTime+t0+d+0.05); }
 function snd(k){ if(!UI.sound||!AC) return;
   if(k==='chime'){ tone(1100,0,0.9,0.09); tone(1650,0,0.9,0.04); }
   if(k==='crc'){ tone(950,0,0.18,0.08,'triangle'); tone(1300,0,0.18,0.05,'triangle'); }
@@ -194,7 +195,7 @@ function engSound(){ const a=ctx(); if(!a||EN) return; const n=a.createBuffer(1,
   src.connect(rum); rum.connect(gR); src.connect(whi); whi.connect(gW); src.connect(air); air.connect(gA); [gR,gW,gA].forEach(g=>{ g.gain.value=0; g.connect(out); }); out.connect(a.destination); src.start();
   EN={rum,whi,gR,gW,gA,out}; }
 let calls={last:1e9,done:{}}, sndT=0;
-function say2(t){ try{ if(!UI.sound||!window.speechSynthesis) return; const u=new SpeechSynthesisUtterance(t); u.rate=1.15; u.pitch=0.75; u.lang='en-GB'; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} }
+function say2(t){ try{ if(!UI.sound||!window.speechSynthesis) return; const u=new SpeechSynthesisUtterance(t); u.rate=1.15; u.pitch=0.75; u.volume=spkV(); u.lang='en-GB'; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} }
 function soundSlow(dt){ sndT+=dt; if(sndT<0.1) return; sndT=0;
   if(AC&&!EN&&UI.sound) engSound();
   if(EN){ const t=AC.currentTime, on=UI.sound&&!UI.paused&&!document.hidden, n1=(A.eng[0].n1+A.eng[1].n1)/2, n2=(A.eng[0].n2+A.eng[1].n2)/2, sp=Math.max(0,M.ias);
@@ -297,7 +298,7 @@ function defs(){
   pb('VENTILATION|EXTRACT','extract',['FAULT','a',()=>false],['OVRD','w',()=>!S_('extract')]);
   pb('VENTILATION|CAB FANS','cabFans',null,['OFF','w',()=>!S_('cabFans')]);
   mom('CARGO SMOKE|SMOKE TEST','cgoTest',null,null);
-  ann('CARGO SMOKE|FWD SMOKE',['SMOKE','r',()=>!!S_('cgoTest')],null); ann('CARGO SMOKE|AFT SMOKE',['SMOKE','r',()=>!!S_('cgoTest')],null);
+  ann('CARGO SMOKE|FWD SMOKE',['SMOKE','r',()=>!!S_('cgoTest')],['DISCH','a',()=>!!S_('cgoTest')||!!S_('cgoDF')]); ann('CARGO SMOKE|AFT SMOKE',['SMOKE','r',()=>!!S_('cgoTest')],['DISCH','a',()=>!!S_('cgoTest')||!!S_('cgoDA')]);
   // ---- CABIN PRESS / ENG MAN START / ANTI ICE ----
   pb('CABIN PRESS|PRESS MODE SEL','pressMode',['FAULT','a',()=>false],['MAN','w',()=>!S_('pressMode')],{inv:true});
   pb('CABIN PRESS|DITCHING','ditch',null,['ON','b',()=>!!S_('ditch')],{guard:true});
@@ -356,7 +357,6 @@ function defs(){
   for(const [id,v,txt] of [['LO',1,'LO'],['MED',2,'MED'],['MAX',3,'MAX']]) CT.push({id:'LDG GEAR / BRAKES|AUTO BRK '+id,t:'pb',k:null,up:['DECEL','g',()=>A.sw.abrk===v&&M.abActive&&M.accel<-1],dn:['ON','b',()=>A.sw.abrk===v],on:()=>{ A.sw.abrk=A.sw.abrk===v?0:v; }});
   pb('LDG GEAR / BRAKES|BRK FAN','brkFan',['HOT','a',()=>false],['ON','b',()=>!!S_('brkFan')]);
   tog('LDG GEAR / BRAKES|A/SKID & N/W STRG','askid',[1,0],{lab:['ON','OFF']});
-  ann('TERR ON ND CPT|TERR ON ND CPT',null,['ON','b',()=>false]);
   // ---- ECAM control panel ----
   for(const [id,k] of [['ENG','eng'],['BLEED','bleed'],['PRESS','press'],['ELEC','elec'],['HYD','hyd'],['FUEL','fuel'],['APU','apu'],['COND','cond'],['DOOR','door'],['WHEEL','wheel'],['F/CTL','fctl'],['ALL','all'],['STS','sts']])
     CT.push({id:'ECAM CONTROL|'+id,t:'key',lit:()=>A.ecam.man===k||(k==='sts'&&A.ecam.man==='sts'),on:()=>Y.ecamBtn(A,k)});
@@ -380,11 +380,116 @@ function defs(){
   act('RUD TRIM|RUD TRIM RESET',()=>{ A.sw.rudTrim=0; });
   CT.push({id:'RUD TRIM|RUD TRIM IND',t:'seg',txt:()=>A.dc?(A.sw.rudTrim===0?' 0.0':(A.sw.rudTrim<0?'L':'R')+Math.abs(A.sw.rudTrim).toFixed(1)):''});
   radioDefs();
+  miscDefs();
   // ---- MCDU keys (both) ----
   mcduKeys(0); mcduKeys(1);
   // ---- side consoles: sidestick (drag) ----
   CT.push({id:'CPT SIDE CONSOLE|SIDESTICK CPT',t:'stick'}); CT.push({id:'F/O SIDE CONSOLE|SIDESTICK F/O',t:'stick'});
-  CT.push({id:'CPT SIDE CONSOLE|TILLER CPT',t:'tiller'});
+  CT.push({id:'CPT SIDE CONSOLE|TILLER CPT',t:'tiller'}); CT.push({id:'F/O SIDE CONSOLE|TILLER F/O',t:'tiller'});
+}
+
+/* ---- everything else on the flight deck: maintenance panel, ELT, lights, calls, EVAC, recorders, clock, switching,
+   display brightness and transfer, trim wheels, cockpit door, gravity gear extension. State is kept with the aircraft (A.misc). ---- */
+function misc(){ return A.misc||(A.misc={brt:{pfd:[1,1],nd:[1,1],ewd:1,sd:1},xfr:[0,0],ecamNd:1,attHdg:1,airData:1,eisDmc:1,audio:1,spk:[1,1],lt:{},
+  chrono:[0,1].map(()=>({on:0,run:0,t0:0,acc:0})),clock:{chr:{on:0,run:0,t0:0,acc:0},et:{on:0,run:0,t0:0,acc:0},etSw:1,date:0,src:0},
+  grav:0,evac:0,horn:1,evacSw:0,emerCall:0,elt:0,aftIsol:1,doorVid:1,doorT:0,dl:{on:0,i:0,sel:-1}}); }
+function miscDefs(){
+  const m=misc, R=(c,t)=>{ c.say=t; };
+  const btn=(id,txt,fn,o)=>{ const c=Object.assign({id,t:'act',on:()=>{ const r=fn&&fn(); R(c,r||txt); },info:()=>txt},o||{}); CT.push(c); return c; };
+  const lamp=(id,up,dn,txt)=>CT.push({id,t:'ann',up,dn,info:()=>txt});
+  /* a rotary light or volume control: scroll / drag to set, click = full or off */
+  const dial=(id,name,get,set,o)=>{ const c={id,t:'knob',ang:()=>-135+270*get(),turn:d=>set(clamp(+(get()+Math.sign(d)*(Math.abs(d)>=10?0.5:0.1)).toFixed(2),0,1)),pull:()=>set(get()>=1?0:1),push:()=>set(get()>0?0:1),
+    tip:()=>name+': '+(get()<=0?'OFF':get()>=1?(o&&o.max||'BRT'):Math.round(get()*100)+' %')}; CT.push(c); };
+  const lt=(id,k,name,def,o)=>dial(id,name,()=>{ const v=m().lt[k]; return v==null?def:v; },v=>{ m().lt[k]=v; },o);
+  const pbL=(id,k,up,dn,txt,o)=>CT.push(Object.assign({id,t:'pb',k,up,dn,info:()=>txt()},o||{}));
+  // ---- maintenance panel (aft overhead) ----
+  btn('MAINTENANCE|CVR HEADSET','CVR headset jack: listen to the cockpit voice recorder during its test');
+  pbL('MAINTENANCE|OXY TMR RESET',null,['FAULT','a',()=>false],['ON','w',()=>false],()=>'Oxygen timer reset: re-arms the passenger mask door latches after a deployment (maintenance)',{on:()=>{ if(A.sw.paxOxy){ A.sw.paxOxy=0; say('Passenger oxygen system reset'); } }});
+  pbL('MAINTENANCE|SVCE INT OVRD','svceInt',null,['ON','w',()=>!!S_('svceInt')],()=>'Service interphone override '+(S_('svceInt')?'ON: the ground jacks are live with the gear up':'OFF'));
+  pbL('MAINTENANCE|AVNCS COMPT LT','avLt',null,['ON','w',()=>!!S_('avLt')],()=>'Avionics compartment light '+(S_('avLt')?'ON':'AUTO (on with the compartment door open)'));
+  pbL('MAINTENANCE|BLUE PUMP OVRD','blueOvrd',null,['ON','w',()=>!!S_('blueOvrd')],()=>'Blue pump override '+(S_('blueOvrd')?'ON: the blue electric pump runs on the ground with the engines stopped':'OFF'),{guard:true});
+  for(const x of ['G','B','Y']) pbL('MAINTENANCE|LEAK MEAS '+x,'leak'+x,null,['OFF','w',()=>!!S_('leak'+x)],()=>'Leak measurement valve '+({G:'green',B:'blue',Y:'yellow'})[x]+': '+(S_('leak'+x)?'OFF (closed, for a ground leak check)':'open'),{guard:true});
+  for(const n of [1,2]) pbL('MAINTENANCE|FADEC GND PWR '+n,'fadecG'+n,null,['ON','w',()=>!!S_('fadecG'+n)],()=>'FADEC '+n+' ground power '+(S_('fadecG'+n)?'ON: FADEC powered with the engine stopped (maintenance)':'OFF'),{guard:true});
+  pbL('MAINTENANCE|APU AUTO EXTING TEST','apuExT',null,['ON','w',()=>!!S_('apuExT')],()=>'APU auto extinguishing test '+(S_('apuExT')?'ON: the ground circuit is being tested, press RESET after':'OFF'));
+  btn('MAINTENANCE|APU AUTO EXTING RESET','APU auto extinguishing: test circuit reset',()=>{ A.sw.apuExT=0; });
+  // ---- ELT ----
+  CT.push({id:'ELT|ELT',t:'tog',k:null,vals:[0,1],lab:['ARMED','ON: transmitting on 121.5 and 406 MHz'],get:()=>m().elt,set:v=>{ m().elt=v; if(v) say('ELT ON: emergency locator transmitting','warn'); }});
+  btn('ELT|ELT TEST/RESET','ELT test / reset',()=>{ if(m().elt){ m().elt=0; return 'ELT reset: back to ARMED'; } return 'ELT self-test: OK'; });
+  // ---- lights and loudspeakers ----
+  lt('READING LT L|READING LT L','readL','Reading light, captain',0); lt('READING LT R|READING LT R','readR','Reading light, first officer',0);
+  lt('INT LT|OVHD INTEG LT','ovhdInteg','Overhead panel integral lighting',0.6);
+  lt('GLARESHIELD LT|GLARESHIELD INTEG LT','glInteg','Glareshield integral lighting',0.6); lt('GLARESHIELD LT|FCU DISPLAY BRT','fcuBrt','FCU display brightness',1);
+  lt('TABLE LT CPT|TABLE LT CPT','tblC','Table light, captain',0); lt('TABLE LT F/O|TABLE LT F/O','tblF','Table light, first officer',0);
+  lt('FLOOD / INTEG LT|FLOOD LT MAIN PNL','fldMain','Flood light, main panel',0); lt('FLOOD / INTEG LT|INTEG LT MAIN PNL & PED','intMain','Integral lighting, main panel and pedestal',0.6);
+  lt('FLOOD LT PED / AIDS / DFDR|FLOOD LT PED','fldPed','Flood light, pedestal',0);
+  ['CPT','F/O'].forEach((sd,i)=>{ const who=i?'first officer':'captain';
+    dial((i?'F/O':'CPT')+' LIGHTING|PFD BRT '+sd,'PFD brightness, '+who,()=>m().brt.pfd[i],v=>{ m().brt.pfd[i]=v; });
+    dial((i?'F/O':'CPT')+' LIGHTING|ND BRT '+sd,'ND brightness, '+who,()=>m().brt.nd[i],v=>{ m().brt.nd[i]=v; });
+    dial((i?'F/O':'CPT')+' LIGHTING|LOUDSPEAKER '+sd,'Loudspeaker, '+who,()=>m().spk[i],v=>{ m().spk[i]=v; },{max:'MAX'});
+    btn((i?'F/O':'CPT')+' LIGHTING|PFD/ND XFR '+sd,'PFD / ND transfer',()=>{ m().xfr[i]=m().xfr[i]?0:1; for(const d of DISP) d.t=99; return 'PFD / ND transfer, '+who+': '+(m().xfr[i]?'the two displays have changed places':'normal'); });
+    CT.push({id:(i?'F/O':'CPT')+' LIGHTING|CONSOLE/FLOOR LT '+sd,t:'tog',k:null,vals:[2,1,0],lab:['BRT','DIM','OFF'],get:()=>{ const v=m().lt['con'+i]; return v==null?0:v; },set:v=>{ m().lt['con'+i]=v; }});
+    /* glareshield: chrono (runs on the ND), sidestick priority lights, ATC MSG */
+    btn((i?'F/O':'CPT')+' GLARESHIELD|CHRONO '+sd,'Chrono: start, stop, clear (shown on the ND)',()=>{ const w=m().chrono[i]; if(!w.on){ w.on=1; w.run=1; w.t0=UI.t; w.acc=0; return 'Chrono started (lower left of the ND)'; } if(w.run){ w.acc=swT(w); w.run=0; return 'Chrono stopped at '+mmss(w.acc); } w.on=0; return 'Chrono cleared'; });
+    lamp((i?'F/O':'CPT')+' GLARESHIELD|SIDE STICK PRIORITY '+sd,[i?'▶':'◀','r',()=>false],[i?'F/O':'CAPT','g',()=>false],'Sidestick priority lights: red arrow = the other stick has taken priority, green = this side has priority. One pilot here, so they stay dark.');
+    lamp('ATC MSG '+sd+'|ATC MSG '+sd,['ATC','a',()=>false],['MSG','a',()=>false],'ATC MSG: flashes when a datalink message from ATC arrives. No datalink ATC in the trainer yet.');
+    pbL('TERR ON ND '+sd+'|TERR ON ND '+sd,'terr'+i,null,['ON','g',()=>!!S_('terr'+i)],()=>'Terrain on ND, '+who+': '+(S_('terr'+i)?'ON':'OFF')+' (no terrain picture in the trainer yet)');
+    btn('WIPER '+sd+'|RAIN RPLNT '+sd,'Rain repellent',()=>M.gnd&&!A.eng[0].run&&!A.eng[1].run?'Rain repellent: inhibited on the ground with the engines stopped':'Rain repellent: one measured application on the '+who+"'s windshield");
+  });
+  CT.push({id:'ECAM CONTROL|UPPER DISPLAY',t:'knob',ang:()=>-135+270*m().brt.ewd,turn:d=>{ m().brt.ewd=clamp(+(m().brt.ewd+Math.sign(d)*0.1).toFixed(2),0,1); },pull:()=>{ m().brt.ewd=m().brt.ewd>=1?0:1; },push:()=>{ m().brt.ewd=m().brt.ewd>0?0:1; },tip:()=>'Upper ECAM display: '+(m().brt.ewd<=0?'OFF, the E/WD moves to the lower display':Math.round(m().brt.ewd*100)+' %')});
+  dial('ECAM CONTROL|LOWER DISPLAY','Lower ECAM display',()=>m().brt.sd,v=>{ m().brt.sd=v; });
+  // ---- switching panel ----
+  const sw3=(id,k,what)=>CT.push({id:'SWITCHING|'+id,t:'selF',pos:['CAPT 3','NORM','F/O 3'],ang:[-38,0,38],get:()=>m()[k],set:v=>{ m()[k]=v; for(const d of DISP) d.t=99; },info:()=>id+': '+['CAPT 3','NORM','F/O 3'][m()[k]]+'  ·  '+what});
+  sw3('ATT HDG','attHdg','IR 3 replaces IR 1 (captain) or IR 2 (first officer)'); sw3('AIR DATA','airData','ADR 3 replaces ADR 1 (captain) or ADR 2 (first officer)'); sw3('EIS DMC','eisDmc','DMC 3 drives the displays of that side');
+  CT.push({id:'SWITCHING|ECAM/ND XFR',t:'selF',pos:['CAPT','NORM','F/O'],ang:[-38,0,38],get:()=>m().ecamNd,set:v=>{ m().ecamNd=v; for(const d of DISP) d.t=99; },info:()=>'ECAM/ND XFR: '+['CAPT: the system display is on the captain\'s ND','NORM','F/O: the system display is on the first officer\'s ND'][m().ecamNd]});
+  CT.push({id:'PEDESTAL LT / AUDIO SWITCHING|AUDIO SWITCHING',t:'selF',pos:['CAPT 3','NORM','F/O 3'],ang:[-38,0,38],get:()=>m().audio,set:v=>{ m().audio=v; },info:()=>'Audio switching: '+['CAPT 3: the captain uses the third audio panel','NORM','F/O 3: the first officer uses the third audio panel'][m().audio]});
+  lamp('PEDESTAL LT / AUDIO SWITCHING|TOILET',['OCCPD','g',()=>false],null,'Toilet occupied light (forward lavatory)');
+  lamp('PA / DOOR VIDEO|PA',['IN USE','g',()=>com().acp.some(q=>q.tx==='PA')],null,'PA in use: lit while a passenger address is keyed on an audio panel');
+  pbL('PA / DOOR VIDEO|COCKPIT DOOR VIDEO',null,null,['OFF','w',()=>!m().doorVid],()=>'Cockpit door video: '+(m().doorVid?'ON':'OFF'),{on:()=>{ m().doorVid=m().doorVid?0:1; }});
+  // ---- data loading selector ----
+  const DL=['FMGC 1','FMGC 2','ATSU','EGPWS','SDAC 1','DMC 1'], dl=()=>m().dl;
+  CT.push({id:'DATA LOADING SELECTOR|DATA LOADER DISPLAY',t:'seg',txt:()=>A.dc&&dl().on?(dl().sel===dl().i?'*':'')+DL[dl().i]:''});
+  CT.push({id:'DATA LOADING SELECTOR|DATA LOADER ON/OFF',t:'tog',k:null,vals:[1,0],lab:['ON','OFF'],get:()=>dl().on,set:v=>{ dl().on=v; dl().sel=-1; }});
+  for(const [k,d] of [['NEXT',1],['PREV',-1]]) btn('DATA LOADING SELECTOR|DATA LOADER '+k,'Data loader: '+k.toLowerCase()+' system',()=>{ if(!dl().on) return 'Data loader is OFF'; dl().i=(dl().i+d+DL.length)%DL.length; return 'Data loader: '+DL[dl().i]; });
+  btn('DATA LOADING SELECTOR|DATA LOADER SEL','Data loader: select the system shown',()=>{ if(!dl().on) return 'Data loader is OFF'; dl().sel=dl().sel===dl().i?-1:dl().i; return dl().sel<0?'Data loader: selection cancelled':DL[dl().i]+' connected to the data loader (ground use only)'; });
+  // ---- EVAC, emergency generator test, cargo, recorders, calls ----
+  pbL('EVAC|EVAC COMMAND',null,['EVAC','r',()=>!!m().evac&&UI.t%1<0.5],['ON','w',()=>!!m().evac],()=>'EVAC command: '+(m().evac?'ON, evacuation signal in the cabin'+(m().horn?' and cockpit horn':''):'OFF'),{guard:true,on:()=>{ m().evac=m().evac?0:1; m().horn=1; if(m().evac){ say('EVAC command ON','warn'); snd('cav'); } }});
+  btn('EVAC|HORN SHUT OFF','EVAC horn shut off',()=>{ m().horn=0; return m().evac?'Cockpit EVAC horn silenced':'EVAC horn shut off (no evacuation signal active)'; });
+  CT.push({id:'EVAC|CAPT & PURS',t:'tog',k:null,vals:[0,1],lab:['CAPT & PURS: the cabin can also start the signal','CAPT: only the cockpit can start the signal'],get:()=>m().evacSw,set:v=>{ m().evacSw=v; }});
+  mom('EMER ELEC PWR|EMER GEN TEST',null,null,null,{guard:true,down:()=>say('EMER GEN TEST: held on the ground, the emergency generator is checked on blue hydraulic pressure'),info:()=>'Emergency generator test (guarded, ground check)'});
+  pbL('CARGO VENT|AFT ISOL VALVE',null,['FAULT','a',()=>false],['OFF','w',()=>!m().aftIsol],()=>'Aft cargo isolation valves: '+(m().aftIsol?'open (ventilation on)':'OFF: valves closed, extraction fan stopped'),{on:()=>{ m().aftIsol=m().aftIsol?0:1; }});
+  pbL('RCDR|RCDR GND CTL','rcdrGnd',null,['ON','b',()=>!!S_('rcdrGnd')],()=>'Recorder ground control: '+(S_('rcdrGnd')?'ON, CVR and DFDR run on the ground':'AUTO (they run from the first engine start)'));
+  btn('RCDR|CVR ERASE','CVR erase',()=>M.gnd&&A.sw.park?'CVR erased':'CVR ERASE works only on the ground with the parking brake on');
+  btn('RCDR|CVR TEST','CVR test',()=>{ if(!(S_('rcdrGnd')||A.eng[0].run||A.eng[1].run)) return 'CVR TEST: set RCDR GND CTL to ON first'; if(!A.sw.park) return 'CVR TEST: parking brake must be on'; snd('chime'); return 'CVR test: tone heard, recorder OK'; });
+  mom('CARGO SMOKE|FWD DISCH','cgoDF',null,null,{guard:true,latch:true,down:()=>say('Forward cargo: extinguishing agent discharged'),info:()=>'Forward cargo agent discharge (guarded)'+(S_('cgoDF')?': discharged':'')});
+  mom('CARGO SMOKE|AFT DISCH','cgoDA',null,null,{guard:true,latch:true,down:()=>say('Aft cargo: extinguishing agent discharged'),info:()=>'Aft cargo agent discharge (guarded)'+(S_('cgoDA')?': discharged':'')});
+  for(const [k,t] of [['MECH','the ground mechanic (horn at the nose gear)'],['ALL','all cabin stations'],['FWD','the forward cabin station'],['AFT','the aft cabin station']]) btn('CALLS|'+k,'Call '+t,()=>{ snd('chime'); return 'Calling '+t; });
+  pbL('CALLS|EMER',null,['CALL','a',()=>!!m().emerCall&&UI.t%1<0.5],['ON','w',()=>!!m().emerCall],()=>'Emergency call to the cabin: '+(m().emerCall?'ON':'OFF'),{guard:true,on:()=>{ m().emerCall=m().emerCall?0:1; if(m().emerCall){ snd('chime'); say('EMER CALL: all cabin stations'); } }});
+  CT.push({id:'CABIN PRESS|MAN V/S CTL',t:'tog',k:'manVs',vals:[1,0,-1],lab:['UP: outflow valve opens, cabin climbs','neutral','DN: outflow valve closes, cabin descends'],get:()=>A.sw.manVs||0,set:v=>{ A.sw.manVs=v; if(v&&A.sw.pressMode) say('MAN V/S CTL works with MODE SEL in MAN'); }});
+  // ---- clock ----
+  const ck=()=>m().clock, p2=n=>String(n).padStart(2,'0');
+  CT.push({id:'CLOCK|CHR DISPLAY',t:'seg',rect:[587.6,956,20,7.6],txt:()=>A.dc&&ck().chr.on?mmss(swT(ck().chr)):''});
+  CT.push({id:'CLOCK|UTC DISPLAY',t:'seg',rect:[583.2,968,29.2,7.6],txt:()=>{ if(!A.dc) return ''; const d=new Date(); return ck().date?p2(d.getUTCDate())+' '+p2(d.getUTCMonth()+1)+' '+p2(d.getUTCFullYear()%100):p2(d.getUTCHours())+':'+p2(d.getUTCMinutes())+':'+p2(d.getUTCSeconds()); }});
+  CT.push({id:'CLOCK|ET DISPLAY',t:'seg',rect:[587.6,980,20,8],txt:()=>{ if(!A.dc||!ck().et.on) return ''; const t=Math.floor(swT(ck().et)/60); return p2(Math.floor(t/60)%100)+':'+p2(t%60); }});
+  btn('CLOCK|CLOCK CHR','Chronometer: start / stop',()=>{ const w=ck().chr; if(!w.on){ w.on=1; w.run=1; w.t0=UI.t; w.acc=0; return 'Chronometer started'; } if(w.run){ w.acc=swT(w); w.run=0; return 'Chronometer stopped at '+mmss(w.acc); } w.run=1; w.t0=UI.t; return 'Chronometer running again'; });
+  btn('CLOCK|CLOCK RST','Chronometer reset',()=>{ const w=ck().chr; w.on=0; w.run=0; w.acc=0; return 'Chronometer reset'; });
+  btn('CLOCK|CLOCK DATE/SET','Date / time',()=>{ ck().date=ck().date?0:1; return ck().date?'Date shown (day, month, year)':'UTC time shown'; });
+  CT.push({id:'CLOCK|CLOCK UTC SEL',t:'tog',k:null,vals:[0,1,2],lab:['GPS: time from the GPS','INT: internal clock','SET: time is set with the DATE knob'],get:()=>ck().src,set:v=>{ ck().src=v; }});
+  CT.push({id:'CLOCK|CLOCK ET SEL',t:'tog',k:null,vals:[0,1,2],lab:['RUN: elapsed time counting','STP: elapsed time stopped','RST: elapsed time reset'],get:()=>ck().etSw,set:v=>{ const w=ck().et;
+    if(v===0){ if(!w.run){ w.on=1; w.run=1; w.t0=UI.t; } ck().etSw=0; } else { if(w.run){ w.acc=swT(w); w.run=0; } if(v===2){ w.on=0; w.acc=0; } ck().etSw=1; } }});
+  // ---- pedestal: AIDS, DFDR, printer, cockpit door, brake gauge, trim wheels, gravity extension ----
+  btn('FLOOD LT PED / AIDS / DFDR|AIDS PRINT','AIDS print',()=>'AIDS: report of the present parameters sent to the printer');
+  btn('FLOOD LT PED / AIDS / DFDR|DFDR EVENT','DFDR event',()=>'Event mark set on the flight data recorder');
+  btn('PRINTER|PRINTER','Printer (AIDS reports and datalink messages)',()=>'Printer: nothing waiting to be printed');
+  const door=()=>UI.t<m().doorT;
+  lamp('COCKPIT DOOR|DOOR OPEN/FAULT',['OPEN','w',()=>door()],['FAULT','a',()=>false],'Cockpit door: OPEN is lit while the door is unlocked');
+  CT.push({id:'COCKPIT DOOR|DOOR LOCK',t:'tog',k:null,vals:[2,1,0],lab:['UNLOCK','NORM','LOCK'],get:()=>1,set:function(v){ if(v===2){ m().doorT=UI.t+20; this.say='Cockpit door UNLOCK: door released for 20 s'; } else if(v===0){ m().doorT=0; this.say='Cockpit door LOCK: door locked, the cabin keypad is inhibited'; } }});
+  btn('COCKPIT DOOR|DOOR VIDEO','Cockpit door video',()=>m().doorVid?'Door camera picture shown on the lower ECAM display in the aircraft (no camera in the trainer)':'Cockpit door video is OFF (overhead panel)');
+  CT.push({id:'BRAKE PRESS|BRAKE PRESS',t:'ann',up:null,dn:null,info:()=>{ const p=A.sw.park&&A.brk.acc>500?Math.min(2100,Math.round(A.brk.acc/100)*100):0; return 'Accumulator '+Math.round(A.brk.acc/100)*100+' psi  ·  brakes L '+p+' / R '+p+' psi (yellow system: parking and alternate braking)'; }});
+  for(const sd of ['L','R']){ const mv=d=>{ if(!M.gnd) return; M.ctl.ths=clamp(+((M.ctl.ths||0)+d).toFixed(2),-4,13.5); };
+    CT.push({id:'THRUST LEVERS|PITCH TRIM WHEEL '+sd,t:'knob',turn:d=>mv(d*0.1),pull:()=>mv(-0.5),push:()=>mv(0.5),
+      tip:()=>{ const t=M.gnd?(M.ctl.ths||0):(M.ths||0); return 'Pitch trim '+(t>=0?'UP ':'DN ')+Math.abs(t).toFixed(1)+'°'+(M.gnd?'  ·  scroll or drag, click top = nose down, bottom = nose up':'  ·  automatic in flight (normal law), the wheel follows'); }}); }
+  btn('GRAVITY GEAR EXTN|GRAVITY GEAR EXTN','Gravity gear extension: three turns clockwise',()=>{ const x=m(); if(x.grav>=3){ x.grav=0; return 'Gravity extension handle stowed: the gear follows the lever again'; } x.grav++; if(x.grav<3) return 'Gravity gear extension: turn '+x.grav+' of 3';
+    say('Gravity extension: gear doors and uplocks released, gear falls and locks down'); return 'Gravity gear extension: 3 of 3, the gear free-falls (no nose wheel steering, doors stay open)'; });
 }
 /* ---- radios, audio, transponder / TCAS and weather radar (pedestal, and the third audio panel on the overhead).
    There is no ATC to talk to yet: the panels work as in the aircraft (tuning, transfer, transmit and reception selection,
@@ -621,12 +726,25 @@ const DISP=CF?CF.DISP:[
   {id:'ND F/O',k:'nd',side:1,hz:15},{id:'PFD F/O',k:'pfd',side:1,hz:15},{id:'STANDBY (ISIS)',k:'isis',hz:15},
   {id:'MCDU 1',k:'mcdu',side:0,hz:0,rect:null},{id:'MCDU 2',k:'mcdu',side:1,hz:0,rect:null}];
 (function(){ if(CF) return; for(const d of DISP){ if(d.k==='mcdu'){ const r=(window.A320T||[]).find(t=>t[0]===d.id); if(r) d.rect=[r[1]+14.6,r[2]+5.2,58.5,58.5]; } } })();
-const drawD=(d,D)=>((CF&&CF.draw&&CF.draw[d.k])||DSP[d.k])(d.g,d.cv,D);
-function dispData(d){
+/* what a display unit shows and how bright: PFD/ND XFR, ECAM/ND XFR, the automatic move of the E/WD to the lower unit when the
+   upper one is switched off, the brightness knobs and the glareshield chrono (shown on the ND) */
+function effD(d){ const m=!CF&&A.misc; if(!m) return d; let k=d.k; const s=d.side||0;
+  if((k==='pfd'||k==='nd')&&m.xfr[s]) k=k==='pfd'?'nd':'pfd';
+  if(d.k==='nd'&&m.ecamNd===(s?2:0)) k='sd';
+  if(d.k==='sd'&&m.brt.ewd<=0) k='ewd';
+  if(k===d.k) return d; const e=Object.create(d); e.k=k; return e; }
+function brtD(d){ const m=!CF&&A.misc; if(!m) return 1; const s=d.side||0; return d.k==='pfd'?m.brt.pfd[s]:d.k==='nd'?m.brt.nd[s]:d.k==='ewd'?m.brt.ewd:d.k==='sd'?m.brt.sd:1; }
+const mmss=t=>{ t=Math.max(0,Math.floor(t)); return String(Math.floor(t/60)%100).padStart(2,'0')+':'+String(t%60).padStart(2,'0'); };
+const swT=w=>w.acc+(w.run?UI.t-w.t0:0);
+const drawD=(d,D)=>{ const e=effD(d); ((CF&&CF.draw&&CF.draw[e.k])||DSP[e.k])(d.g,d.cv,D); const m=!CF&&A.misc; if(!m) return; const g=d.g, cv=d.cv, b=brtD(d);
+  if(e.k==='nd'&&m.chrono[d.side||0].on&&b>0){ const w=m.chrono[d.side||0], W=cv.width, H=cv.height, f=W*0.05, t=mmss(swT(w)); g.save(); g.setTransform(1,0,0,1,0,0); g.font='600 '+f.toFixed(1)+'px "IBM Plex Mono",monospace'; g.textAlign='left'; g.textBaseline='middle';
+    g.fillStyle='#000'; g.fillRect(W*0.025,H*0.845-f*0.7,f*3.5,f*1.4); g.fillStyle='#fff'; g.fillText(t,W*0.04,H*0.845); g.restore(); }
+  if(b<1){ g.save(); g.setTransform(1,0,0,1,0,0); g.globalAlpha=b<=0?1:(1-b)*0.8; g.fillStyle='#000'; g.fillRect(0,0,cv.width,cv.height); g.restore(); } };
+function dispData(d){ d=effD(d);
   if(CF&&CF.dispData){ const r=CF.dispData(d,X); if(r) return r; }
   const ap=M.ap, sp=M.spds||{}, side=d.side||0, E=side?UI.efis2:UI.efis;
-  const ir=A.irs[side?1:0], irOK=ir.st===2, attOK=ir.st===2||ir.st===3;
-  const adrOK=A.sw['adr'+(side?2:1)]&&(A.bus.acEss||A.bus.ac1||A.bus.ac2||A.bus.dcBat);
+  const sw3=k=>!CF&&A.misc&&A.misc[k]===(side?2:0); const ir=A.irs[sw3('attHdg')?2:side?1:0], irOK=ir.st===2, attOK=ir.st===2||ir.st===3;
+  const adrOK=A.sw['adr'+(sw3('airData')?3:side?2:1)]&&(A.bus.acEss||A.bus.ac1||A.bus.ac2||A.bus.dcBat);
   const qnhAdj=E.std?0:(E.qnh-1013.25)*27.3, alt=M.h/FT+qnhAdj-(E.std?0:0);
   const hdg=w360(M.psi*R2D), trk=w360((M.gnd?M.psi:M.trk||M.chi)*R2D);
   const pwr=side?(A.bus.ac2||A.bus.acEss):(A.bus.acEss);
@@ -766,7 +884,7 @@ function clampPan(){ const w=SHEET.W*Z.s, h=SHEET.H*Z.s; Z.tx=clamp(Z.tx,Math.mi
 function hit(wx,wy){
   for(const side of [0,1]){ const r=RECT[CDU_ID[side]]; if(r&&wx>=r[1]&&wx<=r[1]+r[3]&&wy>=r[2]&&wy<=r[2]+r[4]) return MCDU_HIT[side]; }
   let best=null, ba=1e9;
-  for(const c of CT){ const r=c.r; if(!r) continue; const pad=c.t==='mkey'?0.4:1.2; if(wx<r[0]-pad||wx>r[0]+r[2]+pad||wy<r[1]-pad||wy>r[1]+r[3]+pad) continue; if(c.t==='ann'&&!c.click) continue; if(c.t==='seg'||c.t==='fcu'||c.t==='gearInd') continue; const a=r[2]*r[3]; if(a<ba){ ba=a; best=c; } }
+  for(const c of CT){ const r=c.r; if(!r) continue; const pad=c.t==='mkey'?0.4:1.2; if(wx<r[0]-pad||wx>r[0]+r[2]+pad||wy<r[1]-pad||wy>r[1]+r[3]+pad) continue; if(c.t==='ann'&&!c.click&&!c.info) continue; if(c.t==='seg'||c.t==='fcu'||c.t==='gearInd') continue; const a=r[2]*r[3]; if(a<ba){ ba=a; best=c; } }
   return best; }
 const ptrs=new Map(); let drag=null, pinch=null;
 function pickW(e){ if(!D3) return toWorld(e.clientX,e.clientY); if(!CK) return [-1,-1]; const b=ST.getBoundingClientRect(); return CK.pick(((e.clientX-b.left)/b.width)*2-1,-(((e.clientY-b.top)/b.height)*2-1))||[-1,-1]; }
@@ -827,7 +945,7 @@ function press(c,wx,wy,e){
   switch(c.t){
     case 'pb': if(!guardOK(c)) break; if(c.on) c.on(); else if(c.once){ A.sw[c.k]=1; } else A.sw[c.k]=A.sw[c.k]?0:1; tip(c); break;
     case 'mom': if(!guardOK(c)) break; if(c.down) c.down(); if(c.k){ if(c.latch) A.sw[c.k]=1; else A.sw[c.k]=1; } break;
-    case 'ann': if(c.click) c.click(); break;
+    case 'ann': if(c.click) c.click(); else if(c.info) tip(c); break;
     case 'act': c.on(); tip(c); break;
     case 'bar': c.on(); tip(c); break;
     case 'key': c.on(); break;
@@ -880,6 +998,7 @@ function lever(c,fy){
 const TIP=$('tip'); let tipT=0;
 function tipText(c){ const n=c.id.split('|')[1];
   if(c.say){ const t=c.say; c.say=null; return t; }
+  if(c.info) return c.info();
   if(c.t==='sel') return n+': '+c.pos[A.sw[c.k]];
   if(c.t==='selF') return n+': '+c.pos[c.get()];
   if(c.t==='tog'){ const v=c.get?c.get():A.sw[c.k]; return n+': '+(c.lab?c.lab[c.vals.indexOf(v)]:v); }
@@ -1197,5 +1316,5 @@ if(CF&&CF.init) CF.init(X);
 reset(UI.start);
 defs(); buildOverlay(); layout(true);
 requestAnimationFrame(frame);
-window.__a320={get CK(){ return CK; },get A(){ return A; },get M(){ return M; },get K(){ return K; },reset,view,UI,GOV,X,fast(sec){ for(let i=0;i<sec*20;i++) simTick(0.05); }};
+window.__a320={get CK(){ return CK; },get A(){ return A; },get M(){ return M; },get K(){ return K; },reset,view,UI,GOV,X,DISP,effD,dispData,fast(sec){ for(let i=0;i<sec*20;i++) simTick(0.05); }};
 })();
