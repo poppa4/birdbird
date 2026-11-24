@@ -672,6 +672,14 @@ D3.relabel=function(){ if(!bar) return; const T=o.T||(s=>s); bar.setAttribute('a
 
 /* ---------- input ---------- */
 const ptrs=new Map(); let drag=null, pinch=null, stickDrag=null;
+/* zoom to z keeping what is under a screen point under it: the view turns toward the point as it closes in (and back as it
+   opens out), so scrolling or pinching on a switch goes to that switch, not to the middle of the screen */
+function zoomAbout(z,cx,cy){ const r=stage.getBoundingClientRect(), nx=(cx-r.left)/Math.max(1,r.width)*2-1, ny=-((cy-r.top)/Math.max(1,r.height)*2-1), asp=W/Math.max(1,H);
+  updCam(); const d=rayAt(cx,cy).direction.clone(); view.zoom=z; clampV();
+  for(let i=0;i<3;i++){ updCam(); const t=Math.tan(fov()*D2R/2), q=d.clone().applyQuaternion(cam.quaternion.clone().invert()); if(q.z>-1e-3) break;
+    view.yaw+=(Math.atan(-q.x/q.z)-Math.atan(nx*t*asp))/D2R; view.pitch+=(Math.atan(-q.y/q.z)-Math.atan(ny*t))/D2R; clampV(); }
+  view.glide=null; view.vy=view.vp=0; needs=2; }
+D3.zoomAbout=zoomAbout;
 function hitGrab(list,e){ if(!list.length) return null; const rr=rayAt(e.clientX,e.clientY); ray.ray.copy(rr); return ray.intersectObjects(list,true).find(h=>tmp.subVectors(h.point,PO).dot(PN)<0.002)||null; }
 function startStick(e){ stickDrag={x:e.clientX,y:e.clientY,id:e.pointerId,pt:e.pointerType}; try{ stage.setPointerCapture(e.pointerId); }catch(_){} o.onStick({x:0,y:0}); }
 function bindInput(){
@@ -681,6 +689,16 @@ function bindInput(){
     if(fgGrabs.length&&o.onStick&&!e.target.closest('.ctop,.more,.d3v,.d3t,.pill,.tz,.zback,.tpad,button,a,select')){ const h=hitGrab(fgGrabs,e); if(h){ e.stopPropagation(); e.preventDefault(); startStick(e); return; } }
     const t=e.target.closest&&e.target.closest('.d3sub'); if(t&&D3.subs){ for(const p of D3.subs) if(p.el===t) activePl=p; }
   },true);
+  /* two fingers anywhere pinch, also when they land on switches (a panel seen close up is all switches): every touch is
+     tracked here, and the second one down starts the pinch whatever is under it */
+  const tch=new Map();
+  stage.addEventListener('pointerdown',e=>{ if(!D3.on||e.pointerType==='mouse'||stickDrag) return; if(e.target.closest&&e.target.closest('.ctop,.more,.d3v,.d3t,.pill,.tpad,.drawer')) return;
+    tch.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(tch.size===2){ const [a,b]=[...tch.values()]; pinch={d:Math.max(20,Math.hypot(a.x-b.x,a.y-b.y)),z:view.zoom,any:true}; drag=null; view.glide=null; view.vy=view.vp=0; D3.dragging=true; D3.pinchT=performance.now(); } },true);
+  stage.addEventListener('pointermove',e=>{ const p=tch.get(e.pointerId); if(!p) return; p.x=e.clientX; p.y=e.clientY;
+    if(pinch&&pinch.any&&tch.size>=2){ const [a,b]=[...tch.values()]; const d=Math.max(20,Math.hypot(a.x-b.x,a.y-b.y)); zoomAbout(pinch.z*pinch.d/d,(a.x+b.x)/2,(a.y+b.y)/2); D3.pinchT=performance.now(); } },{capture:true,passive:true});
+  const tup=e=>{ if(!tch.delete(e.pointerId)) return; if(tch.size<2&&pinch&&pinch.any){ pinch=null; D3.pinchT=performance.now(); if(!ptrs.size){ D3.dragging=false; } needs=2; } };
+  stage.addEventListener('pointerup',tup,{capture:true,passive:true}); stage.addEventListener('pointercancel',tup,{capture:true,passive:true});
   stage.addEventListener('pointerdown',e=>{
     if(!D3.on||e.button>0||stickDrag) return;
     if(o.canLook&&!o.canLook(e)) return;
@@ -688,13 +706,15 @@ function bindInput(){
     if(hit&&o.onStick){ startStick(e); e.preventDefault(); return; }
     ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
     try{ stage.setPointerCapture(e.pointerId); }catch(_){}
+    if(pinch&&pinch.any){ drag=null; return; }
     if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z:view.zoom}; drag=null; D3.dragging=true; return; }
     drag={x:e.clientX,y:e.clientY,t:performance.now(),moved:0}; view.glide=null; view.vy=view.vp=0; D3.dragging=true;
   });
   stage.addEventListener('pointermove',e=>{
     if(stickDrag&&e.pointerId===stickDrag.id){ const dx=e.clientX-stickDrag.x, dy=e.clientY-stickDrag.y; o.onStick(G.FK?G.FK.shapeDrag(dx,dy,stickDrag.pt):{x:Math.max(-1,Math.min(1,dx/90)),y:Math.max(-1,Math.min(1,dy/80))}); return; } // shared mouse/touch curve (flightkeys.js)
     if(!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    if(pinch&&ptrs.size>=2){ const [a,b]=[...ptrs.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); view.zoom=pinch.z*pinch.d/Math.max(20,d); clampV(); needs=2; return; }
+    if(pinch&&pinch.any) return;
+    if(pinch&&ptrs.size>=2){ const [a,b]=[...ptrs.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); zoomAbout(pinch.z*pinch.d/Math.max(20,d),(a.x+b.x)/2,(a.y+b.y)/2); return; }
     if(!drag) return; const now=performance.now(), dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag.moved+=Math.abs(dx)+Math.abs(dy);
     const k=fov()/Math.max(1,H); // degrees per pixel
     view.yaw-=dx*k; view.pitch+=dy*k; clampV(); if(drag.moved>6&&snapK) setSnap(null);
@@ -705,13 +725,22 @@ function bindInput(){
     activePl=null;
     if(stickDrag&&e.pointerId===stickDrag.id){ stickDrag=null; o.onStick(null); return; }
     if(!ptrs.has(e.pointerId)) return; ptrs.delete(e.pointerId);
-    if(ptrs.size<2) pinch=null;
-    if(ptrs.size===0){ if(drag&&performance.now()-drag.t>150){ view.vy=view.vp=0; } drag=null; D3.dragging=false; needs=2; }
+    if(ptrs.size<2&&!(pinch&&pinch.any)) pinch=null;
+    if(ptrs.size===0&&!(pinch&&pinch.any)){ if(drag&&drag.moved<8&&o.onTap) tapAt(e); if(drag&&performance.now()-drag.t>150){ view.vy=view.vp=0; } drag=null; D3.dragging=false; needs=2; }
   };
   stage.addEventListener('pointerup',up,{passive:true}); stage.addEventListener('pointercancel',up,{passive:true});
   // wheel zoom only where a wheel exists (a blocking wheel listener costs every repaint); none at all on phones
-  const wheel=e=>{ if(!D3.on) return; if(o.canLook&&!o.canLook(e)) return; e.preventDefault();
-    const d=(e.deltaMode?e.deltaY*40:e.deltaY)*(e.ctrlKey?3:1); view.zoom*=Math.exp(d*0.0012); view.glide=null; clampV(); setSnap(null); needs=2; };
+  /* the wheel zooms about the pointer wherever it is, except over what the wheel turns itself (o.canWheel: knobs, trim wheels,
+     the map display); pages without that test keep the old rule (bare panel only) */
+  const wheel=e=>{ if(!D3.on) return; if(o.canWheel?!o.canWheel(e):(o.canLook&&!o.canLook(e))) return; e.preventDefault();
+    const d=(e.deltaMode?e.deltaY*40:e.deltaY)*(e.ctrlKey?3:1); zoomAbout(view.zoom*Math.exp(d*0.0012),e.clientX,e.clientY); setSnap(null); };
+  /* two quick taps / a double click on bare panel (o.onTap pages): close in on that spot, or back to the whole cockpit */
+  let lastTap=null;
+  function tapAt(e){ const t=performance.now(), l=lastTap; lastTap={t,x:e.clientX,y:e.clientY};
+    if(!l||t-l.t>380||Math.hypot(e.clientX-l.x,e.clientY-l.y)>36||t-(D3.pinchT||0)<400) return; lastTap=null;
+    if(view.zoom<0.8){ D3.lookAhead(); if(o.onAhead) o.onAhead(); return; }
+    const r=stage.getBoundingClientRect(), nx=(e.clientX-r.left)/Math.max(1,r.width)*2-1, ny=-((e.clientY-r.top)/Math.max(1,r.height)*2-1), asp=W/Math.max(1,H), t0=Math.tan(fov()*D2R/2);
+    glideTo(view.yaw+Math.atan(nx*t0*asp)/D2R,view.pitch+Math.atan(ny*t0)/D2R,0.5); setSnap(null); if(o.onTap) o.onTap(); }
   const mq=matchMedia('(any-pointer:fine)'); let won=false; const ws=()=>{ const on=mq.matches; if(on===won) return; won=on; if(on) stage.addEventListener('wheel',wheel,{passive:false}); else stage.removeEventListener('wheel',wheel,{passive:false}); };
   ws(); if(mq.addEventListener) mq.addEventListener('change',ws); else if(mq.addListener) mq.addListener(ws);
   addEventListener('keyup',e=>{ const k=lookKey(e); if(k) keysHeld.delete(k); },{passive:true});

@@ -339,8 +339,8 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="da42procs.js?v=5"></script>
 <script src="ownck.js?v=5"></script>
 <script src="otw.js?v=17"></script>
-<script src="panelzoom.js?v=6"></script>
-<script src="cockpit3d.js?v=9"></script>
+<script src="panelzoom.js?v=7"></script>
+<script src="cockpit3d.js?v=10"></script>
 <script src="da42-3d.js?v=7"></script>
 <script src="lab.js?v=62"></script>
 <script src="simshell.js?v=11"></script>
@@ -596,10 +596,10 @@ const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'
 const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
 function areaHL(k){ if(!k||Z.reg!=='overview'){ hlO(0); return; } if(hlR._k!==k){ hlR._k=k; const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); } hlO(1); }
 const emptyAt=e=>!e.target.closest('g.ctl,.hit,.gdu button,.gdu .kn,.zback,.tz,.pill,.mag,.tip');
-PST.addEventListener('pointermove',e=>{ if(Z.reg!=='overview'||e.pointerType==='touch'||(D3on&&D3.dragging)) return; if(!emptyAt(e)){ areaHL(null); return; } areaHL(regionAt(toWorld(e))); });
+PST.addEventListener('pointermove',e=>{ if(D3on||Z.reg!=='overview'||e.pointerType==='touch') return; if(!emptyAt(e)){ areaHL(null); return; } areaHL(regionAt(toWorld(e))); });
 PST.addEventListener('pointerleave',()=>areaHL(null));
 /* single click / tap on an instrument area looks at it, a click outside goes back; pinch zooms (panelzoom.js, shared) */
-if(window.PANELZOOM) PANELZOOM.attach({stage:PST,world:P.world,size:()=>[P.W,P.H],Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,d3:()=>D3on?D3:null,
+if(window.PANELZOOM) PANELZOOM.attach({stage:PST,world:P.world,size:()=>[P.W,P.H],Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,d3:()=>D3on?D3:null,d3click:false,
   off:'.zback,.more,.pill,.tip,.touch,.rot,.d3t,.d3v,.otwmsg,.afban,.gdu .bcolw,button,select,a,input'});
 function inReg(p,k){ const r=P.REG[k]; return p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]; }
 el('zBack').onclick=()=>zoomTo('overview');
@@ -708,7 +708,7 @@ function d3Toast(){ if(PST.querySelector('.d3t')) return; const t=document.creat
   t.innerHTML=`<span>${T('3D is running slowly on this device.')} <a href="cockpit.html">${T('Try the classic 2D panel')}</a></span><button aria-label="Close">×</button>`; t.querySelector('button').onclick=()=>t.remove(); PST.appendChild(t); setTimeout(()=>t.remove(),12000); }
 setTimeout(()=>{
   if(D3&&D3.supported()){ try{ otwReady=OTW.init(el('otw')); }catch(e){ otwReady=false; } }
-  if(otwReady){ try{ D3on=D3.init({io:IO,stage:PST,world:P.world,svg:P.svg,T,canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v')&&!SH.touchOwns(e),onStick:v=>{ inp.stick=v; },onScale:s=>{ Z.s=s; sizeScreens(); },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
+  if(otwReady){ try{ D3on=D3.init({io:IO,stage:PST,world:P.world,svg:P.svg,T,onTap:()=>{ Z.reg='overview'; },canWheel:e=>!e.target.closest('.hit.hitw,g.ctl.t-rot,g.ctl.t-rotsel,g.ctl.t-vwheel,g.ctl.t-hwheel,g.ctl.t-power,g.ctl.t-flap,g.ctl.t-slide,g.ctl.t-fsel,.gdu .kn,#mfd,.more,.d3t,.d3v,.ctop,.pill,.tip,.drawer'),canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v')&&!SH.touchOwns(e),onStick:v=>{ inp.stick=v; },onScale:s=>{ Z.s=s; sizeScreens(); },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
   if(D3on){ Z.lock=false; Z.reg='overview'; IO.toWorld=e=>D3.toWorld(e); setOtw(true); el('bOtw').hidden=true; el('bAhead').hidden=false; D3.lookAhead(true); Z.s=D3.scale(); sizeScreens(); syncAreaUI(); LAB.onLang(()=>D3.relabel()); }
   else { el('otwMsg').textContent=T('3D needs WebGL, which this browser does not offer. Showing the classic panel.'); el('otwMsg').hidden=false; if(!otwReady) setOtw(false); }
   PST.classList.remove('d3wait'); zoomTo(Z.reg,true,true);

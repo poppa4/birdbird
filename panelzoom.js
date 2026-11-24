@@ -39,7 +39,7 @@ function attach(o){ // o:{stage, Z, zoomTo, regionAt, toWorld, regs:()=>REG, emp
     st.addEventListener('pointerdown',e=>{ pdn={x:e.clientX,y:e.clientY,t:now(),ok:o.emptyAt(e)&&!e.target.closest(OFF)}; },true);
     st.addEventListener('click',e=>{ const d=pdn; pdn=null;
       if(!d||!d.ok||e.button>0||Math.hypot(e.clientX-d.x,e.clientY-d.y)>8||now()-d.t>700||blocked()) return;
-      if(!o.emptyAt(e)||e.target.closest(OFF)) return; const D=d3(); if(D&&D.on&&D.dragging) return;
+      if(!o.emptyAt(e)||e.target.closest(OFF)) return; const D=d3(); if(D&&D.on&&(D.dragging||o.d3click===false)) return; // d3click:false: the 3D view zooms freely instead (cockpit3d.js)
       if(api.tap(e)) return;
       const p=o.toWorld(e), cur=Z.reg, R=o.regs(); let to=null;
       if(cur==='overview') to=o.regionAt(p);
