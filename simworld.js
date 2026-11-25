@@ -26,19 +26,40 @@ function datum(Ee,Ne){
 function start(){
   if(started) return; started=true;
   const R=OTW.renderer&&OTW.renderer(); if(!R||!R.capabilities.isWebGL2||!OTW.scene) return;
+  // the generic world is never shown: hidden at once, a loading screen over the view until Torp is there
+  const old=OTW.scene().children.filter(o=>o.isMesh||o.isPoints||o.isGroup||o.isInstancedMesh); old.forEach(o=>o.visible=false);
+  const ov=loading(R.domElement);
+  const fail=e=>{ console.warn('simworld: ENTO world not loaded',e); old.forEach(o=>o.visible=true); ov.done(); };
   W.load(new URL('world/ento/',BASE).href).then(()=>{
     const scene=OTW.scene(), cam=OTW.camera(), a=W.airport.rwy;
     U=a.u; V=[U[1],-U[0]]; bear=Math.atan2(U[0],U[1]); prof=a.profile; e35=a.elev35;
     qY=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),-bear); _v=new THREE.Vector3();
-    const old=scene.children.slice(); W.attach(scene);
-    for(const o of old) if(o.isMesh||o.isPoints||o.isGroup||o.isInstancedMesh) o.visible=false;
+    W.attach(scene);
     scene.fog=null; cam.far=250000; cam.updateProjectionMatrix();
     W.tod(OTW.tod()==='dusk'?'dusk':OTW.tod()==='night'?'night':'day');
     // the flight model sees the real terrain, over the runway datum
     if(G.TERRAIN){ const orig=G.TERRAIN.height; G.TERRAIN.height=(N,E)=>{ const p=toEnto(N,E), h=W.height(p[0],p[1]); return isFinite(h)?h-datum(p[0],p[1]):orig(N,E); }; }
     W.quality((OTW.lvl||0)===2?'low':(OTW.lvl||0)?'med':'high');
     ready=true; SW.ready=true; mapStart();
-  }).catch(e=>{ console.warn('simworld: ENTO world not loaded',e); });
+    Promise.race([W.full,new Promise(r=>setTimeout(r,20000))]).then(()=>setTimeout(()=>ov.done(),400));   // the sharp terrain is in
+  }).catch(fail);
+}
+/* loading screen over the outside view (and the 3D cockpit, which shares the canvas) while Torp loads */
+function loading(cv){
+  const no=(G.LAB&&G.LAB.lang==='no')||/^n[bno]/i.test(document.documentElement.lang||'');
+  const d=document.createElement('div'); d.setAttribute('role','status');
+  d.style.cssText='position:absolute;z-index:25;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;'+
+    'background:radial-gradient(ellipse at 50% 40%,#1b2a3a 0,#0b1118 70%);color:#e8eef5;font:600 15px/1.3 system-ui,-apple-system,sans-serif;text-align:center;transition:opacity .45s';
+  d.innerHTML='<div style="font:800 22px/1 system-ui,-apple-system,sans-serif;letter-spacing:.12em">NORDAP</div>'+
+    '<div>'+(no?'Simulatoren laster':'Simulator loading')+'</div><div style="font-weight:500;opacity:.75;font-size:13px">Sandefjord lufthavn Torp · ENTO</div>'+
+    '<div style="width:220px;height:4px;border-radius:2px;background:#26323f;overflow:hidden"><i style="display:block;height:100%;width:8%;background:#4da3ff;transition:width .4s"></i></div>'+
+    '<div style="font-weight:500;opacity:.6;font-size:12px" data-s></div>';
+  const bar=d.querySelector('i'), st=d.querySelector('[data-s]');
+  const place=()=>{ d.style.left=cv.offsetLeft+'px'; d.style.top=cv.offsetTop+'px'; d.style.width=cv.offsetWidth+'px'; d.style.height=cv.offsetHeight+'px'; };
+  cv.insertAdjacentElement('afterend',d); place(); let ro=null; if(G.ResizeObserver){ ro=new ResizeObserver(place); ro.observe(cv); }
+  const steps=[['far',no?'Terreng':'Terrain',35],['mid',no?'Landskap':'Landscape',65],['near',no?'Flyplassen i detalj':'The airport in detail',95]];
+  const tick=setInterval(()=>{ let w=8, t=no?'Høydedata fra Kartverket':'Kartverket elevation data'; for(const [k,lab,p] of steps){ if(W.loaded&&W.loaded[k]){ w=p; t=lab+' ✓'; } } bar.style.width=w+'%'; st.textContent=t; place(); },250);
+  return {done(){ clearInterval(tick); bar.style.width='100%'; d.style.opacity='0'; setTimeout(()=>{ d.remove(); ro&&ro.disconnect(); },500); }};
 }
 /* called by otw.js once the camera is placed in the simulator frame: move it into the ENTO frame, update the world */
 OTW.xf=function(cam,S,eye){

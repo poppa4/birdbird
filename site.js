@@ -19,6 +19,17 @@
   /* Training hub: one sub-nav, same order everywhere */
   const TRG0=[['training.html','Overview'],{g:'Simulators',items:[['cockpit.html','DA42','da42-3d.html'],['b200.html','King Air B200','b200-3d.html'],['a320.html','Airbus A320','a320-3d.html']]},['ifr.html','IFR trainer'],['mcdu.html','MCDU trainer'],['briefing.html','Briefing'],{g:'Radio',items:[['radio-drills.html','Radio drills'],['radio.html','Gate to gate']]},{g:'Type rating and checks',items:[['typerating.html','Type rating'],['simcheck.html','A320 sim assessment'],['checkride.html','Check preparation']]}];
   const TRN=[['training.html','Overview'],['cockpit.html','DA42'],['b200.html','King Air B200'],['a320.html','Airbus A320'],['ifr.html','IFR trainer'],['mcdu.html','MCDU trainer'],['briefing.html','Briefing'],['radio-drills.html','Radio drills'],['radio.html','Gate to gate'],['typerating.html','Type rating'],['simcheck.html','A320 sim assessment'],['checkride.html','Check preparation']];
+  /* temporarily hidden simulators (owner's decision, Nov 2026): out of the menus, the aircraft selectors and every link or card;
+     opening their pages goes to the training overview (?show=1 still opens them). Empty this list to bring them back. */
+  const HIDDEN_SIMS=['b200.html','b200-3d.html'];
+  TRG0.forEach(g=>{ if(g&&g.items) g.items=g.items.filter(x=>!HIDDEN_SIMS.includes(x[0])); });
+  for(let i=TRN.length-1;i>=0;i--) if(HIDDEN_SIMS.includes(TRN[i][0])) TRN.splice(i,1);
+  if(HIDDEN_SIMS.includes(page)&&!/[?&]show=1/.test(location.search)) location.replace('training.html');
+  { const base=u=>(u||'').split(/[?#]/)[0].split('/').pop();
+    const sweep=root=>{ if(!root.querySelectorAll) return; const L=[...root.querySelectorAll('a[href],option[value]')]; if(root.matches&&root.matches('a[href],option[value]')) L.push(root); L.forEach(el=>{ if(!HIDDEN_SIMS.includes(base(el.getAttribute(el.tagName==='OPTION'?'value':'href')))) return;
+      if(el.tagName==='OPTION'){ el.remove(); return; } const card=el.closest('article,li,.sy,.tile,.card,[class*="tile"]'); (card||el).hidden=true; (card||el).style.display='none'; }); };
+    const go=()=>{ sweep(document); new MutationObserver(ms=>{ for(const m of ms) m.addedNodes.forEach(n=>{ if(n.nodeType===1) sweep(n); }); }).observe(document.body,{childList:true,subtree:true}); };
+    if(document.body) go(); else document.addEventListener('DOMContentLoaded',go); }
   const checkMode=page==='fi.html'&&/[?&]mode=check/.test(location.search);
   /* Preflight: the briefing pack and Route Explorer under one roof, with the same kind of sub-nav as the Training hub */
   const PLG=[['preflight.html','Overview'],['prep.html','Briefing pack'],['route.html','Route Explorer'],['weather.html','Weather'],['aerodrome.html','Aerodrome and AIP'],{g:'Tools',items:[['planning.html','Navigation log'],['sheets.html','Kneeboard sheets'],['essentials.html','VFR and IFR essentials']]}];
