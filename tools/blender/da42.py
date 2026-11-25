@@ -111,7 +111,7 @@ def canopy(z, a):
 
 
 MATS = {
-    'trim':      dict(color=(0.76, 0.74, 0.70), rough=0.65, tex='plastic', tile=0.15, nstr=0.6),
+    'trim':      dict(color=(0.66, 0.67, 0.68), rough=0.65, tex='plastic', tile=0.15, nstr=0.6),
     'trim_dark': dict(color=(0.58, 0.57, 0.54), rough=0.7, tex='plastic', tile=0.15, nstr=0.6),
     'frame':     dict(color=(0.84, 0.83, 0.80), rough=0.5, tex='plastic', tile=0.15, nstr=0.3),
     'glareshield': dict(color=(0.022, 0.024, 0.027), rough=0.95, tex='leather', tile=0.18, nstr=0.8),
@@ -120,7 +120,7 @@ MATS = {
     'carpet':    dict(color=(0.20, 0.20, 0.21), rough=0.97, tex='carpet', tile=0.25, nstr=1.0),
     'well':      dict(color=(0.10, 0.10, 0.11), rough=0.9, tex='carpet', tile=0.25, nstr=0.6),
     'leather':   dict(color=(0.20, 0.22, 0.25), rough=0.5, tex='leather', tile=0.12, nstr=0.55),
-    'leather_cream': dict(color=(0.62, 0.57, 0.47), rough=0.6, tex='leather', tile=0.12, nstr=0.5),
+    'leather_cream': dict(color=(0.44, 0.45, 0.47), rough=0.6, tex='leather', tile=0.12, nstr=0.5),
     'leather_dark': dict(color=(0.12, 0.12, 0.13), rough=0.55, tex='leather', tile=0.12, nstr=0.5),
     'seat_shell': dict(color=(0.70, 0.69, 0.66), rough=0.45),
     'alu':       dict(color=(0.62, 0.63, 0.65), rough=0.42, metal=0.55, tex='metal', tile=0.2, nstr=0),
@@ -136,6 +136,7 @@ MATS = {
     'white':     dict(color=(0.88, 0.88, 0.86), rough=0.35),
     'pedal':     dict(color=(0.16, 0.17, 0.18), rough=0.5, metal=0.4),
     'liner':     dict(color=(0.20, 0.21, 0.23), rough=0.92, tex='fabric', tile=0.12, nstr=0.6),   # canopy frame lining
+    'stitch':    dict(color=(0.62, 0.63, 0.65), rough=0.8),
     'strap':     dict(color=(0.30, 0.32, 0.36), rough=0.9, tex='fabric', tile=0.12, nstr=0.8),
     'skin':      dict(color=(0.95, 0.95, 0.94), rough=0.3, ao=False),
     'skin_under': dict(color=(0.84, 0.84, 0.83), rough=0.45, ao=False),
@@ -184,11 +185,34 @@ def fz(z):
     return cw(z) / WW
 
 
+ZW = [ZF + 0.02 + i / 96 * (ZR - ZF - 0.04) for i in range(97)]   # wall stations: fine enough for the pocket and armrest to form
+
+
+def wall_sec(sd, z):
+    """one cross-section of the side wall (reference photos of the type): carpet kick panel, a moulded panel that stands proud
+    of the wall to make the map pocket, the padded armrest, and the leather roll under the canopy sill"""
+    f = fz(z); p = sstep(0, 1, (z + 0.52) / 0.10) * (1 - sstep(0, 1, (z - 0.30) / 0.10)); a = sstep(0, 1, (z + 0.24) / 0.09) * (1 - sstep(0, 1, (z - 0.38) / 0.09))
+    P = [(0.590, YF), (0.600, -0.95), (0.606, -0.84),                                                   # 0-2 carpet
+         (0.606 - 0.022 * p, -0.80), (0.606 - 0.038 * p, -0.75), (0.606 - 0.043 * p, -0.68), (0.606 - 0.042 * p, -0.635), (0.606 - 0.039 * p, -0.619), (0.606 - 0.033 * p, -0.612),   # 3-8 pocket front, lip
+         (0.606 - 0.027 * p, -0.612 - 0.010 * p), (0.606 - 0.025 * p, -0.612 - 0.075 * p), (0.606 - 0.003 * p, -0.612 - 0.075 * p), (0.606, -0.598),   # 9-12 inside the pocket
+         (0.605, -0.555), (0.603 - 0.004 * a, -0.508), (0.601 - 0.046 * a, -0.494),                      # 13-15 wall, underside of the armrest
+         (0.600 - 0.070 * a, -0.486), (0.599 - 0.079 * a, -0.470), (0.599 - 0.076 * a, -0.452), (0.598 - 0.064 * a, -0.441), (0.597 - 0.014 * a, -0.437),   # 16-20 armrest pad
+         (0.595, -0.424), (0.593, -0.392),                                                               # 21-22 upper panel
+         (0.588, -0.378), (0.573, -0.366), (0.565, -0.351), (0.567, -0.339), (0.578, -0.332), (0.592, YS)]   # 23-28 sill roll
+    return [v3(sd * x * f, y, z) for x, y in P]
+
+
 def side_walls(g, cab):
     for sd in (-1, 1):
-        low = [[v3(sd * WALL[k][0] * fz(z), WALL[k][1], z) for k in range(0, 4)] for z in ZS]
-        up = [[v3(sd * WALL[k][0] * fz(z), WALL[k][1], z) for k in range(3, 7)] for z in ZS]
-        loft(g, low, 'carpet', toward=cab); loft(g, up, 'trim', toward=cab)
+        S_ = [wall_sec(sd, z) for z in ZW]
+        for i0, i1, mat in ((0, 2, 'carpet'), (2, 8, 'trim'), (8, 12, 'well'), (12, 15, 'trim'), (15, 20, 'leather_dark'), (20, 22, 'trim'), (22, 28, 'leather_dark')):
+            loft(g, [q[i0:i1 + 1] for q in S_], mat, toward=v3(sd * 6, -0.7, 0.0) if mat == 'well' else cab)   # the pocket's skin faces into the pocket
+        # stitching along the sill roll and round the armrest pad: short threads, a little proud of the leather
+        for k, zs in ((25, np.arange(-1.05, 1.55, 0.011)), (18, np.arange(-0.13, 0.30, 0.011))):
+            for z in zs:
+                q0 = wall_sec(sd, z)[k]; q1 = wall_sec(sd, z + 0.0065)[k]; o = v3(-sd * 0.0012, 0.0006, 0)
+                if k == 18 and q0[0] * sd > 0.535: continue
+                tube(g, [q0 + o, q1 + o], 0.0008, 'stitch', sides=3, caps=False)
         # canopy frame: flush with the wall, up the inside of the glass, back to the glass
         fr = []
         for z in ZS:
@@ -196,9 +220,6 @@ def side_walls(g, cab):
             fr.append([v3(sd * (w - 0.028), YS, z), v3(sd * (w - 0.028), YS + 0.022, z), v3(sd * (w - 0.028), YS + 0.046, z),
                        v3(sd * (w - 0.0255), YS + 0.058, z), v3(sd * (w - 0.018), YS + 0.066, z), v3(top[0] - sd * 0.006, YS + FRAME_H, z), v3(top[0], YS + FRAME_H, z)])
         loft(g, fr, 'frame', toward=cab)
-        # armrest on the wall beside each front seat, and a slim map pocket below it
-        rbox(g, (0.070, 0.036, 0.58), (0.014, 0.014, 0.05), 'leather_dark', m=T(sd * 0.571, -0.452, 0.10), seg=4, flat=(2, 1, 6))
-        prism(g, [(0, 0), (0.0, -0.018), (-0.040, -0.075), (-0.040, -0.018)], 0.50, 'trim_dark', m=M(T(sd * 0.606, -0.452, 0.10), S(sd, 1, 1)))
     # canopy lock lever on the left frame
     rbox(g, (0.008, 0.034, 0.15), 0.003, 'black', m=T(-0.588, YS + 0.030, -0.12), seg=2, flat=1)
     rbox(g, (0.016, 0.024, 0.105), (0.006, 0.008, 0.012), 'red', m=T(-0.578, YS + 0.032, -0.135), seg=3, flat=(1, 1, 3))
