@@ -23,7 +23,7 @@ const P0=160;                                    // finest patch size (m) -> 10 
 const NLEV=11;                                   // quadtree levels: root = 160*2^10 = 163.84 km
 const ROOT={E:0, N:1000, S:P0*Math.pow(2,NLEV-1)};
 const MAXI=2400;
-const DATA_V=14;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
+const DATA_V=15;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
 const V=f=>f+'?v='+DATA_V;
 
 /* ---------- loading ---------- */
@@ -277,9 +277,12 @@ void main(){
   vec3 alb=texture2D(tAF,uF).rgb; vec4 nrm=texture2D(tNF,uvOf(extF,EN)); float wat=texture2D(tWF,uF).r; float fr=0.0, pv=0.0;
   float km=onM*inside(extM,EN,1500.0), kn=onN*inside(extN,EN,350.0);
   if(km>0.0){ alb=mix(alb,texture2D(tAM,uM).rgb,km); nrm=mix(nrm,texture2D(tNM,uvOf(extM,EN)),km); wat=mix(wat,texture2D(tWM,uM).r,km); }
-  if(kn>0.0){ vec3 w3=texture2D(tWN,uN).rgb; vec3 an=texture2D(tAN,uN).rgb; vec3 ab=texture2D(tAN,uN,1.0).rgb;
+  float rA=0.0, rG=0.0;
+  if(kn>0.0){ vec4 w4=texture2D(tWN,uN); vec3 w3=w4.rgb;
+    float sA=(w4.a*255.0-128.0)*0.1, sG=(w4.b*255.0-128.0)*0.1;        // NVDB road edges, signed metres
+    rA=smoothstep(-1.0,1.0,sA/max(fwidth(sA)*0.75,0.08))*kn; rG=smoothstep(-1.0,1.0,sG/max(fwidth(sG)*0.75,0.08))*kn; vec3 an=texture2D(tAN,uN).rgb; vec3 ab=texture2D(tAN,uN,1.0).rgb;
     an=clamp(an+(an-ab)*0.22,0.0,1.0);                  // unsharp mask: the 10 m satellite colours read crisper up close
-    alb=mix(alb,an,kn); nrm=mix(nrm,texture2D(tNN,uvOf(extN,EN)),kn); wat=mix(wat,w3.r,kn); fr=w3.g*kn; pv=w3.b*kn; }
+    alb=mix(alb,an,kn); nrm=mix(nrm,texture2D(tNN,uvOf(extN,EN)),kn); wat=mix(wat,w3.r,kn); fr=w3.g*kn*(1.0-max(rA,rG)); pv=max(rA,rG); }
   float nearT=1.0-smoothstep(treeR*0.72,treeR,distance(EN,vec2(camW.x,-camW.z)));
   vec2 nxz=mix(nrm.rg,nrm.ba,nearT)*2.0-1.0;
   vec3 N=vec3(nxz.x,0.0,nxz.y); N.y=sqrt(max(0.0,1.0-N.x*N.x-N.z*N.z)); N=normalize(N);
@@ -309,6 +312,11 @@ void main(){
     float ov=clamp(1.0-fr-wat-pv,0.0,1.0)*dk;
     if(matOn>0.5){ float lg=texture2D(tML,EN/2.0).b, lg2=texture2D(tML,EN/7.3+0.37).b; c*=mix(1.0,(0.55+0.9*lg)*(0.8+0.4*lg2),ov*(1.0-smoothstep(150.0,900.0,dist))); }
     c*=mix(vec3(1.0),mix(vec3(1.06,1.02,0.86),vec3(0.90,1.0,1.06),d2.g),0.55*ov);
+  }
+  if(rA+rG>0.0){                                        // roads: asphalt and gravel, a little tone from the detail map
+    vec4 dr=texture2D(tDet,EN/3.1);
+    vec3 asp=lin(vec3(0.215,0.22,0.225))*(0.88+0.24*dr.b), grv=lin(vec3(0.50,0.46,0.39))*(0.85+0.3*dr.r);
+    c=mix(c,grv,rG*0.92); c=mix(c,asp,rA*0.95);
   }
   // airport pavement (signed distance field) and taxiway centrelines
   float paved=0.0; vec3 pc=vec3(0.0);

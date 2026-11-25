@@ -13,3 +13,7 @@ Builds `world/ento/` for `world.js`. Run from a working folder (raw downloads ar
    `633116.pdf`, georeferenced on the runway pavement ends), taxiway/apron distance field, buildings.
 
 After changing anything in `world/ento/`, bump `DATA_V` in `world.js` and the `world.js?v=` on the pages that load it.
+
+Roads: `nvdb_fetch.py` pulls the road network (NVDB API Les v4, Statens vegvesen, NLOD:
+"Inneholder data under norsk lisens for offentlige data (NLOD) tilgjengeliggjort av Statens vegvesen")
+and `roads.py` writes it as signed distance fields into near_w.png (B = gravel, A = paved). Run roads.py after pack.near_long().
