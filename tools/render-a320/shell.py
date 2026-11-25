@@ -192,7 +192,7 @@ if not NEO: POSTS.append(post((0, 0.45, -0.865), (0, 0.88, -0.41)))
 # beam, each a box of flat plates. Every part of the model that runs along a header as a beam (cut at 12 stations: present in
 # most of them, between 12 mm and 20 cm across) is replaced by one rounded loft of its own size and colour. ----
 OFOa = np.array(OFO); DIAGALL = [float(np.linalg.norm(np.ptp(np.asarray(o['v'], float).reshape(-1, 3), 0))) if len(o['v']) else 0.0 for o in O]
-def header(p0, p1, R=0.17, NR=24):
+def header(p0, p1, R=0.17, NR=24, tend=1.05):
     p0, p1 = np.array(p0, float), np.array(p1, float); a = p1 - p0; Lh = np.linalg.norm(a); a /= Lh; mid = (p0 + p1) / 2
     v = np.array([0.0, 0.70, 0.40]) - mid; v -= (v @ a) * a; v /= np.linalg.norm(v); u = np.cross(a, v); per = collections.defaultdict(list)
     for t in np.linspace(0.10, 0.90, 12):
@@ -209,13 +209,13 @@ def header(p0, p1, R=0.17, NR=24):
         w_ = np.median(rows[:, 2] - rows[:, 1]); h_ = np.median(rows[:, 4] - rows[:, 3])
         if min(w_, h_) < 0.012 or max(w_, h_) > 0.20: continue                      # a sheet passing by, or a wall: not a beam
         fit = [np.polyfit(rows[:, 0], rows[:, k], 1) for k in range(1, 5)]; rings = []
-        for t in np.linspace(-0.05, 1.05, 12):
-            u0, u1, v0, v1 = (np.polyval(f, t) for f in fit)   # no padding: a fatter beam covered the lowest row of the overhead panel
+        for t in np.linspace(-0.05, tend, 12 if tend < 1.1 else 18):   # tend > 1: the beam runs on, at its end size, to the wall behind it
+            u0, u1, v0, v1 = (np.polyval(f, min(t, 1.0)) for f in fit)   # no padding: a fatter beam covered the lowest row of the overhead panel
             cu, cv, hw, hh = (u0 + u1) / 2, (v0 + v1) / 2, (u1 - u0) / 2, (v1 - v0) / 2; r = min(0.42 * min(hw, hh), 0.016); ring = []
             for k in range(NR):
                 th = 2 * np.pi * k / NR; cx, sx = np.cos(th), np.sin(th); ring.append(p0 + a * Lh * t + u * (cu + np.sign(cx) * (hw - r) + r * cx) + v * (cv + np.sign(sx) * (hh - r) + r * sx))
             rings.append(ring)
-        b = dict(p0=p0, a=a, L=Lh, u=u, v=v, fit=fit, rings=rings, obj=oi)
+        b = dict(p0=p0, a=a, L=Lh, u=u, v=v, fit=fit, rings=rings, obj=oi, tend=tend)
         # the part's colour: the median of its texture over the faces that the loft replaces
         o = O[oi]; vv = np.asarray(o['v'], float).reshape(-1, 3); cols = []
         for mat, idx, uvs, flags in o['faces']:
@@ -231,13 +231,15 @@ HEADS = []
 # (not the beam over the windshield: its section is slanted, and the rounded box around it reached over the lowest row of the
 # overhead panel; the model's own beam is kept there)
 for p0, p1 in [] if NEO else (((-0.77, 0.88, 0.0), (-0.99, 0.88, 0.36)), ((-0.99, 0.88, 0.36), (-1.0, 0.88, 0.95))):
-    HEADS += header(p0, p1); HEADS += header((-p0[0],) + p0[1:], (-p1[0],) + p1[1:])
+    # the beam over the aft side window stopped in mid-air behind the window with a square end; it now runs back into the rear wall
+    te = 1.05 if p0[2] < 0.1 else 1.56
+    HEADS += header(p0, p1, tend=te); HEADS += header((-p0[0],) + p0[1:], (-p1[0],) + p1[1:], tend=te)
 def in_post(pt, oi=None):   # pt in the page's frame
     for b in HEADS:
         if b['obj'] != oi: continue
         d = pt - b['p0']; t = (d @ b['a']) / b['L']
-        if t < -0.12 or t > 1.12: continue   # a little past the ends: the old beam's end cap stuck out of the new one as a spike
-        u0, u1, v0, v1 = (np.polyval(f, t) for f in b['fit']); pu, pv = d @ b['u'], d @ b['v']
+        if t < -0.12 or t > max(1.12, b['tend'] + 0.07): continue   # a little past the ends: the old beam's end cap stuck out of the new one as a spike
+        u0, u1, v0, v1 = (np.polyval(f, min(t, 1.0)) for f in b['fit']); pu, pv = d @ b['u'], d @ b['v']
         if u0 - 0.035 < pu < u1 + 0.035 and v0 - 0.035 < pv < v1 + 0.035: return True
     for b in POSTS:
         d = pt - b['p0']; t = (d @ b['a']) / b['L']

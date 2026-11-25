@@ -139,6 +139,12 @@ function init(o){
     /* the wall behind the aft side windows, at window height: the model is open there between the window's rear edge and the
        rear wall, and the outside showed in the corner above the seats */
     for(const sg of [-1,1]) q4(v3(sg*X2,wS-0.14,0.66),v3(sg*X2,wS-0.14,zB),v3(sg*X2,wT0+0.10,zB),v3(sg*X2,wT0+0.10,0.66));
+    /* and a clean lining panel in the plane of the window posts, from the aft window's rear edge to the rear wall: the model's
+       own wall starts there as loose slanted pieces further out, which showed as fins under the beam */
+    for(const sg of [-1,1]) q4(v3(sg*1.005,0.91,0.64),v3(sg*1.005,0.91,1.29),v3(sg*1.355,0.36,1.29),v3(sg*1.355,0.36,0.64));
+    /* its front edge is the aft window's rear frame: a lighter band, a hand wide, standing 12 mm proud of the panel */
+    { const fp=[], fm=new THREE.MeshBasicMaterial({color:0x93a0b2,side:THREE.DoubleSide}); for(const sg of [-1,1]){ const a=v3(sg*0.993,0.91,0.605), b=v3(sg*0.993,0.91,0.675), c=v3(sg*1.343,0.36,0.675), d=v3(sg*1.343,0.36,0.605); fp.push(a,b,c,a,c,d); }
+      const fg=new THREE.BufferGeometry(), fa=new Float32Array(fp.length*3); fp.forEach((v,i)=>{ fa[i*3]=v.x; fa[i*3+1]=v.y; fa[i*3+2]=v.z; }); fg.setAttribute('position',new THREE.BufferAttribute(fa,3)); BACK.add(new THREE.Mesh(fg,fm)); }
     const g=new THREE.BufferGeometry(), arr=new Float32Array(bp.length*3); bp.forEach((v,i)=>{ arr[i*3]=v.x; arr[i*3+1]=v.y; arr[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(arr,3)); BACK.add(new THREE.Mesh(g,bm));
     /* below the windshield sill: a dark tub (wall behind the main panel, side walls, floor) a little outside the structure, so a
        gap between two parts of the model shows dark lining and never the ground outside */
@@ -156,7 +162,7 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=27').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=28').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
