@@ -210,7 +210,7 @@ function label(e,V){
     case 'spd': return tr('Speed '+v+' knots','Fart '+v+' knop');
     case 'trk': return tr('Inbound track '+v,'Innkommende kurs '+v);
     case 'wind': return tr('Wind '+v[0]+'/'+v[1],'Vind '+v[0]+'/'+v[1]);
-    case 'spell': return tr('Spelled: '+spellWords(v),'Stavet: '+spellWords(v));
+    case 'spell': return tr(spellWords(v),spellWords(v));
     case 'say': return tr('Spoken: '+e.w,'Uttalt: '+e.w);
     case 'abbr': return tr(v?'Abbreviated: '+v:'Not abbreviated','Forkortet: '+(v||'ikke forkortet'));
     default: return e.l||tr(String(v||''));
@@ -462,11 +462,11 @@ class Session{
     if(g.sayAgain&&this.lastAtc) return {g,kind:'sayagain',ev:this.sayAgain()};
     if(g.standby) return {g,kind:'standby',ev:[{t:'note',text:tr('Standby is fine when you need a moment. Make the call when you are ready.','Standby er greit når du trenger et øyeblikk. Gjør oppkallet når du er klar.')}]};
     this._undo={i:this.i,tries:this.tries,carry:this.carry,abbrOK:this.abbrOK,lastAtc:this.lastAtc,unit:this.unit,nres:this.results.length,done:this.done};
-    this.tries++;
+    this.tries++; if(this.tries===1) this._res0=g.res.map(r=>({k:r.k,st:r.st,opt:r.opt}));
     const ev=[];
     const mergedCarry=g.res.map((r,k)=>(r.st==='ok'||(this.carry&&this.carry[k]==='ok'))?'ok':r.st);
     if(g.pass||this.tries>=this.L.tries){
-      const sc=this._score(g); this.results.push({n:this.i,id:s.id,cat:s.cat||'rb',ph:s.ph,score:sc,first:this.tries===1&&g.pass,pass:g.pass,res:g.res.map(r=>({k:r.k,st:r.st,opt:r.opt,label:r.label})),flags:g.flags.map(f=>f.k),task:s.task,model:s.model});
+      const sc=this._score(g); this.results.push({n:this.i,id:s.id,cat:s.cat||'rb',ph:s.ph,score:sc,first:this.tries===1&&g.pass,pass:g.pass,res:g.res.map(r=>({k:r.k,st:r.st,opt:r.opt,label:r.label})),res0:this._res0||null,flags:g.flags.map(f=>f.k),task:s.task,model:s.model});
       if(!g.pass) ev.push({t:'model',text:s.model,fail:true});
       if(s.reply) this._atc(s.reply,ev);
       this._after(s,ev);
@@ -492,11 +492,11 @@ function summarize(results,total){
   const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
   const cats={}, kinds={};
   results.forEach(r=>{ (cats[r.cat]=cats[r.cat]||[]).push(r.score);
-    if(!r.skipped) r.res.forEach(e=>{ if(e.opt) return; const k=e.k==='phr'||e.k==='count'?'phr':e.k; const o=kinds[k]=kinds[k]||{n:0,ok:0}; o.n++; if(e.st==='ok'||e.st==='warn') o.ok++; }); });
+    if(!r.skipped) (r.res0||r.res).forEach(e=>{ if(e.opt) return; const k=e.k==='phr'||e.k==='count'?'phr':e.k; const o=kinds[k]=kinds[k]||{n:0,ok:0}; o.n++; if(e.st==='ok'||e.st==='warn') o.ok++; }); });
   const flagsN={}; results.forEach(r=>r.flags.forEach(f=>flagsN[f]=(flagsN[f]||0)+1));
   return {score:Math.round((avg(results.map(r=>r.score))||0)*100), n:results.length, total,
     cats:Object.fromEntries(Object.entries(cats).map(([k,v])=>[k,Math.round(avg(v)*100)])),
-    kinds, flags:flagsN, weak:results.filter(r=>r.score<0.8).sort((a,b)=>a.score-b.score)};
+    kinds, flags:flagsN, retried:results.filter(r=>!r.first).length, weak:results.filter(r=>r.score<0.8||!r.first).sort((a,b)=>a.score-b.score)};
 }
 
 /* ---------------- spaced repetition (Leitner) ---------------- */

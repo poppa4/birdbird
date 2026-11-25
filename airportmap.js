@@ -156,9 +156,13 @@ function draw(){
   // aircraft: ground first, then airborne on top
   ai.concat([own]).filter(p=>p&&!p.hidden).sort((p,q)=>p.alt-q.alt).forEach(drawPlane);
   // north arrow and scale
-  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.fillStyle=COL.lbl; ctx.font='600 11px system-ui,sans-serif'; ctx.textAlign='right'; ctx.fillText('N →',W-12,18);
-  ctx.textAlign='left'; ctx.fillText('NORDAP · training layout',12,H-10);
-  if(own&&own.hidden){ ctx.textAlign='right'; ctx.fillStyle=COL.ownEdge; ctx.fillText('FJORDAIR 412 inbound from the south',W-12,H-10); }
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  // compass: north points right on this map (runway 36 runs left to right)
+  ctx.fillStyle='rgba(10,16,23,.72)'; ctx.fillRect(W-118,8,110,24); ctx.fillStyle=COL.mark; ctx.font='700 12px system-ui,sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  ctx.fillText('N',W-110,20); ctx.strokeStyle=COL.mark; ctx.lineWidth=1.6; ctx.beginPath(); ctx.moveTo(W-96,20); ctx.lineTo(W-66,20); ctx.lineTo(W-72,15); ctx.moveTo(W-66,20); ctx.lineTo(W-72,25); ctx.stroke();
+  ctx.font='600 11px system-ui,sans-serif'; ctx.fillStyle=COL.lbl; ctx.fillText('north',W-58,20);
+  ctx.textBaseline='alphabetic'; ctx.textAlign='left'; ctx.fillStyle='rgba(169,182,195,.75)'; ctx.font='600 10.5px system-ui,sans-serif'; ctx.fillText('NORDAP · training layout',10,18);
+  if(own&&own.hidden){ ctx.textAlign='right'; ctx.fillStyle=COL.ownEdge; ctx.font='600 11px system-ui,sans-serif'; ctx.fillText('FJORDAIR 412 inbound from the south',W-12,H-12); }
 }
 function path(pts){ ctx.beginPath(); pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y)); ctx.stroke(); }
 function num(t,x,y,rot){ ctx.save(); ctx.translate(x,y); ctx.rotate(rot); ctx.fillStyle=COL.mark; ctx.font='700 18px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(t,0,0); ctx.restore(); }

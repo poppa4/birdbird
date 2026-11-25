@@ -12,7 +12,7 @@ const $=sel=>document.querySelector(sel);
 const K={prefs:'naeroson-radio-prefs',srs:'naeroson-radio-srs',stats:'naeroson-radio-stats',guide:'naeroson-radio-guide',coach:'naeroson-radio-coach'};
 const jget=(k,d)=>{ try{ const v=JSON.parse(localStorage.getItem(k)||'null'); return v==null?d:v; }catch(e){ return d; } };
 const jset=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
-const P=Object.assign({level:'intermediate',callsign:'LN-NAE',voice:true,rate:1,fx:true,auto:true,mic:'en-GB'},jget(K.prefs,{}));
+const P=Object.assign({level:'beginner',callsign:'LN-NAE',voice:true,rate:1,fx:true,auto:true,mic:'en-GB'},jget(K.prefs,{}));
 const saveP=()=>jset(K.prefs,P);
 const best=k=>{ try{ return +(localStorage.getItem('naeroson-radio-'+k)||0); }catch(e){ return 0; } };
 
@@ -28,7 +28,7 @@ const GROUPS={
 const LEVELS={beginner:{t:tr('Learning','Lære'),d:tr('New to the radio: slow controller, the items to include are shown, three tries per call.','Ny på radio: rolig flygeleder, elementene du skal ta med vises, tre forsøk per oppkall.')},
   intermediate:{t:tr('Refresher','Oppfriskning'),d:tr('You have flown before: normal pace, a hint only if you ask, two tries.','Du har flydd før: normalt tempo, hint bare om du ber om det, to forsøk.')},
   check:{t:tr('Check-ready','Klar for sjekk'),d:tr('Fast, more static, controller text hidden until you answer, strict readbacks.','Raskt, mer støy, flygelederens tekst skjult til du svarer, strenge tilbakelesinger.')}};
-const CAT={rb:tr('Readbacks','Tilbakelesinger'),call:tr('Calls and reports','Oppkall og meldinger'),copy:tr('Copying','Notering'),emerg:tr('Emergency calls','Nødmeldinger'),basic:tr('Basics','Grunnleggende')};
+const CAT={crew:tr('Crew and ground crew calls','Kall i besetningen og til bakkemannskap'),rb:tr('Readbacks','Tilbakelesinger'),call:tr('Calls and reports','Oppkall og meldinger'),copy:tr('Copying','Notering'),emerg:tr('Emergency calls','Nødmeldinger'),basic:tr('Basics','Grunnleggende')};
 const KIND={cs:tr('Callsign','Kallesignal'),stn:tr('Station called','Stasjon'),rwy:tr('Runway','Rullebane'),qnh:tr('QNH','QNH'),alt:tr('Altitude (QNH)','Høyde (QNH)'),fl:tr('Flight level','Flygenivå'),hdg:tr('Heading','Kurs'),turn:tr('Turn direction','Svingretning'),
   sq:tr('Squawk','Squawk'),freq:tr('Frequency','Frekvens'),info:tr('ATIS letter','ATIS-bokstav'),letter:tr('ATIS letter','ATIS-bokstav'),hp:tr('Holding point','Holdepunkt'),hs:tr('Hold short','Hold short'),fix:tr('Fixes and routes','Punkter og ruter'),
   spd:tr('Speed','Fart'),trk:tr('Inbound track','Innkommende kurs'),num:tr('Numbers','Tall'),wind:tr('Wind','Vind'),phr:tr('Key phrases','Nøkkelfraser'),last:tr('Ending a blind call','Avslutning av blindmelding'),
@@ -142,7 +142,7 @@ async function whStop(){
   ta.placeholder=L({en:'Listening to what you said…',no:'Hører på det du sa …'});
   try{ const t=await WH.stop(); finishVoice([t]); }
   catch(e){ note(tr('On-device speech recognition could not start here. Type your call, or switch to the browser recogniser in the settings.','Talegjenkjenning på enheten kunne ikke starte her. Skriv oppkallet, eller bytt til nettleserens gjenkjenning i innstillingene.')); }
-  finally{ whBusy=false; ta.placeholder=L({en:'Type your call, or hold the talk button (space bar) and speak…',no:'Skriv oppkallet, eller hold snakkeknappen (mellomrom) og snakk …'}); }
+  finally{ whBusy=false; ta.placeholder=PH(); }
 }
 function whPreload(){
   const n=el('engNote'); if(WH.ready){ if(n) n.textContent=L({en:'More accurate, and your voice never leaves this device. Ready.',no:'Mer nøyaktig, og stemmen din forlater aldri denne enheten. Klar.'}); return Promise.resolve(); }
@@ -182,8 +182,9 @@ function drawGuide(force){
     <li><i>2</i><div><b>${L({en:'Talk or type',no:'Snakk eller skriv'})}</b><span>${L({en:'Hold the talk button (or the space bar), say your call, let go. Or type it and press Transmit. Both are graded the same.',no:'Hold snakkeknappen (eller mellomromstasten), si oppkallet, slipp. Eller skriv det og trykk Transmit. Begge vurderes likt.'})}</span></div></li>
     <li><i>3</i><div><b>${L({en:'Read the feedback',no:'Les tilbakemeldingen'})}</b><span>${L({en:'Every item of your call is checked, with the rule behind it. If something is missing, the controller asks for it and you try again.',no:'Hvert element i oppkallet sjekkes, med regelen bak. Mangler noe, ber flygelederen om det, og du prøver igjen.'})}</span>
       <div class="keys"><span class="k ok">✓ ${L({en:'right',no:'riktig'})}</span><span class="k mid">! ${L({en:'note',no:'merknad'})}</span><span class="k bad">✕ ${L({en:'missing or wrong',no:'mangler eller feil'})}</span></div></div></li></ol>
-    <div class="gfoot"><button class="btn pri" id="guideOk" type="button">${L({en:'Got it',no:'Skjønner'})}</button><span>${L({en:'Level sets the pace: Beginner shows what to include, Check-ready hides the controller text until you answer.',no:'Nivået styrer tempoet: Nybegynner viser hva du skal ta med, Klar for sjekk skjuler flygelederens tekst til du har svart.'})}</span></div>`;
+    <div class="gfoot"><button class="btn pri" id="guideGo" type="button">${L({en:'Start with Basics',no:'Start med Grunnleggende'})}</button><button class="btn" id="guideOk" type="button">${L({en:'Got it',no:'Skjønner'})}</button><span>${L({en:'Level sets the pace: Beginner shows what to include, Check-ready hides the controller text until you answer.',no:'Nivået styrer tempoet: Nybegynner viser hva du skal ta med, Klar for sjekk skjuler flygelederens tekst til du har svart.'})}</span></div>`;
   el('guideOk').onclick=()=>{ jset(K.guide,1); g.hidden=true; el('guideBtn').focus(); };
+  el('guideGo').onclick=()=>{ jset(K.guide,1); g.hidden=true; group='basic'; drawPick(); show('pick'); el('pickBack').focus(); };
 }
 /* airline: three plain choices instead of eight cards */
 function drawAirline(){
@@ -227,11 +228,16 @@ function startScenario(sc){ if(natural()&&P.voice) nvPreload();
 function drawBasis(){ const b=el('sessBasis'); if(!b) return; const list=(cur&&cur.basis)||[];
   b.hidden=!list.length; b.innerHTML=list.length? `${L(cur&&cur.sop?{en:'ATC calls based on',no:'ATC-kall basert på'}:{en:'Based on',no:'Basert på'})}: ${list.map(esc).join(' · ')} <a href="#sources">${L({en:'Sources',no:'Kilder'})}</a>`+(cur&&cur.sop?`<br>${L({en:'Crew, ground crew and cabin calls are example A320 SOP, not regulation. Your operator’s SOP always comes first.',no:'Kall mellom piloter, til bakkemannskap og kabin er eksempel på A320-SOP, ikke regelverk. Operatørens SOP gjelder alltid først.'})}`:'') : ''; }
 let queue=Promise.resolve(), MAPON=false, mapInit=false;
-function run(ev){ queue=queue.then(()=>play(ev)).then(()=>{ drawTurn(); }); return queue; }
+const PH=()=>L(window.matchMedia&&matchMedia('(max-width:640px)').matches? {en:'Type your call, or hold the mic button and speak…',no:'Skriv oppkallet, eller hold mikrofonknappen og snakk …'} : {en:'Type your call, or hold the talk button (space bar) and speak…',no:'Skriv oppkallet, eller hold snakkeknappen (mellomrom) og snakk …'});
+function busy(on){ const b=el('btnTx'); if(b) b.disabled=!!on; const t=el('turn'); if(on&&t) t.innerHTML=`<div class="tk listen"><b>${L({en:'Listen',no:'Lytt'})}</b> ${L({en:'Others are talking or the aircraft is moving. Your turn comes next.',no:'Andre snakker eller flyet beveger seg. Din tur kommer straks.'})}</div>`; }
+function run(ev){ queue=queue.then(()=>{ if(ev.some(e=>e.t==='say'||e.t==='act'||e.t==='atc')) busy(true); return play(ev); }).then(()=>{ busy(false); drawTurn(); phoneView(); }); return queue; }
+/* phone with the live map: after each exchange, show the map, the transcript and your answer together */
+function phoneView(){ if(!MAPON||!window.matchMedia||!matchMedia('(max-width:640px)').matches) return; const m=el('v-sess').querySelector('.rs-main'); if(!m) return;
+  const top=m.getBoundingClientRect().top+window.scrollY-58; if(Math.abs(window.scrollY-top)>8) window.scrollTo({top,behavior:'smooth'}); }
 async function play(ev){
   for(const e of ev){
     if(e.t==='tune'){ el('fq').textContent=e.unit.f; el('stn').textContent=e.unit.n; if(/^(CREW|INT|PA)$/.test(e.unit.f)) continue; addMsg('sys','',`${L({en:'Tuned',no:'Stilt inn'})} <b>${esc(e.unit.n)}</b> ${esc(e.unit.f)}`); AU.click(); }
-    else if(e.t==='act'){ if(MAPON&&window.NMAP){ const pr=NMAP.act(e.a); if(e.wait) await pr; } }
+    else if(e.t==='act'){ if(MAPON&&window.NMAP){ phoneView(); const pr=NMAP.act(e.a); if(e.wait) await pr; } }
     else if(e.t==='say'){ if(e.atc){ await atcMsg(e); continue; }
       addMsg('crew ch-'+(e.ch||'crew'),L(e.label||{en:e.who,no:e.who})+(e.ch==='int'?' · interphone':e.ch==='pa'?' · PA':''),esc(e.text));
       await speak(e.text,{voice:e.voice,crew:e.ch!=='int'&&e.ch!=='pa'}); }
@@ -258,7 +264,8 @@ function addMsg(cls,who,html){ const log=el('log'); const d=document.createEleme
 function drawCalls(){ if(!ses) return; const st=ses.steps.map((s,i)=>{ const r=ses.results.find(x=>x.n===i); return r? (r.pass&&r.first?'ok':r.pass?'part':'bad') : i===ses.i&&!ses.done?'now':''; });
   el('pips').innerHTML=st.map((c,i)=>`<li class="${c}" title="${esc(L(ses.steps[i].task)||'')}"></li>`).join('');
   const sym={ok:'✓',part:'✓',bad:'✕',now:'›','':'·'};
-  el('calls').innerHTML=ses.steps.map((s,i)=>`<li class="${st[i]}"><i>${sym[st[i]]}</i><span>${esc(L(s.task)||'')}</span></li>`).join('');
+  const nm=s=>s.prompt? String(L(s.prompt)).replace(/<[^>]+>/g,'') : L(s.task)||'';
+  el('calls').innerHTML=ses.steps.map((s,i)=>`<li class="${st[i]}"><i>${sym[st[i]]}</i><span>${esc(nm(s))}</span></li>`).join('');
   const cur2=el('calls').querySelector('li.now'); if(cur2&&cur2.scrollIntoView&&el('calls').closest('.rs-strip').scrollHeight>el('calls').closest('.rs-strip').clientHeight) cur2.scrollIntoView({block:'nearest'});
   el('stripCs').textContent=ses.V.c||P.callsign; el('stripTy').textContent=(ses.V.type||'')+(cur&&cur.group&&/^(vfr|ifr)$/.test(cur.group)?' · '+cur.group.toUpperCase():''); }
 function drawTurn(){
@@ -269,7 +276,7 @@ function drawTurn(){
   const req=(s.els||[]).filter(e=>!e.opt), opt=(s.els||[]).filter(e=>e.opt);
   const chip=e=>`<span class="ichip${e.opt?' opt':''}">${esc(L(e.l||R.label(e,ses.V)))}</span>`;
   const showList=ses.L.hints||box.dataset.hint==='1';
-  if(need&&need.length&&ses.tries>0){ box.innerHTML=`<div class="tk"><b>${L({en:'Your turn',no:'Din tur'})}</b> ${esc(L({en:'The controller asked for ',no:'Flygelederen ba om '}))}<b class="need">${esc(need.join(', '))}</b>${esc(L({en:'. Give just that, with your callsign.',no:'. Gi bare det, med kallesignalet ditt.'}))}</div>`; el('btnAgain').disabled=!ses.lastAtc; return; }
+  if(need&&need.length&&ses.tries>0){ const hc=(s.els||[]).some(e=>e.k==='cs'); box.innerHTML=hc? `<div class="tk"><b>${L({en:'Your turn',no:'Din tur'})}</b> ${esc(L({en:'The controller asked for ',no:'Flygelederen ba om '}))}<b class="need">${esc(need.join(', '))}</b>${esc(L({en:'. Give just that, with your callsign.',no:'. Gi bare det, med kallesignalet ditt.'}))}</div>` : `<div class="tk"><b>${L({en:'Try again',no:'Prøv igjen'})}</b> <b class="need">${esc(need.join(', '))}</b></div>`; el('btnAgain').disabled=!ses.lastAtc; return; }
   if(!ses.tries) need=null;
   const coach=!jget(K.coach,0)? `<div class="coach">${L({en:'Hold the talk button (or the space bar) and speak, or type your call and press Transmit.',no:'Hold snakkeknappen (eller mellomromstasten) og snakk, eller skriv oppkallet og trykk Transmit.'})}</div>` : '';
   box.innerHTML=`<div class="tk"><b>${L({en:'Your turn',no:'Din tur'})}</b> ${esc(L(s.task))}</div>`+coach+
@@ -302,7 +309,9 @@ async function transmit(byVoice){
   const s=ses.step; const r=ses.submit(txt);
   if(!r.g||r.g.empty) return;
   const heard=MIC.heard&&MIC.said===txt? MIC.heard : null; MIC.heard=null;
-  const me=addMsg('me',ses.V.cs.full,esc(txt)+(heard?`<div class="heard">${esc(L({en:'Heard',no:'Hørt'}))}: <span class="mono">${esc(heard.replace(/[.,;\s]+$/,""))}</span>. ${esc(L({en:'A repeated word the recogniser merged was restored.',no:'Et gjentatt ord som gjenkjenningen slo sammen, ble lagt tilbake.'}))}</div>`:''));
+  const chn=s.unit&&/^(CREW|INT|PA)$/.test(s.unit.f)? (s.unit.f==='INT'?' · interphone':s.unit.f==='PA'?' · PA':' · '+L({en:'to the other pilot',no:'til den andre piloten'})) : '';
+  const meWho= cur&&cur.role? `${L({en:'You',no:'Du'})} (${cur.role})${chn}` : ses.V.cs.full;
+  const me=addMsg('me',meWho,esc(txt)+(heard?`<div class="heard">${esc(L({en:'Heard',no:'Hørt'}))}: <span class="mono">${esc(heard.replace(/[.,;\s]+$/,""))}</span>. ${esc(L({en:'A repeated word the recogniser merged was restored.',no:'Et gjentatt ord som gjenkjenningen slo sammen, ble lagt tilbake.'}))}</div>`:''));
   if(r.kind==='sayagain'||r.kind==='standby'){ await run(r.ev); return; }
   const g=r.g, ok=r.kind==='pass';
   document.querySelectorAll('#log .fb.full').forEach(x=>{ x.innerHTML=x._short||''; x.classList.remove('full'); });
@@ -311,7 +320,8 @@ async function transmit(byVoice){
   const head= ok? (g.flags.length? L({en:'Accepted, with a note',no:'Godkjent, med en merknad'}) : L({en:'Correct',no:'Riktig'})) : r.kind==='retry'? L({en:'Not yet: the controller corrects you',no:'Ikke ennå: flygelederen korrigerer deg'}) : L({en:'Missed',no:'Bommet'});
   /* on a retry the answer is not shown yet: the controller has asked for the missing part, so the pilot gets one more go */
   need= r.kind==='retry'? g.res.filter(x=>x.st!=='ok'&&!x.opt).map(x=>L(x.label)) : null;
-  const ask= need&&need.length? `<div class="model"><b>${L({en:'Reply with',no:'Svar med'})}</b><span>${esc(need.join(', '))}${L({en:', and your callsign. You do not need to repeat the rest.',no:', og kallesignalet ditt. Resten trenger du ikke gjenta.'})}</span></div>` : '';
+  const hasCs=(s.els||[]).some(e=>e.k==='cs');
+  const ask= need&&need.length? `<div class="model"><b>${L(hasCs?{en:'Reply with',no:'Svar med'}:{en:'Try again',no:'Prøv igjen'})}</b><span>${esc(need.join(', '))}${hasCs?L({en:', and your callsign. You do not need to repeat the rest.',no:', og kallesignalet ditt. Resten trenger du ikke gjenta.'}):''}</span></div>` : '';
   const full=`<div class="fbh ${ok?'good':r.kind==='fail'?'bad':'try'}">${esc(head)}</div>${ok&&!g.flags.length?fb._short:fbHtml(g,s,r.kind)}${r.kind==='retry'?ask:(!ok||g.flags.length?`<div class="model"><b>${L({en:'Correct call',no:'Riktig oppkall'})}</b><span class="mono">${esc(s.model)}</span></div>`:'')}${ok&&!g.flags.length?'':whyHtml(g,s)}`;
   el('fbBox').innerHTML=full; fb.innerHTML=`<div class="fbx">${full}</div>`; el('log').scrollTop=el('log').scrollHeight;
   lastVoice= byVoice&&r.kind==='retry'? me : null;
@@ -338,7 +348,7 @@ function save(sm){
 }
 function drawDeb(sm){
   const kinds=Object.entries(sm.kinds).filter(([k])=>KIND[k]).sort((a,b)=>a[1].ok/a[1].n-b[1].ok/b[1].n);
-  const verdict= sm.score>=90? tr('Clean, complete radio work. Try the next level up.','Ren og fullstendig radiobruk. Prøv neste nivå.') : sm.score>=70? tr('Good. Practise the red items below once more.','Bra. Øv på de røde punktene under én gang til.') : tr('Keep going: practise the weak items, then fly it again. New values every time.','Fortsett: øv på de svake punktene, og fly den igjen. Nye verdier hver gang.');
+  const verdict= sm.score>=90&&!sm.retried? tr('Clean, complete radio work. Try the next level up.','Ren og fullstendig radiobruk. Prøv neste nivå.') : sm.score>=90? tr(`Strong session, but ${sm.retried} call${sm.retried>1?'s':''} needed a second try. Practise ${sm.retried>1?'them':'it'} below.`,`Sterk økt, men ${sm.retried} oppkall måtte tas på nytt. Øv på ${sm.retried>1?'dem':'det'} under.`) : sm.score>=70? tr('Good. Practise the red items below once more.','Bra. Øv på de røde punktene under én gang til.') : tr('Keep going: practise the weak items, then fly it again. New values every time.','Fortsett: øv på de svake punktene, og fly den igjen. Nye verdier hver gang.');
   el('debBody').innerHTML=`<div class="dtop"><div class="big">${sm.score}<small>%</small></div><div><h3>${esc(L(cur.t))}</h3><p>${esc(L(verdict))}</p><p class="muted">${esc(L(LEVELS[ses.level].t))} · ${sm.n} ${L({en:'calls',no:'oppkall'})}</p></div></div>
     <div class="kpis">${Object.entries(sm.cats).map(([k,v])=>`<div class="kpi"><span>${esc(L(CAT[k]||tr(k)))}</span><b>${v} %</b></div>`).join('')}</div>
     ${kinds.length?`<h4>${L({en:'Element by element',no:'Element for element'})}</h4><table class="ktab"><tbody>${kinds.map(([k,o])=>{ const p=Math.round(o.ok/o.n*100); return `<tr><td>${esc(L(KIND[k]))}</td><td><span class="bar"><i style="width:${p}%" class="${p<60?'bad':p<85?'mid':'good'}"></i></span></td><td>${o.ok}/${o.n}</td></tr>`; }).join('')}</tbody></table>`:''}
@@ -404,6 +414,7 @@ function init(){
       else el('ttsEngNote').textContent=L({en:'The browser’s built-in voice: starts at once, sounds synthetic.',no:'Nettleserens innebygde stemme: starter med en gang, høres syntetisk ut.'}); };
     te.onchange=()=>{ P.tts=te.value; saveP(); hush(); sync(); }; sync(); }
   if(!TTS&&!NV.supported){ el('setVoice').disabled=true; el('ttsNote').textContent=L({en:'This browser has no speech synthesis: the controller is shown as text.',no:'Denne nettleseren har ikke talesyntese: flygelederen vises som tekst.'}); }
+  el('say').placeholder=PH();
   drawHome(); show('home'); aiSetup();
   LAB.onLang(()=>{ drawHome(); if(!el('v-pick').hidden) drawPick(); if(ses&&!el('v-sess').hidden){ el('sessT').textContent=L(cur.t); drawBasis(); drawTurn(); } if(!el('v-deb').hidden&&ses) drawDeb(ses.summary()); });
   // test hooks (headless browsers cannot speak): type and transmit
