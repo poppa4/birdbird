@@ -23,7 +23,7 @@ const P0=160;                                    // finest patch size (m) -> 10 
 const NLEV=11;                                   // quadtree levels: root = 160*2^10 = 163.84 km
 const ROOT={E:0, N:1000, S:P0*Math.pow(2,NLEV-1)};
 const MAXI=2400;
-const DATA_V=5;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
+const DATA_V=8;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
 const V=f=>f+'?v='+DATA_V;
 
 /* ---------- loading ---------- */
@@ -614,6 +614,64 @@ function buildBuildings(){
     tri(W3(c[0][0],h1,c[0][1]),W3(c[2][0],h1,c[2][1]),W3(c[1][0],h1,c[1][1]),col,-1,h0); tri(W3(c[0][0],h1,c[0][1]),W3(c[3][0],h1,c[3][1]),W3(c[2][0],h1,c[2][1]),col,-1,h0);
     tri(W3(c[0][0],h0,c[0][1]),W3(c[1][0],h0,c[1][1]),W3(c[2][0],h0,c[2][1]),col,3,h0); tri(W3(c[0][0],h0,c[0][1]),W3(c[2][0],h0,c[2][1]),W3(c[3][0],h0,c[3][1]),col,3,h0); };
   for(const m of (apt.rwy.masts||[])){ box(m[0],m[1],m[2],m[2]+21.6,0.22,[0.55,0.56,0.58],2); box(m[0],m[1],m[2]+21.6,m[2]+22.4,1.2,[0.30,0.31,0.33],2); }
+  // ---- apron life: parked aircraft, ground equipment, roof plant (simple geometry, ~6k triangles in all) ----
+  const hAt=(E,N)=>W.height(E,N);
+  // oriented box in an aircraft/stand frame: centre (a forward, b right, z up), size (L along f, Wd across, Ht)
+  const obox=(o,f,a,b,z,L,Wd,Ht,col,pitch)=>{ const r=[f[1],-f[0]]; pitch=pitch||0;
+    const P8=[]; for(const sx of [-1,1]) for(const sy of [-1,1]) for(const sz of [-1,1]){ const la=a+sx*L/2, lb=b+sy*Wd/2, lz=z+sz*Ht/2+sx*L/2*Math.tan(pitch);
+      P8.push(W3(o[0]+f[0]*la+r[0]*lb, o[2]+lz, o[1]+f[1]*la+r[1]*lb)); }
+    const F=[[0,1,3,2],[4,6,7,5],[0,4,5,1],[2,3,7,6],[0,2,6,4],[1,5,7,3]];
+    for(const q of F){ tri(P8[q[0]],P8[q[1]],P8[q[2]],col,-1,0); tri(P8[q[0]],P8[q[2]],P8[q[3]],col,-1,0); } };
+  // tube along the aircraft axis from a0 to a1 (forward metres), radius r0->r1, centre height z, optional vertical offset at the ends
+  const tube=(o,f,a0,a1,r0,r1,z0,z1,seg,col,b,ry)=>{ const r=[f[1],-f[0]]; b=b||0; ry=ry||1;
+    const ring=(a,rad,z)=>{ const out=[]; for(let i=0;i<seg;i++){ const t=i/seg*Math.PI*2; const lb=b+Math.cos(t)*rad, lz=z+Math.sin(t)*rad*ry;
+      out.push(W3(o[0]+f[0]*a+r[0]*lb, o[2]+lz, o[1]+f[1]*a+r[1]*lb)); } return out; };
+    const A=ring(a0,r0,z0), B=ring(a1,r1,z1);
+    for(let i=0;i<seg;i++){ const j=(i+1)%seg; tri(A[i],B[i],B[j],col,-1,0); tri(A[i],B[j],A[j],col,-1,0); tri(B[j],B[i],A[i],col,-1,0); tri(A[j],B[j],A[i],col,-1,0); } };
+  const wing=(o,f,aRoot,span,chordR,chordT,sweep,z,dih,col,side,thick)=>{ const r=[f[1],-f[0]];
+    const P=(a,b,zz)=>W3(o[0]+f[0]*a+r[0]*b, o[2]+zz, o[1]+f[1]*a+r[1]*b);
+    const b0=side*1.7, b1=side*span; const zt=z+span*Math.tan(dih);
+    const LR=P(aRoot,b0,z), TR=P(aRoot-chordR,b0,z), LT=P(aRoot-sweep,b1,zt), TT=P(aRoot-sweep-chordT,b1,zt);
+    const up=(p)=>[p[0],p[1]+thick,p[2]];
+    for(const [a,b2,c,d] of [[LR,LT,TT,TR],[up(LR),up(TR),up(TT),up(LT)]]){ tri(a,b2,c,col,-1,0); tri(a,c,d,col,-1,0); tri(c,b2,a,col,-1,0); tri(d,c,a,col,-1,0); } };
+  const tails=[[0.10,0.22,0.48],[0.62,0.08,0.10],[0.85,0.85,0.86],[0.06,0.30,0.42],[0.92,0.50,0.08]];
+  const airliner=(st,ci)=>{ const h=st.hdg*Math.PI/180, f=[Math.sin(h),Math.cos(h)];
+    // nose gear on the stop point; reference = nose tip 2.5 m ahead of it
+    const g=hAt(st.E,st.N); const o=[st.E+f[0]*2.5,st.N+f[1]*2.5,g];
+    const W_=[0.93,0.93,0.94], BEL=[0.62,0.64,0.66], ENG=[0.70,0.71,0.73], DK=[0.08,0.09,0.11], TL=tails[ci%tails.length];
+    const zc=3.1, R=1.9;
+    tube(o,f,-0.2,-2.6,0.25,1.25,zc-0.35,zc-0.1,10,W_); tube(o,f,-2.6,-5.0,1.25,R,zc-0.1,zc,12,W_);
+    tube(o,f,-5.0,-27.0,R,R,zc,zc,12,W_); tube(o,f,-27.0,-37.5,R,0.45,zc,zc+1.4,12,W_);
+    obox(o,f,-2.0,0,zc+0.55,1.6,2.0,0.45,DK);                                   // cockpit windows
+    obox(o,f,-16.0,0,zc-1.25,14.0,2.6,0.6,BEL);                                  // belly fairing
+    for(const sd of [-1,1]){ wing(o,f,-13.5,17.4,7.2,1.4,8.5,zc-1.2,0.10,[0.78,0.79,0.80],sd,0.35);
+      wing(o,f,-31.5,6.6,4.0,1.4,3.2,zc+0.7,0.10,[0.80,0.80,0.82],sd,0.2);
+      tube(o,f,-11.0,-15.2,0.95,0.80,zc-2.3,zc-2.3,10,ENG,sd*5.6); }
+    // fin
+    const r=[f[1],-f[0]]; const P=(a,b,zz)=>W3(o[0]+f[0]*a+r[0]*b, g+zz, o[1]+f[1]*a+r[1]*b);
+    const fa=P(-28.5,0,zc+1.2), fb=P(-36.8,0,zc+1.4), fc=P(-38.0,0,zc+7.6), fd=P(-34.8,0,zc+7.6);
+    tri(fa,fb,fc,TL,-1,0); tri(fa,fc,fd,TL,-1,0); tri(fc,fb,fa,TL,-1,0); tri(fd,fc,fa,TL,-1,0);
+    // gear
+    obox(o,f,-2.5,0,1.0,0.5,0.5,2.0,[0.25,0.25,0.27]); for(const sd of [-1,1]) obox(o,f,-16.0,sd*2.9,0.9,0.8,0.9,1.8,[0.25,0.25,0.27]);
+    // ground equipment: stairs at the front left door, tug ahead, baggage carts aft right, GPU at the nose
+    obox(o,f,-6.0,-4.2,1.4,5.2,1.9,1.2,[0.88,0.86,0.80]); obox(o,f,-5.6,-3.0,2.3,3.0,1.4,0.3,[0.60,0.60,0.62],-0.62);
+    obox(o,f,4.5,0,0.9,4.6,2.2,1.6,[0.95,0.80,0.10]);
+    for(let k=0;k<3;k++) obox(o,f,-24.0-k*3.6,5.6,0.65,3.0,1.6,1.0,[0.55,0.57,0.60]);
+    obox(o,f,-22.0,6.2,1.0,2.8,1.6,1.6,[0.95,0.95,0.96]);
+    obox(o,f,0.5,-3.6,0.7,1.8,1.1,1.2,[0.92,0.70,0.12]);
+    if(ci%3===0) obox(o,f,-14.0,11.5,1.7,10.0,2.6,3.0,[0.90,0.90,0.88]);      // fuel truck
+  };
+  const ga=(st)=>{ const h=st.hdg*Math.PI/180, f=[Math.sin(h),Math.cos(h)], g=hAt(st.E,st.N), o=[st.E+f[0]*1.0,st.N+f[1]*1.0,g];
+    tube(o,f,0,-1.5,0.3,0.6,1.2,1.25,8,[0.95,0.95,0.95]); tube(o,f,-1.5,-4.5,0.6,0.55,1.25,1.35,8,[0.95,0.95,0.95]); tube(o,f,-4.5,-7.6,0.55,0.15,1.35,1.55,8,[0.95,0.95,0.95]);
+    for(const sd of [-1,1]){ wing(o,f,-2.2,5.5,1.5,1.2,0.0,2.25,0.0,[0.95,0.95,0.95],sd,0.12); wing(o,f,-6.8,1.8,0.9,0.6,0.2,1.5,0.0,[0.95,0.95,0.95],sd,0.08); }
+    obox(o,f,-1.8,0,1.75,1.2,1.1,0.5,[0.12,0.14,0.16]); obox(o,f,-7.0,0,2.2,1.0,0.12,1.4,[0.80,0.15,0.12]); };
+  const occ=['2','4','5','11','13','15'];
+  let ci=0; for(const st of (apt.rwy.stands||[])){ if(occ.includes(st.id)) airliner(st,ci++); if(st.id==='33'||st.id==='34') ga(st); }
+  // roof plant on the larger airport buildings
+  apt.buildings.forEach((b,bi)=>{ if(!b.k||b.p.length<4) return; let cx=0,cy=0; for(const q of b.p){ cx+=q[0]; cy+=q[1]; } cx/=b.p.length; cy/=b.p.length;
+    let area=0; for(let i=0;i<b.p.length;i++){ const a=b.p[i],c=b.p[(i+1)%b.p.length]; area+=a[0]*c[1]-c[0]*a[1]; } area=Math.abs(area)/2; if(area<500) return;
+    const n=Math.min(4,1+Math.floor(area/1500)); const f=[1,0];
+    for(let k=0;k<n;k++){ const da=((bi*37+k*53)%17-8)*0.9, db=((bi*11+k*29)%13-6)*0.9; obox([cx,cy,b.e],f,da,db,0.9,4.0,2.6,1.8,[0.62,0.63,0.64]); } });
   const g=new (T().BufferGeometry)();
   g.setAttribute('position',new (T().Float32BufferAttribute)(P,3)); g.setAttribute('normal',new (T().Float32BufferAttribute)(Nn,3));
   g.setAttribute('color',new (T().Float32BufferAttribute)(Cc,3)); g.setAttribute('bk',new (T().Float32BufferAttribute)(K,2));
