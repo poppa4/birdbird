@@ -135,6 +135,7 @@ MATS = {
     'rocker_red': dict(color=(0.72, 0.14, 0.09), rough=0.42),
     'white':     dict(color=(0.88, 0.88, 0.86), rough=0.35),
     'pedal':     dict(color=(0.16, 0.17, 0.18), rough=0.5, metal=0.4),
+    'liner':     dict(color=(0.20, 0.21, 0.23), rough=0.92, tex='fabric', tile=0.12, nstr=0.6),   # canopy frame lining
     'strap':     dict(color=(0.30, 0.32, 0.36), rough=0.9, tex='fabric', tile=0.12, nstr=0.8),
     'skin':      dict(color=(0.95, 0.95, 0.94), rough=0.3, ao=False),
     'skin_under': dict(color=(0.84, 0.84, 0.83), rough=0.45, ao=False),
@@ -320,6 +321,18 @@ def shell():
     def arch(u, v):
         p = canopy(zb, -1 + 2 * u); return (p[0] * 1.006, YS + v * (p[1] + 0.004 - YS), zb)
     grid(g, 28, 4, arch, 'trim_dark', toward=cab)
+    # canopy frame, as in the aircraft (photos; AFM fig. 1.7 top view): a broad lined hoop between the windshield and the two
+    # top panes, and a spine from it back to the roll bar. The glass lies outside it.
+    def ins(p, k=0.986): return v3(p[0] * k, YS + (p[1] - YS) * k, p[2])
+    def hoop(u, v):
+        a = -1 + 2 * u; t = abs(a); zc = -0.28 - 0.36 * t ** 2.2; hw = 0.12 - 0.075 * t ** 1.2
+        return ins(canopy(zc + (2 * v - 1) * hw, a))
+    grid(g, 44, 5, hoop, 'liner', toward=cab)
+    for e in (0, 1):                                                # its two edges: a rolled rim
+        tube(g, [hoop(i / 44, e) for i in range(45)], 0.011, 'liner', sides=6)
+    grid(g, 4, 12, lambda u, v: ins(canopy(-0.165 + v * (0.47 + 0.165), (-1 + 2 * u) * 0.075)), 'liner', toward=cab)
+    for sd in (-1, 1):
+        tube(g, [ins(canopy(-0.165 + i / 12 * (0.47 + 0.165), sd * 0.075)) for i in range(13)], 0.009, 'liner', sides=6)
     # roof behind the roll bar: the solid centre the rear door hinges from, with a liner; the glass goes on at each side of it
     RA = 0.40
     def roof(u, v):
@@ -352,13 +365,25 @@ def shell():
 
 
 # ---- outside: what the crew sees of their own aircraft --------------------------------------------------------------
-NAC_X, NAC_Y, PROP_Z, PROP_R = 1.68, -0.90, -1.22, 0.94
-WING_Y, WING_X0, WING_X1 = -1.04, 0.60, 6.74
+# AFM 1.4 / three-view (fig. 1.7): span 13.42 m, engines 2.95 m apart, propeller 1.90 m. Planform measured off the top view:
+# inner panel 1.76 m chord at the fuselage, outer panel 1.24 m at the nacelle to 0.90 m at the tip with 1° of sweep; the propeller
+# plane 1.08 m ahead of the outer leading edge. (Engines 4 cm further out than drawn: this cabin is modelled a little wide.)
+NAC_X, NAC_Y, PROP_Z, PROP_R = 1.515, -0.925, -1.37, 0.95
+WING_Y, WING_X0, WING_X1 = -1.04, 0.60, 6.71
+
+
+def wing_ch_le(s):
+    """chord and leading-edge station at span s (0 root … 1 tip)"""
+    x = WING_X0 + s * (WING_X1 - WING_X0); k = min(1, max(0, (x - 1.22) / 0.60)); k = k * k * (3 - 2 * k)
+    ui = (x - WING_X0) / (NAC_X - WING_X0); uo = (x - NAC_X) / (WING_X1 - NAC_X)
+    ch = (1.76 - 0.30 * ui) * (1 - k) + (1.24 - 0.34 * uo) * k
+    le = (-0.60 + 0.14 * ui) * (1 - k) + (-0.29 + 0.085 * uo) * k
+    return ch, le
 
 
 def wing_pt(sd, s, c, top):
     """s: 0 root … 1 tip, c: 0 leading edge … 1 trailing edge"""
-    x = WING_X0 + s * (WING_X1 - WING_X0); ch = 1.74 - 0.84 * s ** 1.15; le = -0.04 + 0.40 * s
+    x = WING_X0 + s * (WING_X1 - WING_X0); ch, le = wing_ch_le(s)
     th = 0.15 * ch * 5 * (0.2969 * math.sqrt(c) - 0.126 * c - 0.3516 * c * c + 0.2843 * c ** 3 - 0.1015 * c ** 4)
     cam = 0.02 * ch * 4 * c * (1 - c)
     return v3(sd * x, WING_Y + (x - WING_X0) * 0.095 + cam + (th if top else -th), le + c * ch)
@@ -371,7 +396,7 @@ def wpatch(g, sd, s0, s1, c0, c1, mat, n=(10, 2), off=0.0016):
 
 def wing_detail(g, sd):
     """what the crew sees on the upper wing: de-icing panel, control surfaces, panel joints, filler cap, walkway, tip lights"""
-    def dc(s, m): return m / (1.74 - 0.84 * s ** 1.15)            # metres → chord fraction at span s
+    def dc(s, m): return m / wing_ch_le(s)[0]                     # metres → chord fraction at span s
     SN = (NAC_X - WING_X0) / (WING_X1 - WING_X0); nw = 0.33 / (WING_X1 - WING_X0)   # nacelle centre and half width in span
     HL = 0.74                                                       # hinge line of flaps and aileron
     wpatch(g, sd, SN + nw, 0.975, 0.0, 0.034, 'tks', n=(16, 5)); wpatch(g, sd, 0.02, SN - nw, 0.0, 0.030, 'tks', n=(4, 5))

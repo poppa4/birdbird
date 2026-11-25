@@ -47,3 +47,6 @@ exactly, or the `*_face` meshes can carry the panel as a texture).
 
 Control travels in the JSON sidecars (wheel rotation ±45°, column ±7.5–8 cm, pedals ±16°, sticks)
 are generic training-device values, not certified figures; the app may tune them.
+
+- DA42 canopy frame (hoop between windshield and top panes, centre spine) after the owner's cockpit photos and the AFM three-view (fig. 1.7).
+  Wing planform, engine spacing (2.95 m), propeller diameter (1.90 m) and propeller plane measured from AFM 1.4 and fig. 1.7.
