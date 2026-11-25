@@ -470,7 +470,7 @@ function startGLB(){ const cfg=def.glb, t0=performance.now(); loading(0);
   const slow=setTimeout(()=>{ if(D3.glb.state==='loading'){ D3.glb.state='loading-proc'; useBuilt(buildProc()); unveil(); } },cfg.slowMs||6000);
   CK.loadGLB(cfg,p=>{ D3.glb.progress=p; loading(p*0.85); }).then(({gltf,side})=>glbBuild(packGLB(gltf,side,cfg),side)).then(b=>{ clearTimeout(slow);
     if(built===procObj&&procObj) dropBuilt(procObj);
-    glbOn=true; useBuilt(b); D3.glb.state='ready'; D3.glb.ms=Math.round(performance.now()-t0); loading(null);
+    glbOn=true; useBuilt(b); D3.glb.state='ready'; D3.glb.ms=Math.round(performance.now()-t0); loading(null); qReset();
     stage.classList.add('d3glb'); hideCss();
   }).catch(e=>{ clearTimeout(slow); console.warn('3D cockpit model: using the built-in cockpit',e); D3.glb.state='failed'; loading(null); if(built!==procObj) useBuilt(buildProc()); }); }
 function hideCss(){ const h=def.glb.hide||[]; if(!h.length) return; const s=document.createElement('style');
@@ -793,8 +793,17 @@ D3.frame=function(S,st){
   const s=D3.scale(); if(Math.abs(s-lastScale)/Math.max(0.01,lastScale)>0.12){ scaleT+=dt; if(scaleT>0.35&&!D3.dragging&&!view.glide){ scaleT=0; lastScale=s; o.onScale&&o.onScale(s); } } else scaleT=0;
   if(ok) meter(dt,false);
 };
-function meter(dt,skipped){ if(!(dt>0)||now0()-t0<2500) return; qSum+=dt; qN++; qWin+=dt; if(qWin>2){ const avg=qSum/qN*1000; D3.ft=avg; qWin=qSum=qN=0;
-  if(avg>21&&qLevel<LV.length-1){ qLevel++; needs=2; fgDirty=true; } else if(avg>26&&qLevel===LV.length-1&&!toastShown){ toastShown=true; o.onSlow&&o.onSlow(); } } }
+/* The governor steps the quality down only on sustained slow frames. It starts counting once the cockpit is built (the build
+   itself stalls frames and used to push a fast machine down to the 15 Hz level for good), ignores single hitches, needs two
+   slow windows in a row, and tries one level up again after a while (backing off if that fails). */
+let qBad=0, qAt=0, qFail=0;
+function qReset(){ t0=performance.now(); qLevel=0; qWin=qSum=qN=0; qBad=0; qFail=0; qAt=t0; needs=3; fgDirty=true; }
+function meter(dt,skipped){ const now=now0(); if(!(dt>0)||now-t0<2500) return; if(dt>0.2) return; qSum+=dt; qN++; qWin+=dt;
+  if(qLevel>0&&now-qAt>12000*(1<<Math.min(4,qFail))){ qLevel--; qAt=now; qBad=0; qWin=qSum=qN=0; needs=2; fgDirty=true; D3.qProbe=now; return; }
+  if(qWin>2){ const avg=qSum/qN*1000; D3.ft=avg; qWin=qSum=qN=0; const slow=avg>21;
+    qBad=slow?qBad+1:0;
+    if(qBad>=2&&qLevel<LV.length-1){ if(D3.qProbe&&now-D3.qProbe<9000) qFail++; qLevel++; qAt=now; qBad=0; needs=2; fgDirty=true; }
+    else if(slow&&avg>26&&qLevel===LV.length-1&&!toastShown){ toastShown=true; o.onSlow&&o.onSlow(); } } }
 const now0=()=>performance.now();
 // test helper: synchronous timing of n frames with glFinish, with and without the cockpit pass
 D3.bench=function(S,n){ const R=G.OTW.renderer(), gl=R.getContext(); updCam(); const run=(ck)=>{ gl.finish(); const t=performance.now(); for(let i=0;i<n;i++){ R.info.reset(); G.OTW.render3d(S,qHead,cam.fov,dprNow(),ck?drawCk:null); if(ck&&fgR){ renderFg(); } } gl.finish(); if(fgR) fgR.getContext().finish(); return (performance.now()-t)/n; };
