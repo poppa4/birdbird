@@ -108,6 +108,25 @@ function init(o){
      the FlightGear shell has loaded and fills the gaps that model leaves between its pieces (the shell leaves out what sits on
      the panel planes), so no sky shows through the roof or the corners. The windows stay open. ---- */
   const BACK=new THREE.Group(); scene.add(BACK);
+  /* the circuit-breaker wall behind the right seat: the model has only pale strips there. A drawn panel (sub-panels with a frame,
+     lettered rows and numbered columns of breakers) lies 12 mm in front of that wall; the roof lining in front of it hides
+     the part above the slanted ceiling. One small canvas, one draw call. */
+  { try{ const CW=1024, CH=840, cv=document.createElement('canvas'); cv.width=CW; cv.height=CH; const c=cv.getContext('2d');
+      c.fillStyle='#566579'; c.fillRect(0,0,CW,CH);
+      const sub=(x,y,w,h,rows,cols,r0)=>{ c.fillStyle='#3d4a5d'; c.fillRect(x,y,w,h); c.strokeStyle='#8492a6'; c.lineWidth=2; c.strokeRect(x+1,y+1,w-2,h-2);
+        c.fillStyle='#222a35'; for(const [sx,sy] of [[x+9,y+9],[x+w-9,y+9],[x+9,y+h-9],[x+w-9,y+h-9]]){ c.beginPath(); c.arc(sx,sy,3.2,0,6.3); c.fill(); }
+        const px=(w-56)/cols, py=(h-34)/rows; c.font='bold 11px Arial,sans-serif'; c.textAlign='center'; c.textBaseline='middle';
+        for(let j=0;j<cols;j++){ c.fillStyle='#d5dbe4'; c.fillText(String(j+1),x+40+px*(j+0.5),y+13); }
+        for(let i=0;i<rows;i++){ const cy=y+24+py*(i+0.5); c.fillStyle='#d5dbe4'; c.fillText(String.fromCharCode(65+r0+i),x+20,cy);
+          c.fillStyle='#4a586c'; c.fillRect(x+34,cy-py*0.42,w-48,2);
+          for(let j=0;j<cols;j++){ const cx=x+40+px*(j+0.5), R=Math.min(px,py)*0.30; if(((i*7+j*13+r0)%17)===0) continue;   /* a few empty positions, as on the aircraft */
+            c.fillStyle='#1b2029'; c.beginPath(); c.arc(cx+1,cy+1.5,R+1.5,0,6.3); c.fill(); c.fillStyle='#8f9aaa'; c.beginPath(); c.arc(cx,cy,R+0.5,0,6.3); c.fill();
+            c.fillStyle='#14171c'; c.beginPath(); c.arc(cx,cy,R*0.80,0,6.3); c.fill(); c.fillStyle='#2e343d'; c.beginPath(); c.arc(cx-R*0.18,cy-R*0.20,R*0.42,0,6.3); c.fill(); } } };
+      sub(14,14,620,250,6,20,0); sub(646,14,364,250,6,11,0); sub(14,276,620,250,6,20,6); sub(646,276,364,250,6,11,6); sub(14,538,996,288,7,32,12);
+      const tx=new THREE.CanvasTexture(cv); tx.anisotropy=Math.min(8,o_R.capabilities.getMaxAnisotropy()); if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tx.encoding=THREE.sRGBEncoding;
+      const X0=0.125, X1=1.045, Y0=0.56, Y1=1.31, Z=1.258, gg=new THREE.BufferGeometry();
+      gg.setAttribute('position',new THREE.BufferAttribute(new Float32Array([X0,Y0,Z, X1,Y0,Z, X1,Y1,Z, X0,Y1,Z]),3)); gg.setAttribute('uv',new THREE.BufferAttribute(new Float32Array([1,0, 0,0, 0,1, 1,1]),2)); gg.setIndex([0,1,2,0,2,3]);   /* seen from the front (looking aft) +x is to the left */
+      const cm=new THREE.Mesh(gg,new THREE.MeshBasicMaterial({map:tx,side:THREE.DoubleSide})); cm.material.color.setScalar(0.82); scene.add(cm); }catch(e){ console.warn('A320 3D breaker wall',e); } }
   const wT0=0.90, wZa=-0.70; // top of the side windows, their front edge
   { const bm=new THREE.MeshBasicMaterial({color:0x6d7a8a,side:THREE.DoubleSide}), bp=[], q4=(a,b,c,d)=>bp.push(a,b,c,a,c,d), d=0.14 /* well outside the structure: a backstop that lies in a wall of the model flickers through it */, X2=XW+d, cy=(z)=>ceilAt(0,z)+d;
     const XR=0.80; q4(v3(-XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zB),zB),v3(-XR,cy(zB),zB));   // roof (inboard of the side windows)
