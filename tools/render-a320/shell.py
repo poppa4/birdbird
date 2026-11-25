@@ -491,6 +491,8 @@ for f_, (x_, z_) in FXZ.items():
 if NEOF:   # the new structure's materials: lining, seat cover, carpet, console slate
     _b = len(cen); cen = np.vstack([cen, [78.0, 92.0, 111.0], [44.0, 62.0, 100.0], [44.0, 47.0, 62.0], [58.0, 68.0, 84.0], [24.0, 26.0, 30.0]])
     for fid, mat in NEOF: lab[fid] = _b + mat
+# the kind of surface per palette entry, for the page's surface grain: 0 moulded plastic, 1 woven fabric, 2 carpet, 3 leather
+MCLS = np.zeros(len(cen), np.uint8); MCLS[K - 3] = 1; MCLS[K + 1] = 1; MCLS[K - 2] = 2; MCLS[K - 1] = 3
 PAL = cen / 255.0; print('materials', np.round(cen).astype(int).tolist(), 'area share', np.round(np.bincount(lab, weights=FA, minlength=K) / FA.sum(), 2).tolist())
 hdr = {'S': 16000, 'groups': [], 'lmax': LMAX}; blob = b''
 COS = np.cos(np.radians(72))
@@ -522,7 +524,7 @@ for t, g in G.items():
             b[q] = np.where(cnt > 0, 0.5 * b[q] + 0.5 * acc / np.maximum(cnt, 1), b[q])
     col = shade(b)
     col = col * PAL[UV[:, 0].astype(int)]
-    N4 = np.zeros((len(P), 4), np.uint8); N4[:, :3] = np.clip(col / LMAX * 255, 0, 255).round()
+    N4 = np.zeros((len(P), 4), np.uint8); N4[:, :3] = np.clip(col / LMAX * 255, 0, 255).round(); N4[:, 3] = MCLS[UV[:, 0].astype(int)]
     UV = UV * 0.0; lo, hi = UV.min(0), UV.max(0); span = np.maximum(hi - lo, 1e-9); Q = np.round((UV - lo) / span * 65535).astype(np.uint16)
     big = len(P) > 65535; I = I.astype(np.uint32 if big else np.uint16)
     name = 'flat'

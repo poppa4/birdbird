@@ -137,13 +137,13 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=26').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=27').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
       const g=new THREE.BufferGeometry(); const pa=new THREE.BufferAttribute(P,3,true); g.setAttribute('position',pa);
       const uv=new Float32Array(gr.nv*2); for(let i=0;i<gr.nv;i++){ uv[i*2]=gr.uv[0]+UV[i*2]/65535*gr.uv[2]; uv[i*2+1]=gr.uv[1]+UV[i*2+1]/65535*gr.uv[3]; } g.setAttribute('uv',new THREE.BufferAttribute(uv,2));
-      g.setAttribute('color',new THREE.InterleavedBufferAttribute(new THREE.InterleavedBuffer(new Uint8Array(buf,N.byteOffset,gr.nv*4),4),3,0,true)); g.setIndex(new THREE.BufferAttribute(I,1));
+      { const ib=new THREE.InterleavedBuffer(new Uint8Array(buf,N.byteOffset,gr.nv*4),4); g.setAttribute('color',new THREE.InterleavedBufferAttribute(ib,3,0,true)); g.setAttribute('aMat',new THREE.InterleavedBufferAttribute(ib,1,3,false)); } g.setIndex(new THREE.BufferAttribute(I,1));
       const tex=gr.tex==='flat'?null:TL.load((CF3?CF3.shellTex:'models/a320-shell-')+gr.tex+'.jpg?v=5'); if(tex){ tex.anisotropy=Math.min(8,o_R.capabilities.getMaxAnisotropy()); tex.flipY=false; tex.wrapS=tex.wrapT=THREE.RepeatWrapping; if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding; }
       const mat=new THREE.MeshBasicMaterial({map:gr.tex==='flat'?null:tex,vertexColors:true,side:THREE.DoubleSide /* the FlightGear surfaces are single-sided and many face outwards: seen from the seat they would vanish and leave holes */}); mat.color.setScalar((hdr.lmax||1)*1.22); const mesh=new THREE.Mesh(g,mat); mesh.scale.setScalar(32767/hdr.S); mat.polygonOffset=true; mat.polygonOffsetFactor=1; mat.polygonOffsetUnits=1;
       /* surface grain: moulded plastic and fabric are never one flat colour. A small tiling noise picture is laid on the
@@ -156,8 +156,14 @@ function init(o){
         const gt=new THREE.DataTexture(gd,GN,GN,THREE.RGBAFormat); gt.wrapS=gt.wrapT=THREE.RepeatWrapping; gt.generateMipmaps=true; gt.minFilter=THREE.LinearMipmapLinearFilter; gt.magFilter=THREE.LinearFilter; gt.needsUpdate=true;
         const ks=hdr.S/32767*(32767/hdr.S); /* geometry is in normalised units; the mesh scale turns them into metres */ const msc=32767/hdr.S;
         mat.onBeforeCompile=sh=>{ sh.uniforms.uGr={value:gt}; sh.uniforms.uGs={value:msc};
-          sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vGp; uniform float uGs;').replace('#include <begin_vertex>','#include <begin_vertex>\nvGp=position*uGs;');
-          sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vGp; uniform sampler2D uGr;').replace('#include <color_fragment>','#include <color_fragment>\n{ vec3 p=vGp*5.0; float gf=(texture2D(uGr,p.xy).r+texture2D(uGr,p.yz).r+texture2D(uGr,p.zx).r)/3.0; vec3 q=vGp*0.9; float gm=(texture2D(uGr,q.xy).r+texture2D(uGr,q.yz).r+texture2D(uGr,q.zx).r)/3.0; diffuseColor.rgb*=0.915+0.13*gf+0.04*gm; }'); }; mat.needsUpdate=true; }catch(e){ console.warn('A320 3D grain',e); } }
+          sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vGp; varying float vMt; attribute float aMat; uniform float uGs;').replace('#include <begin_vertex>','#include <begin_vertex>\nvGp=position*uGs; vMt=aMat;');
+          sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vGp; varying float vMt; uniform sampler2D uGr;\nfloat gT(vec3 p){ return (texture2D(uGr,p.xy).r+texture2D(uGr,p.yz).r+texture2D(uGr,p.zx).r)/3.0; }').replace('#include <color_fragment>',`#include <color_fragment>
+{ float gm=gT(vGp*0.9), k;
+  if(vMt<0.5){ k=0.915+0.13*gT(vGp*5.0)+0.04*gm; }                                   /* moulded plastic: fine grain */
+  else if(vMt<1.5){ vec3 p=vGp; float wa=(texture2D(uGr,p.xy*vec2(46.0,5.0)).r+texture2D(uGr,p.yz*vec2(46.0,5.0)).r+texture2D(uGr,p.zx*vec2(46.0,5.0)).r)/3.0, wb=(texture2D(uGr,p.xy*vec2(5.0,46.0)).r+texture2D(uGr,p.yz*vec2(5.0,46.0)).r+texture2D(uGr,p.zx*vec2(5.0,46.0)).r)/3.0; k=0.80+0.22*wa+0.22*wb; }   /* woven fabric: threads both ways */
+  else if(vMt<2.5){ k=0.72+0.50*gT(vGp*11.0)+0.08*gm; }                                /* carpet: coarse, strong */
+  else { k=0.86+0.24*gT(vGp*8.0)+0.05*gm; }  /* leather: soft pebbling */
+  diffuseColor.rgb*=k; }`); }; mat.needsUpdate=true; }catch(e){ console.warn('A320 3D grain',e); } }
       /* a thin dark line along every sharp edge of the structure (where two faces meet at more than 32 degrees): the outline of
          each part, as the eye expects from a panel joint or a moulded edge. Computed once at load, desktop only. */
       if(!CF3&&!mobile){ try{ /* only edges shared by exactly two faces that meet at more than 40 degrees: open edges and overlapping plates would draw stray lines */
