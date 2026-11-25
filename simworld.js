@@ -39,7 +39,7 @@ function start(){
     W.tod(OTW.tod()==='dusk'?'dusk':OTW.tod()==='night'?'night':'day');
     // the flight model sees the real terrain, over the runway datum
     if(G.TERRAIN){ const orig=G.TERRAIN.height; G.TERRAIN.height=(N,E)=>{ const p=toEnto(N,E), h=W.height(p[0],p[1]); return isFinite(h)?h-datum(p[0],p[1]):orig(N,E); }; }
-    W.quality((OTW.lvl||0)===2?'low':(OTW.lvl||0)?'med':'high');
+    W.quality(W.lowmem||(OTW.lvl||0)===2?'low':(OTW.lvl||0)?'med':'high');   // phones and tablets: fewer trees and cars (memory)
     ready=true; SW.ready=true; mapStart();
     Promise.race([W.full,new Promise(r=>setTimeout(r,20000))]).then(()=>setTimeout(()=>ov.done(),400));   // the sharp terrain is in
   }).catch(fail);

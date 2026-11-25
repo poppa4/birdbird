@@ -42,13 +42,14 @@ function basis(v){ const m=new THREE.Matrix4(); m.makeBasis(v.EX,v.EY,v.FN); ret
 
 function init(o){
   const o_R=o.R;
+  const LOWMEM3=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent||'')||(/Macintosh/.test(navigator.userAgent||'')&&(navigator.maxTouchPoints||0)>1);
   const mobile=(navigator.deviceMemory||8)<3; // only devices with very little memory get the light textures: phones zoom in to read, so they need full detail
   const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(62,1,0.05,20);
   cam.position.copy(EYE);
   const head={yaw:CF3&&CF3.yaw||0,pitch:P0,fov:62,tYaw:CF3&&CF3.yaw||0,tPitch:P0,tFov:62,eye:EYE.clone(),tEye:EYE.clone()};
   const q=new THREE.Quaternion(), e=new THREE.Euler(0,0,0,'YXZ');
   /* ---- panels: one canvas texture each (picture + lit legends) ---- */
-  const K=mobile?2.2:3.0; // texture pixels per sheet unit
+  const K=mobile?2.2:LOWMEM3?2.5:3.0; // texture pixels per sheet unit (phones and tablets a little less: Safari closes a tab that uses too much memory)
   const P={};
   for(const k in VIEWS){ const v=VIEWS[k], r=v.r, cv=document.createElement('canvas'); cv.width=Math.round(r[2]*K); cv.height=Math.round(r[3]*K);
     const tex=new THREE.CanvasTexture(cv); tex.anisotropy=o.R.capabilities.getMaxAnisotropy(); tex.minFilter=THREE.LinearMipmapLinearFilter; if(THREE.sRGBEncoding&&o.R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding;
@@ -305,7 +306,7 @@ function init(o){
      switch press repaints only that light layer. Phones and small-memory devices keep the sheet. ---- */
   const HI=CF3?CF3.hi:{base:'img/cockpits/a320-3d-',keys:['ovh','front','ped'],v:5};
   let lastPainter=null;
-  function loadHi(){ if(!HI||mobile||(navigator.deviceMemory&&navigator.deviceMemory<4)) return; const maxT=Math.min(o.R.capabilities.maxTextureSize||4096,phone()?4096:8192); /* phones: at most 4096 px a side (memory) */
+  function loadHi(){ if(!HI||mobile||(navigator.deviceMemory&&navigator.deviceMemory<4)) return; const maxT=Math.min(o.R.capabilities.maxTextureSize||4096,LOWMEM3?3072:phone()?4096:8192); /* phones and tablets: at most 3072 px a side (memory) */
     let chain=Promise.resolve();
     for(const k of HI.keys){ const p=P[k]; if(!p) continue;
       chain=chain.then(()=>new Promise(res=>{ const im=new Image(); im.decoding='async'; im.onerror=()=>res(); im.src=HI.base+k+'.webp?v='+(HI.v||1);
@@ -314,6 +315,7 @@ function init(o){
             if(p.v.cut){ const s2=c.width/p.v.r[2]; g.setTransform(s2,0,0,s2,-p.v.r[0]*s2,-p.v.r[1]*s2); g.globalCompositeOperation='destination-out'; g.beginPath(); for(const poly of p.v.cut){ poly.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y)); g.closePath(); } g.fill(); }
             src=c; }
           const t=new THREE.Texture(src); t.anisotropy=o.R.capabilities.getMaxAnisotropy(); t.minFilter=THREE.LinearMipmapLinearFilter; if(THREE.sRGBEncoding&&o.R.outputEncoding===THREE.sRGBEncoding) t.encoding=THREE.sRGBEncoding; t.needsUpdate=true;
+          if(LOWMEM3) t.onUpdate=()=>{ t.onUpdate=null; const w=src.width||src.naturalWidth, h=src.height||src.naturalHeight; t.image={width:w,height:h}; if(src.getContext){ src.width=src.height=1; } else im.src=''; };   // on the card now: the CPU copy goes
           // the light layer: same plane, a hair in front, transparent
           const ov=new THREE.Mesh(p.mesh.geometry,new THREE.MeshBasicMaterial({map:p.tex,vertexColors:true,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-10}));
           ov.matrixAutoUpdate=false; ov.matrix.copy(p.mesh.matrix); ov.renderOrder=1; ov.visible=p.mesh.visible; scene.add(ov);

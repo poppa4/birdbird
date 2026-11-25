@@ -27,27 +27,42 @@ const DATA_V=19;                                  // bump when anything under wo
 const V=f=>f+'?v='+DATA_V;
 
 /* ---------- loading ---------- */
-async function bitmap(url){
+/* phones and tablets: Safari closes a tab that uses too much memory ("a problem repeatedly occurred"). There the colour
+   pictures are drawn at half size (a quarter of the memory) and every picture is let go on the CPU side once it is on
+   the graphics card. */
+const NAV=(typeof navigator!=='undefined')?navigator:{};
+const LOWMEM=/iPhone|iPad|iPod|Android/i.test(NAV.userAgent||'')||(/Macintosh/.test(NAV.userAgent||'')&&(NAV.maxTouchPoints||0)>1)||((NAV.deviceMemory||8)<=4);
+W.lowmem=LOWMEM;
+async function bitmap(url,half){
   const r=await fetch(url); if(!r.ok) throw new Error(url+' '+r.status);
   const b=await r.blob();
-  return await createImageBitmap(b,{premultiplyAlpha:'none',colorSpaceConversion:'none'});
+  const bm=await createImageBitmap(b,{premultiplyAlpha:'none',colorSpaceConversion:'none'});
+  if(!(half&&LOWMEM)) return bm;
+  const w=Math.max(1,Math.round(bm.width/2)), h=Math.max(1,Math.round(bm.height/2));
+  const c=(typeof OffscreenCanvas!=='undefined')?new OffscreenCanvas(w,h):Object.assign(document.createElement('canvas'),{width:w,height:h});
+  const g=c.getContext('2d'); g.imageSmoothingQuality='high'; g.drawImage(bm,0,0,w,h); bm.close&&bm.close();
+  return (typeof createImageBitmap!=='undefined')?await createImageBitmap(c):c;
 }
+/* once uploaded, the CPU copy is not needed any more (on phones) */
+function drop(t){ if(!LOWMEM) return t; t.onUpdate=()=>{ const im=t.image; t.onUpdate=null;
+  if(im&&im.close){ try{ im.close(); }catch(e){} t.image={width:im.width,height:im.height}; }
+  else if(im&&im.data){ t.image={width:im.width,height:im.height,data:null}; } }; return t; }
 function pixels(bm){
   const c=(typeof OffscreenCanvas!=='undefined')?new OffscreenCanvas(bm.width,bm.height):Object.assign(document.createElement('canvas'),{width:bm.width,height:bm.height});
   const g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(bm,0,0); return g.getImageData(0,0,bm.width,bm.height).data;
 }
 function texFromBitmap(bm,srgb){
   const t=new (T().Texture)(bm); t.flipY=false; t.generateMipmaps=true; t.minFilter=T().LinearMipmapLinearFilter; t.magFilter=T().LinearFilter;
-  t.wrapS=t.wrapT=T().ClampToEdgeWrapping; t.anisotropy=8; t.needsUpdate=true; return t;
+  t.wrapS=t.wrapT=T().ClampToEdgeWrapping; t.anisotropy=LOWMEM?4:8; t.needsUpdate=true; return drop(t);
 }
 async function loadLevel(base,name){
   const m=W.meta[name];
-  const [hb,ab,wb]=await Promise.all([bitmap(base+V(name+'_h.png')),bitmap(base+V(name+'_a.jpg')),bitmap(base+V(name+'_w.png'))]);
-  const px=pixels(hb), n=m.hw*m.hh, dtm=new Float32Array(n), rh=new Float32Array(n), hc=new Float32Array(n*2);
+  const [hb,ab,wb]=await Promise.all([bitmap(base+V(name+'_h.png')),bitmap(base+V(name+'_a.jpg'),true),bitmap(base+V(name+'_w.png'),true)]);
+  const px=pixels(hb); hb.close&&hb.close(); const n=m.hw*m.hh, dtm=new Float32Array(n), rh=new Float32Array(n), hc=new Float32Array(n*2);
   for(let i=0;i<n;i++){ const o=i*4; const h=((px[o]<<8)|px[o+1])/10-100, c=px[o+2]/5; dtm[i]=h; rh[i]=h+c; hc[i*2]=h; hc[i*2+1]=c; }
   const L={name,m,dtm,rh,ext:[m.E0,m.N1,m.hres*(m.hw-1),m.hres*(m.hh-1)]};
   const tH=new (T().DataTexture)(hc,m.hw,m.hh,T().RGFormat,T().FloatType); tH.internalFormat='RG32F';
-  tH.minFilter=tH.magFilter=T().NearestFilter; tH.flipY=false; tH.generateMipmaps=false; tH.needsUpdate=true;
+  tH.minFilter=tH.magFilter=T().NearestFilter; tH.flipY=false; tH.generateMipmaps=false; tH.needsUpdate=true; drop(tH);
   // normals from the rendered surface (terrain + forest canopy)
   // RG: normal of the visible surface (ground + forest canopy), BA: normal of the bare ground (used under 3D trees)
   const nr=new Uint8Array(n*4), w=m.hw, h=m.hh, d=m.hres;
@@ -56,7 +71,7 @@ async function loadLevel(base,name){
     const k=1/Math.hypot(dE,1,dN); nr[i*4+o]=Math.round((-dE*k*0.5+0.5)*255); nr[i*4+o+1]=Math.round((dN*k*0.5+0.5)*255); };
   for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const i=y*w+x; put(rh,i,x,y,0); put(dtm,i,x,y,2); }
   const tN=new (T().DataTexture)(nr,w,h,T().RGBAFormat,T().UnsignedByteType);
-  tN.minFilter=T().LinearMipmapLinearFilter; tN.magFilter=T().LinearFilter; tN.generateMipmaps=true; tN.flipY=false; tN.needsUpdate=true;
+  tN.minFilter=T().LinearMipmapLinearFilter; tN.magFilter=T().LinearFilter; tN.generateMipmaps=true; tN.flipY=false; tN.needsUpdate=true; drop(tN);
   L.tH=tH; L.tN=tN; L.tA=texFromBitmap(ab,true); L.tW=texFromBitmap(wb,false);
   L.aext=[m.E0,m.N1,m.ares*(m.aw-1),m.ares*(m.ah-1)];
   lev[name]=L; W.loaded[name]=true;
@@ -73,7 +88,7 @@ W.load=async function(base){
   build();
   // finer levels stream in while the far terrain is already drawn
   const p=loadLevel(base,'mid').then(()=>loadLevel(base,'near'));
-  Promise.all([bitmap(base+V('apt.png')),bitmap(base+V('aptl.png'))]).then(([bm,bl])=>{ aptTex=texFromBitmap(bm,false);
+  Promise.all([bitmap(base+V('apt.png'),true),bitmap(base+V('aptl.png'))]).then(([bm,bl])=>{ aptTex=texFromBitmap(bm,false);
     // line offsets must not be mip-averaged (opposite vectors would cancel and fatten the lines far away)
     const tl=texFromBitmap(bl,false); tl.generateMipmaps=false; tl.minFilter=T().LinearFilter;
     if(tmat){ tmat.uniforms.tApt.value=aptTex; tmat.uniforms.tAptL.value=tl; tmat.uniforms.aptOn.value=1; } });
