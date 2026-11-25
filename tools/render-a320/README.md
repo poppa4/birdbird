@@ -163,3 +163,29 @@ The rear right circuit-breaker panels (120VU: 121VU above, 122VU below) are a pi
 `cbwall.py cb_layout.json ../../models/a320-cb-wall.jpg cb.json <shell> occ.npy` draws them (blue-grey plates, black breakers,
 green collars on the second kind, row letters, column numbers, name plates, fasteners) and bakes the wall's light;
 the polygons in `cb.json` are pasted into `a320-3d.js` (CBP).
+
+## Reveal between the header ring and the windows (2026-11-25, late evening)
+
+The ring's side beams are straight boxes (as in the owner's model); the page's window line bows out, so between beam and
+window tops there was a gap up to 14 cm wide. Through it, and through the top of the side windows, the page's backstop
+wall showed as a grey plate hanging under the ring. In the owner's model the outer shell closes that gap with a level strip.
+
+- `hyb.py` now builds that strip (`reveal`): from 1 cm inside each beam's bottom face out to the window line, exactly at the
+  level the FlightGear structure is cut off at (window tops minus 12 mm), so post tops and wall tops end in it without a joint.
+  Behind the aft window it runs out to the side wall (the farthest wall within reach; the left side has a stowage recess).
+  It joins the windshield's own reveal (`aeroplane shell.011`) on the corner post, where the joint is hidden.
+- The window line the strip and the closing wall follow is a smoothed copy of the measured polyline (`warp.OUT_S`).
+- The closing wall on the window line (`closing`) now stands from the window tops up to the page's roof backstop, painted as
+  shadow. It replaces the page's backstop walls beside the side windows: a wall on the window line cannot be seen through a
+  window, a wall further out can. `a320-3d.js` (A320 only): no side backstop beside the windows, the roof backstop's outboard
+  part ends on the window line, a side wall only behind the rear side walls (z > 1.30).
+- The level cut takes everything outboard of the ring, also the outer halves of the post tops (they showed bright above the
+  window top when seen through the window).
+- The beams' aft ends ran 2-6 cm short of the rear wall with a slanted end: they are run on into the wall (`ring_fit`).
+- The aft windows keep the FlightGear model's own rear frames again (chamfered corners). The earlier cut-out, the flat
+  panel and the frame band drawn by the page in their place are gone.
+
+Checks without a browser (`DUMP=tag.npz` on `build.py` writes the shell with the source of every face):
+
+    TAG=tag.npz OCC=occ.npy python3 hybrid/pano.py out.png L|R|J     # what each direction sees: structure, sky, backstop by quad
+    TAG=tag.npz OCC=occ.npy python3 hybrid/holes.py L|R|J            # small patches of sky or backstop, by direction

@@ -5,7 +5,7 @@ import sys, os, json, numpy as np, trimesh
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 import shellbin, warp, hyb, light
 OUT = sys.argv[1]; OCC = np.load(sys.argv[2])
-W, F, ob, t, names = hyb.blender_upper(); h, g, V, Ff, lab, rm, big = hyb.fg_keep(); G = g[0]; N8 = G['N'].astype(np.uint8)
+h, g, V, Ff, lab, rm, big = hyb.fg_keep(); W, F, ob, t, names = hyb.blender_upper(hyb.fg_tracer(V, Ff, rm)); G = g[0]; N8 = G['N'].astype(np.uint8)
 occV = OCC.reshape(-1, 3); occF = np.arange(len(occV)).reshape(-1, 3)
 def tracer(parts):
     Vs, Fs, k = [], [], 0
@@ -42,21 +42,21 @@ def clip(poly, ax, val, keep_low):          # Sutherland-Hodgman; poly = list of
         if ia != ib:
             s_ = (val - pa[ax]) / (pb[ax] - pa[ax]); out.append((pa + s_ * (pb - pa), na + s_ * (nb - na)))
     return out
-addP, addN, addF = [], [], []; base = len(Praw); drop = np.zeros(len(Ff), bool)
+addP, addN, addF, addL = [], [], [], []; base = len(Praw); drop = np.zeros(len(Ff), bool); CUR = [0]
 def emit(poly, mat):
     if len(poly) < 3: return
     ids = []
     for p_, n_ in poly: ids.append(base + len(addP)); addP.append(np.round(p_ * S)); n2 = np.round(n_); n2[3] = mat; addN.append(n2)
-    for k in range(1, len(ids) - 1): addF.append([ids[0], ids[k], ids[k + 1]])
+    for k in range(1, len(ids) - 1): addF.append([ids[0], ids[k], ids[k + 1]]); addL.append(CUR[0])
 face_poly = lambda fi: [(V[v].copy(), Nraw[v].astype(float)) for v in Ff[fi]]
 for fi in np.nonzero(zone)[0]:
     if not (V[Ff[fi], 1] > ycut[fi]).any(): continue
-    drop[fi] = True; emit(clip(face_poly(fi), 1, ycut[fi], True), Nraw[Ff[fi][0], 3])
+    drop[fi] = True; CUR[0] = lab[fi]; emit(clip(face_poly(fi), 1, ycut[fi], True), Nraw[Ff[fi][0], 3])
 fmin = V[Ff].min(1); fmax = V[Ff].max(1)
 for (bx, by, bz) in hyb.BOXES:
     cand = np.nonzero(~rm & ~drop & (fmax[:, 0] > bx[0]) & (fmin[:, 0] < bx[1]) & (fmax[:, 1] > by[0]) & (fmin[:, 1] < by[1]) & (fmax[:, 2] > bz[0]) & (fmin[:, 2] < bz[1]))[0]
     for fi in cand:
-        cur = face_poly(fi); mat = Nraw[Ff[fi][0], 3]; drop[fi] = True
+        cur = face_poly(fi); mat = Nraw[Ff[fi][0], 3]; drop[fi] = True; CUR[0] = lab[fi]
         for ax, (lo_, hi_) in ((0, bx), (1, by), (2, bz)):
             emit(clip(cur, ax, lo_, True), mat); cur = clip(cur, ax, lo_, False)       # the part below the box's low side stays
             if len(cur) < 3: break
@@ -83,6 +83,7 @@ for i in set(ob):
     if n == 'Plane.109': kind[i] = 'visor'      # the stowed sun visor on its arm (smoked plastic)
 kv = np.array([kind[o] for o in vob]); Lv = Yn.copy()
 Lv[kv == 'visor'] = 0.55 + 0.45 * Lv[kv == 'visor']; Lv[kv == 'dark'] = 0.45 + 0.55 * Lv[kv == 'dark']     # dark plastics keep some form
+Lv[np.array([names[o] == 'closing' for o in vob])] = 0.16      # the closing wall behind the lining: seen only through a joint, as shadow
 col = np.array([PAINT[k] for k in kv]) * Lv[:, None]
 col = np.clip(np.round(col), 2, 255)
 print('new verts', len(uq), 'faces', len(Fn))
@@ -92,3 +93,7 @@ S = h['S']; P0 = G['P']; nfg = len(P0)
 G['P'] = np.vstack([P0, np.round(Pn * S).astype(np.int64)]); G['UV'] = np.vstack([G['UV'], np.zeros((len(Pn), 2), np.int64)])
 G['N'] = np.vstack([G['N'], np.c_[col, np.zeros(len(col))].astype(np.uint8).astype(np.int8)]); G['I'] = np.vstack([keepF, Fn + nfg])
 shellbin.write(OUT, h, g); print('written', OUT, 'faces', len(G['I']), os.path.getsize(OUT))
+if os.environ.get('DUMP'):   # tagged copy for the picker: src 0 FlightGear, 1 FlightGear cut, 2 Blender; id = component / object
+    kf = ~rm & ~drop
+    np.savez(os.environ['DUMP'], v=np.vstack([V, Pn]), f=G['I'], src=np.concatenate([np.zeros(kf.sum(), int), np.ones(len(addF), int), np.full(len(Fn), 2)]),
+             id=np.concatenate([lab[kf], np.array(addL, int), ob]), names=np.array(names))

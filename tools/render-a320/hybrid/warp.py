@@ -26,6 +26,10 @@ def _rect(r):
 IN_B = _rect(RECT_B); IN_F = _rect(RECT_F)
 GB = np.array([0, 31.0, 55.1, 89.0, 121.0, 151.6, 180]); GF = np.array([0, 31.4, 63.4, 93.5, 131.1, 153.8, 180])
 PH = np.arange(0, 180.01, 0.5)
+def _smooth(o, sig=4.0, lo=58.0, hi=126.0):   # the measured window line is a polyline with kinks: the edges built on it take a smoothed copy
+    from scipy.ndimage import gaussian_filter1d
+    sm = gaussian_filter1d(o, sig / 0.5, mode='nearest'); w = np.clip((PH - lo) / 6.0, 0, 1) * np.clip((hi - PH) / 4.0, 0, 1); return o + w * (sm - o)
+OUT_S = _smooth(OUT_F)
 def ovh_y_B(z): return 0.94 + 0.40 * z
 def ovh_y_F(z): return 0.9565 + 0.388 * z
 def top_F(phi):   # FlightGear window-top height by azimuth (deg): windshield .815, sides .84
