@@ -124,7 +124,7 @@ G.DA42_3D=CK.make({
   snaps:[['panel','Panel'],['left','Left',-78,-14,1],['right','Right',78,-14,1],['ped','Console',16,-62,0.85],['out','Outside',0,-3,1]],
   /* glTF cockpit (models/da42-cockpit.glb): power levers, flap switch, gear handle and trim wheel sit on the panel, so on the
      foreground pass; the sticks and pedals are below it. The flat drawn levers they replace are hidden (touch zones stay) */
-  glb:{id:'da42',v:11,detail:true,aoK:1.7,
+  glb:{id:'da42',v:11,detail:!matchMedia('(pointer:coarse)').matches,aoK:1.7,
     fg:['glare_lip','power_L','power_R','flap_switch','gear_handle','trim_wheel'],
     grab:['stick_L','stick_R'], blades:['prop'], propDisc:true, direct:['stick_L','stick_R','pedal_L_l','pedal_L_r','pedal_R_l','pedal_R_r'],
     /* every switch, knob and bezel is a piece of the model standing on the panel (tools/blender/da42.py hardware()); the flat
