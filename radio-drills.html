@@ -73,9 +73,12 @@
 .rset #engNote,.rset #ttsEngNote{display:block;margin-top:4px;font-weight:400}
 .msg.atc.atis{background:#0b1a24;border-color:#20435a}
 .msg.atc.corr{border-color:#7a5b16;background:#1d1708}
-.msg.crew{background:#141c26;border-color:#2c3e52}
-.msg.crew.ch-int{background:#1a1626;border-color:#3d3157}
-.msg.crew.ch-pa{background:#14201a;border-color:#2b4a37}
+.rs .log .msg.crew{align-self:flex-start;background:#16202b;border:1px solid #2c3e52;color:#F1F4F6;border-radius:14px 14px 14px 4px}
+.rs .log .msg.crew.ch-int{background:#1b1829;border-color:#3d3157}
+.rs .log .msg.crew.ch-pa{background:#142019;border-color:#2b4a37}
+.rs-map{flex:none;height:clamp(190px,36vh,360px);border-bottom:1px solid rgba(255,255,255,.07);background:#17221c}
+.rs-map canvas{display:block;width:100%;height:100%}
+@media (max-width:640px){.rs-map{height:clamp(170px,27vh,220px)}.rs.hasmap .rs-main{height:auto!important}.rs.hasmap .log{min-height:240px!important;max-height:46vh!important}}
 .msg.atc .hid{font-family:var(--f-mono);color:#7fa88b;letter-spacing:.1em;margin-right:10px}
 .msg .reveal{background:none;border:1px solid #3a4048;color:#a9b4bf;border-radius:3px;font-size:11.5px;padding:1px 7px;cursor:pointer}
 .msg.sys.sit{border-style:solid;border-color:#2d3640;color:#c9d3db;text-align:left}
@@ -313,6 +316,7 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
             <span class="stn" id="stn"></span>
             <span class="rs-lamps"><span class="tx" id="rxi">RX</span><span class="tx" id="txi">TX</span></span>
           </div>
+          <div class="rs-map" id="amapBox" hidden><canvas id="amap" role="img" aria-label="Map of the NORDAP aerodrome with your aircraft"></canvas></div>
           <div class="log" id="log" aria-live="polite" aria-label="Radio transcript"></div>
           <div class="rs-dock">
             <div class="rt-turn" id="turn"></div>
@@ -422,11 +426,12 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
 </div>
 <script src="lab.js?v=62"></script>
 <script src="ai.js?v=8"></script>
-<script src="radiocore.js?v=6"></script>
+<script src="radiocore.js?v=7"></script>
 <script src="whisper.js?v=2"></script>
 <script src="neural.js?v=1"></script>
 <script src="radioscen.js?v=4"></script>
-<script src="radioairline.js?v=1"></script>
+<script src="radioairline.js?v=2"></script>
+<script src="airportmap.js?v=1"></script>
 <script>
 (function(){
 'use strict';
@@ -508,6 +513,6 @@ el('alpha').innerHTML=AL.map(a=>`<div><b>${a[0]}</b>${a[1]}<small>${a[2]}</small
 LAB.start('radio');
 })();
 </script>
-<script src="radiotrainer.js?v=11"></script>
+<script src="radiotrainer.js?v=12"></script>
 </body>
 </html>

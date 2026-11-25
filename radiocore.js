@@ -425,6 +425,8 @@ function prep(steps,V){ // fill units forward and mark where the controller has 
   steps.forEach((s,i)=>{ if(s.unit) unit=s.unit; else s.unit=unit; if(s.abbr) abbr=true; s.abbrOK=!!s.abbrOK||abbr; if(s.atc&&V.cs.abbr&&s.atc.includes(V.cs.abbr)) abbr=true; s.abbrAfter=abbr; if(s.reply&&V.cs.abbr&&s.reply.includes(V.cs.abbr)) abbr=true; s.n=i; });
   return steps;
 }
+/* a line in an airline script: something happens (sit), the aircraft moves (act), or someone speaks (say) */
+function lineEv(x){ return x.sit? {t:'sit',text:x.sit} : x.act? {t:'act',a:x.act,wait:!!x.wait} : Object.assign({t:'say'},x); }
 class Session{
   constructor(sc,o){
     o=o||{}; this.sc=sc; this.level=o.level||'intermediate'; this.L=LEVELS[this.level]||LEVELS.intermediate;
@@ -446,7 +448,7 @@ class Session{
     if(s.abbrOK) this.abbrOK=true;
     if(s.sit) ev.push({t:'sit',text:s.sit});
     /* airline scenarios: the other pilot, the ground crew, the cabin and ATC say their lines before your call */
-    (s.pre||[]).forEach(x=>{ ev.push(Object.assign({t:'say'},x)); if(x.atc&&!x.atis) this.lastAtc=x.text; });
+    (s.pre||[]).forEach(x=>{ ev.push(lineEv(x)); if(x.atc&&!x.atis) this.lastAtc=x.text; });
     if(s.prompt) ev.push({t:'prompt',text:s.prompt});
     if(s.atc) this._atc(s.atc,ev,{atis:!!s.atis,listen:!!s.listen});
     return ev;
@@ -478,7 +480,7 @@ class Session{
   undo(){ const u=this._undo; if(!u) return false; Object.assign(this,{i:u.i,tries:u.tries,carry:u.carry,abbrOK:u.abbrOK,lastAtc:u.lastAtc,unit:u.unit,done:u.done}); this.results.length=u.nres; this._undo=null; return true; }
   skip(){ const s=this.step; if(!s) return []; this.results.push({n:this.i,id:s.id,cat:s.cat||'rb',ph:s.ph,score:0,first:false,pass:false,skipped:true,res:(s.els||[]).map(e=>({k:e.k,st:'miss',opt:!!e.opt,label:e.l||label(e,this.V)})),flags:[],task:s.task,model:s.model});
     const ev=[{t:'model',text:s.model,fail:true}]; if(s.reply) this._atc(s.reply,ev); this._after(s,ev); return ev.concat(this._enter(this.i+1)); }
-  _after(s,ev){ (s.after||[]).forEach(x=>ev.push(x.note? {t:'sit',text:x.text} : Object.assign({t:'say'},x))); }
+  _after(s,ev){ (s.after||[]).forEach(x=>ev.push(lineEv(x))); }
   _score(g){
     let sc= g.pass? [1,0.7,0.5,0.4][this.tries-1]||0.4 : 0.4*g.frac;
     if(this.peek) sc=Math.min(sc,0.5);

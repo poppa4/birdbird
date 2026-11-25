@@ -60,6 +60,7 @@ function departure(V,u){
   {who:'PF',ch:'int',text:'Parking brake released, you may commence pushback.',task:tr('You have released the parking brake. Tell them, and let them push.','Du har sluppet parkeringsbremsen. Si det, og la dem pushe.'),
    els:[P('Parking brake released','Parkeringsbrems sluppet',/\b(released|off)\b/),P('“Commence pushback”','«Commence pushback»',/\b(commence|start|begin|go ahead)\b/,OPT)]},
   {who:'GC',ch:'int',text:'Commencing pushback, facing south.'},
+  {act:'push'},
   {who:'PF',ch:'int',text:'Clear to start engines?',task:tr('Ask if it is clear to start the engines.','Spør om det er klart for å starte motorene.'),els:[P('Start','Start',/\bstart/),P('Engines','Motorer',/\bengines?\b/)]},
   {who:'GC',ch:'int',text:'Clear to start engines 2 and 1.'},
   {who:'PF',ch:'int',text:'Starting engine 2.',task:tr('Announce the first engine you start (to the ground crew and PM).','Si fra hvilken motor du starter først (til bakkemannskapet og PM).'),els:[P('Engine 2','Motor 2',/\b(engine|number|no) ?2\b|\b2\b/)]},
@@ -76,14 +77,18 @@ function departure(V,u){
   {who:'PM',unit:u.gnd,text:`Taxi to holding point A1 runway 36 via Alpha, ${A}.`,task:tr('Read back the taxi clearance.','Les tilbake taksiklareringen.'),els:[hp('A1'),rwy(36),cs()]},
   {who:'PF',ch:'crew',text:'Clear left side.',task:tr('Both of you understand the clearance. Before you release the brakes: check your side.','Begge har forstått klareringen. Før du slipper bremsene: sjekk din side.'),els:[P('“Clear left side”','«Clear left side»',/\bleft\b/)]},
   {who:'PM',ch:'crew',text:'Clear right side.',task:tr('Check your side before the aircraft moves.','Sjekk din side før flyet ruller.'),els:[P('“Clear right side”','«Clear right side»',/\bright\b/)]},
+  {act:'taxi'},{act:'traffic'},
   {t:'sit',text:tr('Taxiing. Brake check, flight control check and Taxi flow done. The cabin-ready memo shows on the ECAM.','Takser. Bremsesjekk, flight control check og Taxi-flow ferdig. Kabin klar vises på ECAM.')},
   {who:'PM',ch:'crew',text:'Cabin is ready.',task:tr('Tell PF the cabin is ready (then the Taxi checklist).','Si til PF at kabinen er klar (så Taxi-sjekklisten).'),els:[P('Cabin ready','Kabin klar',/\bcabin\b.*\bready\b/)]},
+  {act:'hold',wait:1},
   {t:'sit',text:tr('Taxi checklist complete. Approaching A1.','Taxi-sjekkliste ferdig. Nærmer dere A1.')},
   {who:'ATC',unit:u.gnd,text:`${A}, contact Tower 118.300.`},
   {who:'PM',unit:u.gnd,text:`Tower 118.300, ${A}.`,task:tr('Read back the frequency change.','Les tilbake frekvensskiftet.'),els:[freq('118.300','Tower'),cs()]},
   {who:'PM',unit:u.twr,text:`NORDAP Tower, ${c}, holding point A1, ready for departure.`,task:tr('First call to Tower.','Første kall til Tower.'),els:[stn('NORDAP Tower'),cs(),hp('A1'),P('Ready for departure','Klar for avgang',/\bready\b/)]},
+  {act:'clear',wait:1},
   {who:'ATC',unit:u.twr,text:`${A}, line up runway 36 and wait.`},
   {who:'PM',unit:u.twr,text:`Line up runway 36 and wait, ${A}.`,task:tr('Read back the line-up clearance.','Les tilbake oppstillingsklareringen.'),els:[P('Line up','Line up',/\b(lineup|lining up)\b/),rwy(36),P('And wait','And wait',/\bwait\b/),cs()]},
+  {act:'lineup',wait:1},
   {t:'sit',text:tr('Line-up flow: runway confirmed, approach path clear, TCAS TA/RA, packs off.','Line-up-flow: bane bekreftet, innflygingen klar for trafikk, TCAS TA/RA, packs av.')},
   {who:'PM',ch:'pa',text:'Cabin crew, take-off.',task:tr('Tell the cabin on the PA.','Si fra til kabinen på PA.'),els:[P('“Cabin crew”','«Cabin crew»',/\bcabin crew\b/),P('“Take-off”','«Take-off»',/\btakeoff\b/)]},
   {t:'sit',text:tr('Lined up. Line-up checklist done.','Oppstilt. Line-up-sjekkliste ferdig.')},
@@ -92,6 +97,7 @@ function departure(V,u){
   {who:'PM',unit:u.twr,text:`Runway 36, cleared for take-off, ${A}.`,task:tr('Read back the take-off clearance.','Les tilbake avgangsklareringen.'),els:[rwy(36),P('“Cleared for take-off”','«Cleared for take-off»',/\bcleared (for )?(the )?takeoff\b/),cs()]},
   {who:'PF',ch:'crew',text:'Clearance received.',task:tr('You heard the take-off clearance. Say so.','Du hørte avgangsklareringen. Si det.'),els:[P('“Clearance received”','«Clearance received»',/\breceived\b/)]},
   {who:'PM',ch:'crew',text:'Confirmed.',task:tr('Confirm the take-off clearance.','Bekreft avgangsklareringen.'),els:[P('“Confirmed”','«Confirmed»',/\bconfirm/)]},
+  {act:'takeoff',wait:1},
   {t:'sit',text:tr('Airborne on the OSVIK 1N, passing 2000 ft.','I luften på OSVIK 1N, passerer 2000 ft.')},
   {who:'ATC',unit:u.twr,text:`${A}, contact Approach ${V.app}.`},
   {who:'PM',unit:u.twr,text:`Approach ${V.app}, ${A}.`,task:tr('Read back the frequency change.','Les tilbake frekvensskiftet.'),els:[freq(V.app,'Approach'),cs()]},
@@ -166,11 +172,12 @@ function arrival(V,u){
 function build(script,role){
   return function(V){
     V.type='A320'; V.cs=C.parseCallsign('FJORDAIR 412'); V.c=V.cs.full; V.a=V.cs.full;
-    const u=S.UNIT(V); const lines=script(V,u); const steps=[]; let pre=[], sit=[], unit=null;
+    const u=S.UNIT(V); const lines=script(V,u); const steps=[]; let pre=[], unit=null;
     const flushAfter=()=>{ if(steps.length&&pre.length){ const last=steps[steps.length-1]; last.after=(last.after||[]).concat(pre); pre=[]; } };
     lines.forEach((ln,i)=>{
       if(ln.unit&&!ln.who) unit=ln.unit;
-      if(ln.t==='sit'){ sit.push(ln.text); return; }
+      if(ln.t==='sit'){ pre.push({sit:ln.text}); return; }
+      if(ln.act){ pre.push({act:ln.act,wait:!!ln.wait}); return; }
       const ch= ln.unit||CH[ln.ch]||unit; if(ln.unit) unit=ln.unit;
       const mine= ln.who===role&&ln.els;
       if(!mine){
@@ -183,14 +190,13 @@ function build(script,role){
       if(ln.unit&&lastPre&&lastPre.atc&&!lastPre.atis){ atc=lastPre.text; pre.pop(); }
       const who=SPK[ln.who];
       const step={id:'a320:'+role+':'+i,ph:'airline',cat:ln.unit?(atc?'rb':'call'):'crew',unit:ch,rb:atc?1:0,atc,
-        pre:pre.slice(),sit:sit.length?{en:sit.map(x=>x.en).join(' '),no:sit.map(x=>x.no).join(' ')}:null,
+        pre:pre.slice(),
         task:tr(`${who.en}${ln.unit?' → '+ln.unit.n:ln.ch==='int'?' → ground crew':ln.ch==='pa'?' → cabin (PA)':' → '+(role==='PF'?'PM':'PF')}: ${ln.task.en}`,`${who.no}${ln.unit?' → '+ln.unit.n:ln.ch==='int'?' → bakkemannskap':ln.ch==='pa'?' → kabinen (PA)':' → '+(role==='PF'?'PM':'PF')}: ${ln.task.no}`),
         els:ln.els,model:ln.text,abbrOK:true};
       if(!ln.unit) step.noAtc=1;
-      steps.push(step); pre=[]; sit=[];
+      steps.push(step); pre=[];
     });
     flushAfter();
-    if(sit.length&&steps.length){ const last=steps[steps.length-1]; last.after=(last.after||[]).concat([{who:'NOTE',text:{en:sit.map(x=>x.en).join(' '),no:sit.map(x=>x.no).join(' ')},note:1}]); }
     return steps;
   };
 }
@@ -203,6 +209,10 @@ const AIRLINE=[
   mk('a320arr-pm',2,tr('A320 arrival: you are PM','A320 ankomst: du er PM'),tr('Radio handover for the ATIS, descent, cabin PA, QNH, ILS, landing, taxi to the stand.','Overføring av radio for ATIS, nedstigning, kabin-PA, QNH, ILS, landing, taksing til stand.'),arrival,'PM'),
   mk('a320arr-pf',2,tr('A320 arrival: you are PF','A320 ankomst: du er PF'),tr('Hand over and take back control and radio, order QNH, confirm what you set. PM talks to ATC.','Gi fra deg og ta tilbake kontroll og radio, be om QNH, bekreft det du setter. PM snakker med ATC.'),arrival,'PF')
 ];
+const live=(k,role,t,d)=>Object.assign(mk(k,2,t,d,departure,role),{map:true});
+AIRLINE.unshift(
+  live('a320live-pm','PM',tr('Live airport: A320 departure as PM','Live flyplass: A320-avgang som PM'),tr('See your A320 push, taxi via Alpha, wait for landing traffic and take off as your calls are accepted.','Se A320-en din pushe, takse via Alpha, vente på landende trafikk og ta av når kallene dine godkjennes.')),
+  live('a320live-pf','PF',tr('Live airport: A320 departure as PF','Live flyplass: A320-avgang som PF'),tr('The ground crew pushes you when your interphone calls are right; PM talks to ATC.','Bakkemannskapet pusher deg når interphone-kallene dine er riktige; PM snakker med ATC.')));
 S.SCEN.push(...AIRLINE); S.ALL.push(...AIRLINE);
 S.AIRLINE={departure,arrival,build,CH};
 })(typeof window!=='undefined'?window:globalThis);

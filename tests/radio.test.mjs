@@ -309,3 +309,12 @@ test('airline A320: the wrong call is not accepted', ()=>{
   const ses2=new R.Session(S.byKey('a320dep-pf'),{level:'check',seed:3}); ses2.start(); ses2.submit(ses2.step.model); ses2.submit(ses2.step.model); ses2.submit(ses2.step.model);
   assert.match(ses2.step.model,/stand ?by/i); const r2=ses2.submit('Cleared for pushback'); assert.notEqual(r2.kind,'pass');
 });
+test('live airport: the aircraft moves in the right order, and never before the call that allows it', ()=>{
+  const ses=new R.Session(S.byKey('a320live-pm'),{level:'check',seed:5}); let ev=ses.start(); const acts=[], seen=[];
+  const take=e=>e.forEach(x=>{ if(x.t==='act') acts.push(x.a); if(x.t==='atc'||x.t==='say') seen.push(x.text); });
+  take(ev); while(!ses.done){ const before=seen.length; const r=ses.submit(ses.step.model); assert.equal(r.kind,'pass'); take(r.ev); }
+  assert.deepEqual(acts,['push','taxi','traffic','hold','clear','lineup','takeoff']);
+  const idx=t=>seen.findIndex(x=>x.includes(t));
+  assert.ok(idx('pushback approved')<idx('Commencing pushback'));
+  assert.ok(idx('line up runway 36 and wait')<idx('cleared for take-off'));
+});

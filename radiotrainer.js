@@ -156,7 +156,7 @@ function setTx(on){ const t=$('#txi'), b=el('ptt'); if(t) t.classList.toggle('on
 
 /* ---------------- views ---------------- */
 const VIEWS=['home','pick','sess','deb'];
-function show(v){ VIEWS.forEach(x=>{ const e=el('v-'+x); if(e) e.hidden=x!==v; }); if(v!=='sess') hush(); document.body.classList.toggle('rt-live',v==='sess'); }
+function show(v){ VIEWS.forEach(x=>{ const e=el('v-'+x); if(e) e.hidden=x!==v; }); if(v!=='sess'){ hush(); if(MAPON&&window.NMAP&&v!=='deb') NMAP.stop(); } document.body.classList.toggle('rt-live',v==='sess'); }
 let ses=null, cur=null, group='vfr';
 
 function drawHome(){
@@ -182,17 +182,20 @@ function startScenario(sc){ if(natural()&&P.voice) nvPreload();
   else { cur=sc; ses=new R.Session(sc,{level:P.level,callsign:P.callsign}); }
   el('sessT').textContent=L(cur.t); drawBasis(); el('log').innerHTML=''; el('fbBox').innerHTML=`<p class="muted">${L({en:'Feedback on each call appears here: what was right, what was missing, and why.',no:'Tilbakemelding på hvert oppkall kommer her: hva som var riktig, hva som manglet, og hvorfor.'})}</p>`;
   el('sitBox').innerHTML=''; el('fq').textContent='———.———'; el('stn').textContent='';
+  MAPON=!!(cur.map&&window.NMAP); el('amapBox').hidden=!MAPON; el('v-sess').classList.toggle('hasmap',MAPON);
+  if(MAPON){ if(!mapInit){ NMAP.init(el('amap')); mapInit=true; } NMAP.reset(); } else if(window.NMAP) NMAP.stop();
   show('sess'); run(ses.start());
   el('say').focus({preventScroll:true}); window.scrollTo({top:el('trainer').offsetTop-70,behavior:'smooth'});
 }
 /* "Based on": the rules and documents the scenario's calls and readbacks are checked against (radioscen.js BASIS) */
 function drawBasis(){ const b=el('sessBasis'); if(!b) return; const list=(cur&&cur.basis)||[];
   b.hidden=!list.length; b.innerHTML=list.length? `${L({en:'Based on',no:'Basert på'})}: ${list.map(esc).join(' · ')} <a href="#sources">${L({en:'Sources',no:'Kilder'})}</a>` : ''; }
-let queue=Promise.resolve();
+let queue=Promise.resolve(), MAPON=false, mapInit=false;
 function run(ev){ queue=queue.then(()=>play(ev)).then(()=>{ drawTurn(); }); return queue; }
 async function play(ev){
   for(const e of ev){
     if(e.t==='tune'){ el('fq').textContent=e.unit.f; el('stn').textContent=e.unit.n; if(/^(CREW|INT|PA)$/.test(e.unit.f)) continue; addMsg('sys','',`${L({en:'Tuned',no:'Stilt inn'})} <b>${esc(e.unit.n)}</b> ${esc(e.unit.f)}`); AU.click(); }
+    else if(e.t==='act'){ if(MAPON&&window.NMAP){ const pr=NMAP.act(e.a); if(e.wait) await pr; } }
     else if(e.t==='say'){ if(e.atc){ await atcMsg(e); continue; }
       addMsg('crew ch-'+(e.ch||'crew'),L(e.label||{en:e.who,no:e.who})+(e.ch==='int'?' · interphone':e.ch==='pa'?' · PA':''),esc(e.text));
       await speak(e.text,{voice:e.voice,crew:e.ch!=='int'&&e.ch!=='pa'}); }
