@@ -23,7 +23,7 @@ const P0=160;                                    // finest patch size (m) -> 10 
 const NLEV=11;                                   // quadtree levels: root = 160*2^10 = 163.84 km
 const ROOT={E:0, N:1000, S:P0*Math.pow(2,NLEV-1)};
 const MAXI=2400;
-const DATA_V=16;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
+const DATA_V=17;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
 const V=f=>f+'?v='+DATA_V;
 
 /* ---------- loading ---------- */
@@ -691,10 +691,32 @@ function buildBuildings(){
     if(kind===1){ let cx=0,cy=0,ar=0; for(let i=0;i<n;i++){ cx+=p[i][0]/n; cy+=p[i][1]/n; const a=p[i],c=p[(i+1)%n]; ar+=a[0]*c[1]-c[0]*a[1]; } ar=Math.abs(ar)/2;
       const ht=b.e-b.b; kind=near(cx,cy,95)&&ar>250?5:(ar>1400&&ht<17?4:1); }
     if(b.p.length>=3) casters.push({p:b.p,h:Math.max(0,(b.r+b.e)/2-b.b-0.3)}); let area=0; for(let i=0;i<n;i++){ const a=p[i],c=p[(i+1)%n]; area+=a[0]*c[1]-c[0]*a[1]; }
-    const ccw=area>0, wall=kind===5?[0.62,0.64,0.66]:kind===4?[0.70,0.72,0.74]:kind?walls[bi%walls.length]:houseW[bi%houseW.length], roof=kind?[0.30,0.31,0.32]:roofs[(bi*7)%roofs.length];
+    const ccw=area>0, wall=kind===5?[0.62,0.64,0.66]:kind===4?[0.86,0.87,0.88]:kind?walls[bi%walls.length]:houseW[bi%houseW.length], roof=kind?[0.30,0.31,0.32]:roofs[(bi*7)%roofs.length];
     for(let i=0;i<n;i++){ let a=p[i], c=p[(i+1)%n]; if(!ccw){ const t=a; a=c; c=t; }
       tri(W3(a[0],b.b,a[1]),W3(c[0],b.b,c[1]),W3(c[0],b.e,c[1]),wall,kind,b.b); tri(W3(a[0],b.b,a[1]),W3(c[0],b.e,c[1]),W3(a[0],b.e,a[1]),wall,kind,b.b); }
-    if(b.r>b.e+0.2&&n===4){
+    if(kind===5){                                                         // flat roof cantilevered 3.5 m beyond the glass wall, dark fascia
+      const OV=3.5, T0=b.e-0.75, CC=[0.28,0.29,0.31];
+      for(let i=0;i<n;i++){ let a=p[i], c=p[(i+1)%n]; if(!ccw){ const t=a; a=c; c=t; }
+        const dx=c[0]-a[0], dy=c[1]-a[1], L=Math.hypot(dx,dy); if(L<4) continue; const ox=dy/L*OV, oy=-dx/L*OV;     // outward (right of a ccw edge)
+        const q=[a,c,[c[0]+ox,c[1]+oy],[a[0]+ox,a[1]+oy]];
+        tri(W3(q[0][0],b.e,q[0][1]),W3(q[1][0],b.e,q[1][1]),W3(q[2][0],b.e,q[2][1]),CC,-1,b.b); tri(W3(q[0][0],b.e,q[0][1]),W3(q[2][0],b.e,q[2][1]),W3(q[3][0],b.e,q[3][1]),CC,-1,b.b);
+        tri(W3(q[2][0],T0,q[2][1]),W3(q[1][0],T0,q[1][1]),W3(q[0][0],T0,q[0][1]),[0.55,0.56,0.58],-1,b.b); tri(W3(q[3][0],T0,q[3][1]),W3(q[2][0],T0,q[2][1]),W3(q[0][0],T0,q[0][1]),[0.55,0.56,0.58],-1,b.b);
+        tri(W3(q[3][0],T0,q[3][1]),W3(q[2][0],T0,q[2][1]),W3(q[2][0],b.e,q[2][1]),CC,-1,b.b); tri(W3(q[3][0],T0,q[3][1]),W3(q[2][0],b.e,q[2][1]),W3(q[3][0],b.e,q[3][1]),CC,-1,b.b);
+        casters.push({p:q,h:b.e-b.b,z0:b.e-b.b-0.75}); }
+    }
+    let L01_=n===4?Math.hypot(p[1][0]-p[0][0],p[1][1]-p[0][1]):0, L12_=n===4?Math.hypot(p[2][0]-p[1][0],p[2][1]-p[1][1]):0;
+    if(b.a&&n===4){                             // hangar: barrel roof across the short side, white gable ends
+      const q=L01_>=L12_?[0,1,2,3]:[1,2,3,0]; const A=p[q[0]],B=p[q[1]],C=p[q[2]],D=p[q[3]];
+      const rise=b.a, S=14, RC=[0.30,0.31,0.33];
+      const at=(P0,P1,t)=>[P0[0]+(P1[0]-P0[0])*t,P0[1]+(P1[1]-P0[1])*t], zt=t=>b.e+rise*Math.sin(Math.PI*t);
+      for(let i=0;i<S;i++){ const t0=i/S, t1=(i+1)/S; const a0=at(A,D,t0), a1=at(A,D,t1), b0=at(B,C,t0), b1=at(B,C,t1);
+        const x=W3(a0[0],zt(t0),a0[1]), y=W3(b0[0],zt(t0),b0[1]), z=W3(b1[0],zt(t1),b1[1]), w=W3(a1[0],zt(t1),a1[1]);
+        tri(x,y,z,RC,-1,b.b); tri(x,z,w,RC,-1,b.b); tri(z,y,x,RC,-1,b.b); tri(w,z,x,RC,-1,b.b);
+        for(const [P0,P1] of [[A,D],[B,C]]){ const m=at(P0,P1,0.5), e0=at(P0,P1,t0), e1=at(P0,P1,t1);
+          const u=W3(m[0],b.e,m[1]), g0=W3(e0[0],zt(t0),e0[1]), g1=W3(e1[0],zt(t1),e1[1]); tri(u,g0,g1,wall,4,b.b); tri(g1,g0,u,wall,4,b.b); } }
+      casters.push({p:[A,B,C,D],h:b.e-b.b+rise*0.7});
+    }
+    else if(b.r>b.e+0.2&&n===4){
       const L01=Math.hypot(p[1][0]-p[0][0],p[1][1]-p[0][1]), L12=Math.hypot(p[2][0]-p[1][0],p[2][1]-p[1][1]);
       const q=L01>=L12?[0,1,2,3]:[1,2,3,0]; const A=p[q[0]],B=p[q[1]],C=p[q[2]],D=p[q[3]];
       const m1=[(A[0]+D[0])/2,(A[1]+D[1])/2], m2=[(B[0]+C[0])/2,(B[1]+C[1])/2];
@@ -713,7 +735,17 @@ function buildBuildings(){
     for(let i=0;i<4;i++){ const a=c[i], d=c[(i+1)%4]; tri(W3(a[0],h0,a[1]),W3(d[0],h0,d[1]),W3(d[0],h1,d[1]),col,k,h0); tri(W3(a[0],h0,a[1]),W3(d[0],h1,d[1]),W3(a[0],h1,a[1]),col,k,h0); }
     tri(W3(c[0][0],h1,c[0][1]),W3(c[2][0],h1,c[2][1]),W3(c[1][0],h1,c[1][1]),col,-1,h0); tri(W3(c[0][0],h1,c[0][1]),W3(c[3][0],h1,c[3][1]),W3(c[2][0],h1,c[2][1]),col,-1,h0);
     tri(W3(c[0][0],h0,c[0][1]),W3(c[1][0],h0,c[1][1]),W3(c[2][0],h0,c[2][1]),col,3,h0); tri(W3(c[0][0],h0,c[0][1]),W3(c[2][0],h0,c[2][1]),W3(c[3][0],h0,c[3][1]),col,3,h0); };
-  for(const m of (apt.rwy.masts||[])){ casters.push({p:[[m[0]-0.25,m[1]-0.25],[m[0]+0.25,m[1]-0.25],[m[0]+0.25,m[1]+0.25],[m[0]-0.25,m[1]+0.25]],h:22}); box(m[0],m[1],m[2],m[2]+21.6,0.22,[0.55,0.56,0.58],2); box(m[0],m[1],m[2]+21.6,m[2]+22.4,1.2,[0.30,0.31,0.33],2); }
+  const strut=(a,b2,w,col)=>{ const dx=b2[0]-a[0], dz=b2[2]-a[2], L=Math.hypot(dx,dz)||1; const ox=-dz/L*w, oz=dx/L*w;     // thin two-sided ribbon
+    const p1=[a[0]+ox,a[1],a[2]+oz], p2=[a[0]-ox,a[1],a[2]-oz], p3=[b2[0]-ox,b2[1],b2[2]-oz], p4=[b2[0]+ox,b2[1],b2[2]+oz];
+    tri(p1,p2,p3,col,2,0); tri(p1,p3,p4,col,2,0); tri(p3,p2,p1,col,2,0); tri(p4,p3,p1,col,2,0);
+    const q1=[a[0],a[1]-w,a[2]], q2=[a[0],a[1]+w,a[2]], q3=[b2[0],b2[1]+w,b2[2]], q4=[b2[0],b2[1]-w,b2[2]];
+    tri(q1,q2,q3,col,2,0); tri(q1,q3,q4,col,2,0); tri(q3,q2,q1,col,2,0); tri(q4,q3,q1,col,2,0); };
+  for(const m of (apt.rwy.masts||[])){ casters.push({p:[[m[0]-0.5,m[1]-0.5],[m[0]+0.5,m[1]-0.5],[m[0]+0.5,m[1]+0.5],[m[0]-0.5,m[1]+0.5]],h:22});
+    const MC=[0.50,0.50,0.49], H=21.6, leg=(i,z)=>{ const hw=0.75-0.4*z/H, sx=(i&1)?1:-1, sy=(i&2)?1:-1; return [m[0]+sx*hw, m[2]+z, -(m[1]+sy*hw)]; };
+    for(let i=0;i<4;i++) strut(leg(i,0),leg(i,H),0.05,MC);
+    const ring=[0,1,3,2]; for(let k=0;k<8;k++){ const z0=k*H/8, z1=(k+1)*H/8;
+      for(let j=0;j<4;j++){ const i0=ring[j], i1=ring[(j+1)%4]; strut(leg(i0,z0),leg(i1,z1),0.025,MC); if(k%2===0) strut(leg(i0,z1),leg(i1,z1),0.025,MC); } }
+    box(m[0],m[1],m[2]+21.6,m[2]+22.4,1.2,[0.30,0.31,0.33],2); }
   { const TE=-393, TN=850, tg=W.height(TE,TN), segs=12;
     const ring=(r,h0,h1,col,k)=>{ for(let i=0;i<segs;i++){ const a0=i/segs*Math.PI*2, a1=(i+1)/segs*Math.PI*2;
       const A=[TE+Math.cos(a0)*r,TN+Math.sin(a0)*r], B=[TE+Math.cos(a1)*r,TN+Math.sin(a1)*r];
@@ -840,15 +872,15 @@ function buildBuildings(){
           if(kind>1.5&&kind<2.5){ c*=0.95; }                                   // masts: plain metal
           else if(kind>5.5){ glass=1.0; lit=1.0; }                              // tower cab: all glass
           else if(kind>4.5){                                                    // terminal: glass curtain wall, mullions 1.5 m, transoms per storey, fascia
-            float mu=fract(u/1.5), v=fract(y/4.2), top=vW.y-vK.y;
-            float mull=smoothstep(0.0,0.025+fu.x/1.5*1.5,mu)*(1.0-smoothstep(0.975-fu.x/1.5*1.5,1.0,mu));
-            float tr=smoothstep(0.0,0.03+fu.y/4.2*1.5,v)*(1.0-smoothstep(0.90-fu.y/4.2*1.5,0.93,v));
+            float mu=fract(u/1.5), v=fract(y/4.5), top=vW.y-vK.y;
+            float mull=smoothstep(0.0,0.018+fu.x/1.5*1.5,mu)*(1.0-smoothstep(0.982-fu.x/1.5*1.5,1.0,mu));
+            float tr=smoothstep(0.0,0.02+fu.y/4.5*1.5,v)*(1.0-smoothstep(0.94-fu.y/4.5*1.5,0.96,v));
             float hb=vW.y-vK.y;                                              // height above the building base
             float col9=1.0-smoothstep(0.0,0.02+fu.x/9.0*1.5,abs(fract(u/9.0)-0.5)*9.0-0.0)*0.0;
             float pier=step(abs(fract(u/9.0+0.5)-0.5)*9.0,0.35);                 // solid cladding column every 9 m
             glass=mull*tr*(1.0-pier)*step(0.6,hb);                               // dark plinth at the foot
-            c=lin(vec3(0.74,0.75,0.76))*(1.0-0.55*step(hb,0.6));
-            lit=step(0.55,h1(vec2(floor(u/1.5),floor(y/4.2))));
+            c=lin(vec3(0.30,0.31,0.33))*(1.0-0.45*step(hb,0.6));
+            lit=step(0.45,h1(vec2(floor(u/1.5),floor(y/4.5))));
           }
           else if(kind>3.5){                                                    // hangar: vertical ribbed cladding, a band of clerestory windows
             float rib=0.5+0.5*sin(u*6.2832/0.6); c*=0.86+0.14*smoothstep(0.3,0.7,rib)*(1.0-smoothstep(0.3,0.8,fu.x/0.6));
