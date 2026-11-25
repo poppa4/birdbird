@@ -2,7 +2,7 @@
 import numpy as np, json, math
 from PIL import Image, ImageDraw
 from scipy import ndimage as nd
-from shapely.geometry import Polygon, LineString, MultiPolygon
+from shapely.geometry import Polygon, LineString, MultiPolygon, Point
 from shapely.ops import unary_union
 import cv2
 from chart import drawings, key, polys, to_local
@@ -71,20 +71,60 @@ cl=sk&(edt>4.0)
 cl=nd.binary_dilation(cl,iterations=0) if False else cl
 lab,n=nd.label(cl,structure=np.ones((3,3)))
 sz=nd.sum(cl,lab,range(1,n+1)); keep=np.zeros(n+1,bool); keep[1:]=sz>25; cl=keep[lab]
-dcl=nd.distance_transform_edt(~cl)*AR
-G=np.clip(np.round(dcl*40),0,255).astype(np.uint8)         # centreline distance 0..6.4 m
+import pymupdf as fitz
+from geo import pk_to_local
+from shapely.geometry import box as sbox
+pk=fitz.open('633122.pdf')[0]
+PKL=[]
+for d in pk.get_drawings():
+    col=d.get('color')
+    if d['type'] not in ('s','fs') or not col: continue
+    if not (round(col[0],2)==1 and round(col[1],2)>=0.9 and round(col[2],2)<0.2): continue
+    if round(d.get('width') or 0,2)<1.0: continue
+    r=d['rect']
+    if r.x0>640 and r.y0>1020: continue                                 # legend
+    if r.y1<205 or r.x1<70: continue                                    # title block / frame
+    for pl in polys(d):
+        if len(pl)>=2: PKL.append(LineString([pk_to_local(x,y) for x,y in pl]))
+cov=Polygon([pk_to_local(x,y) for x,y in ((70,205),(782,205),(782,1238),(70,1238))])
+ys_,xs_=np.nonzero(cl); pts=np.stack([AE0+(xs_+0.5)*AR,AN1-(ys_+0.5)*AR],1)
+from shapely import contains_xy
+keep_pts=~contains_xy(cov,pts[:,0],pts[:,1])
+D=np.full((H,W),99.0,np.float32); OX=np.zeros((H,W),np.float32); OY=np.zeros((H,W),np.float32)
+gx=AE0+(np.arange(W)+0.5)*AR; gy=AN1-(np.arange(H)+0.5)*AR
+def seg_dist(a,b):
+    x0,x1=min(a[0],b[0])-7,max(a[0],b[0])+7; y0,y1=min(a[1],b[1])-7,max(a[1],b[1])+7
+    c0=max(0,int((x0-AE0)/AR)); c1=min(W,int((x1-AE0)/AR)+1); r0=max(0,int((AN1-y1)/AR)); r1=min(H,int((AN1-y0)/AR)+1)
+    if c0>=c1 or r0>=r1: return
+    X,Y=np.meshgrid(gx[c0:c1],gy[r0:r1]); ab=np.array(b)-np.array(a); L2=max(ab@ab,1e-9)
+    t=np.clip(((X-a[0])*ab[0]+(Y-a[1])*ab[1])/L2,0,1); px_=a[0]+t*ab[0]-X; py_=a[1]+t*ab[1]-Y; dd=np.hypot(px_,py_)
+    sub=D[r0:r1,c0:c1]; m=dd<sub; sub[m]=dd[m]; OX[r0:r1,c0:c1][m]=px_[m]; OY[r0:r1,c0:c1][m]=py_[m]
+nseg=0
+for ls in PKL:
+    c=list(ls.coords)
+    for a,b in zip(c[:-1],c[1:]): seg_dist(a,b); nseg+=1
+# skeleton outside the parking chart: distance to the (kept) skeleton pixels
+skm=np.zeros((H,W),bool); skm[ys_[keep_pts],xs_[keep_pts]]=True
+dsk,(iy,ix)=nd.distance_transform_edt(~skm,return_indices=True); dsk=dsk*AR
+gxx=np.broadcast_to(gx[None,:],(H,W)); gyy=np.broadcast_to(gy[:,None],(H,W))
+m=(dsk<D)&(dsk<7); OX[m]=(gx[ix]-gxx)[m]; OY[m]=(gy[iy]-gyy)[m]; D=np.minimum(D,np.where(dsk<7,dsk,99))
+print('parking chart lines',len(PKL),'segments',nseg)
+G=np.clip(np.round(D*40),0,255).astype(np.uint8)         # centreline distance 0..6.4 m
+far_=D>6.0; OX[far_]=6.0; OY[far_]=6.0
 img=np.dstack([sdf(pm,16),G,(raster(apron)*255).astype(np.uint8)])
 Image.fromarray(img).save(f'{OUT}/apt.png',optimize=True)
+enc=lambda v: np.clip(np.round(128+v*20),0,255).astype(np.uint8)
+Image.fromarray(np.dstack([enc(OX),enc(OY),np.zeros_like(G)])).save(f'{OUT}/aptl.png',optimize=True)
 print('apt.png',img.shape)
 # --- buildings ---
 B=[]
-def gable(poly_xy,base,eave,ridge):
+def gable(poly_xy,base,eave,ridge,k=0):
     P=np.array(poly_xy,np.float32)
     rect=cv2.minAreaRect(P.astype(np.float32)); box=cv2.boxPoints(rect)
-    B.append(dict(p=[[round(float(x),2),round(float(y),2)] for x,y in box],b=round(base,2),e=round(eave,2),r=round(ridge,2)))
+    B.append(dict(p=[[round(float(x),2),round(float(y),2)] for x,y in box],b=round(base,2),e=round(eave,2),r=round(ridge,2),k=k))
 def flatb(poly,base,top):
     xy=list(poly.exterior.coords)[:-1]
-    B.append(dict(p=[[round(x,2),round(y,2)] for x,y in xy],b=round(base,2),e=round(top,2),r=round(top,2)))
+    B.append(dict(p=[[round(x,2),round(y,2)] for x,y in xy],b=round(base,2),e=round(top,2),r=round(top,2),k=1))
 can=np.asarray(dom)-np.asarray(dtm)
 def stats(poly):
     x0,y0,x1,y1=poly.bounds; c0=int((x0-NE0)/NR); c1=int((x1-NE0)/NR)+1; r0=int((NN1-y1)/NR); r1=int((NN1-y0)/NR)+1
@@ -205,8 +245,38 @@ for g in gs:
     Lg=g.length
     for d in np.arange(0,Lg,30.0):
         q=g.interpolate(d); add((q.x,q.y),BLUE,(0,0),180,0.6,dz=0.3); nt+=1
+# apron flood-light masts: every ~85 m along the apron edge, 22 m tall, warm LED heads facing the apron
+MASTS=[]
+ap=apron.buffer(-2)
+gsa=ap.geoms if hasattr(ap,'geoms') else [ap]
+for g in gsa:
+    if g.area<4000: continue
+    ring=g.exterior; Lr=ring.length
+    for dd in np.arange(20,Lr,85.0):
+        q=ring.interpolate(dd); E_,N_=q.x,q.y
+        if pave.difference(apron).buffer(6).contains(Point(E_,N_)): continue
+        h0=float(hat(E_,N_)[0]); MASTS.append([round(E_,2),round(N_,2),round(h0,2)])
+        for k in (-1,0,1): add((E_+k*0.6,N_),(1.0,0.86,0.66),(0,0),180,2.2,dz=22.0)
+print('masts',len(MASTS))
 print('lights',len(L),'taxi',nt)
-meta=dict(thr35=[0,0],thr17=[round(float(T17[0]),3),round(float(T17[1]),3)],u=[float(U[0]),float(U[1])],s0=S0,s1=S1,width=WID,lthr=LTHR,
+STANDS=[('1',(10,15,14.02),(59,10,47.69)),('2',(10,15,14.35),(59,10,46.59)),('3',(10,15,14.37),(59,10,45.28)),('4',(10,15,14.39),(59,10,43.97)),
+ ('5',(10,15,14.39),(59,10,42.66)),('10',(10,15,11.77),(59,10,47.95)),('11',(10,15,9.22),(59,10,47.95)),('12',(10,15,6.67),(59,10,47.94)),
+ ('13',(10,15,4.13),(59,10,47.93)),('14',(10,15,1.59),(59,10,48.03)),('15',(10,14,59.04),(59,10,48.02)),
+ ('32',(10,15,22.46),(59,11,8.54)),('33',(10,15,22.46),(59,11,9.41)),('34',(10,15,22.46),(59,11,10.28))]
+stands=[]
+from shapely.geometry import Point
+for sid,lo,la in STANDS:
+    E,N=ll_to_local(dms(*lo),dms(*la)); P_=Point(E,N)
+    cand=[ls for ls in PKL if ls.length>=25 and ls.distance(P_)<4]
+    hdg=None; dmin=None
+    if cand:
+        ls=min(cand,key=lambda l:l.distance(P_)); dmin=ls.distance(P_)
+        v=min(ls.coords,key=lambda q:abs(math.hypot(q[0]-E,q[1]-N)-22))
+        hdg=math.atan2(E-v[0],N-v[1])
+    if hdg is None: hdg=math.radians(90.0)        # GA stands 32-34: nose east, as drawn on the chart
+    stands.append(dict(id=sid,E=round(E,2),N=round(N,2),hdg=round(math.degrees(hdg)%360,1),elev=round(float(hat(E,N)[0]),2),d=round(dmin,1) if dmin is not None else None))
+print('stands',[(s_['id'],s_['hdg'],s_['d']) for s_ in stands])
+meta=dict(masts=MASTS,stands=stands,thr35=[0,0],thr17=[round(float(T17[0]),3),round(float(T17[1]),3)],u=[float(U[0]),float(U[1])],s0=S0,s1=S1,width=WID,lthr=LTHR,
           elev35=round(float(hat(0,0)[0]),2),elev17=round(float(hat(*T17)[0]),2),papi=[round(p35,1),round(p17,1)],
           sdf=dict(E0=AE0,N1=AN1,w=W,h=H,res=AR),aiming=400.0)
 # runway centreline profile (for smooth runway surface & aircraft): every 10 m from s0 to s1

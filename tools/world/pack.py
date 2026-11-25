@@ -32,11 +32,21 @@ def airport_paint(col,can,cls,E0,N1,res,real=False):
     grass=np.array([80,100,52],np.float32)*((1+0.10*n)*mow)[...,None]
     sel=apt&~cls['water']
     if not real: col[sel]=grass[sel]
+    else:
+        pv_=m['twy']|m['apron']|m['rwy']
+        dpv=nd.distance_transform_edt(~pv_)*res
+        k=np.clip(1.0-(dpv-4.0)/22.0,0,1)[...,None]*(~cls["water"])[...,None]   # within ~25 m of pavement: mown grass, no satellite concrete ghosts
+        col[:]=col*(1-k)+grass*k
     can[sel]=0; cls['forest']&=~sel
     pav=m['twy']|m['apron']|m['rwy']
     asph=np.array([66,68,70],np.float32)*(1+0.06*n)[...,None]; conc=np.array([118,118,114],np.float32)*(1+0.05*n)[...,None]
-    col[m['twy']]=asph[m['twy']]; col[m['apron']]=conc[m['apron']]
-    col[m['rwy']]=np.array([52,54,56],np.float32)
+    if res>2.5:
+        col[m['twy']]=asph[m['twy']]; col[m['apron']]=conc[m['apron']]
+        col[m['rwy']]=np.array([52,54,56],np.float32)
+    else:
+        # near level: the shader draws pavement from the distance field; the colour map gets a neutral grey
+        # under it so a mip/edge never shows grass colour through the edge
+        pv=nd.binary_erosion(m['twy']|m['apron']|m['rwy'],iterations=2); col[pv]=np.array([92,94,94],np.float32)
     b=m['bld']
     if not real: col[b]=np.array([150,152,150],np.float32)
     cls['paved']=pav; cls['apt']=apt

@@ -25,3 +25,17 @@ def page_to_local(x,y):
     import numpy as np
     z=complex(x-_PA[0],-(y-_PA[1]))*_K; ux,uy=_GA[0]+z.real,_GA[1]+z.imag
     lon,lat=_u32i.transform(ux,uy); return ll_to_local(lon,lat)
+# Aircraft parking/docking chart (AD 2.24-2, 1:3000, vector PDF 633122.pdf): similarity fit on the AIP stand coordinates
+def _fit_pk():
+    import numpy as np
+    pts=[((340.7,910.2),(dms(10,15,14.35),dms(59,10,46.59))),((341.8,948.5),(dms(10,15,14.37),dms(59,10,45.28))),
+         ((342.6,986.9),(dms(10,15,14.39),dms(59,10,43.97))),((343.0,1025.3),(dms(10,15,14.39),dms(59,10,42.66))),
+         ((301.6,871.9),(dms(10,15,11.77),dms(59,10,47.95))),((263.9,872.7),(dms(10,15,9.22),dms(59,10,47.95))),
+         ((225.8,873.5),(dms(10,15,6.67),dms(59,10,47.94))),((187.6,874.6),(dms(10,15,4.13),dms(59,10,47.93))),
+         ((149.6,872.5),(dms(10,15,1.59),dms(59,10,48.03))),((110.9,873.6),(dms(10,14,59.04),dms(59,10,48.02)))]
+    P=np.array([complex(x,-y) for (x,y),_ in pts]); Gs=np.array([complex(*ll_to_local(lo,la)) for _,(lo,la) in pts])
+    pm,gm=P.mean(),Gs.mean(); k=np.sum((Gs-gm)*np.conj(P-pm))/np.sum(np.abs(P-pm)**2)
+    res=np.abs(gm+(P-pm)*k-Gs); return pm,gm,k,res
+_PKm,_PKg,_PKk,_PKres=_fit_pk()
+def pk_to_local(x,y):
+    z=_PKg+(complex(x,-y)-_PKm)*_PKk; return (z.real,z.imag)

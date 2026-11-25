@@ -23,7 +23,7 @@ const P0=160;                                    // finest patch size (m) -> 10 
 const NLEV=11;                                   // quadtree levels: root = 160*2^10 = 163.84 km
 const ROOT={E:0, N:1000, S:P0*Math.pow(2,NLEV-1)};
 const MAXI=2400;
-const DATA_V=2;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
+const DATA_V=5;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
 const V=f=>f+'?v='+DATA_V;
 
 /* ---------- loading ---------- */
@@ -73,7 +73,10 @@ W.load=async function(base){
   build();
   // finer levels stream in while the far terrain is already drawn
   const p=loadLevel(base,'mid').then(()=>loadLevel(base,'near'));
-  bitmap(base+V('apt.png')).then(bm=>{ aptTex=texFromBitmap(bm,false); aptTex.generateMipmaps=true; if(tmat){ tmat.uniforms.tApt.value=aptTex; tmat.uniforms.aptOn.value=1; } });
+  Promise.all([bitmap(base+V('apt.png')),bitmap(base+V('aptl.png'))]).then(([bm,bl])=>{ aptTex=texFromBitmap(bm,false);
+    // line offsets must not be mip-averaged (opposite vectors would cancel and fatten the lines far away)
+    const tl=texFromBitmap(bl,false); tl.generateMipmaps=false; tl.minFilter=T().LinearFilter;
+    if(tmat){ tmat.uniforms.tApt.value=aptTex; tmat.uniforms.tAptL.value=tl; tmat.uniforms.aptOn.value=1; } });
   W.full=p;
   return W;
 };
@@ -120,6 +123,13 @@ function makeDigits(){
   g.fillStyle='#000'; g.fillRect(0,0,512,256); g.fillStyle='#fff';
   g.font='bold 236px "Arial Narrow", Arial, sans-serif'; g.textAlign='center'; g.textBaseline='middle';
   ['1','7','3','5'].forEach((ch,i)=>{ g.save(); g.translate(64+i*128,132); g.scale(0.78,1); g.fillText(ch,0,0); g.restore(); });
+  const t=new (T().CanvasTexture)(c); t.flipY=false; t.minFilter=T().LinearMipmapLinearFilter; t.anisotropy=8; return t;
+}
+
+function makeStandDigits(){
+  const c=document.createElement('canvas'); c.width=640; c.height=128; const g=c.getContext('2d');
+  g.fillStyle='#000'; g.fillRect(0,0,640,128); g.fillStyle='#fff'; g.font='bold 118px Arial, sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+  for(let i=0;i<10;i++){ g.save(); g.translate(32+i*64,68); g.scale(0.62,1); g.fillText(String(i),0,0); g.restore(); }
   const t=new (T().CanvasTexture)(c); t.flipY=false; t.minFilter=T().LinearMipmapLinearFilter; t.anisotropy=8; return t;
 }
 
@@ -219,9 +229,10 @@ out highp vec4 pc_fragColor;
 #define gl_FragColor pc_fragColor
 ${COMMON}
 uniform vec3 camW; uniform float night; uniform float wt; uniform float treeR;
-uniform sampler2D tNF,tNM,tNN, tAF,tAM,tAN, tWF,tWM,tWN, tDet, tApt, tDig;
+uniform sampler2D tNF,tNM,tNN, tAF,tAM,tAN, tWF,tWM,tWN, tDet, tApt, tAptL, tDig;
 uniform vec4 extF,extM,extN, aextF,aextM,aextN; uniform float onM,onN, aptOn;
 uniform vec4 aptE; uniform vec2 rwyU; uniform vec4 rwyS; uniform float rwyAim;
+uniform sampler2D tSD; uniform vec4 stands[16]; uniform int nStands; uniform vec3 masts[40]; uniform int nMasts;
 varying vec3 vW; varying vec2 vEN; varying float vSp; varying float vCan;
 vec2 uvOf(vec4 e,vec2 EN){ return vec2((EN.x-e.x)/e.z,(e.y-EN.y)/e.w); }
 float inside(vec4 e,vec2 EN,float m){ vec2 d=min(EN-vec2(e.x,e.y-e.w),vec2(e.x+e.z,e.y)-EN); return clamp(min(d.x,d.y)/m,0.0,1.0); }
@@ -275,13 +286,49 @@ void main(){
       float concrete=s.b;
       vec4 dd=texture2D(tDet,EN/2.3);
       vec3 asph=lin(vec3(0.27,0.28,0.29))*(0.86+0.28*dd.b);
-      vec3 conc=lin(vec3(0.52,0.52,0.50))*(0.90+0.16*dd.b);
+      vec3 conc=lin(vec3(0.47,0.46,0.43))*(0.88+0.18*dd.b);
       pc=mix(asph,conc,concrete);
       // shoulder darkening near the edge, rubber-free look
       pc*=0.92+0.08*smoothstep(0.0,3.0,sd);
-      float cd=s.g*255.0/40.0; float caa=max(fwidth(cd),0.02);
+      if(concrete>0.02){
+        // 5 m concrete slabs: joints, a slight tone per slab, tyre and oil marks at the stands
+        vec2 sl=EN/5.0; vec2 sid=floor(sl); float hs=fract(sin(dot(sid,vec2(12.9898,78.233)))*43758.5453);
+        vec2 fj=abs(fract(sl)-0.5); vec2 jw=fwidth(sl);
+        float joint=max(1.0-smoothstep(0.0,jw.x*1.2+0.004,0.5-fj.x),1.0-smoothstep(0.0,jw.y*1.2+0.004,0.5-fj.y));
+        joint*=1.0-smoothstep(0.08,0.3,max(jw.x,jw.y));
+        vec3 cc=pc*(0.95+0.08*hs)*(0.9+0.2*texture2D(tDet,EN/13.0).r);
+        cc*=1.0-0.20*joint*concrete;
+        for(int i=0;i<16;i++){ if(i>=nStands) break; vec4 st=stands[i];
+          vec2 f=vec2(sin(st.z),cos(st.z)); vec2 r=vec2(f.y,-f.x); vec2 q=EN-st.xy; float a=dot(q,f), b=dot(q,r);
+          if(abs(a)<45.0&&abs(b)<30.0){
+            float stain=exp(-pow(b/2.2,2.0)-pow((a+1.5)/3.0,2.0))*0.55            // nose gear position
+                       +exp(-pow((abs(b)-3.8)/2.0,2.0)-pow((a+12.5)/4.0,2.0))*0.45  // main gear
+                       +exp(-pow((abs(b)-5.8)/3.0,2.0)-pow((a+10.0)/5.0,2.0))*0.30; // engines (oil drips)
+            stain*=0.6+0.8*texture2D(tDet,EN/1.7).r;
+            cc*=1.0-0.42*clamp(stain,0.0,1.0);
+          } }
+        pc=mix(pc,cc,concrete);
+      }
+      vec2 ofs=(texture2D(tAptL,ua).rg*255.0-128.0)/20.0; float cd=length(ofs); float caa=max(fwidth(cd),0.02);
       float line=1.0-smoothstep(0.075-caa,0.075+caa,cd);
-      pc=mix(pc,lin(vec3(0.86,0.66,0.10)),line*(1.0-concrete*0.0));
+      vec3 yel=lin(vec3(0.88,0.68,0.10))*(0.85+0.2*texture2D(tDet,EN/1.1).r);
+      pc=mix(pc,yel,line);
+      // stand stop bars and painted stand numbers (read from the cockpit as the aircraft taxies in)
+      for(int i=0;i<16;i++){ if(i>=nStands) break; vec4 st=stands[i];
+        vec2 f=vec2(sin(st.z),cos(st.z)); vec2 r=vec2(f.y,-f.x); vec2 q=EN-st.xy; float a=dot(q,f), b=dot(q,r);
+        if(abs(a)<20.0&&abs(b)<10.0){
+          vec2 aw=vec2(max(fwidth(a),0.01),max(fwidth(b),0.01));
+          float bar=clamp((min(a+0.15+aw.x,0.15)-max(a+0.15-aw.x,-0.15))/(2.0*aw.x),0.0,1.0)*clamp((min(b+aw.y,2.5)-max(b-aw.y,-2.5))/(2.0*aw.y),0.0,1.0);
+          pc=mix(pc,yel,bar);
+          // number: 3 m tall, 9 m before the stop point, upright for a pilot taxiing in
+          float id=st.w; float n2=id>=10.0?2.0:1.0; float cw=1.9;
+          vec2 p=vec2(b+n2*cw*0.5, -(a+9.0)+1.5);
+          if(p.y>0.0&&p.y<3.0&&p.x>0.0&&p.x<n2*cw){
+            float k=floor(p.x/cw); float dgt=n2>1.5?(k<0.5?floor(id/10.0):mod(id,10.0)):id;
+            vec2 du=vec2((dgt+0.1+fract(p.x/cw)*0.8)/10.0,1.0-p.y/3.0);
+            float g=texture2D(tSD,du).r; pc=mix(pc,yel,smoothstep(0.35,0.65,g));
+          }
+        } }
     }
   }
   // runway: surface and ICAO markings computed analytically in runway coordinates
@@ -336,6 +383,14 @@ void main(){
   vec3 lit=sunCol*ndl*sunVis*(1.0-0.25*fr) + skyCol*amb*(0.55+0.45*N.y)*2.0 + horCol*amb*0.25*(1.0-N.y);
   lit*=1.0-0.18*fr*(1.0-ndl);
   vec3 col=c*lit;
+  if(night>0.05&&aptOn>0.5){
+    vec2 ua2=vec2((EN.x-aptE.x)/aptE.z,(aptE.y-EN.y)/aptE.w);
+    if(ua2.x>0.0&&ua2.y>0.0&&ua2.x<1.0&&ua2.y<1.0){
+      vec3 fl=vec3(0.0);
+      for(int i=0;i<40;i++){ if(i>=nMasts) break; vec3 m=masts[i]; vec2 d=EN-m.xy; float r2=dot(d,d);
+        if(r2<9000.0){ float hh=22.0; fl+=vec3(1.0,0.82,0.6)*hh*hh/(r2+hh*hh)*smoothstep(9000.0,2500.0,r2); } }
+      col+=c*fl*1.4*night;
+    } }
   // water: Fresnel sky reflection, sun glint, ripples
   if(wat>0.02){
     vec4 w1=texture2D(tDet,EN/61.0+vec2(wt*0.004,wt*0.002)), w2=texture2D(tDet,EN/23.0-vec2(wt*0.003,-wt*0.005));
@@ -366,9 +421,11 @@ function build(){
   group=new (T().Group)(); group.name='WORLD';
   detailTex=makeDetail(); digitTex=makeDigits();
   const U=Object.assign(levUniforms(),{
-    camW:{value:new (T().Vector3)()}, morph:{value:[]}, treeR:{value:TREE_R}, tDet:{value:detailTex}, tApt:{value:null}, aptOn:{value:0}, tDig:{value:digitTex},
+    camW:{value:new (T().Vector3)()}, morph:{value:[]}, treeR:{value:TREE_R}, tDet:{value:detailTex}, tApt:{value:null}, tAptL:{value:null}, aptOn:{value:0}, tDig:{value:digitTex},
     aptE:{value:new (T().Vector4)(apt.rwy.sdf.E0,apt.rwy.sdf.N1,apt.rwy.sdf.w*apt.rwy.sdf.res,apt.rwy.sdf.h*apt.rwy.sdf.res)},
-    rwyU:{value:new (T().Vector2)(apt.rwy.u[0],apt.rwy.u[1])}, rwyS:{value:new (T().Vector4)(apt.rwy.s0,apt.rwy.s1,apt.rwy.width,apt.rwy.lthr)}, rwyAim:{value:apt.rwy.aiming},
+    rwyU:{value:new (T().Vector2)(apt.rwy.u[0],apt.rwy.u[1])}, tSD:{value:makeStandDigits()},
+    stands:{value:(()=>{ const a=(apt.rwy.stands||[]).slice(0,16).map(st=>new (T().Vector4)(st.E,st.N,st.hdg*Math.PI/180,+st.id)); while(a.length<16) a.push(new (T().Vector4)(0,0,0,0)); return a; })()}, nStands:{value:Math.min(16,(apt.rwy.stands||[]).length)},
+    masts:{value:(()=>{ const a=(apt.rwy.masts||[]).slice(0,40).map(m=>new (T().Vector3)(m[0],m[1],m[2])); while(a.length<40) a.push(new (T().Vector3)(0,0,-9999)); return a; })()}, nMasts:{value:Math.min(40,(apt.rwy.masts||[]).length)}, rwyS:{value:new (T().Vector4)(apt.rwy.s0,apt.rwy.s1,apt.rwy.width,apt.rwy.lthr)}, rwyAim:{value:apt.rwy.aiming},
     sunDir:{value:new (T().Vector3)(0,1,0)}, sunCol:{value:new (T().Color)()}, skyCol:{value:new (T().Color)()}, horCol:{value:new (T().Color)()},
     amb:{value:0.5}, fogD:{value:1/30000}, expo:{value:1}, night:{value:0}, wt:{value:0}
   });
@@ -524,45 +581,82 @@ function buildSky(){
 
 /* ---------- buildings: chart footprints + lidar houses, one merged mesh ---------- */
 function buildBuildings(){
-  const P=[],Nn=[],Cc=[];
-  const tri=(a,b,c,col)=>{ const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2], vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
-    let nx=uy*vz-uz*vy, ny=uz*vx-ux*vz, nz=ux*vy-uy*vx; const k=1/(Math.hypot(nx,ny,nz)||1); nx*=k;ny*=k;nz*=k;
-    for(const p of [a,b,c]){ P.push(p[0],p[1],p[2]); Nn.push(nx,ny,nz); Cc.push(col[0],col[1],col[2]); } };
+  const P=[],Nn=[],Cc=[],K=[];
+  const tri=(a,b,c,col,k,base)=>{ const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2], vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
+    let nx=uy*vz-uz*vy, ny=uz*vx-ux*vz, nz=ux*vy-uy*vx; const q=1/(Math.hypot(nx,ny,nz)||1); nx*=q;ny*=q;nz*=q;
+    for(const p of [a,b,c]){ P.push(p[0],p[1],p[2]); Nn.push(nx,ny,nz); Cc.push(col[0],col[1],col[2]); K.push(k,base); } };
   const W3=(E,h,N)=>[E,h,-N];
-  const pal=[[0.62,0.62,0.60],[0.70,0.66,0.58],[0.56,0.30,0.24],[0.80,0.78,0.72],[0.42,0.44,0.46]];
+  const walls=[[0.78,0.78,0.76],[0.70,0.71,0.72],[0.62,0.64,0.66],[0.82,0.80,0.74],[0.55,0.57,0.60]];
+  const houseW=[[0.86,0.84,0.78],[0.62,0.22,0.16],[0.88,0.86,0.80],[0.80,0.70,0.48],[0.40,0.44,0.40]];
   const roofs=[[0.24,0.24,0.26],[0.42,0.20,0.16],[0.34,0.35,0.36],[0.30,0.18,0.14]];
   apt.buildings.forEach((b,bi)=>{
-    const p=b.p, n=p.length; let area=0; for(let i=0;i<n;i++){ const a=p[i],c=p[(i+1)%n]; area+=a[0]*c[1]-c[0]*a[1]; }
-    const ccw=area>0, wall=pal[bi%pal.length], roof=roofs[(bi*7)%roofs.length];
+    const p=b.p, n=p.length, kind=b.k||0; let area=0; for(let i=0;i<n;i++){ const a=p[i],c=p[(i+1)%n]; area+=a[0]*c[1]-c[0]*a[1]; }
+    const ccw=area>0, wall=kind?walls[bi%walls.length]:houseW[bi%houseW.length], roof=kind?[0.30,0.31,0.32]:roofs[(bi*7)%roofs.length];
     for(let i=0;i<n;i++){ let a=p[i], c=p[(i+1)%n]; if(!ccw){ const t=a; a=c; c=t; }
-      tri(W3(a[0],b.b,a[1]),W3(c[0],b.b,c[1]),W3(c[0],b.e,c[1]),wall); tri(W3(a[0],b.b,a[1]),W3(c[0],b.e,c[1]),W3(a[0],b.e,a[1]),wall); }
+      tri(W3(a[0],b.b,a[1]),W3(c[0],b.b,c[1]),W3(c[0],b.e,c[1]),wall,kind,b.b); tri(W3(a[0],b.b,a[1]),W3(c[0],b.e,c[1]),W3(a[0],b.e,a[1]),wall,kind,b.b); }
     if(b.r>b.e+0.2&&n===4){
-      // gable along the long side
       const L01=Math.hypot(p[1][0]-p[0][0],p[1][1]-p[0][1]), L12=Math.hypot(p[2][0]-p[1][0],p[2][1]-p[1][1]);
       const q=L01>=L12?[0,1,2,3]:[1,2,3,0]; const A=p[q[0]],B=p[q[1]],C=p[q[2]],D=p[q[3]];
       const m1=[(A[0]+D[0])/2,(A[1]+D[1])/2], m2=[(B[0]+C[0])/2,(B[1]+C[1])/2];
-      const s=[[A,B,m2,m1],[C,D,m1,m2]];
-      for(const [a,bb,r2,r1] of s){
+      for(const [a,bb,r2,r1] of [[A,B,m2,m1],[C,D,m1,m2]]){
         const x=W3(a[0],b.e,a[1]), y=W3(bb[0],b.e,bb[1]), z=W3(r2[0],b.r,r2[1]), w=W3(r1[0],b.r,r1[1]);
-        tri(x,y,z,roof); tri(x,z,w,roof); tri(z,y,x,roof); tri(w,z,x,roof); }
-      tri(W3(A[0],b.e,A[1]),W3(D[0],b.e,D[1]),W3(m1[0],b.r,m1[1]),wall); tri(W3(m1[0],b.r,m1[1]),W3(D[0],b.e,D[1]),W3(A[0],b.e,A[1]),wall);
-      tri(W3(B[0],b.e,B[1]),W3(C[0],b.e,C[1]),W3(m2[0],b.r,m2[1]),wall); tri(W3(m2[0],b.r,m2[1]),W3(C[0],b.e,C[1]),W3(B[0],b.e,B[1]),wall);
+        tri(x,y,z,roof,-1,b.b); tri(x,z,w,roof,-1,b.b); tri(z,y,x,roof,-1,b.b); tri(w,z,x,roof,-1,b.b); }
+      tri(W3(A[0],b.e,A[1]),W3(D[0],b.e,D[1]),W3(m1[0],b.r,m1[1]),wall,-2,b.b); tri(W3(m1[0],b.r,m1[1]),W3(D[0],b.e,D[1]),W3(A[0],b.e,A[1]),wall,-2,b.b);
+      tri(W3(B[0],b.e,B[1]),W3(C[0],b.e,C[1]),W3(m2[0],b.r,m2[1]),wall,-2,b.b); tri(W3(m2[0],b.r,m2[1]),W3(C[0],b.e,C[1]),W3(B[0],b.e,B[1]),wall,-2,b.b);
     } else {
       const shape=p.map(v=>new (T().Vector2)(v[0],v[1])); const tris=T().ShapeUtils.triangulateShape(shape,[]);
-      for(const t of tris){ const a=p[t[0]],bb=p[t[1]],c=p[t[2]]; tri(W3(a[0],b.e,a[1]),W3(bb[0],b.e,bb[1]),W3(c[0],b.e,c[1]),roof); tri(W3(c[0],b.e,c[1]),W3(bb[0],b.e,bb[1]),W3(a[0],b.e,a[1]),roof); }
+      for(const t of tris){ const a=p[t[0]],bb=p[t[1]],c=p[t[2]]; tri(W3(a[0],b.e,a[1]),W3(bb[0],b.e,bb[1]),W3(c[0],b.e,c[1]),roof,-1,b.b); tri(W3(c[0],b.e,c[1]),W3(bb[0],b.e,bb[1]),W3(a[0],b.e,a[1]),roof,-1,b.b); }
     }
   });
+  // apron flood-light masts: 0.45 m pole, 2.4 m wide head at 22 m
+  const box=(E,N,h0,h1,hw,col,k)=>{ const c=[[E-hw,N-hw],[E+hw,N-hw],[E+hw,N+hw],[E-hw,N+hw]];
+    for(let i=0;i<4;i++){ const a=c[i], d=c[(i+1)%4]; tri(W3(a[0],h0,a[1]),W3(d[0],h0,d[1]),W3(d[0],h1,d[1]),col,k,h0); tri(W3(a[0],h0,a[1]),W3(d[0],h1,d[1]),W3(a[0],h1,a[1]),col,k,h0); }
+    tri(W3(c[0][0],h1,c[0][1]),W3(c[2][0],h1,c[2][1]),W3(c[1][0],h1,c[1][1]),col,-1,h0); tri(W3(c[0][0],h1,c[0][1]),W3(c[3][0],h1,c[3][1]),W3(c[2][0],h1,c[2][1]),col,-1,h0);
+    tri(W3(c[0][0],h0,c[0][1]),W3(c[1][0],h0,c[1][1]),W3(c[2][0],h0,c[2][1]),col,3,h0); tri(W3(c[0][0],h0,c[0][1]),W3(c[2][0],h0,c[2][1]),W3(c[3][0],h0,c[3][1]),col,3,h0); };
+  for(const m of (apt.rwy.masts||[])){ box(m[0],m[1],m[2],m[2]+21.6,0.22,[0.55,0.56,0.58],2); box(m[0],m[1],m[2]+21.6,m[2]+22.4,1.2,[0.30,0.31,0.33],2); }
   const g=new (T().BufferGeometry)();
-  g.setAttribute('position',new (T().Float32BufferAttribute)(P,3)); g.setAttribute('normal',new (T().Float32BufferAttribute)(Nn,3)); g.setAttribute('color',new (T().Float32BufferAttribute)(Cc,3));
+  g.setAttribute('position',new (T().Float32BufferAttribute)(P,3)); g.setAttribute('normal',new (T().Float32BufferAttribute)(Nn,3));
+  g.setAttribute('color',new (T().Float32BufferAttribute)(Cc,3)); g.setAttribute('bk',new (T().Float32BufferAttribute)(K,2));
   g.computeBoundingSphere();
   const m=new (T().ShaderMaterial)({uniforms:{camW:{value:new (T().Vector3)()},sunDir:{value:new (T().Vector3)()},sunCol:{value:new (T().Color)()},skyCol:{value:new (T().Color)()},horCol:{value:new (T().Color)()},amb:{value:0.5},fogD:{value:0},expo:{value:1},night:{value:0}},
-    vertexShader:`attribute vec3 color; varying vec3 vC; varying vec3 vN; varying vec3 vW; void main(){ vC=color; vN=normal; vW=position; gl_Position=projectionMatrix*viewMatrix*vec4(position,1.0); }`,
-    fragmentShader:`${COMMON} uniform vec3 camW; uniform float night; varying vec3 vC; varying vec3 vN; varying vec3 vW;
-      void main(){ vec3 N=normalize(vN); float ndl=max(dot(N,sunDir),0.0); vec3 c=lin(vC);
-        vec3 lit=sunCol*ndl*smoothstep(-0.05,0.08,sunDir.y)+skyCol*amb*(0.55+0.45*N.y)*2.0+horCol*amb*0.3;
-        vec3 col=c*lit;
-        // lit windows at night on walls
-        if(abs(N.y)<0.5&&night>0.5){ float w=step(0.55,fract(vW.y/3.0))*step(0.5,fract((vW.x+vW.z)/4.0)); col+=vec3(1.0,0.75,0.4)*w*0.25*night; }
+    vertexShader:`attribute vec3 color; attribute vec2 bk; varying vec3 vC; varying vec3 vN; varying vec3 vW; varying vec2 vK; void main(){ vC=color; vN=normal; vW=position; vK=bk; gl_Position=projectionMatrix*viewMatrix*vec4(position,1.0); }`,
+    fragmentShader:`${COMMON} uniform vec3 camW; uniform float night; varying vec3 vC; varying vec3 vN; varying vec3 vW; varying vec2 vK;
+      float h1(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+      void main(){
+        vec3 N=normalize(vN); vec3 c=lin(vC); float kind=vK.x; float y=vW.y-vK.y;
+        vec3 V=normalize(camW-vW);
+        float glass=0.0, lit=0.0;
+        if(abs(N.y)<0.3&&kind>-0.5){
+          float u=dot(vW.xz,vec2(-N.z,N.x));
+          vec2 fu=vec2(fwidth(u),fwidth(y));
+          if(kind>1.5&&kind<2.5){ c*=0.95; }                                   // masts: plain metal
+          else if(kind>0.5){                                                    // terminal / hangars: storeys of 3.8 m, window bands
+            float fl=floor(y/3.8), v=fract(y/3.8), mu=fract(u/1.6);
+            float band=smoothstep(0.30,0.30+fu.y/3.8*2.0,v)*(1.0-smoothstep(0.86-fu.y/3.8*2.0,0.86,v));
+            float mull=smoothstep(0.0,0.06+fu.x/1.6*2.0,mu)*(1.0-smoothstep(0.94-fu.x/1.6*2.0,1.0,mu));
+            glass=band*mull*step(y,vK.y+999.0);
+            if(fl<0.5){ glass=max(glass,smoothstep(0.05,0.08,v)*(1.0-smoothstep(0.80,0.83,v))*mull*step(0.55,h1(vec2(floor(u/4.8),7.0)))); }
+            float top=smoothstep(-0.6,-0.4,y-(floor(y/3.8+0.0001)*3.8)); c*=0.92+0.08*h1(vec2(fl,floor(u/9.6)));
+            lit=step(0.45,h1(vec2(floor(u/1.6),fl)));
+          } else {                                                              // houses: windows 1.2 m, every 3 m, one per storey
+            float v=fract((y-0.4)/2.8), mu=fract(u/3.0);
+            glass=step(0.35,v)*step(v,0.78)*step(0.32,mu)*step(mu,0.68);
+            glass*=1.0-smoothstep(0.3,0.6,max(fu.x,fu.y));
+            lit=step(0.6,h1(vec2(floor(u/3.0),floor(y/2.8))));
+          }
+          // soft dark band at the foot of every wall (contact with the ground)
+          c*=0.75+0.25*smoothstep(0.0,1.2,y);
+        }
+        float ndl=max(dot(N,sunDir),0.0);
+        vec3 lt=sunCol*ndl*smoothstep(-0.05,0.08,sunDir.y)+skyCol*amb*(0.55+0.45*N.y)*2.0+horCol*amb*0.3;
+        vec3 col=c*lt;
+        if(glass>0.0){
+          vec3 R=reflect(-V,N); float fres=0.06+0.94*pow(1.0-max(dot(N,V),0.0),5.0);
+          vec3 gc=mix(lin(vec3(0.10,0.13,0.16))*(skyCol*amb*2.0+sunCol*0.15),skyAt(normalize(vec3(R.x,abs(R.y),R.z))),clamp(fres+0.25,0.0,1.0));
+          gc+=vec3(1.0,0.78,0.48)*lit*night*0.9;
+          col=mix(col,gc,glass);
+        }
+        if(kind>2.5) col+=vec3(1.0,0.86,0.66)*night*3.0;                    // underside of the mast heads
         gl_FragColor=vec4(tone(aerial(col,vW,camW)),1.0); }`});
   bldg=new (T().Mesh)(g,m); bldg.name='buildings'; group.add(bldg);
 }
