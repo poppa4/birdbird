@@ -183,7 +183,7 @@ function startScenario(sc){ if(natural()&&P.voice) nvPreload();
   el('sessT').textContent=L(cur.t); drawBasis(); el('log').innerHTML=''; el('fbBox').innerHTML=`<p class="muted">${L({en:'Feedback on each call appears here: what was right, what was missing, and why.',no:'Tilbakemelding på hvert oppkall kommer her: hva som var riktig, hva som manglet, og hvorfor.'})}</p>`;
   el('sitBox').innerHTML=''; el('fq').textContent='———.———'; el('stn').textContent='';
   MAPON=!!(cur.map&&window.NMAP); el('amapBox').hidden=!MAPON; el('v-sess').classList.toggle('hasmap',MAPON);
-  if(MAPON){ if(!mapInit){ NMAP.init(el('amap')); mapInit=true; } NMAP.reset(cur.map); } else if(window.NMAP) NMAP.stop();
+  if(MAPON){ if(!mapInit){ NMAP.init(el('amap')); mapInit=true; } NMAP.reset(cur.map,ses.V.dep,ses.V.arr); } else if(window.NMAP) NMAP.stop();
   show('sess'); run(ses.start());
   el('say').focus({preventScroll:true}); window.scrollTo({top:el('trainer').offsetTop-70,behavior:'smooth'});
 }

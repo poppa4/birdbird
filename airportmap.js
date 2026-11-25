@@ -40,31 +40,41 @@ function step(p,dt){
 const norm=a=>{ while(a>Math.PI) a-=2*Math.PI; while(a<-Math.PI) a+=2*Math.PI; return a; };
 
 /* ---------- scenario ---------- */
-let MODE='dep';
-function reset(mode){
-  waiters.forEach(w=>w.res()); waiters=[]; MODE=mode==='arr'?'arr':'dep'; ACTS._t=null;
+let MODE='dep', DEP={rwy:'36',stand:4,luv:'cond',tcs:'NORVIK 27'}, ARR={stand:6,tcs:'KYSTFLY 303'}, sx=standX(4), N18=false;
+const HOLD_D1={x:1200,y:78};
+function reset(mode,dep,arr){
+  waiters.forEach(w=>w.res()); waiters=[]; MODE=mode==='arr'?'arr':'dep'; ACTS._t=null; ACTS._d=null;
+  DEP=Object.assign({rwy:'36',stand:4,luv:'cond',tcs:'NORVIK 27'},dep||{}); ARR=Object.assign({stand:6,tcs:'KYSTFLY 303'},arr||{});
   const parked=k=>plane({x:standX(k),y:STAND_Y,a:Math.PI/2,label:''});
-  if(MODE==='dep'){ own=plane({x:standX(4),y:STAND_Y,a:Math.PI/2,label:'FJORDAIR 412',own:true}); ai=[parked(2),parked(6),parked(8)]; phase='stand'; }
-  else { own=plane({x:-9000,y:0,a:0,alt:1,label:'FJORDAIR 412',own:true,hidden:true}); ai=[parked(2),parked(4),parked(8)];
+  if(MODE==='dep'){ N18=DEP.rwy==='18'; sx=standX(DEP.stand);
+    own=plane({x:sx,y:STAND_Y,a:Math.PI/2,label:'FJORDAIR 412',own:true});
+    ai=[2,6,8,[3,4,5].find(k=>k!==DEP.stand&&k!==(DEP.stand===4?3:4))].map(parked); phase='stand'; }
+  else { N18=false; own=plane({x:-9000,y:0,a:0,alt:1,label:'FJORDAIR 412',own:true,hidden:true});
+    ai=[2,4,8].filter(k=>k!==ARR.stand).map(parked);
     // a departure lined up on 36: it goes when you are on final, so the runway is free for you
-    const d=plane({x:-1150,y:0,a:0,label:'NORVIK 51'}); d.hold=true; ai.push(d); ACTS._d=d; phase='inbound'; }
+    const d=plane({x:-1150,y:0,a:0,label:ARR.tcs}); ai.push(d); ACTS._d=d; phase='inbound'; }
   camera(10); cam=Object.assign({},camT);
   if(!running) loop(); draw();
 }
 function fit(m){ return Math.max(0.12,Math.min(W/m,H/(m*0.42))); }
-const sx=standX(4);
+/* from the west end of the apron lane to stand k, nose in */
+const IN_W=k=>[{x:-590,y:TWY_A},{x:-560,y:LANE-35},{x:-520,y:LANE},{x:standX(k)-35,y:LANE},{x:standX(k)-4,y:LANE+28},{x:standX(k),y:STAND_Y}];
 const ACTS={
-  push(){ phase='push';
-    follow(own,[{x:sx,y:STAND_Y-40},{x:sx+10,y:LANE+12},{x:sx+40,y:LANE}],{back:true,v:SPEED.push,endA:Math.PI});
+  push(){ phase='push'; const d=N18?-1:1;   // facing south (36) or north (18): the tail goes the other way
+    follow(own,[{x:sx,y:STAND_Y-40},{x:sx+10*d,y:LANE+12},{x:sx+40*d,y:LANE}],{back:true,v:SPEED.push,endA:N18?0:Math.PI});
     return wait(()=>own.done); },
   taxi(){ phase='taxi';
-    follow(own,[{x:sx-60,y:LANE},{x:-520,y:LANE},{x:-560,y:LANE-35},{x:-590,y:TWY_A},{x:-1120,y:TWY_A},{x:-1180,y:TWY_A-25},{x:HOLD_A1.x,y:HOLD_A1.y+20},{x:HOLD_A1.x,y:HOLD_A1.y}],{v:SPEED.taxi});
+    if(!N18) follow(own,[{x:sx-60,y:LANE},{x:-520,y:LANE},{x:-560,y:LANE-35},{x:-590,y:TWY_A},{x:-1120,y:TWY_A},{x:-1180,y:TWY_A-25},{x:HOLD_A1.x,y:HOLD_A1.y+20},{x:HOLD_A1.x,y:HOLD_A1.y}],{v:SPEED.taxi});
+    else follow(own,[{x:sx+60,y:LANE},{x:175,y:LANE},{x:200,y:LANE-25},{x:200,y:TWY_A+25},{x:225,y:TWY_A},{x:1120,y:TWY_A},{x:1180,y:TWY_A-25},{x:HOLD_D1.x,y:HOLD_D1.y+20},{x:HOLD_D1.x,y:HOLD_D1.y}],{v:SPEED.taxi});
     return Promise.resolve(); },
   hold(){ return wait(()=>own.done&&phase==='taxi'); },
-  traffic(){ // an A320 on final lands on 36, vacates via Bravo and taxis to stand 7
-    const t=plane({x:-4600,y:0,a:0,alt:0.55,label:'NORVIK 27'}); t.acc=12; ai.push(t);
-    follow(t,[{x:-1000,y:0,v:55,alt:0},{x:-200,y:0,v:38},{x:240,y:0,v:12},{x:290,y:25},{x:300,y:90},{x:250,y:TWY_A},{x:215,y:TWY_A+8}].concat(IN(7)),{v:55});
-    t.v=55; ACTS._t=t; return Promise.resolve(); },
+  traffic(){ // landing traffic about 2 NM out when you reach the holding point; it vacates and taxis to a stand
+    let t;
+    if(!N18){ t=plane({x:-4600,y:0,a:0,alt:0.55,label:DEP.tcs});
+      follow(t,[{x:-1000,y:0,v:55,alt:0},{x:-200,y:0,v:38},{x:240,y:0,v:12},{x:290,y:25},{x:300,y:90},{x:250,y:TWY_A},{x:215,y:TWY_A+8}].concat(IN(7)),{v:55}); }
+    else { t=plane({x:4600,y:0,a:Math.PI,alt:0.55,label:DEP.tcs});
+      follow(t,[{x:1000,y:0,v:55,alt:0},{x:200,y:0,v:38},{x:-240,y:0,v:12},{x:-290,y:25},{x:-300,y:90},{x:-340,y:TWY_A},{x:-560,y:TWY_A}].concat(IN_W(1)),{v:55}); }
+    t.acc=12; t.v=55; ai.push(t); ACTS._t=t; return Promise.resolve(); },
   clear(){ const t=ACTS._t; return t? wait(()=>t.y>40||t.done) : Promise.resolve(); },
   /* arrival */
   final(){ phase='final'; own.hidden=false; Object.assign(own,{x:-6200,y:0,a:0,alt:0.75}); own.acc=6;
@@ -73,13 +83,14 @@ const ACTS={
     return Promise.resolve(); },
   land(){ return wait(()=>own.done).then(()=>{ phase='landing'; own.acc=5; follow(own,[{x:-200,y:0,v:38},{x:230,y:0,v:11}],{v:62}); return wait(()=>own.done); }); },
   vacate(){ phase='taxiin'; follow(own,[{x:290,y:25},{x:300,y:90},{x:255,y:TWY_A},{x:225,y:TWY_A}],{v:SPEED.taxiTurn}); return wait(()=>own.done); },
-  taxiin(){ follow(own,[{x:210,y:TWY_A+10}].concat(IN(6)),{v:SPEED.taxi}); return wait(()=>own.done).then(()=>{ phase='parked'; }); },
+  taxiin(){ follow(own,[{x:210,y:TWY_A+10}].concat(IN(ARR.stand)),{v:SPEED.taxi}); return wait(()=>own.done).then(()=>{ phase='parked'; }); },
   lineup(){ phase='lineup';
-    follow(own,[{x:HOLD_A1.x,y:30},{x:HOLD_A1.x+20,y:4},{x:HOLD_A1.x+50,y:0}],{v:7,endA:0});
+    if(!N18) follow(own,[{x:HOLD_A1.x,y:30},{x:HOLD_A1.x+20,y:4},{x:HOLD_A1.x+50,y:0}],{v:7,endA:0});
+    else follow(own,[{x:HOLD_D1.x,y:30},{x:HOLD_D1.x-20,y:4},{x:HOLD_D1.x-50,y:0}],{v:7,endA:Math.PI});
     return wait(()=>own.done); },
-  takeoff(){ phase='takeoff'; own.acc=3.2;
-    follow(own,[{x:250,y:0,v:78},{x:1250,y:0,v:82,alt:0.5},{x:4200,y:0,v:90,alt:1}],{v:78});
-    return wait(()=>own.x>1600); }
+  takeoff(){ phase='takeoff'; own.acc=3.2; const d=N18?-1:1;
+    follow(own,[{x:250*d,y:0,v:78},{x:1250*d,y:0,v:82,alt:0.5},{x:4200*d,y:0,v:90,alt:1}],{v:78});
+    return wait(()=>own.x*d>1600); }
 };
 function wait(cond){ return new Promise(res=>{ if(cond()) return res(); waiters.push({cond,res}); }); }
 function act(name){ const f=ACTS[name]; return f? f() : Promise.resolve(); }
@@ -90,11 +101,11 @@ function camera(dt){
   else if(phase==='final'){ const span=Math.max(1900,(-700-own.x)*1.3); camT={x:(own.x-700)/2,y:90,s:fit(span)}; }
   else if(phase==='landing') camT={x:own.x+150,y:70,s:fit(1500)};
   else if(phase==='taxiin') camT={x:own.x-60,y:own.y+70,s:fit(950)};
-  else if(phase==='parked') camT={x:standX(6),y:300,s:fit(620)};
+  else if(phase==='parked') camT={x:standX(ARR.stand),y:300,s:fit(620)};
   else if(phase==='stand') camT={x:sx+40,y:290,s:fit(620)};
-  else if(phase==='push') camT={x:own.x+30,y:300,s:fit(560)};
-  else if(phase==='taxi') camT={x:own.x-120,y:Math.min(260,own.y+40),s:fit(1150)};
-  else camT={x:Math.min(own.x+350,600),y:120,s:fit(2000)};
+  else if(phase==='push') camT={x:own.x+(N18?-30:30),y:300,s:fit(560)};
+  else if(phase==='taxi') camT={x:own.x+(N18?120:-120),y:Math.min(260,own.y+40),s:fit(1150)};
+  else camT={x:N18?Math.max(own.x-350,-600):Math.min(own.x+350,600),y:120,s:fit(2000)};
   const k=Math.min(1,dt*1.6); cam.x+=(camT.x-cam.x)*k; cam.y+=(camT.y-cam.y)*k; cam.s+=(camT.s-cam.s)*k;
 }
 
@@ -111,7 +122,7 @@ function draw(){
   ctx.fillStyle=COL.term; ctx.strokeStyle=COL.termEdge; ctx.lineWidth=1.5*px; ctx.fillRect(-560,STAND_Y+60,780,70); ctx.strokeRect(-560,STAND_Y+60,780,70);
   // taxiways
   ctx.strokeStyle=COL.twy; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=23;
-  path([[RWY.x0+50,TWY_A],[620,TWY_A]]); path([[-1200,TWY_A],[-1200,0]]); path([[300,0],[300,90],[260,TWY_A]]); path([[-590,TWY_A],[-560,LANE-35],[-520,LANE]]); path([[200,TWY_A],[200,LANE]]);
+  path([[RWY.x0+50,TWY_A],[1200,TWY_A]]); path([[-1200,TWY_A],[-1200,0]]); path([[1200,TWY_A],[1200,0]]); path([[-240,0],[-290,25],[-300,90],[-340,TWY_A]]); path([[300,0],[300,90],[260,TWY_A]]); path([[-590,TWY_A],[-560,LANE-35],[-520,LANE]]); path([[200,TWY_A],[200,LANE]]);
   // runway
   ctx.fillStyle=COL.rwy; ctx.fillRect(RWY.x0,-RWY.w/2,RWY.x1-RWY.x0,RWY.w);
   ctx.strokeStyle=COL.edge; ctx.lineWidth=1.2*px; ctx.strokeRect(RWY.x0,-RWY.w/2,RWY.x1-RWY.x0,RWY.w);
@@ -122,13 +133,15 @@ function draw(){
   num('36',RWY.x0+58,0,-Math.PI/2); num('18',RWY.x1-58,0,Math.PI/2);
   // taxiway centre lines
   ctx.strokeStyle=COL.yel; ctx.lineWidth=Math.max(0.8,1.2*px);
-  path([[RWY.x0+50,TWY_A],[620,TWY_A]]); path([[-1200,TWY_A],[-1200,HOLD_A1.y-6]]); path([[300,0],[300,90],[260,TWY_A]]); path([[-590,TWY_A],[-560,LANE-35],[-520,LANE],[260,LANE]]); path([[200,TWY_A],[200,LANE]]);
+  path([[RWY.x0+50,TWY_A],[1200,TWY_A]]); path([[-1200,TWY_A],[-1200,HOLD_A1.y-6]]); path([[1200,TWY_A],[1200,HOLD_D1.y-6]]); path([[-240,0],[-290,25],[-300,90],[-340,TWY_A]]); path([[300,0],[300,90],[260,TWY_A]]); path([[-590,TWY_A],[-560,LANE-35],[-520,LANE],[260,LANE]]); path([[200,TWY_A],[200,LANE]]);
   for(let k=1;k<=8;k++) path([[standX(k),LANE],[standX(k),STAND_Y+30]]);
   // A1 holding point: two solid and two dashed yellow lines across the taxiway
   ctx.fillStyle=COL.yel; for(let i=0;i<2;i++) ctx.fillRect(-1212,HOLD_A1.y-4+i*1.6,24,0.7);
   for(let i=0;i<2;i++) for(let xx=-1212;xx<-1188;xx+=4) ctx.fillRect(xx,HOLD_A1.y-0.6+i*1.6,2.4,0.7);
+  for(let i=0;i<2;i++) ctx.fillRect(1188,HOLD_D1.y-4+i*1.6,24,0.7);
+  for(let i=0;i<2;i++) for(let xx=1188;xx<1212;xx+=4) ctx.fillRect(xx,HOLD_D1.y-0.6+i*1.6,2.4,0.7);
   // labels (screen-size text)
-  lbl('A',-900,TWY_A-16); lbl('A',350,TWY_A-16); lbl('A1',-1228,HOLD_A1.y+6,'end'); lbl('B',318,70,'start');
+  lbl('A',-900,TWY_A-16); lbl('A',350,TWY_A-16); lbl('A1',-1228,HOLD_A1.y+6,'end'); lbl('B',318,70,'start'); lbl('D1',1228,HOLD_D1.y+6,'start'); lbl('C',-318,70,'end');
   for(let k=1;k<=8;k++) lbl(String(k),standX(k),STAND_Y+48);
   lbl('Terminal',-170,STAND_Y+102,'center',COL.lbl,13);
   // aircraft: ground first, then airborne on top

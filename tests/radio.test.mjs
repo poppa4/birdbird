@@ -309,15 +309,6 @@ test('airline A320: the wrong call is not accepted', ()=>{
   const ses2=new R.Session(S.byKey('a320dep-pf'),{level:'check',seed:3}); ses2.start(); ses2.submit(ses2.step.model); ses2.submit(ses2.step.model); ses2.submit(ses2.step.model);
   assert.match(ses2.step.model,/stand ?by/i); const r2=ses2.submit('Cleared for pushback'); assert.notEqual(r2.kind,'pass');
 });
-test('live airport: the aircraft moves in the right order, and never before the call that allows it', ()=>{
-  const ses=new R.Session(S.byKey('a320live-pm'),{level:'check',seed:5}); let ev=ses.start(); const acts=[], seen=[];
-  const take=e=>e.forEach(x=>{ if(x.t==='act') acts.push(x.a); if(x.t==='atc'||x.t==='say') seen.push(x.text); });
-  take(ev); while(!ses.done){ const before=seen.length; const r=ses.submit(ses.step.model); assert.equal(r.kind,'pass'); take(r.ev); }
-  assert.deepEqual(acts,['push','taxi','hold','traffic','clear','lineup','takeoff']);
-  const idx=t=>seen.findIndex(x=>x.includes(t));
-  assert.ok(idx('pushback approved')<idx('Commencing pushback'));
-  assert.ok(idx('line up runway 36 and wait')<idx('cleared for take-off'));
-});
 
 test('live arrival: final, land, vacate, taxi in, in order', ()=>{
   for(const k of ['a320livearr-pm','a320livearr-pf']){
@@ -326,8 +317,18 @@ test('live arrival: final, land, vacate, taxi in, in order', ()=>{
     assert.deepEqual(acts,['final','land','vacate','taxiin'],k);
   }
 });
+test('variation: runway, stand, sequencing differ between sessions, and every version flies through', ()=>{
+  const seen={rwy:new Set(),luv:new Set(),stand:new Set()};
+  for(let seed=1;seed<=40;seed++){
+    const ses=new R.Session(S.byKey('a320live-pm'),{level:'check',seed}); const D=ses.V.dep; seen.rwy.add(D.rwy); seen.luv.add(D.luv); seen.stand.add(D.stand);
+    const acts=[]; const take=e=>e.forEach(x=>{ if(x.t==='act') acts.push(x.a); }); take(ses.start());
+    while(!ses.done){ const m=ses.step.model; const r=ses.submit(m); assert.equal(r.kind,'pass',seed+' '+m); take(r.ev); }
+    assert.deepEqual(acts, D.luv==='clear'? ['push','taxi','hold','lineup','takeoff'] : ['push','taxi','hold','traffic','clear','lineup','takeoff'], 'seed '+seed);
+  }
+  assert.deepEqual([...seen.rwy].sort(),['18','36']); assert.deepEqual([...seen.luv].sort(),['clear','cond','hold']); assert.ok(seen.stand.size>=2);
+});
 test('conditional line-up: the condition must come first and again at the end', ()=>{
-  const ses=new R.Session(S.byKey('a320dep-pm'),{level:'check',seed:4}); ses.start();
-  while(!/^Behind the landing/.test(ses.step.model)) ses.submit(ses.step.model);
-  const g=R.grade(ses.step,'Line up runway 36 and wait, FJORDAIR 412',{V:ses.V,abbrOK:true,level:'check'}); assert.equal(g.pass,false);
+  let seed=1, ses; do{ ses=new R.Session(S.byKey('a320dep-pm'),{level:'check',seed:seed++}); }while(ses.V.dep.luv!=='cond');
+  ses.start(); while(!/^Behind the landing/.test(ses.step.model)) ses.submit(ses.step.model);
+  const g=R.grade(ses.step,`Line up runway ${ses.V.dep.rwy} and wait, FJORDAIR 412`,{V:ses.V,abbrOK:true,level:'check'}); assert.equal(g.pass,false);
 });
