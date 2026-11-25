@@ -223,6 +223,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
       <button class="cb afb" id="bAuto" type="button" aria-pressed="false">Auto-fly</button>
       <button class="cb" id="bDrawer" type="button" aria-pressed="false">Procedures</button>
       <button class="cb" id="bPause" type="button">Pause</button>
+      <button class="cb" id="bRate" type="button" aria-pressed="false" title="Time speed (T): 1×, 2×, 4×, 8× in the air above 500 ft">1×</button>
       <button class="cb" id="bReset" type="button" aria-label="Restart"><i aria-hidden="true">↺</i><span>Restart</span></button>
       <button class="cb" id="bDebrief" type="button" hidden>Debrief</button>
       <span class="sp"></span>
@@ -316,6 +317,8 @@ table.keys td:first-child{white-space:nowrap;width:1%}
       <tr><td><kbd>Space</kbd> · <kbd>Z</kbd></td><td>Autopilot disconnect · engage autopilot</td></tr>
       <tr><td><kbd>H</kbd> <kbd>J</kbd> · <kbd>K</kbd> <kbd>L</kbd></td><td>Heading bug left and right · selected altitude down and up</td></tr>
       <tr><td><kbd>P</kbd></td><td>Pause</td></tr>
+      <tr><td><kbd>T</kbd></td><td>Time speed 1× / 2× / 4× / 8× (in the air, above 500 ft)</td></tr>
+      <tr><td><kbd>I</kbd></td><td>Large G1000 PFD with autopilot keys</td></tr>
       <tr><td><kbd>0</kbd>–<kbd>9</kbd> · <kbd>Esc</kbd></td><td>Look at a part of the panel · look ahead</td></tr>
       <tr><td><kbd>U</kbd> <kbd>O</kbd> <kbd>I</kbd> <kbd>M</kbd> · <kbd>C</kbd></td><td>Look left, right, up and down (also the numpad) · look ahead</td></tr>
       <tr><td><kbd>Tab</kbd></td><td>Move between panel controls; arrows, Space and Enter operate them</td></tr>
@@ -357,6 +360,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="da42-3d.js?v=16"></script>
 <script src="lab.js?v=62"></script>
 <script src="simshell.js?v=11"></script>
+<script src="simrate.js?v=1"></script>
 <script>
 (function(){
 'use strict';
@@ -365,7 +369,7 @@ LAB.add({},{"How to use the avionics":"Slik bruker du avionikken","Knobs":"Knott
  'NORDAP · Simulators · Beta':'NORDAP · Simulatorer · Beta','DA42 glass cockpit trainer':'DA42 glass cockpit-trener',
  'A front-on twin-engine panel with working glass displays, switches, power levers and autopilot. Practise scans, ILS approaches and engine failures in the browser.':'Et tomotors instrumentpanel sett forfra, med fungerende glasskjermer, brytere, effekthendler og autopilot. Øv på instrumentskanning, ILS-innflyginger og motorstans rett i nettleseren.',
  'Cockpit':'Cockpit','Controls and mission':'Kontroller og oppdrag','Failures and weather':'Feil og vær','How to read it':'Slik leser du den','Test yourself':'Test deg selv',
- 'Touch controls':'Berøringskontroller','Hide outside view':'Skjul utsikten','Show outside view':'Vis utsikten','Front':'Forover','Left':'Venstre','Right':'Høyre','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','Pause':'Pause','Restart':'Start på nytt','Resume':'Fortsett',
+ 'Time speed 1× / 2× / 4× / 8× (in the air, above 500 ft)':'Tidsfart 1× / 2× / 4× / 8× (i lufta, over 500 ft)','Large G1000 PFD with autopilot keys':'Stor G1000-PFD med autopilotknapper','Touch controls':'Berøringskontroller','Hide outside view':'Skjul utsikten','Show outside view':'Vis utsikten','Front':'Forover','Left':'Venstre','Right':'Høyre','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','Pause':'Pause','Restart':'Start på nytt','Resume':'Fortsett',
  'Click a softkey on the screen':'Klikk på en softkey nederst på skjermen','Engine and map':'Motor og kart',
  'Fly it':'Fly','Yoke':'Ratt','Drag · releases to centre':'Dra · slipp for å sentrere','Elevator trim':'Høyderortrim','Nose down':'Nese ned','Nose up':'Nese opp','Assisted handling (attitude hold, auto-trim, gentle limits)':'Assistert styring (attitydehold, auto-trim, myke grenser)',
  'Power':'Effekt','Move both levers together':'Flytt begge hendlene sammen','Configuration':'Konfigurasjon','Flaps':'Flaps','Landing gear':'Understell','Hold for brakes':'Hold for bremser',
@@ -976,7 +980,7 @@ function draw(o,n){
     mapRange:XA.mapRange,mapMode:XA.mapMode,world:F.WORLD,crash:S.crash?L(crashText(S.crash)).toUpperCase():null,crashHint:L({en:'Press Restart to try again',no:'Trykk Start på nytt for å prøve igjen'})};
   d.avOff=!avOn(); if(d.avOff){ AP.on=false; }
   const bootP=SYS.boot<4, ackM=!SYS.ack;
-  if(!power()||FX.pfd) { GLASS.blank(pfdS); } else if(bootP) GLASS.splash(pfdS,SYS.boot,null); else if(!SYS.elec&&SYS.emer) GLASS.pfd(pfdS,d); else GLASS.pfd(pfdS,d);
+  if(!power()||FX.pfd) { GLASS.blank(pfdS); } else if(bootP) GLASS.splash(pfdS,SYS.boot,null); else if(!SYS.elec&&SYS.emer) GLASS.pfd(pfdS,d); else GLASS.pfd(pfdS,d); if(BIG.on) BIG.draw(d);
   if(++mfdTick%3===0||mfdForce){ mfdForce=false; if(!SYS.elec||!cbIn('MFD')) GLASS.blank(mfdS); else if(SYS.boot<4) GLASS.splash(mfdS,SYS.boot,null); else if(ackM) GLASS.splash(mfdS,9,L({en:'Databases loaded · press ENT to continue',no:'Databaser lastet · trykk ENT for å fortsette'})); else if(SYS.backup){ GLASS.pfd(mfdS,d); } else GLASS.mfd(mfdS,d); }
 }
 
@@ -1027,7 +1031,7 @@ function simTick(dt){
 }
 function loop(t){
   const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); GOV.tick(Math.max(0,Math.min(0.25,(t-last)/1000))); last=t;
-  if(!UI.paused && !S.crash) simTick(dt);
+  if(!UI.paused && !S.crash){ const k=simRate(); for(let i=0;i<k&&!S.crash;i++) simTick(dt); }
   const o=F.readouts(S); curNav=navCur(o); const n=curNav.cdi;
   if(lastO&&dt>0&&!UI.paused){ iasTrend+=(((o.ias-lastO.ias)/dt)-iasTrend)*Math.min(1,dt*1.5); const dh=F.wrap180(o.hdg-lastO.hdg)/dt; turnRate+=(dh-turnRate)*Math.min(1,dt*3); }
   lastO={ias:o.ias,hdg:o.hdg};
@@ -1111,6 +1115,46 @@ if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scr
   resetMission();
   { const qk=q0==='efato'?'s_efato':q0; if(qk&&PROCS.some(x=>x.k===qk)) procStart(qk); }
   if(/[?&]af=1/.test(location.search)) toggleAuto(); else if(UI.scen==='air'&&!PR.k) AIRUI.showNow(AIRK); } // first visit: what to do now
+/* ---------- the large G1000 window (time speed: simrate.js) ----------
+   G1000: the PFD drawn large over the outside view (sharp, not a magnified texture), with the autopilot keys and the
+   heading, altitude and course knobs as big buttons, so an ILS can be flown on a laptop screen. Key I toggles it, T the time speed. */
+const simRate=SIMRATE.attach({ground:()=>S.ground,agl:()=>F.readouts(S).agl,say:flash,L});   // time speed (simrate.js)
+const BIG={on:false,s:{ctx:null,w:0,h:0,dpr:1},el:null,cv:null,
+  build(){ const st=document.createElement('style'); st.textContent=`
+.g1k{position:absolute;left:10px;bottom:52px;z-index:30;width:min(52vw,620px,calc((100vh - 240px)*1.2));background:#0b0d10;border:1px solid #2a3038;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.55);padding:6px;user-select:none;touch-action:manipulation}
+.g1k canvas{display:block;width:100%;aspect-ratio:4/3;border-radius:4px;background:#000}
+.g1k .row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.g1k button{flex:1 1 0;min-width:44px;height:34px;border-radius:6px;border:1px solid #39414b;background:#1b2027;color:#dfe6ee;font:600 12px/1 system-ui,sans-serif;cursor:pointer}
+.g1k button:active{background:#2b333d}.g1k button.lit{background:#163a22;border-color:#29e05a;color:#b9ffcc}
+.g1k .kn{display:flex;gap:2px;flex:1 1 0}.g1k .kn span{align-self:center;color:#8f9aa6;font:600 10px/1 system-ui;min-width:28px;text-align:center}
+.g1k .x{position:absolute;right:10px;top:10px;flex:none;width:28px;height:28px;min-width:0;background:rgba(0,0,0,.55)}`; document.head.appendChild(st);
+    const d=document.createElement('div'); d.className='g1k'; d.hidden=true;
+    d.innerHTML=`<canvas></canvas><button class="x" data-g="close" aria-label="Close">✕</button>
+<div class="row">${['AP','FD','HDG','NAV','APR','ALT','VS','FLC'].map(k=>`<button data-ap="${k}" data-g="ap">${k}</button>`).join('')}</div>
+<div class="row"><div class="kn"><button data-g="hdg-10">«</button><button data-g="hdg-1">‹</button><span>HDG</span><button data-g="hdg+1">›</button><button data-g="hdg+10">»</button></div>
+<div class="kn"><button data-g="alt-500">«</button><button data-g="alt-100">‹</button><span>ALT</span><button data-g="alt+100">›</button><button data-g="alt+500">»</button></div></div>
+<div class="row"><div class="kn"><button data-g="crs-5">«</button><button data-g="crs-1">‹</button><span>CRS</span><button data-g="crs+1">›</button><button data-g="crs+5">»</button></div>
+<div class="kn"><button data-g="vs-100">‹</button><span>VS</span><button data-g="vs+100">›</button></div><button data-g="ils" title="NAV1 110.30, course 360, CDI on LOC">ILS 36</button><button data-g="sync">HDG SYNC</button></div>`;
+    PST.appendChild(d); this.el=d; this.cv=d.querySelector('canvas'); this.s.ctx=this.cv.getContext('2d');
+    d.addEventListener('pointerdown',e=>e.stopPropagation()); d.addEventListener('wheel',e=>e.stopPropagation());
+    d.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; e.stopPropagation(); const g=b.dataset.g;
+      if(g==='close') return BIG.toggle(false);
+      if(g==='ap') return apPress(b.dataset.ap);
+      const m=g.match(/^(hdg|alt|crs|vs)([+-]\d+)$/);
+      if(m){ const v=+m[2];
+        if(m[1]==='hdg') AP.hdg=F.wrap360(AP.hdg+v);
+        if(m[1]==='alt') AP.alt=Math.max(0,Math.min(20000,AP.alt+v));
+        if(m[1]==='crs') XA.crs[0]=F.wrap360((XA.crs[0]||360)+v);
+        if(m[1]==='vs') AP.vsRef=(AP.vsRef||0)+v;
+        beep(1500,0.02,0.03); return; }
+      if(g==='ils'){ const n=XA.radio.nav[0]; if(n.act!=='110.30'){ n.stby=n.act; n.act='110.30'; } XA.cdi='NAV1'; XA.crs[0]=360; flash('NAV1 110.30 · CRS 360 · CDI LOC1'); return; }
+      if(g==='sync'){ AP.hdg=Math.round(F.readouts(S).hdg)||360; return; } }); },
+  size(){ const w=this.cv.clientWidth; if(!w) return false; const h=Math.round(w*0.75), k=Math.min(devicePixelRatio||1,2);
+    if(this.cv.width!==Math.round(w*k)){ this.cv.width=Math.round(w*k); this.cv.height=Math.round(h*k); } Object.assign(this.s,{w,h,dpr:k}); return true; },
+  draw(d){ if(!this.size()) return; if(!power()||FX.pfd) GLASS.blank(this.s); else if(SYS.boot<4) GLASS.splash(this.s,SYS.boot,null); else GLASS.pfd(this.s,d); },
+  toggle(on){ if(!this.el) this.build(); this.on=on==null?!this.on:on; this.el.hidden=!this.on; const b=el('bBig'); b.setAttribute('aria-pressed',this.on); b.classList.toggle('on',this.on); if(this.on){ apLights(); pfdT=99; } } };
+{ const b=document.createElement('button'); b.className='cb'; b.id='bBig'; b.type='button'; b.setAttribute('aria-pressed','false'); b.title='Large G1000 PFD with the autopilot keys (I)'; b.textContent='G1000'; el('bRate').after(b); b.onclick=()=>BIG.toggle(); }
+addEventListener('keydown',e=>{ if(e.target.closest&&e.target.closest('input,select,textarea')) return; if(e.metaKey||e.ctrlKey||e.altKey) return; if(e.key==='i') BIG.toggle(); });
 window.__air={AF,DB,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('DA42',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(g!=null) S.ctl.gear=g; if(f!=null) S.ctl.flap=f; },scen:k=>{ UI.scen=k; resetMission(); drawScen(); drawScenSel(); }};
 requestAnimationFrame(loop);
 })();

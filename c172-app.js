@@ -555,10 +555,11 @@ function simTick(dt,o0){ o0=o0||F.readouts(S);
     else for(let i=0;i<N;i++) F.step(S,h);
     if(DB) DB.tick(dt); // debrief recorder (simdebrief.js): after the physics, so a crash is seen on the frame it happens
 }
+const simRate=SIMRATE.attach({ground:()=>S.ground,agl:()=>F.readouts(S).agl,say:flash,L});   // time speed (simrate.js)
 function loop(t){
   const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); GOV.tick(Math.max(0,Math.min(0.25,(t-last)/1000))); last=t;
   const o0=F.readouts(S);
-  if(!UI.paused&&!S.crash){ simTick(dt,o0); audioTick(dt); }
+  if(!UI.paused&&!S.crash){ const k=simRate(); for(let i=0;i<k&&!S.crash;i++) simTick(dt,i?F.readouts(S):o0); audioTick(dt); }
   const o=F.readouts(S);
   if(lastHdg!==null&&dt>0&&!UI.paused){ const dh=F.wrap180(o.hdg-lastHdg)/dt; turnRate+=(dh-turnRate)*Math.min(1,dt*3); } lastHdg=o.hdg;
   if(D3on){ if(cockpitVis) D3.frame(otwState3(),{active:!UI.paused&&!S.crash,stick:inp.stick||{x:S.ctl.ail,y:S.ctl.ele},ctl:S.ctl}); } else otwTick(dt);

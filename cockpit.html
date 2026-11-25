@@ -209,6 +209,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
       <button class="cb afb" id="bAuto" type="button" aria-pressed="false">Auto-fly</button>
       <button class="cb" id="bDrawer" type="button" aria-pressed="false">Procedures</button>
       <button class="cb" id="bPause" type="button">Pause</button>
+      <button class="cb" id="bRate" type="button" aria-pressed="false" title="Time speed (T): 1×, 2×, 4×, 8× in the air above 500 ft">1×</button>
       <button class="cb" id="bReset" type="button" aria-label="Restart"><i aria-hidden="true">↺</i><span>Restart</span></button>
       <button class="cb" id="bDebrief" type="button" hidden>Debrief</button>
       <span class="sp"></span>
@@ -340,6 +341,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="simworld.js?v=8"></script>
 <script src="lab.js?v=62"></script>
 <script src="simshell.js?v=11"></script>
+<script src="simrate.js?v=1"></script>
 <script>
 (function(){
 'use strict';
@@ -967,7 +969,7 @@ function simTick(dt){
 }
 function loop(t){
   const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); GOV.tick(Math.max(0,Math.min(0.25,(t-last)/1000))); last=t;
-  if(!UI.paused && !S.crash) simTick(dt);
+  if(!UI.paused && !S.crash){ const k=simRate(); for(let i=0;i<k&&!S.crash;i++) simTick(dt); }
   const o=F.readouts(S); curNav=navCur(o); const n=curNav.cdi;
   if(lastO&&dt>0&&!UI.paused){ iasTrend+=(((o.ias-lastO.ias)/dt)-iasTrend)*Math.min(1,dt*1.5); const dh=F.wrap180(o.hdg-lastO.hdg)/dt; turnRate+=(dh-turnRate)*Math.min(1,dt*3); }
   lastO={ias:o.ias,hdg:o.hdg};
@@ -1035,6 +1037,7 @@ if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scr
   resetMission();
   { const qk=q0==='efato'?'s_efato':q0; if(qk&&PROCS.some(x=>x.k===qk)) procStart(qk); }
   if(/[?&]af=1/.test(location.search)) toggleAuto(); else if(UI.scen==='air'&&!PR.k) AIRUI.showNow(AIRK); } // first visit: what to do now
+const simRate=SIMRATE.attach({ground:()=>S.ground,agl:()=>F.readouts(S).agl,say:flash,L});   // time speed (simrate.js)
 window.__air={AF,DB,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('DA42',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(g!=null) S.ctl.gear=g; if(f!=null) S.ctl.flap=f; },scen:k=>{ UI.scen=k; resetMission(); drawScen(); drawScenSel(); }};
 requestAnimationFrame(loop);
 })();

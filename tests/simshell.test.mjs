@@ -9,7 +9,7 @@ const ids=(html,from,to)=>{ const a=html.indexOf(from), b=html.indexOf(to,a); re
 const txt=t=>typeof t==='string'||(t&&typeof t.en==='string'&&t.en.length>0&&typeof t.no==='string'&&t.no.length>0);
 
 test('one toolbar: same controls in the same order on all six pages',()=>{
-  const want=['acSel','apSel','bAuto','bDrawer','bPause','bReset','bDebrief','bMore'];
+  const want=['acSel','apSel','bAuto','bDrawer','bPause','bRate','bReset','bDebrief','bMore'];
   for(const f of PAGES){ const h=src(f); assert.deepEqual(ids(h,'<div class="ctop"','<div class="cbody">'),want,f);
     assert.match(h,/id="bDebrief" type="button" hidden/,f+': Debrief only after a flight');
     for(const gone of ['id="scenSel"','id="zoomBar"','id="procSel"','id="stat2"','id="tabLim"','id="tabMis"','id="touch"','id="tStk"']) assert.ok(!h.includes(gone),f+' still has '+gone);
