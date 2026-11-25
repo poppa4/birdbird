@@ -56,7 +56,7 @@ if NEO:
         if _ax.min() > 0.20 and _ax.max() < 0.90 and _lo[2] > 0.05 and _hi[2] < 1.12 and _hi[1] < 0.92: NKIND[int(_o)] = 1
         elif _ax.min() > 0.72 and _hi[1] < 0.40 and np.linalg.norm(_hi - _lo) < 0.40 and _lo[1] > -0.2 and (_hi[0] < 0 or _lo[0] > 0): NKIND[int(_o)] = 4
     _k = (np.abs(NV[NF]).max((1, 2)) < 2.03); NF = NF[_k]; NOB = NOB[_k]   # positions are stored in 16 bits: +-2.04 m
-    _k = ~in_zone(NV[NF].mean(1)); NF = NF[_k]; NOB = NOB[_k]; print('new structure: triangles outside the panel zones', len(NF))
+    _k = ~in_zone(NV)[NF].all(1); NF = NF[_k]; NOB = NOB[_k]; print('new structure: triangles outside the panel zones', len(NF))
 OV, OF, OFO = [], [], []
 for _oi, o in enumerate(O):
     if o['tex'] == 'fd_glare.png' or re.search(r'(?i)glass|^sfl', o['name']): continue
