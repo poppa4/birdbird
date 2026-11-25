@@ -331,7 +331,11 @@ function check(e,N,ctx){
       const ws=N.words.map(w=>PH[w]||(DW[w]!==undefined?DW[w]:null)).filter(x=>x!==null);
       if(ws.join('')===want.join('')) return {st:'ok'};
       if(N.words.join('')===want.join('')||N.words.every(w=>w.length<=2)) return {st:'wrong',got:N.raw,why:RULE.spell};
-      return {st:ws.length?'wrong':'miss',got:ws.map(c=>PHW[c]||c).join(' ')}; }
+      if(!ws.length) return {st:'miss'};
+      /* point at what differs: "Echo → Golf", a missing or an extra word */
+      const diff=[]; for(let i=0;i<Math.max(ws.length,want.length);i++){ const a=ws[i], b=want[i]; if(a===b) continue;
+        const nm=c=>PHW[c]||(NUMW[c]||c); diff.push(a===undefined? tr('missing '+nm(b),'mangler '+nm(b)) : b===undefined? tr('one word too many: '+nm(a),'ett ord for mye: '+nm(a)) : tr(nm(a)+' instead of '+nm(b),nm(a)+' i stedet for '+nm(b))); if(diff.length>=3) break; }
+      return {st:'wrong',got:diff}; }
     case 'say':{ const SYN={niner:'nine',nine:'nine',tree:'three',three:'three',fife:'five',five:'five',fower:'four',four:'four',tousand:'thousand',thousand:'thousand',zero:'zero',one:'one',wun:'one',two:'two',six:'six',seven:'seven',eight:'eight',ait:'eight',decimal:'decimal',hundred:'hundred',dayseemal:'decimal',flight:'flight',level:'level'};
       const got=N.words.map(w=>SYN[w]||w).filter(w=>!['feet','squawk','heading','qnh','hpa','and'].includes(w));
       const want=e.w.split(' ').map(w=>SYN[w]||w).filter(w=>!['feet','squawk','heading','qnh','hpa','and'].includes(w));
@@ -466,7 +470,7 @@ class Session{
     const ev=[];
     const mergedCarry=g.res.map((r,k)=>(r.st==='ok'||(this.carry&&this.carry[k]==='ok'))?'ok':r.st);
     if(g.pass||this.tries>=this.L.tries){
-      const sc=this._score(g); this.results.push({n:this.i,id:s.id,cat:s.cat||'rb',ph:s.ph,score:sc,first:this.tries===1&&g.pass,pass:g.pass,res:g.res.map(r=>({k:r.k,st:r.st,opt:r.opt,label:r.label})),res0:this._res0||null,flags:g.flags.map(f=>f.k),task:s.task,model:s.model});
+      const sc=this._score(g); this.results.push({n:this.i,id:s.id,cat:s.cat||'rb',ph:s.ph,score:sc,first:this.tries===1&&g.pass,pass:g.pass,res:g.res.map(r=>({k:r.k,st:r.st,opt:r.opt,label:r.label})),res0:this._res0||null,prompt:s.prompt||null,flags:g.flags.map(f=>f.k),task:s.task,model:s.model});
       if(!g.pass) ev.push({t:'model',text:s.model,fail:true});
       if(s.reply) this._atc(s.reply,ev);
       this._after(s,ev);

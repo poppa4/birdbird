@@ -192,7 +192,7 @@ vcheck:V=>{ const u=UNIT(V); return [
    task:tr('Ask Ground for a radio check, with the frequency.','Be Ground om en radiosjekk, med frekvensen.'),els:[stn('NORDAP Ground'),cs(),P('“Radio check”','«Radio check»',/\bradio check\b/,{ask:'say request'}),freq('121.700',null,{ask:'say frequency'})],
    model:`NORDAP Ground, ${V.c}, radio check 121.700.`,reply:`${V.c}, NORDAP Ground, readability 5.`,
    why:tr('A radio check is: station called, your callsign, “radio check”, the frequency (SERA.14070(a)). Readability scale: 1 unreadable, 2 readable now and then, 3 readable but with difficulty, 4 readable, 5 perfectly readable (SERA.14070(c)).','En radiosjekk er: stasjonen du kaller, kallesignalet ditt, «radio check», frekvensen (SERA.14070(a)). Lesbarhetsskala: 1 uleselig, 2 leselig nå og da, 3 leselig men med vanskelighet, 4 leselig, 5 helt leselig (SERA.14070(c)).')},
-  {rb:1,cat:'rb',ph:'ground',atc:`${V.c}, NORDAP Ground, radio check, how do you read?`,task:tr('Answer: you read them perfectly (readability 5).','Svar: du hører dem perfekt (readability 5).'),
+  {rb:1,cat:'rb',ph:'ground',sit:tr('Now it is the other way round: Ground checks that they reach you, and asks how you hear them.','Nå er det motsatt: Ground sjekker at de når deg, og spør hvordan du hører dem.'),atc:`${V.c}, NORDAP Ground, radio check, how do you read?`,task:tr('Answer: you read them perfectly (readability 5).','Svar: du hører dem perfekt (readability 5).'),
    els:[P('Readability 5','Readability 5',/\b(readability 5|read(ing)? (you )?(5|loud and clear)|5 by 5|loud and clear)\b/,{say:'how do you read'}),cs()],model:`${V.c}, readability 5.`}]; },
 
 /* =================== IFR =================== */
@@ -421,7 +421,8 @@ const SCEN=[
 const NAMES=['OSVIK','RONAX','TUSKA','FAPSO','ALPOR','HOLAN','BIKAN','SKARVIK','TJERNMO'];
 const DRILL={
   alpha:(V,r)=>{ const pick=a=>a[Math.floor(r()*a.length)]; const L='ABCDEFGHIJKLMNOPQRSTUVWXYZ'; const out=[];
-    for(let i=0;i<6;i++){ const w= i%2? pick(NAMES) : 'LN-'+L[Math.floor(r()*26)]+L[Math.floor(r()*26)]+L[Math.floor(r()*26)];
+    const used=new Set();
+    for(let i=0;i<6;i++){ let w; do{ w= i%2? pick(NAMES) : 'LN-'+L[Math.floor(r()*26)]+L[Math.floor(r()*26)]+L[Math.floor(r()*26)]; }while(used.has(w)); used.add(w);
       out.push({id:'b-alpha',cat:'basic',ph:'basic',noAtc:1,prompt:tr('Spell <b>'+w+'</b> with the phonetic alphabet.','Stav <b>'+w+'</b> med det fonetiske alfabetet.'),task:tr('Say or type the words, e.g. “Oscar Sierra …”.','Si eller skriv ordene, f.eks. «Oscar Sierra …».'),els:[{k:'spell',v:w}],model:C.spellWords(w)}); }
     return out; },
   numbers:(V,r)=>{ const int=(a,b)=>a+Math.floor(r()*(b-a+1)), pick=a=>a[Math.floor(r()*a.length)]; const out=[];

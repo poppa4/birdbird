@@ -166,13 +166,13 @@ function drawHome(){
   const tried=k=>{ const [a,b]=cnt(k); return a>=Math.ceil(b/2); };
   const path=Object.keys(GROUPS).filter(k=>k!=='quick'); const next=path.find(k=>!tried(k));
   el('goals').innerHTML=path.map((k,i)=>{ const g=GROUPS[k], t=tried(k);
-    return `<button class="goal${k===next?' next':''}" data-g="${k}"><span class="stepn">${i+1}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${g.ic}"/></svg><span><b>${esc(L(g.t))}</b><small>${esc(L(g.d))}</small>${k===next?`<span class="here">${L({en:cnt(k)[0]?'Continue here':'Start here',no:cnt(k)[0]?'Fortsett her':'Start her'})}</span>`:''}${cnt(k)[0]?`<span class="prog">${cnt(k)[0]}/${cnt(k)[1]} ${L({en:'done',no:'tatt'})}</span>`:''}</span></button>`; }).join('');
+    return `<button class="goal${k===next?' next':''}" data-g="${k}"><span class="stepn">${i+1}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${g.ic}"/></svg><span><b>${esc(L(g.t))}</b><small>${esc(L(g.d))}</small>${k===next?`<span class="here">${L({en:cnt(k)[0]?'Continue here':'Start here',no:cnt(k)[0]?'Fortsett her':'Start her'})}</span>${(()=>{ const n=lessons().find(x=>x.group===k&&!best(x.k)); return n?`<span class="nextl">${L({en:'Next',no:'Neste'})}: ${esc(L(n.t))}</span>`:''; })()}`:''}${cnt(k)[0]?`<span class="prog">${cnt(k)[0]}/${cnt(k)[1]} ${L({en:'done',no:'tatt'})}</span>`:''}</span></button>`; }).join('');
   const anyTried=path.some(tried);
   el('quickRow').innerHTML=`<b>${esc(L(GROUPS.quick.t))}</b><span>${esc(L(anyTried?{en:'Back for two minutes? Six readbacks, your weak ones first.',no:'Tilbake for to minutter? Seks tilbakelesinger, de svake først.'}:{en:'Two minutes, six readbacks from all over the trainer. Good once you have done a few lessons.',no:'To minutter, seks tilbakelesinger fra hele treneren. Fint når du har tatt noen leksjoner.'}))}</span>${due.length?`<em>${due.length} ${L({en:'due for review',no:'til repetisjon'})}</em>`:''}<button class="btn${anyTried?' pri':''}" id="quickGo" type="button">${L({en:'Start quick drill',no:'Start kjapp drill'})}</button>`;
   el('quickGo').onclick=()=>startScenario('quick');
   drawGuide();
   el('lvlTip').textContent=L(LEVELS[P.level].d);
-  const st=jget(K.stats,{}); const weak=Object.entries(st).filter(([k,o])=>o.n>=3&&KIND[k]).map(([k,o])=>[k,o.ok/o.n]).sort((a,b)=>a[1]-b[1]).slice(0,3);
+  const st=jget(K.stats,{}); const weak=Object.entries(st).filter(([k,o])=>o.n>=2&&KIND[k]&&o.ok/o.n<0.9).map(([k,o])=>[k,o.ok/o.n]).sort((a,b)=>a[1]-b[1]).slice(0,3);
   el('homeStats').innerHTML= weak.length? `<b>${L({en:'Your weakest items so far',no:'Dine svakeste elementer så langt'})}:</b> `+weak.map(([k,v])=>`<span class="pill ${v<0.6?'bad':v<0.85?'mid':'good'}">${esc(L(KIND[k]))} ${Math.round(v*100)} %</span>`).join(' ') : '';
 }
 /* the lessons in path order: basics, VFR, IFR, emergencies, airline; inside a section the easy ones first, full flights last */
@@ -190,7 +190,7 @@ function drawGuide(force){
       <div class="keys"><span class="k ok">✓ ${L({en:'right',no:'riktig'})}</span><span class="k mid">! ${L({en:'note',no:'merknad'})}</span><span class="k bad">✕ ${L({en:'missing or wrong',no:'mangler eller feil'})}</span></div></div></li></ol>
     <div class="gfoot"><button class="btn pri" id="guideGo" type="button">${L({en:'Start with Basics',no:'Start med Grunnleggende'})}</button><button class="btn" id="guideOk" type="button">${L({en:'Got it',no:'Skjønner'})}</button><span>${L({en:'Level sets the pace: Beginner shows what to include, Check-ready hides the controller text until you answer.',no:'Nivået styrer tempoet: Nybegynner viser hva du skal ta med, Klar for sjekk skjuler flygelederens tekst til du har svart.'})}</span></div>`;
   el('guideOk').onclick=()=>{ jset(K.guide,1); g.hidden=true; el('guideBtn').focus(); };
-  el('guideGo').onclick=()=>{ jset(K.guide,1); g.hidden=true; group='basic'; drawPick(); show('pick'); el('pickBack').focus(); };
+  el('guideGo').onclick=()=>{ jset(K.guide,1); g.hidden=true; startScenario(lessons()[0]); };
 }
 /* airline: three plain choices instead of eight cards */
 function drawAirline(){
@@ -245,7 +245,8 @@ function busy(on){ BUSY=!!on; const b=el('btnTx'); if(b) b.disabled=!!on; const 
 function run(ev){ queue=queue.then(()=>{ if(ev.some(e=>e.t==='say'||e.t==='act'||e.t==='atc')) busy(true); return play(ev); }).then(()=>{ busy(false); drawTurn(); phoneView(); }); return queue; }
 /* phone with the live map: after each exchange, show the map, the transcript and your answer together */
 function phoneView(){ if(!window.matchMedia||!matchMedia('(max-width:640px)').matches) return; const m=el('v-sess').querySelector('.rs-main'); if(!m) return;
-  const top=m.getBoundingClientRect().top+window.scrollY-58; if(Math.abs(window.scrollY-top)>8) window.scrollTo({top,behavior:'smooth'}); }
+  const bar=document.querySelector('.rs-top'); const off=(bar?bar.getBoundingClientRect().height:50)+8;
+  const top=m.getBoundingClientRect().top+window.scrollY-off; if(Math.abs(window.scrollY-top)>8) window.scrollTo({top,behavior:'smooth'}); }
 async function play(ev){
   for(const e of ev){
     if(e.t==='tune'){ el('fq').textContent=e.unit.f; el('stn').textContent=e.unit.n; if(/^(CREW|INT|PA)$/.test(e.unit.f)) continue; addMsg('sys','',`${L({en:'Tuned',no:'Stilt inn'})} <b>${esc(e.unit.n)}</b> ${esc(e.unit.f)}`); AU.click(); }
@@ -287,10 +288,11 @@ function drawTurn(){
   if(!s||ses.done){ box.innerHTML=''; return; }
   const req=(s.els||[]).filter(e=>!e.opt), opt=(s.els||[]).filter(e=>e.opt);
   const chip=e=>`<span class="ichip${e.opt?' opt':''}">${esc(L(e.l||R.label(e,ses.V)))}</span>`;
-  const showList=ses.L.hints||box.dataset.hint==='1';
+  const showList=(ses.L.hints||box.dataset.hint==='1')&&!(s.els||[]).some(e=>e.k==='spell'||e.k==='say'||e.k==='abbr');
   if(need&&need.length&&ses.tries>0){ const hc=(s.els||[]).some(e=>e.k==='cs'); box.innerHTML=hc? `<div class="tk"><b>${L({en:'Your turn',no:'Din tur'})}</b> ${esc(L({en:'The controller asked for ',no:'Flygelederen ba om '}))}<b class="need">${esc(need.join(', '))}</b>${esc(L({en:'. Give just that, with your callsign.',no:'. Gi bare det, med kallesignalet ditt.'}))}</div>` : `<div class="tk"><b>${L({en:'Try again',no:'Prøv igjen'})}</b> <b class="need">${esc(need.join(', '))}</b></div>`; el('btnAgain').disabled=!ses.lastAtc; return; }
   if(!ses.tries) need=null;
-  const coach=!jget(K.coach,0)? `<div class="coach">${L({en:'Hold the talk button (or the space bar) and speak, or type your call and press Transmit.',no:'Hold snakkeknappen (eller mellomromstasten) og snakk, eller skriv oppkallet og trykk Transmit.'})}</div>` : '';
+  const phone=window.matchMedia&&matchMedia('(max-width:640px)').matches;
+  const coach=!jget(K.coach,0)? `<div class="coach">${L(phone?{en:'Hold the mic button and speak, or type your call and press Transmit.',no:'Hold mikrofonknappen og snakk, eller skriv oppkallet og trykk Transmit.'}:{en:'Hold the talk button (or the space bar) and speak, or type your call and press Transmit.',no:'Hold snakkeknappen (eller mellomromstasten) og snakk, eller skriv oppkallet og trykk Transmit.'})}</div>` : '';
   box.innerHTML=`<div class="tk"><b>${L({en:'Your turn',no:'Din tur'})}</b> ${esc(L(s.task))}</div>`+coach+
     (showList? `<div class="inc"><span>${L({en:'Include',no:'Ta med'})}:</span> ${req.map(chip).join('')}${opt.map(chip).join('')}</div>` : ses.level==='intermediate'? `<button class="lnk" id="hintBtn" type="button">${L({en:'Hint: what to include',no:'Hint: hva du skal ta med'})}</button>`:'');
   const hb=el('hintBtn'); if(hb) hb.onclick=()=>{ box.dataset.hint='1'; drawTurn(); };
@@ -301,10 +303,10 @@ function drawTurn(){
 function fbShort(g){
   const bad=g.res.filter(r=>r.st!=='ok'&&!r.opt);
   if(!bad.length&&!g.flags.length) return `<ul class="els"><li class="ok"><span class="sy">✓</span><span>${L({en:'Everything that had to be in it',no:'Alt som måtte være med'})}</span></li></ul>`;
-  return `<ul class="els">${bad.map(r=>`<li class="${r.st}"><span class="sy">${SYM[r.st]}</span><span>${esc(L(r.label))}${r.st==='wrong'&&r.got?` <em>${L({en:'you said',no:'du sa'})} “${esc(r.got)}”</em>`:''}</span></li>`).join('')}${g.flags.map(f=>`<li class="warn"><span class="sy">!</span><span>${esc(L(f))}</span></li>`).join('')}</ul>`;
+  return `<ul class="els">${bad.map(r=>`<li class="${r.st}"><span class="sy">${SYM[r.st]}</span><span>${esc(L(r.label))}${r.st==='wrong'&&r.got?(r.k==='spell'?` <em>${L({en:'you said',no:'du sa'})} ${esc([].concat(r.got).map(x=>L(x)).join(', '))}</em>`:` <em>${L({en:'you said',no:'du sa'})} “${esc(r.got)}”</em>`):''}</span></li>`).join('')}${g.flags.map(f=>`<li class="warn"><span class="sy">!</span><span>${esc(L(f))}</span></li>`).join('')}</ul>`;
 }
 function fbHtml(g,s,kind){
-  const rows=g.res.map(r=>`<li class="${r.st}${r.opt&&r.st!=='ok'?' opt':''}"><span class="sy">${r.opt&&r.st!=='ok'?'○':SYM[r.st]}</span><span>${esc(L(r.label))}${r.st==='wrong'&&r.got?` <em>${L({en:'you said',no:'du sa'})} “${esc(r.got)}”</em>`:''}${r.st==='warn'&&r.got?` <em>“${esc(r.got)}”</em>`:''}${r.opt&&r.st!=='ok'?` <em>${L({en:'good to include',no:'bra å ta med'})}</em>`:''}${r.carried?` <em>${L({en:'from your last call',no:'fra forrige oppkall'})}</em>`:''}</span></li>`).join('');
+  const rows=g.res.map(r=>`<li class="${r.st}${r.opt&&r.st!=='ok'?' opt':''}"><span class="sy">${r.opt&&r.st!=='ok'?'○':SYM[r.st]}</span><span>${esc(L(r.label))}${r.st==='wrong'&&r.got?(r.k==='spell'?` <em>${L({en:'you said',no:'du sa'})} ${esc([].concat(r.got).map(x=>L(x)).join(', '))}</em>`:` <em>${L({en:'you said',no:'du sa'})} “${esc(r.got)}”</em>`):''}${r.st==='warn'&&r.got?` <em>“${esc(r.got)}”</em>`:''}${r.opt&&r.st!=='ok'?` <em>${L({en:'good to include',no:'bra å ta med'})}</em>`:''}${r.carried?` <em>${L({en:'from your last call',no:'fra forrige oppkall'})}</em>`:''}</span></li>`).join('');
   const fl=g.flags.map(f=>`<li class="warn"><span class="sy">!</span><span>${esc(L(f))}</span></li>`).join('');
   return `<ul class="els">${rows}${fl}</ul>`;
 }
@@ -331,7 +333,7 @@ async function transmit(byVoice){
   me.classList.add(ok?'good':r.kind==='fail'?'bad':'try');
   const head= ok? (g.flags.length? L({en:'Accepted, with a note',no:'Godkjent, med en merknad'}) : L({en:'Correct',no:'Riktig'})) : r.kind==='retry'? (s.noAtc? L({en:'Not quite: try again',no:'Ikke helt: prøv igjen'}) : L({en:'Not yet: the controller corrects you',no:'Ikke ennå: flygelederen korrigerer deg'})) : L({en:'Missed',no:'Bommet'});
   /* on a retry the answer is not shown yet: the controller has asked for the missing part, so the pilot gets one more go */
-  need= r.kind==='retry'? g.res.filter(x=>x.st!=='ok'&&!x.opt&&x.k!=='cs').map(x=>L(x.label)) : null; if(need&&!need.length) need=[L({en:'Your callsign',no:'Kallesignalet ditt'})];
+  need= r.kind==='retry'? g.res.filter(x=>x.st!=='ok'&&!x.opt&&x.k!=='cs').map(x=>String(L(x.label)).replace(/^(Station|Stasjon|Position|Posisjon|Intention|Hensikt|Condition|Betingelse): /,'')) : null; if(need&&!need.length) need=[L({en:'Your callsign',no:'Kallesignalet ditt'})];
   const hasCs=(s.els||[]).some(e=>e.k==='cs');
   const ask= need&&need.length? `<div class="model"><b>${L(hasCs?{en:'Reply with',no:'Svar med'}:{en:'Try again',no:'Prøv igjen'})}</b><span>${esc(need.join(', '))}${hasCs?L({en:', and your callsign. You do not need to repeat the rest.',no:', og kallesignalet ditt. Resten trenger du ikke gjenta.'}):''}</span></div>` : '';
   const full=`<div class="fbh ${ok?'good':r.kind==='fail'?'bad':'try'}">${esc(head)}</div>${ok&&!g.flags.length?fb._short:fbHtml(g,s,r.kind)}${r.kind==='retry'?ask:(!ok||g.flags.length?`<div class="model"><b>${L({en:'Correct call',no:'Riktig oppkall'})}</b><span class="mono">${esc(s.model)}</span></div>`:'')}${ok&&!g.flags.length?'':whyHtml(g,s)}`;
@@ -350,7 +352,7 @@ function note(t){ addMsg('sys','',esc(L(t))); }
 function debrief(){
   if(!ses) return; hush(); const sm=ses.summary(); show('deb');
   if(!ses._saved){ ses._saved=true; save(sm); }
-  drawDeb(sm);
+  drawDeb(sm); const d=el('v-deb'); if(d){ const t=d.getBoundingClientRect().top+window.scrollY-80; window.scrollTo({top:Math.max(0,t),behavior:'smooth'}); }
 }
 function save(sm){
   // storage: best, progress, spaced repetition, element statistics
@@ -364,9 +366,9 @@ function drawDeb(sm){
   const missed=w=>{ const r=(w.res0||w.res||[]).filter(e=>!e.opt&&e.st!=='ok'&&e.st!=='warn').map(e=>L(KIND[e.k]||{en:e.k,no:e.k})); return [...new Set(r)]; };
   const verdict= sm.score>=90&&!sm.retried? tr('Clean, complete radio work. Try the next level up.','Ren og fullstendig radiobruk. Prøv neste nivå.') : sm.score>=90? tr(`Strong session, but ${sm.retried} call${sm.retried>1?'s':''} needed a second try. Practise ${sm.retried>1?'them':'it'} below.`,`Sterk økt, men ${sm.retried} oppkall måtte tas på nytt. Øv på ${sm.retried>1?'dem':'det'} under.`) : sm.score>=70? tr('Good. Practise the red items below once more.','Bra. Øv på de røde punktene under én gang til.') : tr('Keep going: practise the weak items, then fly it again. New values every time.','Fortsett: øv på de svake punktene, og fly den igjen. Nye verdier hver gang.');
   el('debBody').innerHTML=`<div class="dtop"><div class="big">${sm.score}<small>%</small></div><div><h3>${esc(L(cur.t))}</h3><p>${esc(L(verdict))}</p><p class="muted">${esc(L(LEVELS[ses.level].t))} · ${sm.n} ${L({en:'calls',no:'oppkall'})}</p></div></div>
-    <div class="kpis">${Object.entries(sm.cats).map(([k,v])=>`<div class="kpi"><span>${esc(L(CAT[k]||tr(k)))}</span><b>${v} %</b></div>`).join('')}</div>
+    <div class="kpis"${Object.keys(sm.cats).length<2?' hidden':''}>${Object.entries(sm.cats).map(([k,v])=>`<div class="kpi"><span>${esc(L(CAT[k]||tr(k)))}</span><b>${v} %</b></div>`).join('')}</div>
     ${kinds.length?`<h4>${L({en:'Element by element',no:'Element for element'})}</h4><table class="ktab"><tbody>${kinds.map(([k,o])=>{ const p=Math.round(o.ok/o.n*100); return `<tr><td>${esc(L(KIND[k]))}</td><td><span class="bar${p===0?' zero':''}"><i style="width:${Math.max(p,0)}%" class="${p<60?'bad':p<85?'mid':'good'}"></i></span></td><td>${o.ok}/${o.n}</td></tr>`; }).join('')}</tbody></table>`:''}
-    ${sm.weak.length?`<h4>${L({en:'Practise these again',no:'Øv på disse igjen'})}</h4><div class="weak">${sm.weak.slice(0,5).map(w=>`<div class="wi"><b>${Math.round(w.score*100)} %</b><div><p>${esc(L(w.task))}</p>${missed(w).length?`<p class="miss">${L({en:'You missed',no:'Du bommet på'})}: <b>${esc(missed(w).join(', '))}</b></p>`:''}<span class="mono">${esc(w.model)}</span></div></div>`).join('')}</div>`:`<p class="muted">${L({en:'No weak items in this session.',no:'Ingen svake punkter i denne økten.'})}</p>`}`;
+    ${sm.weak.length?`<h4>${L({en:'Practise these again',no:'Øv på disse igjen'})}</h4><div class="weak">${sm.weak.slice(0,5).map(w=>`<div class="wi"><b>${Math.round(w.score*100)} %</b><div><p>${esc(w.prompt? String(L(w.prompt)).replace(/<[^>]+>/g,'') : L(w.task))}</p>${missed(w).length?`<p class="miss">${L({en:'You missed',no:'Du bommet på'})}: <b>${esc(missed(w).join(', '))}</b></p>`:''}<span class="mono">${esc(w.model)}</span></div></div>`).join('')}</div>`:`<p class="muted">${L({en:'No weak items in this session.',no:'Ingen svake punkter i denne økten.'})}</p>`}`;
   el('btnWeak').hidden=!sm.weak.length;
   const nx=nextLesson(cur); const nb=el('debNext'); if(nb){ nb.hidden=!nx; if(nx){ nb.textContent=`${L({en:'Next lesson',no:'Neste leksjon'})}: ${L(nx.t)} →`; nb.onclick=()=>startScenario(nx); } }
   el('btnWeak').className= nx&&!sm.weak.length? 'btn' : 'btn pri'; if(nb) nb.className= sm.weak.length? 'btn' : 'btn pri';
@@ -432,7 +434,7 @@ function init(){
   if(!TTS&&!NV.supported){ el('setVoice').disabled=true; el('ttsNote').textContent=L({en:'This browser has no speech synthesis: the controller is shown as text.',no:'Denne nettleseren har ikke talesyntese: flygelederen vises som tekst.'}); }
   el('say').placeholder=PH();
   drawHome(); show('home'); aiSetup();
-  LAB.onLang(()=>{ drawHome(); if(!el('v-pick').hidden) drawPick(); if(ses&&!el('v-sess').hidden){ el('sessT').textContent=L(cur.t); drawBasis(); drawTurn(); } if(!el('v-deb').hidden&&ses) drawDeb(ses.summary()); });
+  LAB.onLang(()=>{ const y=window.scrollY; requestAnimationFrame(()=>window.scrollTo(0,y)); drawHome(); if(!el('v-pick').hidden) drawPick(); if(ses&&!el('v-sess').hidden){ el('sessT').textContent=L(cur.t); drawBasis(); drawTurn(); } if(!el('v-deb').hidden&&ses) drawDeb(ses.summary()); });
   // test hooks (headless browsers cannot speak): type and transmit
   window.__radio={get ses(){ return ses; },voice:c=>finishVoice(c),micStart,micStop,say(t){ el('say').value=t; return transmit(false); },model(){ return ses&&ses.step?ses.step.model:''; },start:k=>startScenario(k==='quick'?'quick':S.byKey(k)),idle:()=>queue};
 }
