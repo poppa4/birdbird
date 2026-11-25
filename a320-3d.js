@@ -165,7 +165,7 @@ function init(o){
        a dark tinted sun visor on a rod with two hinges over each side window. The model's loose rails, fins and mounts there are
        left out of models/a320-shell.bin (tools/render-a320/header_cut.py). */
     if(!TEST3){ const ceil=z=>0.863+(z+0.241)*0.388, pathX=z=>z<0.02?0.775:z<0.36?0.775+(z-0.02)/0.34*0.215:0.99+(z-0.36)/0.93*0.01;
-      const xin=z=>pathX(z)-0.085, yb=z=>Math.min(0.95,ceil(z)-0.012), NZ=38, NS=14, Z0=-0.241, Z1=1.15;
+      const xin=z=>pathX(z)-0.085, yb=z=>z<=0.95?Math.min(0.95,ceil(z)-0.012):0.95+Math.min(1,(z-0.95)/0.30)*0.35, NZ=44, NS=14, Z0=-0.241, Z1=1.25;   /* aft of the windows it rises to the top edge of the circuit-breaker wall and ends on it */
       const pos=[], col=[], idx=[], vc=(r,g,b)=>col.push(r,g,b);
       for(const sg of [-1,1]){ const base=pos.length/3;
         for(let i=0;i<=NZ;i++){ const z=Z0+(Z1-Z0)*i/NZ, yA=ceil(z)-0.004, xA=0.56, xB=xin(z)+0.004, yB=yb(z), cx=xB-0.03, cyy=yA;
@@ -180,7 +180,7 @@ function init(o){
         const c=[u.clone().add(v),u.clone().sub(v),u.clone().negate().sub(v),u.clone().negate().add(v)]; for(let i=0;i<4;i++){ const j=(i+1)%4, p0=A.clone().add(c[i]), p1=A.clone().add(c[j]), p2=B.clone().add(c[j]), p3=B.clone().add(c[i]); arr.push(...p0.toArray(),...p1.toArray(),...p2.toArray(),...p0.toArray(),...p2.toArray(),...p3.toArray()); } };
       const vp=[], hp=[], rp=[], box=(arr,c,ax,ay,az)=>{ const [x,y,z]=c; for(const [a,b,cc,d] of [[0,1,3,2],[4,6,7,5],[0,4,5,1],[2,3,7,6],[0,2,6,4],[1,5,7,3]]){ const P=k=>[x+((k&1)?ax:-ax),y+((k&2)?ay:-ay),z+((k&4)?az:-az)]; arr.push(...P(a),...P(b),...P(cc),...P(a),...P(cc),...P(d)); } };
       for(const sg of [-1,1]) for(const [za,zb] of [[0.06,0.33],[0.48,0.78]]){
-        const N=10, yT0=0.925, yB0=0.80, r=0.02;
+        const N=10, yT0=0.925, yB0=0.835, r=0.02;
         for(let i=0;i<N;i++){ const z0=za+(zb-za)*i/N, z1=za+(zb-za)*(i+1)/N, x0=sg*(xin(z0)-0.045), x1=sg*(xin(z1)-0.045), b0=sg*(xin(z0)-0.085), b1=sg*(xin(z1)-0.085);   /* hangs tilted towards the pilot, clear of the frame */
           const lo0=yB0+(i===0?r:0), lo1=yB0+(i===N-1?r:0);   /* rounded lower corners (a cut, enough at this size) */
           vp.push(x0,yT0,z0, x1,yT0,z1, b1,lo1,z1, x0,yT0,z0, b1,lo1,z1, b0,lo0,z0); }
@@ -188,7 +188,7 @@ function init(o){
         for(const zz of [za+0.035, zb-0.035]) box(hp,[xr(zz),0.935,zz],0.011,0.016,0.022);
         tube(rp,[xr(za-0.02),0.935,za-0.02],[xr(zb+0.02),0.935,zb+0.02],0.0055); }
       const mkm=(arr,mat)=>{ const g2=new THREE.BufferGeometry(); g2.setAttribute('position',new THREE.Float32BufferAttribute(arr,3)); BACK.add(new THREE.Mesh(g2,mat)); };
-      mkm(vp,new THREE.MeshBasicMaterial({color:0x2c3439,side:THREE.DoubleSide}));
+      mkm(vp,new THREE.MeshBasicMaterial({color:0x1a2328,transparent:true,opacity:0.84,side:THREE.DoubleSide,depthWrite:false}));   /* smoked, thin: the window shows through */
       mkm(hp,new THREE.MeshBasicMaterial({color:0x1c2126,side:THREE.DoubleSide}));
       mkm(rp,new THREE.MeshBasicMaterial({color:0x2a3037,side:THREE.DoubleSide})); }
     const g=new THREE.BufferGeometry(), arr=new Float32Array(bp.length*3); bp.forEach((v,i)=>{ arr[i*3]=v.x; arr[i*3+1]=v.y; arr[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(arr,3)); BACK.add(new THREE.Mesh(g,bm));
