@@ -1037,6 +1037,21 @@ function loop(t){
   slow+=dt; if(slow>0.12&&!(D3on&&D3.frozen)){ slow=0; slowUI(o); } // status lines wait while the 3D view turns (any layout then re-lays out the whole panel)
   requestAnimationFrame(loop);
 }
+/* ?bench=1: a self-test for finding what costs frame time on a given machine. It turns the view by itself and measures the
+   frame interval with one layer at a time switched off, then prints the table on the page. */
+if(new URLSearchParams(location.search).has('bench')) setTimeout(async()=>{ const box=document.createElement('pre'); box.style.cssText='position:fixed;left:8px;top:60px;z-index:99999;background:#000;color:#7dffa0;font:600 13px/1.35 ui-monospace,Menlo,monospace;padding:10px 12px;border-radius:8px;max-width:96vw;white-space:pre-wrap'; box.textContent='bench: waiting…'; document.body.appendChild(box);
+  try{ const b=[...document.querySelectorAll('button')].find(x=>/Fly it/.test(x.textContent)); if(b) b.click(); }catch(e){}
+  await new Promise(r=>setTimeout(r,2500)); if(!D3on){ box.textContent='bench: 3D not on'; return; }
+  const fr=ms=>new Promise(res=>{ let n=0, mx=0, l=performance.now(); const s0=l, e=l+ms; const f=t=>{ n++; mx=Math.max(mx,t-l); l=t; t<e?requestAnimationFrame(f):res(((performance.now()-s0)/n).toFixed(1)+' ms (max '+Math.round(mx)+')'); }; requestAnimationFrame(f); });
+  let on=true, y=0, mode=1; const mv=()=>{ if(!on) return; y++; if(mode===1) D3.setView(13+18*Math.sin(y/25),-22+6*Math.cos(y/31),1); else if(mode===2) D3.setView(13,-22,0.62+0.36*Math.sin(y/18)); requestAnimationFrame(mv); }; mv();
+  const st=PST, fg=[...st.querySelectorAll('canvas')].filter(c=>!c.id), world=[...st.querySelectorAll('.world')], otw=[el('otw')], gdu=[...st.querySelectorAll('.gdu')], subs=[...st.querySelectorAll('.d3sub')], out=[];
+  const gl=document.createElement('canvas').getContext('webgl'), ext=gl&&gl.getExtension('WEBGL_debug_renderer_info');
+  out.push((ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):'gpu ?')+' · dpr '+devicePixelRatio+' · stage '+st.clientWidth+'x'+st.clientHeight+' · vis '+document.visibilityState);
+  const T=async(name,els,m)=>{ mode=m||1; els.forEach(e=>e.style.visibility='hidden'); D3.setQuality(0); const r=await fr(1800); els.forEach(e=>e.style.visibility=''); out.push(name.padEnd(26)+r+'  L'+D3.quality().level); box.textContent=out.join('\n'); };
+  mode=0; D3.setQuality(0); out.push('still'.padEnd(26)+await fr(1800));
+  await T('turning, everything on',[]); await T('zooming, everything on',[],2); await T('no switch layer (fg)',fg); await T('no drawn panel',world); await T('no sub-planes',subs); await T('no displays',gdu);
+  await T('no fg, no panel',[...fg,...world]); await T('no outside/cockpit canvas',otw); await T('paused sim',[],1);
+  UI.paused=true; await T('sim paused, turning',[]); UI.paused=false; on=false; out.push('done'); box.textContent=out.join('\n'); },9000);
 let panelT=1, pfdT=1, wasCrash=null, mfdTick=0, mfdForce=true, otwSkip=0;
 /* Frame-budget governor shared by the panel and the outside view. Level 0: panel at 30 Hz, outside view every frame at up to 1.5
    device pixels per CSS pixel. Level 1 (frames over 24 ms, as before): panel 20 Hz, outside view every 2nd frame at 1 pixel.
