@@ -23,7 +23,7 @@ const P0=160;                                    // finest patch size (m) -> 10 
 const NLEV=11;                                   // quadtree levels: root = 160*2^10 = 163.84 km
 const ROOT={E:0, N:1000, S:P0*Math.pow(2,NLEV-1)};
 const MAXI=2400;
-const DATA_V=15;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
+const DATA_V=16;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
 const V=f=>f+'?v='+DATA_V;
 
 /* ---------- loading ---------- */
@@ -279,7 +279,7 @@ void main(){
   if(km>0.0){ alb=mix(alb,texture2D(tAM,uM).rgb,km); nrm=mix(nrm,texture2D(tNM,uvOf(extM,EN)),km); wat=mix(wat,texture2D(tWM,uM).r,km); }
   float rA=0.0, rG=0.0;
   if(kn>0.0){ vec4 w4=texture2D(tWN,uN); vec3 w3=w4.rgb;
-    float sA=(w4.a*255.0-128.0)*0.1, sG=(w4.b*255.0-128.0)*0.1;        // NVDB road edges, signed metres
+    vec2 rd=texture2D(tWN,uN,-2.0).ba; float sA=(rd.y*255.0-128.0)*0.1, sG=(rd.x*255.0-128.0)*0.1;   // sharper mip: distance fields stay exact        // NVDB road edges, signed metres
     rA=smoothstep(-1.0,1.0,sA/max(fwidth(sA)*0.75,0.08))*kn; rG=smoothstep(-1.0,1.0,sG/max(fwidth(sG)*0.75,0.08))*kn; vec3 an=texture2D(tAN,uN).rgb; vec3 ab=texture2D(tAN,uN,1.0).rgb;
     an=clamp(an+(an-ab)*0.22,0.0,1.0);                  // unsharp mask: the 10 m satellite colours read crisper up close
     alb=mix(alb,an,kn); nrm=mix(nrm,texture2D(tNN,uvOf(extN,EN)),kn); wat=mix(wat,w3.r,kn); fr=w3.g*kn*(1.0-max(rA,rG)); pv=max(rA,rG); }
@@ -326,6 +326,11 @@ void main(){
       vec3 s=texture2D(tApt,ua).rgb;
       float sd=(s.r*255.0-128.0)/16.0; float aa=max(fwidth(sd),0.02);
       paved=smoothstep(-aa,aa,sd);
+      { // airside grass: mowing stripes along the runway, tufts, a worn strip at the pavement edge
+        float gz=(1.0-paved)*clamp(1.0-fr-wat-rA-rG,0.0,1.0)*(1.0-smoothstep(300.0,1800.0,dist));
+        if(gz>0.0){ float t=dot(EN,vec2(rwyU.y,-rwyU.x))/7.0; float ft=fwidth(t); float st=sin(t*3.14159)*(1.0-smoothstep(0.3,0.7,ft));
+          float tu=texture2D(tDet,EN/11.0+0.21).g-0.5; float edge=1.0-smoothstep(0.0,1.8,-sd);
+          c*=1.0+(0.13*st*(1.0-smoothstep(250.0,900.0,dist))+0.30*tu)*gz; c=mix(c,c*vec3(0.90,0.86,0.74),edge*gz*0.75); } }
       float concrete=s.b;
       vec4 dd=texture2D(tDet,EN/2.3);
       float la=0.5, lc=0.5;
@@ -755,17 +760,51 @@ function buildBuildings(){
         casters.push({p:[L(-28.6,sd*0.6),L(-31.9,sd*6.2),L(-33.25,sd*6.2),L(-32.3,sd*0.6)],h:5.0,z0:4.6}); }
       casters.push({p:[L(-27.4,-0.2),L(-33.4,-0.2),L(-34.7,0.2),L(-27.4,0.2)],h:11.8,z0:5.9}); }
     // ground equipment: stairs at L1, tug ahead, GPU at the nose, belt loader + carts at the aft hold, fuel truck clear of the wing
-    const WH=[0.06,0.06,0.07];
-    const wheels=(a,b,L,Wd,r)=>{ for(const sa of [-1,1]) for(const sb of [-1,1]) obox(o,f,a+sa*L*0.32,b+sb*(Wd/2-0.12),r,r*2,0.28,r*2,WH); };
+    const WH=[0.06,0.06,0.07], HUB=[0.55,0.56,0.58], GL=[0.08,0.10,0.12], BLK=[0.10,0.10,0.11], ORG=[1.0,0.45,0.05];
+    // cylinder across the vehicle (axis = right vector): tyres, hubs
+    const cylX=(a,b,z,rad,wd,col,seg)=>{ seg=seg||10; const r=[f[1],-f[0]];
+      const pt=(t,lb)=>W3(o[0]+f[0]*(a+Math.cos(t)*rad)+r[0]*lb, o[2]+z+Math.sin(t)*rad, o[1]+f[1]*(a+Math.cos(t)*rad)+r[1]*lb);
+      for(let i=0;i<seg;i++){ const t0=i/seg*Math.PI*2, t1=(i+1)/seg*Math.PI*2;
+        tri(pt(t0,b-wd/2),pt(t1,b-wd/2),pt(t1,b+wd/2),col,-1,0); tri(pt(t0,b-wd/2),pt(t1,b+wd/2),pt(t0,b+wd/2),col,-1,0);
+        tri(pt(t1,b+wd/2),pt(t1,b-wd/2),pt(t0,b-wd/2),col,-1,0); tri(pt(t0,b+wd/2),pt(t1,b+wd/2),pt(t0,b-wd/2),col,-1,0);
+        for(const sd of [-1,1]){ const c=W3(o[0]+f[0]*a+r[0]*(b+sd*wd/2), o[2]+z, o[1]+f[1]*a+r[1]*(b+sd*wd/2));
+          tri(c,pt(t0,b+sd*wd/2),pt(t1,b+sd*wd/2),WH,-1,0); tri(pt(t1,b+sd*wd/2),pt(t0,b+sd*wd/2),c,WH,-1,0); } }
+      for(const sd of [-1,1]) obox(o,f,a,b+sd*(wd/2+0.01),z,rad*0.9,0.02,rad*0.9,HUB); };
+    const wheels=(a,b,L,Wd,r)=>{ for(const sa of [-1,1]) for(const sb of [-1,1]) cylX(a+sa*L*0.32,b+sb*(Wd/2-0.14),r,r,0.3,WH); };
+    const beacon=(a,b,z)=>obox(o,f,a,b,z,0.22,0.22,0.16,ORG);
+    const rail=(a,b,z,L,ht,pitch)=>{ obox(o,f,a,b,z+ht,L,0.05,0.05,[0.80,0.80,0.80],pitch); for(let k=0;k<4;k++){ const da=-L/2+k*L/3; obox(o,f,a+da,b,z+ht/2+da*Math.tan(pitch||0),0.04,0.04,ht,[0.80,0.80,0.80]); } };
     const veh=(type,a,b,col)=>{
-      if(type==='tug'){ wheels(a,b,4.4,2.2,0.42); obox(o,f,a,b,0.95,4.4,2.2,0.9,col); obox(o,f,a-1.3,b,1.85,1.4,2.0,0.95,col); obox(o,f,a-1.3,b,1.95,1.2,2.02,0.55,[0.10,0.12,0.14]); }
-      if(type==='gpu'){ wheels(a,b,1.8,1.2,0.25); obox(o,f,a,b,0.95,1.9,1.2,1.0,col); obox(o,f,a,b,1.5,1.7,1.0,0.12,[0.2,0.2,0.2]); }
-      if(type==='stairs'){ wheels(a,b,5.0,2.0,0.4); obox(o,f,a,b,0.95,5.2,2.0,0.9,col); obox(o,f,a+1.6,b,1.95,1.6,1.9,1.1,col);
-        obox(o,f,a-0.2,b+0.9,2.45,3.6,1.2,0.22,[0.62,0.62,0.64],-0.62); obox(o,f,a-0.2,b+1.5,3.1,3.6,0.06,0.9,[0.75,0.75,0.75],-0.62); obox(o,f,a+1.5,b+1.4,3.65,1.2,1.4,0.15,[0.62,0.62,0.64]); }
-      if(type==='cart'){ wheels(a,b,2.8,1.6,0.22); obox(o,f,a,b,0.55,3.0,1.6,0.12,[0.35,0.36,0.38]); for(const sb of [-1,1]) obox(o,f,a,b+sb*0.78,1.0,3.0,0.05,0.9,col); obox(o,f,a+1.7,b,0.5,0.9,0.08,0.06,[0.2,0.2,0.2]); }
-      if(type==='belt'){ wheels(a,b,4.2,1.9,0.35); obox(o,f,a,b,0.8,4.4,1.9,0.7,col); obox(o,f,a+0.6,b,1.55,6.0,0.8,0.18,[0.12,0.12,0.13],0.25); obox(o,f,a-1.4,b+0.6,1.6,1.0,0.8,1.0,col); }
-      if(type==='fuel'){ wheels(a,b,9.0,2.5,0.5); obox(o,f,a+3.6,b,1.6,2.2,2.5,2.0,col); obox(o,f,a+3.7,b,2.1,1.6,2.52,0.7,[0.10,0.12,0.14]); obox(o,f,a-1.2,b,1.9,7.2,2.4,2.4,[0.92,0.92,0.90]); }
+      if(type==='tug'){ wheels(a,b,4.4,2.2,0.45); obox(o,f,a,b,0.95,4.4,2.2,0.85,col); obox(o,f,a,b,1.40,4.5,2.25,0.06,BLK);
+        obox(o,f,a+2.25,b,0.75,0.12,2.0,0.35,BLK);                                       // push bumper
+        obox(o,f,a-1.3,b,1.90,1.5,2.0,1.0,col); obox(o,f,a-0.62,b,2.05,0.08,1.84,0.62,GL); obox(o,f,a-1.3,b,2.05,1.3,2.04,0.55,GL);
+        obox(o,f,a-1.3,b,2.44,1.6,2.1,0.08,col); beacon(a-1.3,b,2.56); }
+      if(type==='gpu'){ wheels(a,b,1.8,1.3,0.27); obox(o,f,a,b,1.0,2.0,1.25,1.05,col); obox(o,f,a,b,1.56,2.1,1.32,0.08,[0.25,0.25,0.26]);
+        obox(o,f,a+1.05,b,0.55,0.5,0.08,0.06,BLK); for(const sb of [-1,1]) obox(o,f,a,b+sb*0.63,1.0,1.5,0.02,0.7,[0.22,0.22,0.24]);
+        obox(o,f,a+1.4,b+0.5,0.04,2.4,0.07,0.07,BLK); obox(o,f,a+2.65,b+1.3,0.04,0.07,1.6,0.07,BLK); }          // cable to the nose
+      if(type==='stairs'){ wheels(a,b,5.0,2.0,0.42); obox(o,f,a,b,0.95,5.2,2.0,0.9,col); obox(o,f,a+1.7,b,1.95,1.5,1.9,1.1,col); obox(o,f,a+2.2,b,2.1,0.08,1.7,0.6,GL); obox(o,f,a+1.7,b,2.1,1.2,1.92,0.5,GL);
+        beacon(a+1.7,b,2.58);
+        for(let k=0;k<9;k++){ const da=-1.9+k*0.42; obox(o,f,a+da,b+0.9,1.55+k*0.27,0.30,1.2,0.05,[0.62,0.62,0.64]); }
+        obox(o,f,a-0.2,b+0.9,2.45,3.9,1.2,0.12,[0.48,0.48,0.50],-0.62);
+        for(const sb of [0.28,1.52]) rail(a-0.2,b+sb,2.5,3.6,0.95,-0.62);
+        obox(o,f,a-2.6,b+0.9,4.05,1.3,1.4,0.12,[0.62,0.62,0.64]); rail(a-2.6,b+1.6,4.05,1.3,1.0,0); }
+      if(type==='cart'){ wheels(a,b,2.6,1.6,0.24); obox(o,f,a,b,0.56,3.0,1.6,0.10,[0.35,0.36,0.38]); obox(o,f,a,b,2.05,3.1,1.7,0.06,col);
+        for(const sa of [-1,1]) for(const sb of [-1,1]) obox(o,f,a+sa*1.48,b+sb*0.8,1.3,0.06,0.06,1.5,[0.5,0.5,0.52]);
+        obox(o,f,a-1.5,b,1.3,0.04,1.62,1.4,col); obox(o,f,a,b+0.8,1.55,3.0,0.03,0.95,[0.20,0.30,0.55]);           // tarp on one side
+        obox(o,f,a,b-0.1,0.95,1.2,0.8,0.7,[0.25,0.22,0.20]); obox(o,f,a+0.9,b+0.3,0.85,0.7,0.6,0.5,[0.15,0.18,0.30]);  // bags
+        obox(o,f,a+1.95,b,0.45,1.0,0.07,0.06,BLK); }
+      if(type==='belt'){ wheels(a,b,4.2,1.9,0.36); obox(o,f,a,b,0.8,4.4,1.9,0.7,col); obox(o,f,a+0.6,b,1.6,6.2,0.9,0.12,BLK,0.25);
+        for(const sb of [-0.48,0.48]) obox(o,f,a+0.6,b+sb,1.78,6.2,0.05,0.2,[0.75,0.75,0.75],0.25);
+        obox(o,f,a-1.4,b+0.55,1.75,1.1,0.85,1.1,col); obox(o,f,a-1.0,b+0.55,1.95,0.06,0.75,0.6,GL); beacon(a-1.4,b+0.55,2.36); }
+      if(type==='fuel'){ wheels(a,b,9.0,2.5,0.52); cylX(a-0.9,b,0.52,0.52,2.2,WH);
+        obox(o,f,a+3.7,b,1.55,2.1,2.5,1.9,col); obox(o,f,a+4.7,b,2.0,0.08,2.3,0.8,GL); obox(o,f,a+3.7,b,2.05,1.7,2.52,0.6,GL); beacon(a+3.6,b,2.6);
+        obox(o,f,a-1.0,b,0.75,7.4,2.0,0.3,BLK); tube(o,f,-1.0+a+3.0,a-4.6,1.15,1.15,2.1,2.1,14,[0.92,0.92,0.90],b,1.0);
+        obox(o,f,a+2.05,b,2.1,0.12,2.2,2.2,[0.88,0.88,0.86]); obox(o,f,a-1.0,b,3.3,6.6,0.7,0.08,[0.7,0.7,0.72]); obox(o,f,a-4.4,b,1.6,0.5,2.3,1.5,[0.5,0.5,0.52]);
+        for(const sb of [-1,1]) obox(o,f,a-1.0,b+sb*1.18,1.0,7.0,0.04,0.25,col); }
     };
+    // safety cones (nose, wingtips, tail) and wheel chocks
+    const cone=(a,b)=>{ obox(o,f,a,b,0.03,0.42,0.42,0.06,ORG); obox(o,f,a,b,0.3,0.24,0.24,0.5,ORG); obox(o,f,a,b,0.38,0.2,0.2,0.1,[0.95,0.95,0.95]); obox(o,f,a,b,0.6,0.12,0.12,0.08,ORG); };
+    cone(2.2,0); cone(-17.5,-18.2); cone(-17.5,18.2); cone(-34.8,0); cone(-13.0,-7.5); cone(-13.0,7.5);
+    for(const [ca,cb] of [[0.75,0],[-0.75,0],[-13.0,-3.8],[-13.0,3.8]]) obox(o,f,ca,cb,0.12,0.25,0.9,0.22,[0.85,0.75,0.10]);
     veh('stairs',-1.0,-4.3,[0.92,0.92,0.90]);
     veh('tug',6.8,0,[0.96,0.82,0.12]);
     veh('gpu',3.6,-2.6,[0.94,0.70,0.14]);
@@ -888,7 +927,7 @@ function buildTraffic(){
   const r=apt.rwy, U=r.u, R=(s,t)=>[U[0]*s+U[1]*t, U[1]*s-U[0]*t];
   const st12=(r.stands||[]).find(x=>x.id==='12'); if(!st12) return;
   // departure: hold W1 -> line up at s=60 -> roll north
-  const dep=polyPath([[-92,170],[-62,118],[-30,82],R(60,0),R(140,0),R(3200,0),R(30000,0)]);
+  const dep=polyPath([[-103.6,188.2],[-62,118],[-30,82],R(60,0),R(140,0),R(3200,0),R(30000,0)]);
   // arrival: final RWY 17 from the north -> touchdown 400 m past THR 17 -> W2 -> T -> taxilane -> stand 12
   const arr=polyPath([R(r.lthr+12000,0),R(r.lthr-400,0),R(880,0),R(800,0),[-40,760],[-98,684],[-150,620],[-205,563],[-245,536],[-320,533],[st12.E,534],[st12.E,505],[st12.E,st12.N]]);
   TRAF.dep=dep; TRAF.arr=arr; TRAF.cycle=600;

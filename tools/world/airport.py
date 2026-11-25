@@ -296,9 +296,15 @@ for side in (-1,1):
         if math.hypot(LBL[lab][0]-c.x,LBL[lab][1]-c.y)>260: lab=''
         a,b=list(g_.coords)[0],list(g_.coords)[-1]
         HOLDS.append(dict(a=[round(a[0],2),round(a[1],2)],b=[round(b[0],2),round(b[1],2)],side=side,twy=lab))
+# checked against the ADC: W1-W3 holds run between the chart's stop-bar end markers (across the oblique taxiways),
+# A/B/C sit on the centre of the chart's pattern A symbol (95 m from the centre line)
+WCH={'W1':((-109.6,176.5),(-91.3,189.0)),'W2':((-94.6,667.6),(-114.2,689.0)),'W3':((-116.7,983.3),(-132.8,999.3))}
+for h_ in HOLDS:
+    if h_['twy'] in WCH: a_,b_=WCH[h_['twy']]; h_['a']=list(a_); h_['b']=list(b_)
+    elif h_['side']>0:
+        for k_ in ('a','b'): h_[k_]=[round(h_[k_][0]+V[0]*5.0,2),round(h_[k_][1]+V[1]*5.0,2)]
 print('holds',[(h_['twy'],h_['side'],round(math.dist(h_['a'],h_['b']),1)) for h_ in HOLDS])
-# windsocks: left of each threshold, 120 m in and 75 m out from the edge
-SOCKS=[[round(v,2) for v in pt(150,-(WID/2+75))],[round(v,2) for v in pt(LTHR-150,(WID/2+75))]]
+SOCKS=[[119.9,60.05],[81.98,2270.45]]   # windsock symbols on the ADC (both east of the runway)
 # airport fence: outline of the airfield (chart), 25 m outside the movement area, simplified
 fz=unary_union([Polygon(to_local(pl)).buffer(0) for dd in dr if key(dd)==('f',(0.66,0.8,0.73),0) for pl in polys(dd) if len(pl)>=3])
 fz=fz.buffer(30).buffer(-10).simplify(4)

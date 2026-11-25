@@ -12,22 +12,22 @@ L=json.load(open('/home/claude/ento/nvdb/links.json'))
 lines=[]
 for o in L:
     if o['topo']!='Vegtrase' or o['t'] not in ('HOVED','KONNEKTERING'): continue
-    if o['typ'] in ('gangfelt','trapp','sti','gågate'): continue
+    if o['typ'] in ('gangfelt','trapp','sti','gågate','fortau'): continue      # sidewalks merge with the road at this texel size
     k=o['kat']; nl=len(o['felt'])
-    if o['tg']=='G' or o['typ'] in ('gangOgSykkelveg','gangveg','sykkelveg'): w=2.6; grav=False
+    if o['tg']=='G' or o['typ'] in ('gangOgSykkelveg','gangveg','sykkelveg'): w=3.4; grav=False
     elif o['typ']=='fortau': w=2.0; grav=False
     elif k=='E': w=max(nl,2)*3.5+4.0; grav=False
     elif k in ('R','F'): w=max(nl,2)*3.25+1.5; grav=False
     elif k=='K': w=max(nl,2)*3.0+0.8; grav=False
-    elif k=='P': w=5.0 if nl>=2 else 3.4; grav=nl<2
-    elif k=='S': w=3.4; grav=True
+    elif k=='P': w=5.0 if nl>=2 else 4.0; grav=nl<2
+    elif k=='S': w=4.0; grav=True
     else: w=3.6; grav=False
     if o['typ']=='rampe': w=max(w,6.0)
     pts=o['wkt'][o['wkt'].index('(')+1:-1].split(',')
     la=np.array([float(p.split()[0]) for p in pts]); lo=np.array([float(p.split()[1]) for p in pts])
     E,N=ll_to_local(lo,la); lines.append((np.array(E),np.array(N),w,grav))
 print('road links',len(lines),'gravel',sum(l[3] for l in lines))
-im=np.asarray(Image.open(f'{OUT}/near_w.png').convert('RGB')).copy()
+im=np.asarray(Image.open('/home/claude/ento/near_w_orig.png').convert('RGB')).copy()
 G=np.zeros((ah,aw),np.uint8); A=np.zeros((ah,aw),np.uint8)
 R=1.0; M=20.0; step=300                                   # 300 texel rows per chunk, 1 m raster
 for r0 in range(0,ah,step):
