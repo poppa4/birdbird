@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="robots" content="noindex">
+<title>ENTO Torp – ekte verden (test) · NORDAP</title>
+<style>
+html,body{margin:0;height:100%;background:#0b1626;overflow:hidden;font:13px/1.35 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#e8eef6;-webkit-user-select:none;user-select:none}
+canvas{display:block;width:100vw;height:100vh;touch-action:none}
+#bar{position:fixed;left:12px;top:12px;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100vw - 24px)}
+#bar button{background:rgba(10,24,44,.78);color:#e8eef6;border:1px solid rgba(160,190,230,.28);border-radius:8px;padding:7px 11px;font:inherit;cursor:pointer}
+#bar button.on{background:#1f4f8f;border-color:#5f8fd0}
+#hud{position:fixed;right:12px;top:12px;background:rgba(10,24,44,.78);border:1px solid rgba(160,190,230,.28);border-radius:8px;padding:7px 10px;font:12px/1.4 ui-monospace,Menlo,monospace;white-space:pre}
+#load{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(10,24,44,.85);padding:12px 16px;border-radius:10px}
+#att{position:fixed;left:12px;bottom:10px;font-size:11px;opacity:.75}
+#help{position:fixed;right:12px;bottom:10px;font-size:11px;opacity:.75;text-align:right}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="bar">
+  <button data-v="f35" class="on">Finale 35</button><button data-v="f17">Finale 17</button><button data-v="ovh">Over plassen</button><button data-v="ldg">På banen</button><button data-v="free">Fri kamera</button>
+  <span style="width:8px"></span>
+  <button data-t="day" class="on">Dag</button><button data-t="dusk">Skumring</button><button data-t="night">Natt</button>
+</div>
+<div id="hud"></div>
+<div id="load">Laster terreng …</div>
+<div id="att">Høydedata © Kartverket (CC BY 4.0) · utenfor Norge: Mapzen Terrain Tiles · rullebane og lys: AIP Norge AD 2 ENTO</div>
+<div id="help">Fri kamera: dra for å se, WASD/piltaster flytter, Q/E opp/ned, Shift raskere</div>
+<script src="three.min.js?v=128"></script>
+<script src="world.js?v=1"></script>
+<script>
+(async function(){
+'use strict';
+const cv=document.getElementById('cv'), hud=document.getElementById('hud');
+const R=new THREE.WebGLRenderer({canvas:cv,antialias:true,powerPreference:'high-performance',stencil:false});
+if(!R.capabilities.isWebGL2){ document.getElementById('load').textContent='Denne visningen krever WebGL 2.'; return; }
+const DPR=Math.min(window.devicePixelRatio||1,2); let pr=Math.min(DPR,1.5); R.setPixelRatio(pr);
+const scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(60,1,1,250000);
+function size(){ R.setSize(innerWidth,innerHeight,false); cam.aspect=innerWidth/innerHeight; cam.updateProjectionMatrix(); }
+addEventListener('resize',size); size();
+await WORLD.load('world/ento/');
+WORLD.attach(scene); document.getElementById('load').remove();
+WORLD.full.then(()=>{});
+const rw=WORLD.meta&&null;
+const A=WORLD.airport; const U=A.rwy.u, L=A.rwy.lthr;
+// --- views ---
+let view='f35', t0=performance.now(), yaw=0, pitch=0, pos=new THREE.Vector3(), keys={};
+const at=(s,tt)=>[U[0]*s+U[1]*tt, U[1]*s-U[0]*tt];          // runway (s, t) -> E,N
+function setCam(E,h,N,lookE,lookH,lookN){ cam.position.set(E,h,-N); cam.lookAt(lookE,lookH,-lookN); }
+function approach(dir,t){
+  // 3 degree glide path to the aiming point, 72 m/s, looping from 9 km out
+  const v=72, d0=9000, d=Math.max(0,d0-(t*v)%(d0+200)); const aim=400, e35=A.rwy.elev35, e17=A.rwy.elev17;
+  if(dir>0){ const s=aim-d, [E,N]=at(s,0), h=e35+d*Math.tan(3*Math.PI/180)+3; const [E2,N2]=at(s+800,0); setCam(E,h,N,E2,h-800*Math.tan(3.2*Math.PI/180),N2); }
+  else { const s=L-aim+d, [E,N]=at(s,0), h=e17+d*Math.tan(3*Math.PI/180)+3; const [E2,N2]=at(s-800,0); setCam(E,h,N,E2,h-800*Math.tan(3.2*Math.PI/180),N2); }
+}
+function frameView(t){
+  if(view==='f35') approach(1,t);
+  else if(view==='f17') approach(-1,t);
+  else if(view==='ovh'){ const a=t*0.05, r=5200; const [cE,cN]=at(1200,0); setCam(cE+Math.cos(a)*r,900,cN+Math.sin(a)*r,cE,90,cN); }
+  else if(view==='ldg'){ const [E,N]=at(30,0); const [E2,N2]=at(1200,0); setCam(E,A.rwy.elev35+3.2,N,E2,A.rwy.elev35+2,N2); }
+  else { const sp=(keys.Shift?220:60)*0.016, f=new THREE.Vector3(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch)), r=new THREE.Vector3(Math.cos(yaw),0,Math.sin(yaw));
+    if(keys.w||keys.ArrowUp) pos.addScaledVector(f,sp); if(keys.s||keys.ArrowDown) pos.addScaledVector(f,-sp);
+    if(keys.d||keys.ArrowRight) pos.addScaledVector(r,sp); if(keys.a||keys.ArrowLeft) pos.addScaledVector(r,-sp);
+    if(keys.e) pos.y+=sp; if(keys.q) pos.y-=sp;
+    const g=WORLD.surface(pos.x,-pos.z)+2; if(pos.y<g) pos.y=g;
+    cam.position.copy(pos); cam.lookAt(pos.clone().add(f)); }
+}
+document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{ document.querySelectorAll('[data-v]').forEach(x=>x.classList.toggle('on',x===b));
+  if(b.dataset.v==='free'){ pos.copy(cam.position); const d=new THREE.Vector3(); cam.getWorldDirection(d); yaw=Math.atan2(d.x,-d.z); pitch=Math.asin(d.y); }
+  view=b.dataset.v; t0=performance.now(); });
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ document.querySelectorAll('[data-t]').forEach(x=>x.classList.toggle('on',x===b)); WORLD.tod(b.dataset.t); });
+const qs=new URLSearchParams(location.search); if(qs.get('q')) WORLD.quality(qs.get('q')); if(qs.get('tod')) WORLD.tod(qs.get('tod')); if(qs.get('view')) view=qs.get('view');
+if(qs.get('cam')){ const c=qs.get('cam').split(',').map(Number); view='fixed'; setCam(c[0],c[1],c[2],c[3],c[4],c[5]); }
+addEventListener('keydown',e=>{ keys[e.key.length===1?e.key.toLowerCase():e.key]=true; keys.Shift=e.shiftKey; });
+addEventListener('keyup',e=>{ keys[e.key.length===1?e.key.toLowerCase():e.key]=false; keys.Shift=e.shiftKey; });
+let drag=null; cv.addEventListener('pointerdown',e=>{ drag=[e.clientX,e.clientY]; cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointermove',e=>{ if(!drag||view!=='free') return; yaw+=(e.clientX-drag[0])*0.004; pitch=Math.max(-1.4,Math.min(1.4,pitch-(e.clientY-drag[1])*0.004)); drag=[e.clientX,e.clientY]; });
+cv.addEventListener('pointerup',()=>drag=null);
+// --- render loop with a resolution governor (keeps 60 fps: lowers render scale only when frames are slow) ---
+let last=performance.now(), acc=0, frames=0, fps=60, slow=0, fast=0;
+function loop(now){
+  const dt=Math.min(0.1,(now-last)/1000); last=now;
+  if(view!=='fixed') frameView((now-t0)/1000);
+  // near plane follows height above ground (depth precision for the runway at distance)
+  const agl=Math.max(1,cam.position.y-WORLD.surface(cam.position.x,-cam.position.z)); const nn=Math.min(30,Math.max(0.5,agl*0.25));
+  if(Math.abs(cam.near-nn)>0.05*nn){ cam.near=nn; cam.updateProjectionMatrix(); }
+  WORLD.update(cam,dt);
+  R.render(scene,cam);
+  frames++; acc+=dt;
+  if(acc>=0.5){ fps=frames/acc; frames=0; acc=0;
+    if(qs.get('gov')==='0'){}
+    else if(fps<54){ slow++; fast=0; if(slow>=2&&pr>0.75){ pr=Math.max(0.75,pr-0.15); R.setPixelRatio(pr); slow=0; } }
+    else if(fps>59){ fast++; slow=0; if(fast>=6&&pr<Math.min(DPR,1.5)){ pr=Math.min(Math.min(DPR,1.5),pr+0.1); R.setPixelRatio(pr); fast=0; } }
+    const s=WORLD.stats(), ri=R.info.render;
+    hud.textContent=`${fps.toFixed(0)} fps · skala ${pr.toFixed(2)}\n${s.patches} ruter · ${s.trees} trær · ${(ri.triangles/1000).toFixed(0)}k trekanter · ${ri.calls} kall\nnivåer: ${s.levels.join(', ')}`;
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+window.__ento={R,cam,scene};
+})();
+</script>
+</body>
+</html>

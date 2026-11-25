@@ -18,3 +18,7 @@
 
 /models/*.glb
   Cache-Control: public, max-age=31536000, immutable
+
+# World data (terrain, colour maps, airport) is loaded by world.js with ?v=N (DATA_V in world.js) and never changes in place.
+/world/*
+  Cache-Control: public, max-age=31536000, immutable
