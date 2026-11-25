@@ -309,6 +309,23 @@ def shell():
     def arch(u, v):
         p = canopy(zb, -1 + 2 * u); return (p[0] * 1.006, YS + v * (p[1] + 0.004 - YS), zb)
     grid(g, 28, 4, arch, 'trim_dark', toward=cab)
+    # roof behind the roll bar: the solid centre the rear door hinges from, with a liner; the glass goes on at each side of it
+    RA = 0.40
+    def roof(u, v):
+        z = 0.47 + v * (zb - 0.47 + 0.004); p = canopy(z, RA * (-1 + 2 * u)); return (p[0] * 0.992, p[1] - 0.006, z)
+    grid(g, 14, 10, roof, 'trim', toward=cab)
+    for sd in (-1, 1):   # its edge, a rounded frame where the door window starts
+        tube(g, [v3(*canopy(0.47 + i / 12 * (zb - 0.47), sd * RA)) * 1.0 + v3(-sd * 0.004, -0.008, 0) for i in range(13)], 0.014, 'frame', sides=8)
+    # storm window in each side of the canopy: a rubber-edged frame on the glass with its latch
+    for sd in (-1, 1):
+        z0, z1, a0, a1 = -0.24, -0.07, 0.70, 0.83
+        def onc(z, a, d=0.004):
+            p = v3(*canopy(z, sd * a)); n = v3(p[0], p[1] - YS, 0); n = n / (math.sqrt(float(n[0] * n[0] + n[1] * n[1])) or 1); return p - n * d
+        ring_ = [onc(z0 + (z1 - z0) * i / 6, a0) for i in range(7)] + [onc(z1, a0 + (a1 - a0) * i / 4) for i in range(1, 5)] \
+            + [onc(z1 - (z1 - z0) * i / 6, a1) for i in range(1, 7)] + [onc(z0, a1 - (a1 - a0) * i / 4) for i in range(1, 5)]
+        tube(g, ring_ + ring_[:1], 0.0042, 'rubber', sides=6)
+        q = onc((z0 + z1) / 2, a1 - 0.012, 0.010)
+        rbox(g, (0.009, 0.009, 0.034), 0.003, 'black', m=T(q[0], q[1], q[2]), seg=2, flat=1)
     console_body(g, cab)
     # stick boots: leather bellows on the floor
     for xc in (-0.27, 0.27):
@@ -518,7 +535,7 @@ def build():
     objs['panel_face'] = MAIN.face('panel_face', root, nu=56, nv=8, outline=topv)
     for sid, sp in SUBS.items():
         objs[sid + '_face'] = sp.face(sid + '_face', root, nu=2, nv=2, off=-0.0008)
-    g = Geo(); grid(g, 30, 16, lambda a, b: canopy(ZF + 0.005 + b * (0.47 - ZF - 0.01), -1 + 2 * a), 'glass', toward=v3(0, -0.2, 0))
+    g = Geo(); grid(g, 44, 30, lambda a, b: canopy(ZF + 0.005 + b * (0.47 - ZF - 0.01), -1 + 2 * a), 'glass', toward=v3(0, -0.2, 0))
     objs['glass'] = C.to_object('glass', g, parent=root, ao=False)
     g = Geo(); grid(g, 30, 14, lambda a, b: canopy(0.47 + b * (ZR - 0.47 - 0.005), -1 + 2 * a), 'glass', toward=v3(0, -0.2, 0.5))
     objs['glass_side'] = C.to_object('glass_side', g, parent=root, ao=False)

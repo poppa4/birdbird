@@ -115,6 +115,7 @@ function buildStick(xc){
 
 /* ---------- definition ---------- */
 G.DA42_3D=CK.make({
+  tint:{y0:9,y1:10,z0:-0.6,z1:-0.2,z2:0.9,z3:1.3,base:0.06,streak:0.15},   // clear canopy (no sun band): a faint pane and two sky reflections
   eye:[-0.27,0.09,0],                                // left seat, pilot eye: 9 cm up so the glareshield is ~9° below the horizon
   panel:{ps:PS,tilt:10,o:[PO.x,PO.y,PO.z],w:1600,h:980},
   views:{ahead:[13,-22,1],short:[11,-27,0.84]},
@@ -123,7 +124,7 @@ G.DA42_3D=CK.make({
   snaps:[['panel','Panel'],['left','Left',-78,-14,1],['right','Right',78,-14,1],['ped','Console',16,-62,0.85],['out','Outside',0,-3,1]],
   /* glTF cockpit (models/da42-cockpit.glb): power levers, flap switch, gear handle and trim wheel sit on the panel, so on the
      foreground pass; the sticks and pedals are below it. The flat drawn levers they replace are hidden (touch zones stay) */
-  glb:{id:'da42',v:4,
+  glb:{id:'da42',v:5,
     fg:['glare_lip','power_L','power_R','flap_switch','gear_handle','trim_wheel'],
     grab:['stick_L','stick_R'], blades:['prop'], propDisc:true, direct:['stick_L','stick_R','pedal_L_l','pedal_L_r','pedal_R_l','pedal_R_r'],
     /* every switch, knob and bezel is a piece of the model standing on the panel (tools/blender/da42.py hardware()); the flat

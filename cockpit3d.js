@@ -311,7 +311,9 @@ function cullControlBacks(groups,units,eye){ let removed=0;
 function glassBaked(A,eye,tint){ const T=tint||{y0:0.16,y1:0.28,z0:-0.6,z1:-0.2,z2:0.9,z3:1.3}, n=A.n, C=new Float32Array(n*4), ss=(a,b,x)=>{ const t=Math.max(0,Math.min(1,(x-a)/(b-a))); return t*t*(3-2*t); };
   for(let i=0;i<n;i++){ const px=A.pos[i*3], py=A.pos[i*3+1], pz=A.pos[i*3+2]; let vx=eye.x-px, vy=eye.y-py, vz=eye.z-pz; const l=Math.hypot(vx,vy,vz)||1;
     const f=1-Math.abs((A.nor[i*3]*vx+A.nor[i*3+1]*vy+A.nor[i*3+2]*vz)/l), top=ss(T.y0,T.y1,py)*ss(T.z0,T.z1,pz)*(1-ss(T.z2,T.z3,pz));
-    C[i*4]=0.86+(0.20-0.86)*top; C[i*4+1]=0.92+(0.27-0.92)*top; C[i*4+2]=0.97+(0.33-0.97)*top; C[i*4+3]=0.025+0.20*f*f*f+0.16*top; }
+    /* T.base: how much the pane itself shows; T.streak: two soft diagonal reflections of the sky across it */
+    const d=px*0.62+pz*0.78, sk=T.streak?T.streak*(Math.exp(-Math.pow((d+0.52)/0.11,2))+0.6*Math.exp(-Math.pow((d-0.02)/0.06,2)))*ss(-0.30,-0.05,py):0, k=1-top;
+    C[i*4]=0.86+(0.20-0.86)*top; C[i*4+1]=0.92+(0.27-0.92)*top; C[i*4+2]=0.97+(0.33-0.97)*top; C[i*4+3]=(T.base===undefined?0.025:T.base)+0.20*f*f*f+0.16*top+sk*k; }
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(A.pos,3)); g.setAttribute('gc',new THREE.BufferAttribute(C,4)); g.setIndex(A.n>65535?new THREE.Uint32BufferAttribute(A.idx,1):new THREE.Uint16BufferAttribute(A.idx,1));
   const m=new THREE.Mesh(g,new THREE.ShaderMaterial({transparent:true,depthWrite:false,side:THREE.DoubleSide,
     vertexShader:'attribute vec4 gc; varying vec4 vC; void main(){ vC=gc; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
