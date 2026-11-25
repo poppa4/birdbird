@@ -84,3 +84,17 @@ FlightGear's (they are what the panel pictures were rendered from).
 `shell.py` keeps each model on its side of the "panel zones", keeps only the faces of the new model that can be seen from the
 page's eye points, turns them towards the eye, bakes the light and gives them four clean materials by where the part lies
 (lining, seat cover, carpet, console slate; hand controls dark).
+
+## The owner's structure becomes the standard (2026-11-25)
+
+`a320-3d.html` now loads `models/a320-shell-test.bin` (the structure above) by default; `?old=1` still shows the FlightGear
+structure (`models/a320-shell.bin`). The file is cleaned after `shell.py` by `neo_clean.py` (with `shellbin.py`, which reads
+and writes the format): the overhead's side cheeks no longer hang below its front edge as a blade, the broken fitting at
+each windshield corner of the roof is one clean block, the console side plates that stood in front of the ECAM-side
+buttons and the MCDU line keys are gone, nothing of the structure stands more than 12 mm above the pedestal face, and the
+baked light is even on flat plates and smoothed on curved parts (no streaks from long triangles).
+    NEO=neo.npz python3 shell.py <res> ../../models    # writes a320-shell.bin; rename to a320-shell-test.bin
+    python3 neo_clean.py ../../models/a320-shell-test.bin ../../models/a320-shell-test.bin
+In `a320-3d.js` the page's own backstop lining is kept outside this structure: no strip along the beams over the side
+windows (it cut through the model's recesses there and showed as torn patches), and the rear wall and the walls behind
+the seats stand further out, where this structure is wider.

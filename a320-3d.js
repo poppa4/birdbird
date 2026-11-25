@@ -107,7 +107,7 @@ function init(o){
   /* ---- backstop: the ceiling and the upper walls once more, a few centimetres outside the real structure. It stays on after
      the FlightGear shell has loaded and fills the gaps that model leaves between its pieces (the shell leaves out what sits on
      the panel planes), so no sky shows through the roof or the corners. The windows stay open. ---- */
-  const TEST3=/[?&]test=1/.test(location.search);   /* ?test=1: a trial structure, shown only on that address until it is approved */
+  const TEST3=!CF3&&!/[?&]old=1/.test(location.search);   /* the structure from the owner's model (models/a320-shell-test.bin, cleaned by tools/render-a320/neo_clean.py); ?old=1 shows the earlier FlightGear structure */
   const BACK=new THREE.Group(); scene.add(BACK);
   /* the circuit-breaker wall behind the right seat: the model has only pale strips there. A drawn panel (sub-panels with a frame,
      lettered rows and numbered columns of breakers) lies 12 mm in front of that wall; the roof lining in front of it hides
@@ -132,14 +132,18 @@ function init(o){
   { const bm=new THREE.MeshBasicMaterial({color:0x6d7a8a,side:THREE.DoubleSide}), bp=[], q4=(a,b,c,d)=>bp.push(a,b,c,a,c,d), d=0.14 /* well outside the structure: a backstop that lies in a wall of the model flickers through it */, X2=XW+d, cy=(z)=>ceilAt(0,z)+d;
     const XR=0.80; q4(v3(-XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zB),zB),v3(-XR,cy(zB),zB));   // roof (inboard of the side windows)
     q4(v3(-X2,yF,zB+d),v3(X2,yF,zB+d),v3(X2,cy(zB),zB+d),v3(-X2,cy(zB),zB+d));
+    /* the trial structure is wider aft than the simple room (its rear corners reach 1.8 m out) and leaves a slit between the
+       back wall and the side lining: a second back wall just behind all of it, so that slit shows lining, not sky */
+    if(TEST3) q4(v3(-1.86,yF,1.66),v3(1.86,yF,1.66),v3(1.86,1.70,1.66),v3(-1.86,1.70,1.66));
     for(const sg of [-1,1]){ q4(v3(sg*XR,cy(zF-0.05),zF-0.05),v3(sg*X2,cy(zF-0.05),zF-0.05),v3(sg*X2,cy(zB),zB),v3(sg*XR,cy(zB),zB));      // roof, outboard part
-      q4(v3(sg*X2,wT0+0.09,wZa),v3(sg*X2,wT0+0.09,zB),v3(sg*X2,cy(zB),zB),v3(sg*X2,cy(zF-0.05),wZa)); }                              // side walls above the side windows                                      // back wall
+      if(!TEST3) q4(v3(sg*X2,wT0+0.09,wZa),v3(sg*X2,wT0+0.09,zB),v3(sg*X2,cy(zB),zB),v3(sg*X2,cy(zF-0.05),wZa));
+      else q4(v3(sg*1.86,0.85,1.0),v3(sg*1.86,0.85,1.66),v3(sg*1.86,1.70,1.66),v3(sg*1.86,1.70,1.0)); }   /* trial structure: its own walls reach further out; only behind the seats, clear of what the side windows see */                              // side walls above the side windows                                      // back wall
     /* a strip just outside the beams over the side and aft windows: the model has a slit between those beams and the ceiling
        lining, and the sky showed through it as a thin bright line */
-    for(const sg of [-1,1]){ q4(v3(sg*0.80,0.86,-0.02),v3(sg*1.02,0.86,0.36),v3(sg*1.02,1.04,0.36),v3(sg*0.80,1.04,-0.02)); q4(v3(sg*1.02,0.86,0.36),v3(sg*1.03,0.86,0.97),v3(sg*1.03,1.04,0.97),v3(sg*1.02,1.04,0.36)); }
+    if(!TEST3) for(const sg of [-1,1]){ q4(v3(sg*0.80,0.86,-0.02),v3(sg*1.02,0.86,0.36),v3(sg*1.02,1.04,0.36),v3(sg*0.80,1.04,-0.02)); q4(v3(sg*1.02,0.86,0.36),v3(sg*1.03,0.86,0.97),v3(sg*1.03,1.04,0.97),v3(sg*1.02,1.04,0.36)); }
     /* the wall behind the aft side windows, at window height: the model is open there between the window's rear edge and the
        rear wall, and the outside showed in the corner above the seats */
-    for(const sg of [-1,1]) q4(v3(sg*X2,wS-0.14,0.66),v3(sg*X2,wS-0.14,zB),v3(sg*X2,wT0+0.10,zB),v3(sg*X2,wT0+0.10,0.66));
+    if(!TEST3) for(const sg of [-1,1]) q4(v3(sg*X2,wS-0.14,0.66),v3(sg*X2,wS-0.14,zB),v3(sg*X2,wT0+0.10,zB),v3(sg*X2,wT0+0.10,0.66));
     /* and a clean lining panel in the plane of the window posts, from the aft window's rear edge to the rear wall: the model's
        own wall starts there as loose slanted pieces further out, which showed as fins under the beam */
     if(!TEST3) for(const sg of [-1,1]) q4(v3(sg*1.005,0.91,0.64),v3(sg*1.005,0.91,1.29),v3(sg*1.355,0.36,1.29),v3(sg*1.355,0.36,0.64));
@@ -174,7 +178,7 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch(CF3?CF3.shell:(TEST3?'models/a320-shell-test.bin?v=3':'models/a320-shell.bin?v=29')).then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:(TEST3?'models/a320-shell-test.bin?v=4':'models/a320-shell.bin?v=29')).then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
