@@ -23,7 +23,7 @@ const P0=160;                                    // finest patch size (m) -> 10 
 const NLEV=11;                                   // quadtree levels: root = 160*2^10 = 163.84 km
 const ROOT={E:0, N:1000, S:P0*Math.pow(2,NLEV-1)};
 const MAXI=2400;
-const DATA_V=10;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
+const DATA_V=11;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
 const V=f=>f+'?v='+DATA_V;
 
 /* ---------- loading ---------- */
@@ -353,6 +353,14 @@ void main(){
       // stand stop bars and painted stand numbers (read from the cockpit as the aircraft taxies in)
       for(int i=0;i<16;i++){ if(i>=nStands) break; vec4 st=stands[i];
         vec2 f=vec2(sin(st.z),cos(st.z)); vec2 r=vec2(f.y,-f.x); vec2 q=EN-st.xy; float a=dot(q,f), b=dot(q,r);
+        if(st.w<20.0&&a>-40.0&&a<7.0&&abs(b)<20.0){
+          // equipment restraint area: red line around the aircraft envelope
+          vec2 aw2=vec2(max(fwidth(a),0.01),max(fwidth(b),0.01));
+          float era=max(max(1.0-smoothstep(0.0,0.1+aw2.x,abs(a-6.0)),1.0-smoothstep(0.0,0.1+aw2.x,abs(a+39.5)))*step(abs(b),19.0),
+                        (1.0-smoothstep(0.0,0.1+aw2.y,abs(abs(b)-19.0)))*step(-39.5,a)*step(a,6.0));
+          era*=step(0.35,fract((a+b)/1.2))*0.0+1.0;
+          pc=mix(pc,lin(vec3(0.70,0.10,0.08)),era*concrete);
+        }
         if(abs(a)<20.0&&abs(b)<10.0){
           vec2 aw=vec2(max(fwidth(a),0.01),max(fwidth(b),0.01));
           float bar=clamp((min(a+0.15+aw.x,0.15)-max(a+0.15-aw.x,-0.15))/(2.0*aw.x),0.0,1.0)*clamp((min(b+aw.y,2.5)-max(b-aw.y,-2.5))/(2.0*aw.y),0.0,1.0);
@@ -525,7 +533,7 @@ W.update=function(camera,dt){
   terrain.geometry.instanceCount=nI; instAttr.needsUpdate=true; instAttr.updateRange={offset:0,count:nI*4};
   tris=nI*GRID*GRID*2;
   waterT+=dt||0.016; tmat.uniforms.wt.value=waterT;
-  if(sky){ sky.position.copy(c); }
+  if(sky){ sky.position.copy(c); sky.material.uniforms.time.value=waterT; }
   for(const m of [bldg&&bldg.material,lights&&lights.material,trees&&trees.material,...fleetMats]) if(m){ m.uniforms.camW.value.copy(c); if(m.uniforms.time) m.uniforms.time.value=waterT; }
   if(trees) updateTrees(c);
   if(lights) lights.material.uniforms.pxs.value=(G.innerHeight||800)/(2*Math.tan((camera.fov||60)*Math.PI/360));
@@ -614,10 +622,30 @@ function buildTrees(){
 
 /* ---------- sky ---------- */
 function buildSky(){
-  const g=new (T().SphereGeometry)(1,32,16);
-  const m=new (T().ShaderMaterial)({uniforms:{sunDir:{value:new (T().Vector3)()},sunCol:{value:new (T().Color)()},skyCol:{value:new (T().Color)()},horCol:{value:new (T().Color)()},amb:{value:0},fogD:{value:0},expo:{value:1}},
+  const g=new (T().SphereGeometry)(1,48,24);
+  const m=new (T().ShaderMaterial)({uniforms:{sunDir:{value:new (T().Vector3)()},sunCol:{value:new (T().Color)()},skyCol:{value:new (T().Color)()},horCol:{value:new (T().Color)()},amb:{value:0},fogD:{value:0},expo:{value:1},night:{value:0},
+      tDet:{value:detailTex}, time:{value:0}, cover:{value:0.535}},
     vertexShader:`varying vec3 vD; void main(){ vD=position; vec4 p=projectionMatrix*viewMatrix*vec4(position*200000.0+cameraPosition,1.0); gl_Position=p.xyww; }`,
-    fragmentShader:`${COMMON} varying vec3 vD; void main(){ vec3 d=normalize(vD); vec3 c=skyAt(d); float s=dot(d,sunDir); c+=sunCol*smoothstep(0.9996,0.99985,s)*8.0*step(0.0,sunDir.y+0.02); gl_FragColor=vec4(tone(c),1.0); }`,
+    fragmentShader:`${COMMON} uniform sampler2D tDet; uniform float time; uniform float cover; uniform float night; varying vec3 vD;
+      float cl(vec2 p){ float n=texture2D(tDet,p/52000.0).a*0.50+texture2D(tDet,p/17000.0+0.31).r*0.30+texture2D(tDet,p/5200.0+0.73).g*0.14+texture2D(tDet,p/1500.0+0.19).r*0.06; return n; }
+      void main(){ vec3 d=normalize(vD); vec3 c=skyAt(d); float s=dot(d,sunDir);
+        c+=sunCol*smoothstep(0.9996,0.99985,s)*8.0*step(0.0,sunDir.y+0.02);
+        if(d.y>0.015){
+          // a cumulus layer at ~1 800 m: two lookups for density, one towards the sun for light and shade
+          float t=(1800.0-cameraPosition.y)/d.y; vec2 p=cameraPosition.xz+d.xz*t+vec2(time*4.0,time*1.5);
+          float n=cl(p); float dens=smoothstep(cover,cover+0.16,n);
+          if(dens>0.0){
+            float ns=cl(p+normalize(sunDir.xz+1e-4)*350.0); float shade=clamp((n-ns)*4.0+0.55,0.0,1.0);
+            float sv=smoothstep(-0.08,0.1,sunDir.y);
+            vec3 lit=sunCol*(0.35+0.65*shade)*sv*0.55+skyCol*amb*1.6+horCol*amb*0.6;
+            vec3 base=mix(vec3(0.62,0.66,0.74),vec3(1.0),shade)*(0.25+0.75*sv)+vec3(0.02,0.025,0.04)*night;
+            vec3 cc=base*lit*1.25;
+            cc+=sunCol*pow(max(s,0.0),12.0)*0.35*sv*(1.0-dens*0.5);                   // silver lining towards the sun
+            float far=smoothstep(0.015,0.25,d.y);
+            c=mix(c,mix(horCol*0.9+cc*0.2,cc,far),dens*(0.55+0.45*far));
+          }
+        }
+        gl_FragColor=vec4(tone(c),1.0); }`,
     side:T().BackSide,depthWrite:false,depthTest:true});
   sky=new (T().Mesh)(g,m); sky.frustumCulled=false; sky.renderOrder=-10; sky.name='sky'; group.add(sky);
 }
@@ -633,10 +661,14 @@ function buildBuildings(){
   const houseW=[[0.86,0.84,0.78],[0.62,0.22,0.16],[0.88,0.86,0.80],[0.80,0.70,0.48],[0.40,0.44,0.40]];
   const roofs=[[0.24,0.24,0.26],[0.42,0.20,0.16],[0.34,0.35,0.36],[0.30,0.18,0.14]];
   casters=[];
+  const stands=(apt.rwy.stands||[]).filter(st=>+st.id<20);
+  const near=(x,y,dmax)=>stands.some(st=>Math.hypot(st.E-x,st.N-y)<dmax);
   apt.buildings.forEach((b,bi)=>{
-    const p=b.p, n=p.length, kind=b.k||0;
+    const p=b.p, n=p.length; let kind=b.k||0;
+    if(kind===1){ let cx=0,cy=0,ar=0; for(let i=0;i<n;i++){ cx+=p[i][0]/n; cy+=p[i][1]/n; const a=p[i],c=p[(i+1)%n]; ar+=a[0]*c[1]-c[0]*a[1]; } ar=Math.abs(ar)/2;
+      const ht=b.e-b.b; kind=near(cx,cy,95)&&ar>250?5:(ar>1400&&ht<17?4:1); }
     if(b.p.length>=3) casters.push({p:b.p,h:Math.max(0,(b.r+b.e)/2-b.b-0.3)}); let area=0; for(let i=0;i<n;i++){ const a=p[i],c=p[(i+1)%n]; area+=a[0]*c[1]-c[0]*a[1]; }
-    const ccw=area>0, wall=kind?walls[bi%walls.length]:houseW[bi%houseW.length], roof=kind?[0.30,0.31,0.32]:roofs[(bi*7)%roofs.length];
+    const ccw=area>0, wall=kind===5?[0.62,0.64,0.66]:kind===4?[0.70,0.72,0.74]:kind?walls[bi%walls.length]:houseW[bi%houseW.length], roof=kind?[0.30,0.31,0.32]:roofs[(bi*7)%roofs.length];
     for(let i=0;i<n;i++){ let a=p[i], c=p[(i+1)%n]; if(!ccw){ const t=a; a=c; c=t; }
       tri(W3(a[0],b.b,a[1]),W3(c[0],b.b,c[1]),W3(c[0],b.e,c[1]),wall,kind,b.b); tri(W3(a[0],b.b,a[1]),W3(c[0],b.e,c[1]),W3(a[0],b.e,a[1]),wall,kind,b.b); }
     if(b.r>b.e+0.2&&n===4){
@@ -659,6 +691,18 @@ function buildBuildings(){
     tri(W3(c[0][0],h1,c[0][1]),W3(c[2][0],h1,c[2][1]),W3(c[1][0],h1,c[1][1]),col,-1,h0); tri(W3(c[0][0],h1,c[0][1]),W3(c[3][0],h1,c[3][1]),W3(c[2][0],h1,c[2][1]),col,-1,h0);
     tri(W3(c[0][0],h0,c[0][1]),W3(c[1][0],h0,c[1][1]),W3(c[2][0],h0,c[2][1]),col,3,h0); tri(W3(c[0][0],h0,c[0][1]),W3(c[2][0],h0,c[2][1]),W3(c[3][0],h0,c[3][1]),col,3,h0); };
   for(const m of (apt.rwy.masts||[])){ casters.push({p:[[m[0]-0.25,m[1]-0.25],[m[0]+0.25,m[1]-0.25],[m[0]+0.25,m[1]+0.25],[m[0]-0.25,m[1]+0.25]],h:22}); box(m[0],m[1],m[2],m[2]+21.6,0.22,[0.55,0.56,0.58],2); box(m[0],m[1],m[2]+21.6,m[2]+22.4,1.2,[0.30,0.31,0.33],2); }
+  { const TE=-393, TN=850, tg=W.height(TE,TN), segs=12;
+    const ring=(r,h0,h1,col,k)=>{ for(let i=0;i<segs;i++){ const a0=i/segs*Math.PI*2, a1=(i+1)/segs*Math.PI*2;
+      const A=[TE+Math.cos(a0)*r,TN+Math.sin(a0)*r], B=[TE+Math.cos(a1)*r,TN+Math.sin(a1)*r];
+      tri(W3(A[0],h0,A[1]),W3(B[0],h0,B[1]),W3(B[0],h1,B[1]),col,k,h0); tri(W3(A[0],h0,A[1]),W3(B[0],h1,B[1]),W3(A[0],h1,A[1]),col,k,h0);
+      tri(W3(B[0],h1,B[1]),W3(B[0],h0,B[1]),W3(A[0],h0,A[1]),col,k,h0); } };
+    const disc=(r,h,col)=>{ for(let i=0;i<segs;i++){ const a0=i/segs*Math.PI*2, a1=(i+1)/segs*Math.PI*2;
+      tri(W3(TE,h,TN),W3(TE+Math.cos(a1)*r,h,TN+Math.sin(a1)*r),W3(TE+Math.cos(a0)*r,h,TN+Math.sin(a0)*r),col,-1,h);
+      tri(W3(TE,h,TN),W3(TE+Math.cos(a0)*r,h,TN+Math.sin(a0)*r),W3(TE+Math.cos(a1)*r,h,TN+Math.sin(a1)*r),col,-1,h); } };
+    ring(3.2,tg,tg+21,[0.82,0.82,0.80],1); ring(5.2,tg+21,tg+21.8,[0.30,0.31,0.33],-1); disc(5.2,tg+21.8,[0.30,0.31,0.33]);
+    ring(4.8,tg+21.8,tg+25.4,[0.25,0.28,0.30],6); ring(5.4,tg+25.4,tg+26.3,[0.30,0.31,0.33],-1); disc(5.4,tg+26.3,[0.34,0.35,0.36]);
+    box(TE,TN,tg+26.3,tg+31,0.08,[0.7,0.7,0.7],2);
+    casters.push({p:[[TE-3.2,TN-3.2],[TE+3.2,TN-3.2],[TE+3.2,TN+3.2],[TE-3.2,TN+3.2]],h:26}); }
   // ---- apron life: parked aircraft, ground equipment, roof plant (simple geometry, ~6k triangles in all) ----
   const hAt=(E,N)=>W.height(E,N);
   // oriented box in an aircraft/stand frame: centre (a forward, b right, z up), size (L along f, Wd across, Ht)
@@ -692,13 +736,24 @@ function buildBuildings(){
         casters.push({p:[L(-6.3,sd*4.7),L(-6.3,sd*6.8),L(-10.6,sd*6.8),L(-10.6,sd*4.7)],h:2.6,z0:0.6});
         casters.push({p:[L(-28.6,sd*0.6),L(-31.9,sd*6.2),L(-33.25,sd*6.2),L(-32.3,sd*0.6)],h:5.0,z0:4.6}); }
       casters.push({p:[L(-27.4,-0.2),L(-33.4,-0.2),L(-34.7,0.2),L(-27.4,0.2)],h:11.8,z0:5.9}); }
-    // ground equipment: stairs at the forward left door (L1), tug ahead, GPU at the nose, baggage carts at the aft hold
-    obox(o,f,-1.0,-4.4,1.2,5.2,1.9,1.1,[0.88,0.86,0.80]); obox(o,f,-0.9,-3.0,2.25,3.4,1.4,0.25,[0.62,0.62,0.64],-0.62);
-    obox(o,f,6.6,0,0.85,4.6,2.2,1.5,[0.95,0.80,0.10]);
-    obox(o,f,4.0,-2.6,0.65,1.8,1.1,1.1,[0.92,0.70,0.12]);
-    for(let k=0;k<3;k++) obox(o,f,-22.0-k*3.6,5.4,0.65,3.0,1.6,1.0,[0.55,0.57,0.60]);
-    obox(o,f,-19.5,4.0,1.1,3.6,1.8,1.8,[0.95,0.95,0.96]);
-    if(ci%3===0) obox(o,f,-9.5,10.5,1.7,10.0,2.6,3.0,[0.90,0.90,0.88]);       // fuel truck clear of the wing
+    // ground equipment: stairs at L1, tug ahead, GPU at the nose, belt loader + carts at the aft hold, fuel truck clear of the wing
+    const WH=[0.06,0.06,0.07];
+    const wheels=(a,b,L,Wd,r)=>{ for(const sa of [-1,1]) for(const sb of [-1,1]) obox(o,f,a+sa*L*0.32,b+sb*(Wd/2-0.12),r,r*2,0.28,r*2,WH); };
+    const veh=(type,a,b,col)=>{
+      if(type==='tug'){ wheels(a,b,4.4,2.2,0.42); obox(o,f,a,b,0.95,4.4,2.2,0.9,col); obox(o,f,a-1.3,b,1.85,1.4,2.0,0.95,col); obox(o,f,a-1.3,b,1.95,1.2,2.02,0.55,[0.10,0.12,0.14]); }
+      if(type==='gpu'){ wheels(a,b,1.8,1.2,0.25); obox(o,f,a,b,0.95,1.9,1.2,1.0,col); obox(o,f,a,b,1.5,1.7,1.0,0.12,[0.2,0.2,0.2]); }
+      if(type==='stairs'){ wheels(a,b,5.0,2.0,0.4); obox(o,f,a,b,0.95,5.2,2.0,0.9,col); obox(o,f,a+1.6,b,1.95,1.6,1.9,1.1,col);
+        obox(o,f,a-0.2,b+0.9,2.45,3.6,1.2,0.22,[0.62,0.62,0.64],-0.62); obox(o,f,a-0.2,b+1.5,3.1,3.6,0.06,0.9,[0.75,0.75,0.75],-0.62); obox(o,f,a+1.5,b+1.4,3.65,1.2,1.4,0.15,[0.62,0.62,0.64]); }
+      if(type==='cart'){ wheels(a,b,2.8,1.6,0.22); obox(o,f,a,b,0.55,3.0,1.6,0.12,[0.35,0.36,0.38]); for(const sb of [-1,1]) obox(o,f,a,b+sb*0.78,1.0,3.0,0.05,0.9,col); obox(o,f,a+1.7,b,0.5,0.9,0.08,0.06,[0.2,0.2,0.2]); }
+      if(type==='belt'){ wheels(a,b,4.2,1.9,0.35); obox(o,f,a,b,0.8,4.4,1.9,0.7,col); obox(o,f,a+0.6,b,1.55,6.0,0.8,0.18,[0.12,0.12,0.13],0.25); obox(o,f,a-1.4,b+0.6,1.6,1.0,0.8,1.0,col); }
+      if(type==='fuel'){ wheels(a,b,9.0,2.5,0.5); obox(o,f,a+3.6,b,1.6,2.2,2.5,2.0,col); obox(o,f,a+3.7,b,2.1,1.6,2.52,0.7,[0.10,0.12,0.14]); obox(o,f,a-1.2,b,1.9,7.2,2.4,2.4,[0.92,0.92,0.90]); }
+    };
+    veh('stairs',-1.0,-4.3,[0.92,0.92,0.90]);
+    veh('tug',6.8,0,[0.96,0.82,0.12]);
+    veh('gpu',3.6,-2.6,[0.94,0.70,0.14]);
+    veh('belt',-21.0,3.6,[0.96,0.82,0.12]);
+    for(let k=0;k<3;k++) veh('cart',-25.5-k*3.8,6.4,[0.45,0.50,0.58]);
+    if(ci%3===0) veh('fuel',-9.5,10.5,[0.85,0.12,0.10]);
   };
   const ga=(st)=>{ const h=st.hdg*Math.PI/180, g=hAt(st.E,st.N); FLEETI.push({type:'c172',E:st.E,N:st.N,g,h,liv:5});
     const f=[Math.sin(h),Math.cos(h)], r=[f[1],-f[0]], L=(a,b)=>[st.E+f[0]*a+r[0]*b,st.N+f[1]*a+r[1]*b];
@@ -726,6 +781,25 @@ function buildBuildings(){
           float u=dot(vW.xz,vec2(-N.z,N.x));
           vec2 fu=vec2(fwidth(u),fwidth(y));
           if(kind>1.5&&kind<2.5){ c*=0.95; }                                   // masts: plain metal
+          else if(kind>5.5){ glass=1.0; lit=1.0; }                              // tower cab: all glass
+          else if(kind>4.5){                                                    // terminal: glass curtain wall, mullions 1.5 m, transoms per storey, fascia
+            float mu=fract(u/1.5), v=fract(y/4.2), top=vW.y-vK.y;
+            float mull=smoothstep(0.0,0.025+fu.x/1.5*1.5,mu)*(1.0-smoothstep(0.975-fu.x/1.5*1.5,1.0,mu));
+            float tr=smoothstep(0.0,0.03+fu.y/4.2*1.5,v)*(1.0-smoothstep(0.90-fu.y/4.2*1.5,0.93,v));
+            float hb=vW.y-vK.y;                                              // height above the building base
+            float col9=1.0-smoothstep(0.0,0.02+fu.x/9.0*1.5,abs(fract(u/9.0)-0.5)*9.0-0.0)*0.0;
+            float pier=step(abs(fract(u/9.0+0.5)-0.5)*9.0,0.35);                 // solid cladding column every 9 m
+            glass=mull*tr*(1.0-pier)*step(0.6,hb);                               // dark plinth at the foot
+            c=lin(vec3(0.74,0.75,0.76))*(1.0-0.55*step(hb,0.6));
+            lit=step(0.35,h1(vec2(floor(u/1.5),floor(y/4.2))));
+          }
+          else if(kind>3.5){                                                    // hangar: vertical ribbed cladding, a band of clerestory windows
+            float rib=0.5+0.5*sin(u*6.2832/0.6); c*=0.86+0.14*smoothstep(0.3,0.7,rib)*(1.0-smoothstep(0.3,0.8,fu.x/0.6));
+            float hgt=y; glass=step(0.0,hgt-0.0)*smoothstep(0.0,0.02,fract((hgt+0.0)/1000.0))*0.0;
+            float band=step(abs(y-(vK.y>0.0?0.0:0.0)-0.0),9999.0); float topBand=smoothstep(1.4,1.2,abs(vW.y-vK.y-10.5));
+            glass=topBand*step(0.15,fract(u/2.4))*step(fract(u/2.4),0.85);
+            lit=1.0;
+          }
           else if(kind>0.5){                                                    // terminal / hangars: storeys of 3.8 m, window bands
             float fl=floor(y/3.8), v=fract(y/3.8), mu=fract(u/1.6);
             float band=smoothstep(0.30,0.30+fu.y/3.8*2.0,v)*(1.0-smoothstep(0.86-fu.y/3.8*2.0,0.86,v));
@@ -748,7 +822,9 @@ function buildBuildings(){
         vec3 col=c*lt;
         if(glass>0.0){
           vec3 R=reflect(-V,N); float fres=0.06+0.94*pow(1.0-max(dot(N,V),0.0),5.0);
-          vec3 gc=mix(lin(vec3(0.10,0.13,0.16))*(skyCol*amb*2.0+sunCol*0.15),skyAt(normalize(vec3(R.x,abs(R.y),R.z))),clamp(fres+0.25,0.0,1.0));
+          float pv=h1(floor(vW.xz/1.5)+floor(vW.y/4.2));
+          vec3 gc=mix(lin(vec3(0.03,0.045,0.06))*(skyCol*amb*2.0+sunCol*0.10)*(0.7+0.6*pv),skyAt(normalize(vec3(R.x,abs(R.y),R.z)))*(0.8+0.2*pv),clamp(fres*0.9+0.14,0.0,1.0));
+          gc+=sunCol*pow(max(dot(R,sunDir),0.0),200.0)*1.5*smoothstep(-0.05,0.08,sunDir.y);
           gc+=vec3(1.0,0.78,0.48)*lit*night*0.9;
           col=mix(col,gc,glass);
         }
