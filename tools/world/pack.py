@@ -29,7 +29,7 @@ def airport_paint(col,can,cls,E0,N1,res,real=False):
     ys=N1-np.arange(S[0])*res; mow=np.empty(S,np.float32)
     for r0 in range(0,S[0],800):
         X,_=np.meshgrid(E0+np.arange(S[1])*res,ys[r0:r0+800]); mow[r0:r0+800]=1+0.05*np.sign(np.sin(X*np.pi/9.0))
-    grass=np.array([80,100,52],np.float32)*((1+0.10*n)*mow)[...,None]
+    grass=np.array([74,90,50],np.float32)*((1+0.10*n)*mow)[...,None]
     sel=apt&~cls['water']
     if not real: col[sel]=grass[sel]
     else:

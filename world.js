@@ -16,14 +16,14 @@ const T=()=>G.THREE;
 const W={ready:false, loaded:{}, meta:null};
 const LV=['far','mid','near'];
 let lev={}, apt=null, group=null, terrain=null, tmat=null, sky=null, lights=null, bldg=null, inst=null, instAttr=null;
-let detailTex=null, aptTex=null, digitTex=null, waterT=0, trees=null, treeAttr=null, treeBuf=null;
+let shdCv=null, shdTex=null, casters=[], detailTex=null, aptTex=null, digitTex=null, waterT=0, trees=null, treeAttr=null, treeBuf=null;
 let TREE_R=1000;                                  // 3D trees out to this distance (m); the forest canopy takes over beyond
 const GRID=16;                                   // quads per patch side
 const P0=160;                                    // finest patch size (m) -> 10 m vertex spacing
 const NLEV=11;                                   // quadtree levels: root = 160*2^10 = 163.84 km
 const ROOT={E:0, N:1000, S:P0*Math.pow(2,NLEV-1)};
 const MAXI=2400;
-const DATA_V=8;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
+const DATA_V=10;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
 const V=f=>f+'?v='+DATA_V;
 
 /* ---------- loading ---------- */
@@ -141,8 +141,35 @@ const TOD={
 };
 let todK='day';
 W.tod=function(k){ if(!TOD[k]) return todK; todK=k; if(tmat) applyTod(); return k; };
+function drawShadows(sun){
+  // sun shadows of buildings, parked aircraft and masts (red) and soft contact shading (green), drawn once per
+  // time of day at 1.5 m per pixel; one blur pass at the end, no per-shape filters (those are slow on phones)
+  const sd=apt.rwy.sdf, R=1.5, w=Math.round(sd.w*sd.res/R), h=Math.round(sd.h*sd.res/R);
+  const mk=()=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; return c; };
+  if(!shdCv){ shdCv=mk(); shdCv._t=mk(); }
+  const t=shdCv._t, g=t.getContext('2d');
+  g.globalCompositeOperation='source-over'; g.fillStyle='#000'; g.fillRect(0,0,w,h);
+  const X=E=>(E-sd.E0)/R, Y=N=>(sd.N1-N)/R;
+  const up=Math.max(sun.y,0.06), dE=-sun.x/up, dN=sun.z/up, lit=sun.y>0.02;
+  const poly=(P,ox,oy)=>{ g.beginPath(); P.forEach((q,i)=>i?g.lineTo(X(q[0]+ox),Y(q[1]+oy)):g.moveTo(X(q[0]+ox),Y(q[1]+oy))); g.closePath(); g.fill(); };
+  g.globalCompositeOperation='lighten';
+  g.fillStyle='rgb(0,150,0)'; g.strokeStyle='rgb(0,110,0)'; g.lineWidth=4/R; g.lineJoin='round';
+  for(const c of casters){ if(c.h<0.5||(c.z0||0)>0.5) continue; poly(c.p,0,0); g.stroke(); }
+  if(lit){ g.fillStyle='rgb(255,0,0)';
+    for(const c of casters){
+      const ox=dE*c.h, oy=dN*c.h, z0=c.z0||0, bx=dE*z0, by=dN*z0, P=c.p, n=P.length;
+      poly(P,ox,oy); poly(P,bx,by);
+      for(let i=0;i<n;i++){ const a=P[i], b=P[(i+1)%n];
+        g.beginPath(); g.moveTo(X(a[0]+bx),Y(a[1]+by)); g.lineTo(X(b[0]+bx),Y(b[1]+by)); g.lineTo(X(b[0]+ox),Y(b[1]+oy)); g.lineTo(X(a[0]+ox),Y(a[1]+oy)); g.closePath(); g.fill(); } } }
+  const o=shdCv.getContext('2d'); o.globalCompositeOperation='copy';
+  if(typeof o.filter==='string'){ o.filter='blur(1px)'; o.drawImage(t,0,0); o.filter='none'; } else o.drawImage(t,0,0);
+  if(!shdTex){ shdTex=new (T().CanvasTexture)(shdCv); shdTex.flipY=false; shdTex.minFilter=T().LinearMipmapLinearFilter; shdTex.magFilter=T().LinearFilter; shdTex.anisotropy=8; }
+  shdTex.needsUpdate=true;
+  if(tmat){ tmat.uniforms.tShd.value=shdTex; }
+}
 function applyTod(){
   const p=TOD[todK], v=new (T().Vector3)(...p.sun).normalize();
+  if(apt&&casters.length) drawShadows(v);
   for(const m of [tmat,sky&&sky.material,bldg&&bldg.material,lights&&lights.material,trees&&trees.material]){ if(!m) continue; const u=m.uniforms;
     if(u.sunDir) u.sunDir.value.copy(v); if(u.sunCol) u.sunCol.value.setRGB(p.sunCol[0]*p.sunI,p.sunCol[1]*p.sunI,p.sunCol[2]*p.sunI);
     if(u.skyCol) u.skyCol.value.setRGB(...p.sky); if(u.horCol) u.horCol.value.setRGB(...p.hor); if(u.amb) u.amb.value=p.amb;
@@ -169,7 +196,10 @@ vec3 aerial(vec3 col,vec3 wpos,vec3 cam){
   vec3 fc=skyAt(vec3(dir.x,max(dir.y,0.0)*0.6,dir.z));
   return mix(col,fc,f);
 }
-vec3 tone(vec3 c){ c*=expo; c=c/(1.0+c*0.42); return pow(c,vec3(1.0/2.2)); }
+vec3 tone(vec3 c){ c*=expo*0.80;
+  c=clamp((c*(2.51*c+0.03))/(c*(2.43*c+0.59)+0.14),0.0,1.0);          // ACES filmic (Narkowicz)
+  float l=dot(c,vec3(0.2126,0.7152,0.0722)); c=max(mix(vec3(l),c,1.04),0.0);
+  return pow(c,vec3(1.0/2.2)); }
 vec3 lin(vec3 c){ return pow(c,vec3(2.2)); }
 `;
 
@@ -229,7 +259,7 @@ out highp vec4 pc_fragColor;
 #define gl_FragColor pc_fragColor
 ${COMMON}
 uniform vec3 camW; uniform float night; uniform float wt; uniform float treeR;
-uniform sampler2D tNF,tNM,tNN, tAF,tAM,tAN, tWF,tWM,tWN, tDet, tApt, tAptL, tDig;
+uniform sampler2D tNF,tNM,tNN, tAF,tAM,tAN, tWF,tWM,tWN, tDet, tApt, tAptL, tDig, tShd;
 uniform vec4 extF,extM,extN, aextF,aextM,aextN; uniform float onM,onN, aptOn;
 uniform vec4 aptE; uniform vec2 rwyU; uniform vec4 rwyS; uniform float rwyAim;
 uniform sampler2D tSD; uniform vec4 stands[16]; uniform int nStands; uniform vec3 masts[40]; uniform int nMasts;
@@ -274,6 +304,8 @@ void main(){
       m+=rows*0.07*open_;
     }
     c*=1.0+m*dk;
+    float ov=clamp(1.0-fr-wat-pv,0.0,1.0)*dk;
+    c*=mix(vec3(1.0),mix(vec3(1.06,1.02,0.86),vec3(0.90,1.0,1.06),d2.g),0.55*ov);
   }
   // airport pavement (signed distance field) and taxiway centrelines
   float paved=0.0; vec3 pc=vec3(0.0);
@@ -377,10 +409,13 @@ void main(){
     pc=mix(pc,rc,onR); paved=max(paved,onR);
   }
   if(paved>0.0){ c=mix(c,pc,paved); fr*=1.0-paved; wat*=1.0-paved; N=normalize(mix(N,vec3(0,1,0),paved*0.8)); }
-  // lighting: sun (wrapped), sky ambient, bounce
+  // lighting: sun, sky ambient, bounce; baked shadows and contact shading around the airport's buildings and aircraft
   float ndl=max(dot(N,sunDir),0.0);
   float sunVis=smoothstep(-0.05,0.08,sunDir.y);
-  vec3 lit=sunCol*ndl*sunVis*(1.0-0.25*fr) + skyCol*amb*(0.55+0.45*N.y)*2.0 + horCol*amb*0.25*(1.0-N.y);
+  float shS=0.0, shA=0.0;
+  { vec2 ua3=vec2((EN.x-aptE.x)/aptE.z,(aptE.y-EN.y)/aptE.w);
+    if(aptOn>0.5&&ua3.x>0.0&&ua3.y>0.0&&ua3.x<1.0&&ua3.y<1.0){ vec2 sh=texture2D(tShd,ua3).rg; shS=sh.r; shA=sh.g; } }
+  vec3 lit=sunCol*ndl*sunVis*(1.0-0.25*fr)*(1.0-0.88*shS) + (skyCol*amb*(0.55+0.45*N.y)*2.0 + horCol*amb*0.25*(1.0-N.y))*(1.0-0.55*shA);
   lit*=1.0-0.18*fr*(1.0-ndl);
   vec3 col=c*lit;
   if(night>0.05&&aptOn>0.5){
@@ -421,7 +456,7 @@ function build(){
   group=new (T().Group)(); group.name='WORLD';
   detailTex=makeDetail(); digitTex=makeDigits();
   const U=Object.assign(levUniforms(),{
-    camW:{value:new (T().Vector3)()}, morph:{value:[]}, treeR:{value:TREE_R}, tDet:{value:detailTex}, tApt:{value:null}, tAptL:{value:null}, aptOn:{value:0}, tDig:{value:digitTex},
+    camW:{value:new (T().Vector3)()}, morph:{value:[]}, treeR:{value:TREE_R}, tDet:{value:detailTex}, tApt:{value:null}, tAptL:{value:null}, tShd:{value:null}, aptOn:{value:0}, tDig:{value:digitTex},
     aptE:{value:new (T().Vector4)(apt.rwy.sdf.E0,apt.rwy.sdf.N1,apt.rwy.sdf.w*apt.rwy.sdf.res,apt.rwy.sdf.h*apt.rwy.sdf.res)},
     rwyU:{value:new (T().Vector2)(apt.rwy.u[0],apt.rwy.u[1])}, tSD:{value:makeStandDigits()},
     stands:{value:(()=>{ const a=(apt.rwy.stands||[]).slice(0,16).map(st=>new (T().Vector4)(st.E,st.N,st.hdg*Math.PI/180,+st.id)); while(a.length<16) a.push(new (T().Vector4)(0,0,0,0)); return a; })()}, nStands:{value:Math.min(16,(apt.rwy.stands||[]).length)},
@@ -589,8 +624,10 @@ function buildBuildings(){
   const walls=[[0.78,0.78,0.76],[0.70,0.71,0.72],[0.62,0.64,0.66],[0.82,0.80,0.74],[0.55,0.57,0.60]];
   const houseW=[[0.86,0.84,0.78],[0.62,0.22,0.16],[0.88,0.86,0.80],[0.80,0.70,0.48],[0.40,0.44,0.40]];
   const roofs=[[0.24,0.24,0.26],[0.42,0.20,0.16],[0.34,0.35,0.36],[0.30,0.18,0.14]];
+  casters=[];
   apt.buildings.forEach((b,bi)=>{
-    const p=b.p, n=p.length, kind=b.k||0; let area=0; for(let i=0;i<n;i++){ const a=p[i],c=p[(i+1)%n]; area+=a[0]*c[1]-c[0]*a[1]; }
+    const p=b.p, n=p.length, kind=b.k||0;
+    if(b.p.length>=3) casters.push({p:b.p,h:Math.max(0,(b.r+b.e)/2-b.b-0.3)}); let area=0; for(let i=0;i<n;i++){ const a=p[i],c=p[(i+1)%n]; area+=a[0]*c[1]-c[0]*a[1]; }
     const ccw=area>0, wall=kind?walls[bi%walls.length]:houseW[bi%houseW.length], roof=kind?[0.30,0.31,0.32]:roofs[(bi*7)%roofs.length];
     for(let i=0;i<n;i++){ let a=p[i], c=p[(i+1)%n]; if(!ccw){ const t=a; a=c; c=t; }
       tri(W3(a[0],b.b,a[1]),W3(c[0],b.b,c[1]),W3(c[0],b.e,c[1]),wall,kind,b.b); tri(W3(a[0],b.b,a[1]),W3(c[0],b.e,c[1]),W3(a[0],b.e,a[1]),wall,kind,b.b); }
@@ -613,7 +650,7 @@ function buildBuildings(){
     for(let i=0;i<4;i++){ const a=c[i], d=c[(i+1)%4]; tri(W3(a[0],h0,a[1]),W3(d[0],h0,d[1]),W3(d[0],h1,d[1]),col,k,h0); tri(W3(a[0],h0,a[1]),W3(d[0],h1,d[1]),W3(a[0],h1,a[1]),col,k,h0); }
     tri(W3(c[0][0],h1,c[0][1]),W3(c[2][0],h1,c[2][1]),W3(c[1][0],h1,c[1][1]),col,-1,h0); tri(W3(c[0][0],h1,c[0][1]),W3(c[3][0],h1,c[3][1]),W3(c[2][0],h1,c[2][1]),col,-1,h0);
     tri(W3(c[0][0],h0,c[0][1]),W3(c[1][0],h0,c[1][1]),W3(c[2][0],h0,c[2][1]),col,3,h0); tri(W3(c[0][0],h0,c[0][1]),W3(c[2][0],h0,c[2][1]),W3(c[3][0],h0,c[3][1]),col,3,h0); };
-  for(const m of (apt.rwy.masts||[])){ box(m[0],m[1],m[2],m[2]+21.6,0.22,[0.55,0.56,0.58],2); box(m[0],m[1],m[2]+21.6,m[2]+22.4,1.2,[0.30,0.31,0.33],2); }
+  for(const m of (apt.rwy.masts||[])){ casters.push({p:[[m[0]-0.25,m[1]-0.25],[m[0]+0.25,m[1]-0.25],[m[0]+0.25,m[1]+0.25],[m[0]-0.25,m[1]+0.25]],h:22}); box(m[0],m[1],m[2],m[2]+21.6,0.22,[0.55,0.56,0.58],2); box(m[0],m[1],m[2]+21.6,m[2]+22.4,1.2,[0.30,0.31,0.33],2); }
   // ---- apron life: parked aircraft, ground equipment, roof plant (simple geometry, ~6k triangles in all) ----
   const hAt=(E,N)=>W.height(E,N);
   // oriented box in an aircraft/stand frame: centre (a forward, b right, z up), size (L along f, Wd across, Ht)
@@ -627,7 +664,10 @@ function buildBuildings(){
     const ring=(a,rad,z)=>{ const out=[]; for(let i=0;i<seg;i++){ const t=i/seg*Math.PI*2; const lb=b+Math.cos(t)*rad, lz=z+Math.sin(t)*rad*ry;
       out.push(W3(o[0]+f[0]*a+r[0]*lb, o[2]+lz, o[1]+f[1]*a+r[1]*lb)); } return out; };
     const A=ring(a0,r0,z0), B=ring(a1,r1,z1);
-    for(let i=0;i<seg;i++){ const j=(i+1)%seg; tri(A[i],B[i],B[j],col,-1,0); tri(A[i],B[j],A[j],col,-1,0); tri(B[j],B[i],A[i],col,-1,0); tri(A[j],B[j],A[i],col,-1,0); } };
+    const nrm=i=>{ const t=i/seg*Math.PI*2; const lb=Math.cos(t), lz=Math.sin(t)*ry; return [r[0]*lb, lz, -(r[1]*lb)]; };
+    const triS=(p1,p2,p3,n1,n2,n3)=>{ for(const [pp,nn] of [[p1,n1],[p2,n2],[p3,n3]]){ P.push(pp[0],pp[1],pp[2]); const k=1/Math.hypot(nn[0],nn[1],nn[2]); Nn.push(nn[0]*k,nn[1]*k,nn[2]*k); Cc.push(col[0],col[1],col[2]); K.push(-1,0); } };
+    for(let i=0;i<seg;i++){ const j=(i+1)%seg, ni=nrm(i), nj=nrm(j);
+      triS(A[i],B[j],B[i],ni,nj,ni); triS(A[i],A[j],B[j],ni,nj,nj); } };
   const wing=(o,f,aRoot,span,chordR,chordT,sweep,z,dih,col,side,thick)=>{ const r=[f[1],-f[0]];
     const P=(a,b,zz)=>W3(o[0]+f[0]*a+r[0]*b, o[2]+zz, o[1]+f[1]*a+r[1]*b);
     const b0=side*1.7, b1=side*span; const zt=z+span*Math.tan(dih);
@@ -640,6 +680,12 @@ function buildBuildings(){
     const g=hAt(st.E,st.N); const o=[st.E+f[0]*2.5,st.N+f[1]*2.5,g];
     const W_=[0.93,0.93,0.94], BEL=[0.62,0.64,0.66], ENG=[0.70,0.71,0.73], DK=[0.08,0.09,0.11], TL=tails[ci%tails.length];
     const zc=3.1, R=1.9;
+    { const r=[f[1],-f[0]], L=(a,b)=>[o[0]+f[0]*a+r[0]*b,o[1]+f[1]*a+r[1]*b];
+      casters.push({p:[L(-1,0),L(-4,-1.9),L(-30,-1.9),L(-37.5,-0.5),L(-37.5,0.5),L(-30,1.9),L(-4,1.9)],h:zc+1.6,z0:zc-1.9});
+      for(const sd of [-1,1]){ casters.push({p:[L(-13.5,sd*1.7),L(-22.0,sd*17.4),L(-23.4,sd*17.4),L(-20.7,sd*1.7)],h:zc-1.0,z0:zc-1.3});
+        casters.push({p:[L(-11,sd*4.7),L(-11,sd*6.5),L(-15.2,sd*6.5),L(-15.2,sd*4.7)],h:zc-1.4,z0:zc-3.2});
+        casters.push({p:[L(-31.5,sd*1.0),L(-34.7,sd*6.6),L(-36.1,sd*6.6),L(-35.5,sd*1.0)],h:zc+0.9,z0:zc+0.6}); }
+      casters.push({p:[L(-28.5,-0.15),L(-38,-0.15),L(-38,0.15),L(-28.5,0.15)],h:zc+7.6,z0:zc+1.2}); }
     tube(o,f,-0.2,-2.6,0.25,1.25,zc-0.35,zc-0.1,10,W_); tube(o,f,-2.6,-5.0,1.25,R,zc-0.1,zc,12,W_);
     tube(o,f,-5.0,-27.0,R,R,zc,zc,12,W_); tube(o,f,-27.0,-37.5,R,0.45,zc,zc+1.4,12,W_);
     obox(o,f,-2.0,0,zc+0.55,1.6,2.0,0.45,DK);                                   // cockpit windows
