@@ -184,10 +184,10 @@ function init(o){
           sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vGp; varying float vMt; attribute float aMat; uniform float uGs;').replace('#include <begin_vertex>','#include <begin_vertex>\nvGp=position*uGs; vMt=aMat;');
           sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vGp; varying float vMt; uniform sampler2D uGr;\nfloat gT(vec3 p){ return (texture2D(uGr,p.xy).r+texture2D(uGr,p.yz).r+texture2D(uGr,p.zx).r)/3.0; }').replace('#include <color_fragment>',`#include <color_fragment>
 { float gm=gT(vGp*0.9), k;
-  if(vMt<0.5){ k=0.915+0.13*gT(vGp*5.0)+0.04*gm; }                                   /* moulded plastic: fine grain */
+  if(vMt<0.5){ k=0.965+0.07*gT(vGp*5.0); }                                   /* moulded plastic: fine grain */
   else if(vMt<1.5){ vec3 p=vGp; float wa=(texture2D(uGr,p.xy*vec2(46.0,5.0)).r+texture2D(uGr,p.yz*vec2(46.0,5.0)).r+texture2D(uGr,p.zx*vec2(46.0,5.0)).r)/3.0, wb=(texture2D(uGr,p.xy*vec2(5.0,46.0)).r+texture2D(uGr,p.yz*vec2(5.0,46.0)).r+texture2D(uGr,p.zx*vec2(5.0,46.0)).r)/3.0; k=0.80+0.22*wa+0.22*wb; }   /* woven fabric: threads both ways */
-  else if(vMt<2.5){ k=0.72+0.50*gT(vGp*11.0)+0.08*gm; }                                /* carpet: coarse, strong */
-  else { k=0.86+0.24*gT(vGp*8.0)+0.05*gm; }  /* leather: soft pebbling */
+  else if(vMt<2.5){ k=0.74+0.50*gT(vGp*11.0); }                                /* carpet: coarse, strong */
+  else { k=0.88+0.24*gT(vGp*8.0); }  /* leather: soft pebbling */
   diffuseColor.rgb*=k; }`); }; mat.needsUpdate=true; }catch(e){ console.warn('A320 3D grain',e); } }
       /* a thin dark line along every sharp edge of the structure (where two faces meet at more than 32 degrees): the outline of
          each part, as the eye expects from a panel joint or a moulded edge. Computed once at load, desktop only. */
