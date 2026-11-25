@@ -130,12 +130,12 @@ function init(o){
       const cm=new THREE.Mesh(gg,new THREE.MeshBasicMaterial({map:tx,side:THREE.DoubleSide})); cm.material.color.setScalar(0.82); scene.add(cm); }catch(e){ console.warn('A320 3D breaker wall',e); } }
   const wT0=0.90, wZa=-0.70; // top of the side windows, their front edge
   { const bm=new THREE.MeshBasicMaterial({color:0x6d7a8a,side:THREE.DoubleSide}), bp=[], q4=(a,b,c,d)=>bp.push(a,b,c,a,c,d), d=0.14 /* well outside the structure: a backstop that lies in a wall of the model flickers through it */, X2=XW+d, cy=(z)=>ceilAt(0,z)+d;
-    const XR=0.80; q4(v3(-XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zB),zB),v3(-XR,cy(zB),zB));   // roof (inboard of the side windows)
+    const XR=0.80; q4(v3(-XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zB),zB+d),v3(-XR,cy(zB),zB+d));   /* runs back to the backstop's back wall (a slit of sky showed between them) */   // roof (inboard of the side windows)
     q4(v3(-X2,yF,zB+d),v3(X2,yF,zB+d),v3(X2,cy(zB),zB+d),v3(-X2,cy(zB),zB+d));
     /* the trial structure is wider aft than the simple room (its rear corners reach 1.8 m out) and leaves a slit between the
        back wall and the side lining: a second back wall just behind all of it, so that slit shows lining, not sky */
     if(TEST3) q4(v3(-1.86,yF,1.66),v3(1.86,yF,1.66),v3(1.86,1.70,1.66),v3(-1.86,1.70,1.66));
-    for(const sg of [-1,1]){ q4(v3(sg*XR,cy(zF-0.05),zF-0.05),v3(sg*X2,cy(zF-0.05),zF-0.05),v3(sg*X2,cy(zB),zB),v3(sg*XR,cy(zB),zB));      // roof, outboard part
+    for(const sg of [-1,1]){ q4(v3(sg*XR,cy(zF-0.05),zF-0.05),v3(sg*X2,cy(zF-0.05),zF-0.05),v3(sg*X2,cy(zB),zB+d),v3(sg*XR,cy(zB),zB+d));      // roof, outboard part
       if(!TEST3) q4(v3(sg*X2,wT0+0.09,wZa),v3(sg*X2,wT0+0.09,zB),v3(sg*X2,cy(zB),zB),v3(sg*X2,cy(zF-0.05),wZa));
       else q4(v3(sg*1.86,0.85,1.0),v3(sg*1.86,0.85,1.66),v3(sg*1.86,1.70,1.66),v3(sg*1.86,1.70,1.0)); }   /* trial structure: its own walls reach further out; only behind the seats, clear of what the side windows see */                              // side walls above the side windows                                      // back wall
     /* a strip just outside the beams over the side and aft windows: the model has a slit between those beams and the ceiling
@@ -165,7 +165,7 @@ function init(o){
        a dark tinted sun visor on a rod with two hinges over each side window. The model's loose rails, fins and mounts there are
        left out of models/a320-shell.bin (tools/render-a320/header_cut.py). */
     if(!TEST3){ const ceil=z=>0.863+(z+0.241)*0.388, pathX=z=>z<0.02?0.775:z<0.36?0.775+(z-0.02)/0.34*0.215:0.99+(z-0.36)/0.93*0.01;
-      const xin=z=>pathX(z)-0.085, yb=z=>Math.min(0.95,ceil(z)-0.012), NZ=26, NS=14, Z0=-0.241, Z1=0.70;
+      const xin=z=>pathX(z)-0.085, yb=z=>Math.min(0.95,ceil(z)-0.012), NZ=40, NS=14, Z0=-0.241, Z1=1.26;
       const pos=[], col=[], idx=[], vc=(r,g,b)=>col.push(r,g,b);
       for(const sg of [-1,1]){ const base=pos.length/3;
         for(let i=0;i<=NZ;i++){ const z=Z0+(Z1-Z0)*i/NZ, yA=ceil(z)-0.004, xA=0.56, xB=xin(z)+0.004, yB=yb(z), cx=xB-0.03, cyy=yA;
