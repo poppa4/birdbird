@@ -324,7 +324,7 @@ function glassBaked(A,eye,tint){ const T=tint||{y0:0.16,y1:0.28,z0:-0.6,z1:-0.2,
    of the encoded colours (sRGB is close to a power law), so the lit vertex colour, the tint texture and the occlusion are each
    encoded once (vertices and the occlusion map at load; the tint textures are already sRGB), and the gloss is added as the
    difference it makes on the encoded mean colour of the group. */
-const AOK=1.25; // occlusion a little deeper than the bake: the cabin is lit through its windows only
+let AOK=1.25; // occlusion a little deeper than the bake: the cabin is lit through its windows only
 const enc=x=>x<=0.0031308?12.92*x:1.055*Math.pow(x,1/2.4)-0.055, dec=x=>x<=0.04045?x/12.92:Math.pow((x+0.055)/1.055,2.4);
 function toDisplay(A,cache){ const n=A.n, m=A.map?meanLin(A.map,cache):[1,1,1];
   for(let i=0;i<n*3;i++){ const c=i%3, l=A.lit[i], s=A.spec[i], lg=enc(Math.min(1,l)); A.lit[i]=lg; A.spec[i]=Math.max(0,enc(Math.min(1,l*m[c]+s))-enc(Math.min(1,l*m[c]))); }
@@ -479,6 +479,7 @@ function hideCss(){ const h=def.glb.hide||[]; if(!h.length) return; const s=docu
    a pause between them, so the page stays responsive while it is put together */
 const pause=()=>new Promise(r=>setTimeout(r,0));
 async function glbBuild(pk,side){ loading(0.9); await pause();
+  if(def.glb.aoK) AOK=def.glb.aoK;   // how deep the baked contact shadows are drawn (default 1.25)
   const cfg=def.glb, N=pk.units.length, U={uCtl:{value:pk.units.map(()=>new THREE.Matrix4())},uTod:{value:TODC}};
   /* a foreground control's cut plane rides on its vertices (one vec4 each), not in a uniform array: a panel with every switch
      in 3D has some fifty units, and a second array of that size would pass the vertex-uniform limit of many phones */

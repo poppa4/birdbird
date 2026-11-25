@@ -65,7 +65,14 @@ def lum(v):
     return (np.stack([v, v, v], -1) * 255).astype(np.uint8)
 
 
-def build(out, n=512):
+def relief(h, k):
+    """height → shading as if lit from the upper left: the engine draws no normal maps, so the relief goes into the albedo"""
+    gx = (np.roll(h, -1, 1) - np.roll(h, 1, 1)) * 0.5
+    gy = (np.roll(h, -1, 0) - np.roll(h, 1, 0)) * 0.5
+    return k * (gx + gy) * 0.7071
+
+
+def build(out, n=512, bold=False):
     os.makedirs(out, exist_ok=True)
     yy, xx = np.mgrid[0:n, 0:n] / n
 
@@ -78,27 +85,27 @@ def build(out, n=512):
     fib = fnoise(n, 40, 200)
     mott = fnoise(n, 2, 8)
     h = weave * 0.8 + fib * 0.15
-    save(f'{out}/fabric_albedo.jpg', lum(0.80 + 0.12 * weave + 0.05 * fib + 0.05 * mott))
+    save(f'{out}/fabric_albedo.jpg', lum(0.66 + 0.24 * weave + 0.08 * fib + 0.07 * mott if bold else 0.80 + 0.12 * weave + 0.05 * fib + 0.05 * mott))
     save(f'{out}/fabric_normal.jpg', normal_from_height(h, 2.2))
 
     # leather / vinyl grain (tile = 0.20 m)
     c = cells(n, 2600)
     g = fnoise(n, 30, 120)
     h = (1 - np.exp(-c * 9)) * 0.85 + g * 0.15
-    save(f'{out}/leather_albedo.jpg', lum(0.86 + 0.08 * h + 0.05 * fnoise(n, 2, 10)))
+    save(f'{out}/leather_albedo.jpg', lum(0.76 + 0.16 * h + 0.025 * fnoise(n, 2, 10) + relief(h, 1.1) if bold else 0.86 + 0.08 * h + 0.05 * fnoise(n, 2, 10)))
     save(f'{out}/leather_normal.jpg', normal_from_height(h, 3.0))
 
     # cut-pile carpet (tile = 0.25 m)
     p = fnoise(n, 60, 250)
     blot = fnoise(n, 3, 12)
-    save(f'{out}/carpet_albedo.jpg', lum(0.78 + 0.16 * p + 0.06 * blot))
+    save(f'{out}/carpet_albedo.jpg', lum(0.68 + 0.30 * p + 0.04 * blot if bold else 0.78 + 0.16 * p + 0.06 * blot))
     save(f'{out}/carpet_normal.jpg', normal_from_height(p * 0.9 + blot * 0.1, 3.5))
 
     # textured (stippled) interior plastic and wrinkle paint (tile = 0.15 m)
     s = fnoise(n, 50, 180)
     s = np.sign(s) * np.abs(s) ** 0.7
     wear = fnoise(n, 2, 6)
-    save(f'{out}/plastic_albedo.jpg', lum(0.90 + 0.05 * s + 0.05 * wear))
+    save(f'{out}/plastic_albedo.jpg', lum(0.88 + 0.07 * s + 0.02 * wear + relief(s, 0.6) if bold else 0.90 + 0.05 * s + 0.05 * wear))
     save(f'{out}/plastic_normal.jpg', normal_from_height(s, 1.6))
 
     # placeholder for the live panel faces (keeps their UVs through gltfpack; the app replaces the map)
@@ -106,7 +113,7 @@ def build(out, n=512):
 
     # brushed / worn aluminium (tile = 0.2 m): anisotropic streaks, greyscale roughness variation in albedo
     b = fnoise(n, 4, 160, aniso=(0.04, 1.0))
-    save(f'{out}/metal_albedo.jpg', lum(0.88 + 0.10 * b))
+    save(f'{out}/metal_albedo.jpg', lum(0.80 + 0.18 * b if bold else 0.88 + 0.10 * b))
 
     # perforated headliner vinyl (tile = 0.10 m)
     k = 28
@@ -119,4 +126,4 @@ def build(out, n=512):
 
 
 if __name__ == '__main__':
-    build(sys.argv[1] if len(sys.argv) > 1 else 'tex', int(sys.argv[2]) if len(sys.argv) > 2 else 512)
+    build(sys.argv[1] if len(sys.argv) > 1 else 'tex', int(sys.argv[2]) if len(sys.argv) > 2 else 512, bold=len(sys.argv) > 3 and sys.argv[3] == 'bold')
