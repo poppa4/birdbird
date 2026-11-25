@@ -280,13 +280,14 @@ void main(){
   float rA=0.0, rG=0.0;
   if(kn>0.0){ vec4 w4=texture2D(tWN,uN); vec3 w3=w4.rgb;
     vec2 rd=texture2D(tWN,uN,-2.0).ba; float sA=(rd.y*255.0-128.0)*0.1, sG=(rd.x*255.0-128.0)*0.1;   // sharper mip: distance fields stay exact        // NVDB road edges, signed metres
-    rA=smoothstep(-1.0,1.0,sA/max(fwidth(sA)*0.75,0.08))*kn; rG=smoothstep(-1.0,1.0,sG/max(fwidth(sG)*0.75,0.08))*kn; vec3 an=texture2D(tAN,uN).rgb; vec3 ab=texture2D(tAN,uN,1.0).rgb;
+    float fA=max(fwidth(sA),0.08), fG=max(fwidth(sG),0.08);
+    rA=smoothstep(-1.0,1.0,sA/(fA*0.75))*clamp(3.5/fA,0.0,1.0)*kn; rG=smoothstep(-1.0,1.0,sG/(fG*0.75))*clamp(2.5/fG,0.0,1.0)*kn; vec3 an=texture2D(tAN,uN).rgb; vec3 ab=texture2D(tAN,uN,1.0).rgb;
     an=clamp(an+(an-ab)*0.22,0.0,1.0);                  // unsharp mask: the 10 m satellite colours read crisper up close
     alb=mix(alb,an,kn); nrm=mix(nrm,texture2D(tNN,uvOf(extN,EN)),kn); wat=mix(wat,w3.r,kn); fr=w3.g*kn*(1.0-max(rA,rG)); pv=max(rA,rG); }
   float nearT=1.0-smoothstep(treeR*0.72,treeR,distance(EN,vec2(camW.x,-camW.z)));
   vec2 nxz=mix(nrm.rg,nrm.ba,nearT)*2.0-1.0;
   vec3 N=vec3(nxz.x,0.0,nxz.y); N.y=sqrt(max(0.0,1.0-N.x*N.x-N.z*N.z)); N=normalize(N);
-  vec3 c=lin(alb);
+  vec3 c=lin(alb); { float lu=dot(c,vec3(0.2126,0.7152,0.0722)); c=mix(vec3(lu),c,0.80)*vec3(1.0,0.98,0.95); }
   float fz=smoothstep(1.0,5.0,vCan);
   if(fz>0.0){ vec4 df=texture2D(tDet,EN/9.0); vec3 fc=lin(vec3(0.14,0.20,0.12))*(0.75+0.5*df.g);
     float side=1.0-N.y; fc*=1.0-0.45*smoothstep(0.25,0.8,side);
@@ -336,7 +337,10 @@ void main(){
       float la=0.5, lc=0.5;
       if(matOn>0.5){ la=texture2D(tML,EN/2.1).r; lc=texture2D(tML,EN/2.5).g; }
       vec3 asph=lin(vec3(0.27,0.28,0.29))*(0.90+0.16*dd.b)*(0.55+0.9*la);
-      vec3 conc=lin(vec3(0.47,0.46,0.43))*(0.92+0.12*dd.b)*(0.62+0.76*lc);
+      vec3 conc=lin(vec3(0.42,0.415,0.40))*(0.92+0.12*dd.b)*(0.70+0.60*lc);
+      { float w1=texture2D(tDet,EN/37.0).r, w2=texture2D(tDet,EN/91.0+0.3).g, st=texture2D(tDet,EN/6.3+0.7).r;
+        conc*=(0.86+0.22*w1)*(0.92+0.14*w2); conc*=1.0-0.18*smoothstep(0.62,0.80,st)*w2;
+        asph*=(0.90+0.18*w1); }
       pc=mix(asph,conc,concrete);
       // shoulder darkening near the edge, rubber-free look
       pc*=0.92+0.08*smoothstep(0.0,3.0,sd);
@@ -912,7 +916,7 @@ function buildBuildings(){
         if(glass>0.0){
           vec3 R=reflect(-V,N); float fres=0.06+0.94*pow(1.0-max(dot(N,V),0.0),5.0);
           float pv=h1(floor(vW.xz/1.5)+floor(vW.y/4.2));
-          vec3 gc=mix(lin(vec3(0.03,0.045,0.06))*(skyCol*amb*2.0+sunCol*0.10)*(0.7+0.6*pv),skyAt(normalize(vec3(R.x,abs(R.y),R.z)))*(0.8+0.2*pv),clamp(fres*0.9+0.14,0.0,1.0));
+          vec3 gc=mix(lin(vec3(0.03,0.045,0.06))*(skyCol*amb*2.0+sunCol*0.10)*(0.85+0.3*pv),skyAt(normalize(vec3(R.x,abs(R.y),R.z)))*(0.93+0.07*pv),clamp(fres*0.9+0.14,0.0,1.0));
           gc+=sunCol*pow(max(dot(R,sunDir),0.0),200.0)*1.5*smoothstep(-0.05,0.08,sunDir.y);
           gc+=vec3(1.0,0.78,0.48)*lit*night*(kind>4.5?0.16:kind>3.5?0.10:0.45);
           col=mix(col,gc,glass);
