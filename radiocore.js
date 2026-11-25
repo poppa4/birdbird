@@ -474,7 +474,7 @@ class Session{
     }
     this.carry=mergedCarry;
     if(!s.noAtc) this._atc(correction(s,g,this),ev,{corr:true});
-    else ev.push({t:'note',text:tr('Not quite. Try again.','Ikke helt. Prøv igjen.')});
+    /* a drill without a controller: the feedback card already says try again */
     return {g,kind:'retry',ev};
   }
   undo(){ const u=this._undo; if(!u) return false; Object.assign(this,{i:u.i,tries:u.tries,carry:u.carry,abbrOK:u.abbrOK,lastAtc:u.lastAtc,unit:u.unit,done:u.done}); this.results.length=u.nres; this._undo=null; return true; }

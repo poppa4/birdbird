@@ -142,8 +142,7 @@ function draw(){
   for(let i=0;i<2;i++) for(let xx=1188;xx<1212;xx+=4) ctx.fillRect(xx,HOLD_D1.y-0.6+i*1.6,2.4,0.7);
   // labels (screen-size text)
   lbl('A',-900,TWY_A-16); lbl('A',350,TWY_A-16); lbl('A1',-1228,HOLD_A1.y+6,'end'); lbl('B',318,70,'start'); lbl('D1',1228,HOLD_D1.y+6,'start'); lbl('C',-318,70,'end');
-  for(let k=1;k<=8;k++) lbl(String(k),standX(k),STAND_Y+48);
-  lbl('Terminal',-170,STAND_Y+102,'center',COL.lbl,13);
+  if(W>=420){ for(let k=1;k<=8;k++) lbl(String(k),standX(k),STAND_Y+48); lbl('Terminal',-170,STAND_Y+102,'center',COL.lbl,13); }
   // runway edge lights (white), threshold (green) and runway end (red); blue taxiway edge lights along Alpha
   const dot=(x,y,c,r)=>{ ctx.fillStyle=c; ctx.beginPath(); ctx.arc(x,y,r*px,0,7); ctx.fill(); };
   if(cam.s>0.18){ for(let x=RWY.x0;x<=RWY.x1;x+=60){ dot(x,-RWY.w/2-1,'rgba(255,244,214,.85)',1.3); dot(x,RWY.w/2+1,'rgba(255,244,214,.85)',1.3); }
@@ -161,7 +160,7 @@ function draw(){
   ctx.fillStyle='rgba(10,16,23,.72)'; ctx.fillRect(W-118,8,110,24); ctx.fillStyle=COL.mark; ctx.font='700 12px system-ui,sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
   ctx.fillText('N',W-110,20); ctx.strokeStyle=COL.mark; ctx.lineWidth=1.6; ctx.beginPath(); ctx.moveTo(W-96,20); ctx.lineTo(W-66,20); ctx.lineTo(W-72,15); ctx.moveTo(W-66,20); ctx.lineTo(W-72,25); ctx.stroke();
   ctx.font='600 11px system-ui,sans-serif'; ctx.fillStyle=COL.lbl; ctx.fillText('north',W-58,20);
-  ctx.textBaseline='alphabetic'; ctx.textAlign='left'; ctx.fillStyle='rgba(169,182,195,.75)'; ctx.font='600 10.5px system-ui,sans-serif'; ctx.fillText('NORDAP · training layout',10,18);
+  ctx.textBaseline='alphabetic'; ctx.textAlign='left'; if(W>=420){ ctx.fillStyle='rgba(169,182,195,.75)'; ctx.font='600 10.5px system-ui,sans-serif'; ctx.fillText('NORDAP · training layout',10,18); }
   if(own&&own.hidden){ ctx.textAlign='right'; ctx.fillStyle=COL.ownEdge; ctx.font='600 11px system-ui,sans-serif'; ctx.fillText('FJORDAIR 412 inbound from the south',W-12,H-12); }
 }
 function path(pts){ ctx.beginPath(); pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y)); ctx.stroke(); }
@@ -194,7 +193,7 @@ function loop(){ running=true; last=performance.now();
     waiters=waiters.filter(w=>{ if(w.cond()){ w.res(); return false; } return true; });
     draw(); raf=requestAnimationFrame(f); };
   raf=requestAnimationFrame(f); }
-let TIME=3;   // taxiing at real speed takes minutes; the map runs three times faster
+let TIME=4;   // taxiing at real speed takes minutes; the map runs three times faster
 function stop(){ running=false; cancelAnimationFrame(raf); waiters.forEach(w=>w.res()); waiters=[]; }
 function init(c){ cv=c; ctx=c.getContext('2d'); size(); if(G.ResizeObserver) new ResizeObserver(()=>{ if(!running) draw(); }).observe(c); }
 
