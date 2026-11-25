@@ -272,13 +272,13 @@ function panel(scroll) { modeHint(); stepSync(); const p = $('fpanel'); $('app')
     const S = cur.steps.filter(s => !hidden[s.r]), ph = cur.phase && F.PHASES.find(x => x[0] === cur.phase);
     p.innerHTML = `<div class="fvh"><button class="btn sm" id="vprev"${vi > 0 ? '' : ' disabled'} aria-label="${esc(L({ en: 'Previous flow', no: 'Forrige flow' }))}">‹</button><div><b>${esc(cur.name)}</b><small>${ph ? esc(L({ en: ph[1], no: ph[2] })) + ' · ' : ''}${cur.steps.length} ${L({ en: 'steps', no: 'steg' })}${fo.length > 1 && vi >= 0 ? ` · ${vi + 1} / ${fo.length}` : ''}</small></div><button class="btn sm" id="vnext"${vi >= 0 && vi < fo.length - 1 ? '' : ' disabled'} aria-label="${esc(L({ en: 'Next flow', no: 'Neste flow' }))}">›</button></div>` +
       (R.length > 1 ? `<div class="fvr" role="group" aria-label="${esc(L({ en: 'Show', no: 'Vis' }))}"><button data-vr=""${all ? ' class="on"' : ''}>${L({ en: 'Both pilots', no: 'Begge pilotene' })}</button>${R.map(r => `<button data-vr="${r}" style="--c:${col(r)}"${!all && one[0] === r ? ' class="on"' : ''}><i></i>${r}</button>`).join('')}</div>` : '') +
-      `<div class="frow"><button class="btn sm" id="vwatch">▶ ${L({ en: 'Play flow', no: 'Spill av flow' })}</button><button class="btn sm" id="vprint">${L({ en: 'Print', no: 'Skriv ut' })}</button></div>` +
+      `<div class="frow"><button class="btn sm" id="vwatch">▶ ${L({ en: 'Play flow', no: 'Spill av flow' })}</button><button class="btn sm" id="vpart">👥 ${L({ en: 'With a partner', no: 'Med partner' })}</button><button class="btn sm" id="vprint">${L({ en: 'Print', no: 'Skriv ut' })}</button></div>` +
       (cur.std ? `<details class="fvsrc"><summary>NORDAP · ${L({ en: 'not your operator’s SOP', no: 'ikke operatørens SOP' })}</summary>${L({ en: 'From: ', no: 'Fra: ' })}${esc(cur.stdSrc || '')}.</details>` : '') +
       `<ol class="fsteps ro fvl">${S.map(s => `<li class="fs${sel === s.id ? ' on' : ''}" data-s="${s.id}" style="--c:${col(s.r)}"><span class="fbdg${s.k === 'call' ? ' call' : s.k === 'event' ? ' ev' : ''}">${s.k === 'event' ? '⚑' : esc(F.badge(cur, s))}</span><span class="fx">${R.length > 1 ? `<b>${s.r}</b> ` : ''}${esc(s.t || '…')}</span></li>`).join('')}</ol>`;
     const go = d => { const o = fo[vi + d]; if (!o) return; $('fsel').value = o.value; $('fsel').dispatchEvent(new Event('change')); };
     $('vprev').onclick = () => go(-1); $('vnext').onclick = () => go(1);
     p.querySelectorAll('[data-vr]').forEach(b => b.onclick = () => { const r = b.dataset.vr; hidden = {}; if (r) R.forEach(x => { if (x !== r) hidden[x] = true; }); sel = null; draw(); panel(); });
-    $('vwatch').onclick = () => { setMode('watch'); wPlay(); }; $('vprint').onclick = () => { const b = document.querySelector('#fmenu [data-a=print]'); if (b) b.click(); };
+    $('vwatch').onclick = () => { setMode('watch'); wPlay(); }; $('vpart').onclick = () => { setMode('together'); toStage(); }; $('vprint').onclick = () => { const b = document.querySelector('#fmenu [data-a=print]'); if (b) b.click(); };
     p.querySelectorAll('.fvl .fs').forEach(li => li.onclick = () => { sel = sel === li.dataset.s ? null : li.dataset.s; draw(); p.querySelectorAll('.fvl .fs').forEach(x => x.classList.toggle('on', x.dataset.s === sel)); });
   } else if (mode === 'watch') {
     p.innerHTML = (W.done && !W.on ? `<div class="fnext"><b>${esc(L({ en: 'Your turn', no: 'Din tur' }))}</b><span>${esc(L({ en: 'Tap each step on the cockpit, in order. Hints come if you need them.', no: 'Trykk hvert steg i cockpiten, i rekkefølge. Du får hint om du trenger det.' }))}</span><button class="btn pri" id="wnext">▶ ${esc(L({ en: 'Practise this flow', no: 'Øv på denne flowen' }))}</button></div>` : '') + `<div class="frow"><button class="btn pri" id="wplay">${W.on ? '❚❚ ' + L({ en: 'Pause', no: 'Pause' }) : '▶ ' + L({ en: 'Play flow', no: 'Spill av flow' })}</button><button class="btn" id="wrst">↺ ${L({ en: 'From the start', no: 'Fra start' })}</button>` +
@@ -752,12 +752,23 @@ function manWire() { const b = $('dmanb');
   $('dman').addEventListener('close', () => setTimeout(() => { if (!$('dman').open) manClose(); }, 0));
   $('fpdf').onchange = e => { const f = e.target.files && e.target.files[0]; if (f) manRead(f); e.target.value = ''; }; }
 
+/* ---------- your own cockpit in one step: a photo or PDF page, a name, the phase of flight, the roles and (if you like) the
+   items pasted from your checklist. The flow opens in Build: tap the cockpit to place each step, in order. ---------- */
+function ownDialog() { const d = $('down'); $('oname').value = ''; $('ofile').value = ''; $('otxt').value = ''; $('ofn').textContent = L({ en: 'No picture chosen', no: 'Ikke valgt bilde' }); $('ook').disabled = true;
+  $('ophase').innerHTML = `<option value="">${esc(L({ en: 'Choose the phase…', no: 'Velg fase …' }))}</option>` + F.PHASES.map(p => `<option value="${p[0]}">${esc(L({ en: p[1], no: p[2] }))}</option>`).join('');
+  $('orole').value = 'pfpm'; d.showModal(); }
+async function ownCreate() { const fl = $('ofile').files && $('ofile').files[0]; if (!fl) return; const ph = $('ophase').value, txt = $('otxt').value.trim();
+  const name = $('oname').value.trim() || (ph ? phN(ph) : L({ en: 'My flow', no: 'Min flow' }));
+  const f = F.newFlow('img', { roles: $('orole').value, name: name.slice(0, 80) }); if (ph) f.phase = ph; FL.unshift(f); save(); mode = 'build'; await open(f); await addPicture(fl);
+  if (txt) { $('soptxt').value = txt; $('dsop').returnValue = 'ok'; $('dsop').dispatchEvent(new Event('close')); }
+  else msg(L({ en: 'Your cockpit is in. Tap the controls in the order of your flow; each tap is a step.', no: 'Cockpiten din er lagt inn. Trykk bryterne i rekkefølgen i flowen din; hvert trykk er et steg.' }), 'ok');
+  toStage(); }
 /* ---------- the start hint: a few seconds after you arrive, a small card on the cockpit offers to play the flow or to be guided ---------- */
 function startHint() { const old = $('fhint0'); if (old) old.remove(); clearTimeout(startHint.t);
   startHint.t = setTimeout(() => { if (!cur || !cur.steps.length || W.on || P.on || mode === 'build' || mode === 'together' || $('fhint0')) return;
     const d = document.createElement('div'); d.id = 'fhint0'; d.className = 'fhint0'; d.setAttribute('role', 'status');
-    d.innerHTML = `<span>${esc(cur.name)}</span><button type="button" class="go" data-h="play">▶ ${esc(L({ en: 'Start flow', no: 'Start flow' }))}</button><button type="button" data-h="guide">${esc(L({ en: 'Guide me', no: 'Guide meg' }))}</button><button type="button" class="x" data-h="x" aria-label="${esc(L({ en: 'Close', no: 'Lukk' }))}">×</button>`;
-    d.addEventListener('click', e => { const b = e.target.closest('button[data-h]'); if (!b) return; d.remove(); if (b.dataset.h === 'play') { setMode('watch'); wPlay(); } else if (b.dataset.h === 'guide') { if (mode !== 'practise') setMode('practise'); pStart('flow'); toStage(); } });
+    d.innerHTML = `<span>${esc(cur.name)}</span><button type="button" class="go" data-h="play">▶ ${esc(L({ en: 'Start flow', no: 'Start flow' }))}</button><button type="button" data-h="guide">${esc(L({ en: 'Guide me', no: 'Guide meg' }))}</button><button type="button" data-h="own">📷 ${esc(L({ en: 'Own photo', no: 'Eget bilde' }))}</button><button type="button" class="x" data-h="x" aria-label="${esc(L({ en: 'Close', no: 'Lukk' }))}">×</button>`;
+    d.addEventListener('click', e => { const b = e.target.closest('button[data-h]'); if (!b) return; d.remove(); if (b.dataset.h === 'play') { setMode('watch'); wPlay(); } else if (b.dataset.h === 'own') ownDialog(); else if (b.dataset.h === 'guide') { if (mode !== 'practise') setMode('practise'); pStart('flow'); toStage(); } });
     document.querySelector('.fwrap').appendChild(d); requestAnimationFrame(() => d.classList.add('on')); }, 2500); }
 /* ---------- start ---------- */
 function init() { load(); wirePanel(); manWire();
@@ -770,11 +781,13 @@ function init() { load(); wirePanel(); manWire();
   pinch(); stickTop(); addEventListener('resize', stickTop, { passive: true }); addEventListener('orientationchange', () => setTimeout(stickTop, 300));
   document.addEventListener('click', e => { if (e.target.closest('.fmode button,#fsel,#fphs,#sac') && $('fhint0')) $('fhint0').remove(); }, true);
   document.querySelectorAll('.fmode button').forEach(b => b.onclick = () => { if (b.dataset.k) { if (mode !== 'practise') setMode('practise'); pStart(b.dataset.k); toStage(); return; } setMode(b.dataset.m); if (b.dataset.m === 'watch' && cur && cur.steps.length) wPlay(); });
-  $('fmenu').addEventListener('click', e => { const b = e.target.closest('button[data-mm]'); if (!b) return; $('fmenu').closest('details').open = false; if (b.dataset.mm === 'new') return newDialog(); setMode(b.dataset.mm); });
+  $('fmenu').addEventListener('click', e => { const b = e.target.closest('button[data-mm]'); if (!b) return; $('fmenu').closest('details').open = false; if (b.dataset.mm === 'new') return newDialog(); if (b.dataset.mm === 'own') return ownDialog(); setMode(b.dataset.mm); });
   const openV = v => { if (mode === 'build' || mode === 'together') setMode('view'); if (v.startsWith('std:')) return open(stdGet(v.slice(4))); if (v.startsWith('ex:')) return open(F.example(v.slice(3), A)); return open(FL.find(f => f.id === v)); };
   $('fphs').onchange = e => { const g = (e.target._G || []).find(x => x.k === e.target.value); if (g && g.vals[0]) openV(g.vals[0]); };
   $('fsel').onchange = e => { const v = e.target.value; if (mode === 'build' || mode === 'together') setMode('practise'); if (v.startsWith('std:')) return open(stdGet(v.slice(4))); if (v.startsWith('ex:')) open(F.example(v.slice(3), A)); else open(FL.find(f => f.id === v)); };
-  $('fnew').onclick = newDialog; $('dnew').addEventListener('close', () => { if ($('dnew').returnValue === 'ok') createFlow(); });
+  $('fnew').onclick = newDialog;
+  $('ofile').onchange = () => { const fl = $('ofile').files && $('ofile').files[0]; $('ofn').textContent = fl ? fl.name : L({ en: 'No picture chosen', no: 'Ikke valgt bilde' }); $('ook').disabled = !fl; };
+  $('down').addEventListener('close', () => { if ($('down').returnValue === 'ok') ownCreate(); }); $('dnew').addEventListener('close', () => { if ($('dnew').returnValue === 'ok') createFlow(); });
   $('dsop').addEventListener('close', () => { if ($('dsop').returnValue !== 'ok' || !cur) return; const S = F.parseSop($('soptxt').value); if (!S.length) return; if (cur.ex) adoptExample();
     // a first line without a position, above lines that have one, is the title of what was pasted: it names an empty flow instead of becoming a step
     if (S.length > 2 && S[0].k === 'act' && !S[0].t.includes(' – ') && S.slice(1).filter(x => x.t.includes(' – ')).length >= 2) { const t = S.shift().t; if (!cur.steps.length && t.length <= 60) { cur.name = (t.charAt(0) + t.slice(1).toLowerCase()).slice(0, 80); const ph = MP.phaseOf(t); if (ph && !cur.phase) cur.phase = ph; flowSel(); } }

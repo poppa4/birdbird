@@ -245,6 +245,17 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
 .fhint0 button.x{border:0;padding:6px 10px;font-size:18px;line-height:1;opacity:.7}
 @media (max-width:640px){.fhint0{bottom:56px;padding-left:12px}.fhint0>span{display:none}.ftop #fstart .fac{flex:1 1 100%}.ftop #fstart .fac b{min-width:58px}.ftop .fmode{flex-wrap:wrap;width:100%;order:2}.fsteps3 button[data-step="1"]{flex:1 1 100%}.fsteps3 button[data-step="2"],.fsteps3 button[data-step="3"]{flex:1 1 40%}.ftop .fmenu{order:3;margin-left:auto}}
 @media (prefers-reduced-motion:reduce){.fhint0{transition:none}}
+dialog#down{width:min(460px,94vw)}
+dialog#down .ofile{flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:14px;border:1.5px dashed var(--rule);border-radius:10px;cursor:pointer}
+dialog#down .ofile input{position:absolute;width:1px;height:1px;opacity:0}
+dialog#down .ofile .btn{font-size:15px;padding:10px 16px}
+dialog#down .ofile small{font-weight:500;color:var(--ink-2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 140px}
+dialog#down .ofile:focus-within{border-color:var(--accent)}
+dialog#down .otx{margin:0 0 12px;font-size:13px}dialog#down .otx summary{cursor:pointer;color:var(--ink-2);font-weight:600}
+dialog#down .otx textarea{display:block;width:100%;box-sizing:border-box;min-height:110px;margin:8px 0 4px;padding:8px;font:13px var(--f-mono,monospace);border:1px solid var(--rule);border-radius:6px}
+dialog#down .otx small{color:var(--ink-2)}
+#ook:disabled{opacity:.45;cursor:default}
+@media (max-width:640px){.fhint0 button{padding:8px 11px;font-size:13.5px}}
 </style>
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
@@ -266,7 +277,7 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
       <div class="fstart" id="fstart" hidden><label class="fac"><b>Aircraft</b><select id="sac"></select></label><label class="fac fphase"><b>Phase</b><select id="fphs" aria-label="Flight phase"></select></label><label class="fac fflow"><b>Flow</b><select id="fsel" aria-label="Flow"></select></label><button class="btn pri" id="fgo2" type="button" hidden>▶ Practise</button></div>
       <button class="btn pri" id="fnew" type="button" aria-label="New flow" hidden>+ New</button>
       <details class="fmenu"><summary aria-label="More">⋯</summary><div id="fmenu">
-        <button data-mm="new">New flow…</button><button data-mm="view">See the whole flow</button><button data-mm="together">With a partner</button><button data-mm="build">Build or edit</button><hr>
+        <button data-mm="own">📷 Flow on your own cockpit photo…</button><button data-mm="new">New flow…</button><button data-mm="view">See the whole flow</button><button data-mm="together">With a partner</button><button data-mm="build">Build or edit</button><hr>
         <button data-a="lib">Flow library</button><button data-a="pub">Share with other pilots</button><button data-a="share">Share as a link</button><button data-a="file">Save as file</button><button data-a="pdf">Flows from a manual (PDF)…</button><button data-a="import">Open a flow file…</button>
         <button data-a="png">Save as picture (PNG)</button><button data-a="video">Save as video</button><button data-a="print">Print</button><button data-a="dup">Duplicate</button><button data-a="clear">Remove all steps</button><button data-a="unimp" hidden>Remove the last import</button><button data-a="del" class="warn">Delete flow</button><button type="button" data-reqplane="flows">Request your aircraft</button>
       </div></details>
@@ -311,6 +322,16 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
   <label>Roles<select id="nrs"><option value="pfpm">PF and PM</option><option value="cm">CM1 and CM2</option><option value="one">One pilot</option></select></label>
   <div class="acts"><button class="btn" value="cancel">Cancel</button><button class="btn pri" value="ok">Create</button></div>
 </form></dialog>
+<dialog class="fd" id="down"><form method="dialog">
+  <h3>Your own cockpit</h3>
+  <p class="note" style="margin-top:0">A photo of your cockpit or a PDF page. Then tap the controls in the order of your flow.</p>
+  <label class="ofile"><input type="file" id="ofile" accept="image/*,application/pdf,.pdf,.heic"><span class="btn pri">📷 Choose photo or PDF</span><small id="ofn">No picture chosen</small></label>
+  <label>Phase of flight<select id="ophase"></select></label>
+  <label>Name (optional)<input id="oname" maxlength="80" placeholder="e.g. Before start"></label>
+  <label>Roles<select id="orole"><option value="pfpm">PF and PM</option><option value="cm">CM1 and CM2</option><option value="one">One pilot</option></select></label>
+  <details class="otx"><summary>Paste the items from your checklist (optional)</summary><textarea id="otxt" spellcheck="false" placeholder="BATTERY ..... ON&#10;BEACON ..... ON"></textarea><small>One item per line. Then tap where each one is.</small></details>
+  <div class="acts"><button class="btn" value="cancel">Cancel</button><button class="btn pri" id="ook" value="ok" disabled>Create and place steps</button></div>
+</form></dialog>
 <dialog class="fd" id="dman"><form method="dialog" id="dmanb"></form></dialog>
 <dialog class="fd" id="dsop"><form method="dialog">
   <h3>Paste SOP text</h3>
@@ -325,7 +346,7 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
 <script src="flowpdf.js?v=20"></script>
 <script>
 LAB.add({},{
- 'Flow trainer':'Flow-trener','Phase':'Fase','Flow':'Flow','▶ Practise':'▶ Øv','Pick a flow on the timeline, watch it play, practise it, then do it from memory. NORDAP’s flows follow the manufacturer’s normal procedures; you can also build your own.':'Velg en flow på tidslinjen, se den spilles av, øv på den, og gjør den så fra hukommelsen. NORDAPs flows følger produsentens normalprosedyrer; du kan også bygge dine egne.','Build your own':'Bygg din egen','Trainer':'Trener','How it works':'Slik virker det',
+ 'Flow trainer':'Flow-trener','Phase':'Fase','Your own cockpit':'Din egen cockpit','A photo of your cockpit or a PDF page. Then tap the controls in the order of your flow.':'Et bilde av cockpiten din eller en PDF-side. Så trykker du bryterne i rekkefølgen i flowen din.','📷 Choose photo or PDF':'📷 Velg bilde eller PDF','No picture chosen':'Ikke valgt bilde','Phase of flight':'Flyfase','Name (optional)':'Navn (valgfritt)','Paste the items from your checklist (optional)':'Lim inn punktene fra sjekklisten (valgfritt)','One item per line. Then tap where each one is.':'Ett punkt per linje. Så trykker du der hvert av dem er.','Create and place steps':'Opprett og plasser steg','📷 Flow on your own cockpit photo…':'📷 Flow på ditt eget cockpitbilde …','Flow':'Flow','▶ Practise':'▶ Øv','Pick a flow on the timeline, watch it play, practise it, then do it from memory. NORDAP’s flows follow the manufacturer’s normal procedures; you can also build your own.':'Velg en flow på tidslinjen, se den spilles av, øv på den, og gjør den så fra hukommelsen. NORDAPs flows følger produsentens normalprosedyrer; du kan også bygge dine egne.','Build your own':'Bygg din egen','Trainer':'Trener','How it works':'Slik virker det',
  'Draw your cockpit flows over your own cockpit photo or PDF, a real photo of an A320, 737 or ATR 72 flight deck, or a NORDAP cockpit with every control named. One layer per pilot, checklist calls, playback, and practice from memory until the flow is in your hands. Free, and your pictures stay on your device.':'Tegn cockpit-flowene dine over ditt eget cockpitbilde eller PDF, et ekte foto av en A320-, 737- eller ATR 72-cockpit, eller en NORDAP-cockpit der hver bryter har navn. Ett lag per pilot, sjekklistekall, avspilling og øving fra hukommelsen til flowen sitter i hendene. Gratis, og bildene dine blir på enheten din.',
  '+ New flow':'+ Ny flow','+ New':'+ Ny','Share as a link':'Del som lenke','Save as file':'Lagre som fil','Flow library':'Flow-bibliotek','Open a flow file…':'Åpne en flowfil …','Flows from a manual (PDF)…':'Flows fra en manual (PDF) …','Save as picture (PNG)':'Lagre som bilde (PNG)','Save as video':'Lagre som video','Print':'Skriv ut','Duplicate':'Dupliser','Delete flow':'Slett flowen',
  'Build':'Bygg','From memory':'Fra hukommelsen','See the whole flow':'Se hele flowen','Build or edit':'Bygg eller endre','New flow…':'Ny flow …','See':'Se','Play':'Spill av','Play flow':'Spill av flow','With a partner':'Med partner','Watch':'Spill av','Practise':'Øv','Together':'Sammen','Pick a cockpit and tap its controls in the order you do them.':'Velg en cockpit og trykk bryterne i den rekkefølgen du gjør dem.','See the flow play, step by step.':'Se flowen spilles av, steg for steg.','Find the steps until you can do the whole flow from memory.':'Finn stegene til du kan hele flowen etter hukommelsen.','Got it':'Skjønner','Example · not an SOP':'Eksempel · ikke en SOP','Remove all steps':'Fjern alle steg','Pick a cockpit and tap its controls in the order your airline does them.':'Velg en cockpit og trykk bryterne i den rekkefølgen flyselskapet ditt gjør dem.',
@@ -341,7 +362,7 @@ LAB.add({},{
 LAB.start('flows');
 </script>
 <script src="flowwhy.js?v=1"></script>
-<script src="flows.js?v=66"></script>
+<script src="flows.js?v=67"></script>
 <script src="flowlib.js?v=6"></script>
 <script src="reqplane.js?v=3"></script>
 </body>
