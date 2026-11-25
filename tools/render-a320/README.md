@@ -109,3 +109,17 @@ keeps the baked light (more contrast, smoothed on the rear wall); `seals.py` fin
 from the seats and stores a 22 mm dark rubber band along its edge in the file's header (`seals`), which the page draws.
     python3 neo_look.py ../../models/a320-shell-test.bin look.bin
     python3 seals.py look.bin seals.json mask.png ../../models/a320-shell-test.bin
+
+## Baked daylight (2026-11-25, evening)
+
+The flat colours and black outlines made the structure look drawn. `bake2.py` now bakes the light: triangles are split to
+at most 17 cm, every point gathers sky light from 320 fixed sample points laid in the window openings (cosine at the
+surface and at the window, distance, blocked by the structure, the panels, levers and the page's lining from
+`export_occ.py`) and ambient occlusion from short rays (hits under 1.5 mm ignored: duplicate surfaces); the light is
+shared between points at the same place and smoothed, and multiplies the part colours from `neo_look.py`. The page's
+outlines on this structure are now faint (50 degrees, 18 %): the light shows the form. `classify.py` also gives the seats
+one material, the windshield header grey, lower walls and footwells dark grey, console sides console grey, black breakers,
+and one colour per flat region (no zig-zag where two classes met on one plate).
+    python3 export_occ.py occ.npy          # page running on localhost:8765
+    SPLIT=0.17 NWIN=320 python3 bake2.py <after neo_clean.py>.bin occ.npy baked.bin
+    python3 seals.py baked.bin seals.json mask.png ../../models/a320-shell-test.bin

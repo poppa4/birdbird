@@ -1,4 +1,4 @@
-"""Window seals (A320 trial structure, after neo_look.py) for the A320 trial structure: finds the window openings by casting rays from the seats, and returns for
+"""Window seals for the A320 trial structure: finds the window openings by casting rays from the seats, and returns for
 each opening a loop of points on the frame right at its edge plus a point ~W further onto the frame (the seal's inner
 and outer edge). usage: seals.py <shell.bin> <out.json> [debug.png]"""
 import sys, json
