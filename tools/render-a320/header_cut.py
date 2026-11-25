@@ -11,7 +11,7 @@ _,vid=np.unique(Pq,axis=0,return_inverse=True); vid=vid.ravel(); J=vid[I]
 nf=len(I); rows=np.repeat(np.arange(nf),3); A=coo_matrix((np.ones(3*nf),(rows,J.ravel())),shape=(nf,vid.max()+1)).tocsr()
 F=(A@A.T); ncomp,lab=connected_components(F,directed=False)
 inb=np.zeros(nf,bool)
-for x0,y0,z0,z1 in [(0.42,0.86,-0.10,0.75),(0.58,0.845,-0.10,0.75)]:
+for x0,y0,z0,z1 in [(0.42,0.86,-0.10,1.15),(0.58,0.845,-0.10,0.75)]:
     inb|=(ax>x0)&(c[:,1]>y0)&(c[:,2]>z0)&(c[:,2]<z1)
 frac=np.bincount(lab,inb,ncomp)/np.bincount(lab,minlength=ncomp)
 m=frac[lab]>=float(sys.argv[3]) if len(sys.argv)>3 else frac[lab]>=0.5

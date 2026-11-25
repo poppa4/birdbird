@@ -143,10 +143,10 @@ function init(o){
     if(!TEST3) for(const sg of [-1,1]){ q4(v3(sg*0.80,0.86,-0.02),v3(sg*1.02,0.86,0.36),v3(sg*1.02,1.04,0.36),v3(sg*0.80,1.04,-0.02)); q4(v3(sg*1.02,0.86,0.36),v3(sg*1.03,0.86,0.97),v3(sg*1.03,1.04,0.97),v3(sg*1.02,1.04,0.36)); }
     /* the wall behind the aft side windows, at window height: the model is open there between the window's rear edge and the
        rear wall, and the outside showed in the corner above the seats */
-    if(!TEST3) for(const sg of [-1,1]) q4(v3(sg*X2,wS-0.14,0.66),v3(sg*X2,wS-0.14,zB),v3(sg*X2,wT0+0.10,zB),v3(sg*X2,wT0+0.10,0.66));
+    if(!TEST3) for(const sg of [-1,1]) q4(v3(sg*X2,wS-0.14,0.93),v3(sg*X2,wS-0.14,zB),v3(sg*X2,wT0+0.10,zB),v3(sg*X2,wT0+0.10,0.93));   /* from the aft window's real rear edge (z .93), so the whole window is open */
     /* and a clean lining panel in the plane of the window posts, from the aft window's rear edge to the rear wall: the model's
        own wall starts there as loose slanted pieces further out, which showed as fins under the beam */
-    if(!TEST3) for(const sg of [-1,1]) q4(v3(sg*1.005,0.91,0.64),v3(sg*1.005,0.91,1.29),v3(sg*1.355,0.36,1.29),v3(sg*1.355,0.36,0.64));
+    if(!TEST3) for(const sg of [-1,1]) q4(v3(sg*1.005,0.91,0.95),v3(sg*1.005,0.91,1.29),v3(sg*1.355,0.36,1.29),v3(sg*1.355,0.36,0.95));
     /* its front edge is the aft window's rear frame: a lighter band, a hand wide, standing 12 mm proud of the panel */
     /* one clean lining over the side and aft windows, from the windshield corner back into the rear wall: underside, a chamfer
        and an inboard face. The model has several loose beams and rails lying along each other there, which read as a jumble;
@@ -159,13 +159,13 @@ function init(o){
         Q(chf,v3(sg*(x0-IN+CH),Y0,z0),v3(sg*(x1-IN+CH),Y0,z1),v3(sg*(x1-IN),Y0+CH,z1),v3(sg*(x0-IN),Y0+CH,z0));
         Q(inn,v3(sg*(x0-IN),Y0+CH,z0),v3(sg*(x1-IN),Y0+CH,z1),v3(sg*(x1-IN),Y1,z1),v3(sg*(x0-IN),Y1,z0)); }
       mk(0x5f6b79,bot); mk(0x97a4b5,chf); mk(0x7f8c9d,inn); }
-    if(!TEST3){ const fp=[], fm=new THREE.MeshBasicMaterial({color:0x93a0b2,side:THREE.DoubleSide}); for(const sg of [-1,1]){ const a=v3(sg*0.993,0.91,0.605), b=v3(sg*0.993,0.91,0.675), c=v3(sg*1.343,0.36,0.675), d=v3(sg*1.343,0.36,0.605); fp.push(a,b,c,a,c,d); }
+    if(!TEST3){ const fp=[], fm=new THREE.MeshBasicMaterial({color:0x93a0b2,side:THREE.DoubleSide}); for(const sg of [-1,1]){ const a=v3(sg*0.993,0.91,0.915), b=v3(sg*0.993,0.91,0.985), c=v3(sg*1.343,0.36,0.985), d=v3(sg*1.343,0.36,0.915); fp.push(a,b,c,a,c,d); }
       const fg=new THREE.BufferGeometry(), fa=new Float32Array(fp.length*3); fp.forEach((v,i)=>{ fa[i*3]=v.x; fa[i*3+1]=v.y; fa[i*3+2]=v.z; }); fg.setAttribute('position',new THREE.BufferAttribute(fa,3)); BACK.add(new THREE.Mesh(fg,fm)); }
     /* over the side windows, as on the aircraft: a smooth lining that curves down from the overhead into the window header,
        a dark tinted sun visor on a rod with two hinges over each side window. The model's loose rails, fins and mounts there are
        left out of models/a320-shell.bin (tools/render-a320/header_cut.py). */
     if(!TEST3){ const ceil=z=>0.863+(z+0.241)*0.388, pathX=z=>z<0.02?0.775:z<0.36?0.775+(z-0.02)/0.34*0.215:0.99+(z-0.36)/0.93*0.01;
-      const xin=z=>pathX(z)-0.085, yb=z=>Math.min(0.95,ceil(z)-0.012), NZ=40, NS=14, Z0=-0.241, Z1=1.26;
+      const xin=z=>pathX(z)-0.085, yb=z=>Math.min(0.95,ceil(z)-0.012), NZ=38, NS=14, Z0=-0.241, Z1=1.15;
       const pos=[], col=[], idx=[], vc=(r,g,b)=>col.push(r,g,b);
       for(const sg of [-1,1]){ const base=pos.length/3;
         for(let i=0;i<=NZ;i++){ const z=Z0+(Z1-Z0)*i/NZ, yA=ceil(z)-0.004, xA=0.56, xB=xin(z)+0.004, yB=yb(z), cx=xB-0.03, cyy=yA;
@@ -179,7 +179,7 @@ function init(o){
       const tube=(arr,a,b,w)=>{ const A=new THREE.Vector3(...a), B=new THREE.Vector3(...b), ax=B.clone().sub(A).normalize(), u=new THREE.Vector3().crossVectors(ax,new THREE.Vector3(0,1,0)).normalize().multiplyScalar(w), v=new THREE.Vector3().crossVectors(u,ax).normalize().multiplyScalar(w);
         const c=[u.clone().add(v),u.clone().sub(v),u.clone().negate().sub(v),u.clone().negate().add(v)]; for(let i=0;i<4;i++){ const j=(i+1)%4, p0=A.clone().add(c[i]), p1=A.clone().add(c[j]), p2=B.clone().add(c[j]), p3=B.clone().add(c[i]); arr.push(...p0.toArray(),...p1.toArray(),...p2.toArray(),...p0.toArray(),...p2.toArray(),...p3.toArray()); } };
       const vp=[], hp=[], rp=[], box=(arr,c,ax,ay,az)=>{ const [x,y,z]=c; for(const [a,b,cc,d] of [[0,1,3,2],[4,6,7,5],[0,4,5,1],[2,3,7,6],[0,2,6,4],[1,5,7,3]]){ const P=k=>[x+((k&1)?ax:-ax),y+((k&2)?ay:-ay),z+((k&4)?az:-az)]; arr.push(...P(a),...P(b),...P(cc),...P(a),...P(cc),...P(d)); } };
-      for(const sg of [-1,1]) for(const [za,zb] of [[0.06,0.33],[0.40,0.64]]){
+      for(const sg of [-1,1]) for(const [za,zb] of [[0.06,0.33],[0.48,0.78]]){
         const N=10, yT0=0.925, yB0=0.80, r=0.02;
         for(let i=0;i<N;i++){ const z0=za+(zb-za)*i/N, z1=za+(zb-za)*(i+1)/N, x0=sg*(xin(z0)-0.045), x1=sg*(xin(z1)-0.045), b0=sg*(xin(z0)-0.085), b1=sg*(xin(z1)-0.085);   /* hangs tilted towards the pilot, clear of the frame */
           const lo0=yB0+(i===0?r:0), lo1=yB0+(i===N-1?r:0);   /* rounded lower corners (a cut, enough at this size) */
@@ -208,7 +208,7 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch(CF3?CF3.shell:(TEST3?'models/a320-shell-test.bin?v=7':'models/a320-shell.bin?v=31')).then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:(TEST3?'models/a320-shell-test.bin?v=7':'models/a320-shell.bin?v=32')).then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
