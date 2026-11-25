@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Radio drills · NORDAP</title>
+<title>Radio · NORDAP</title>
 <meta name="description" content="Radio trainer with EASA and ICAO phraseology: talk to the controller by voice or keyboard, VFR and IFR from gate to gate, emergencies and basics. Every readback is checked element by element, with the rule behind it.">
 <link rel="canonical" href="https://nordap.eu/radio-drills">
 <meta property="og:type" content="website">
@@ -34,6 +34,13 @@
 .alc .go{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .alc .go p{margin:0;font-size:14px;color:var(--ink-2);flex:1 1 260px}
 @media (max-width:640px){.alc .row{grid-template-columns:minmax(0,1fr)}}
+.rhub{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0 0}
+.rh{display:flex;flex-direction:column;gap:5px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg,6px);padding:14px 15px;color:var(--ink);text-decoration:none;min-height:44px}
+.rh:hover{border-color:var(--accent)}.rh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rh b{font-size:16px}.rh span{font-size:13.5px;color:var(--ink-2);line-height:1.4;flex:1}.rh em{font-style:normal;font-size:13.5px;font-weight:600;color:var(--accent)}
+.rh em::after{content:" →"}
+@media (max-width:900px){.rhub{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.rhub{grid-template-columns:minmax(0,1fr)}.rh span{display:none}.rh{flex-direction:row;align-items:center;justify-content:space-between}}
 .rt-qrow{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .rt-qrow .lnk{font-size:14px}
 .rt-path-note{margin:-6px 0 0;font-size:14.5px;color:var(--ink-2)}
@@ -311,17 +318,23 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
 </style>
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
-<body data-title="Radio drills">
-<script src="site.js?v=141"></script>
+<body data-title="Radio">
+<script src="site.js?v=142"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
       <div class="eyebrow">NORDAP · Training</div>
-      <h1>Radio drills</h1>
-      <p>Talk to the controller by voice or keyboard, from the first radio check to a full IFR flight. Every call is checked element by element, with the correct readback and the rule behind it. No account and no AI needed.</p>
+      <h1>Radio</h1>
+      <p>Everything for the radio in one place: practise your calls with a controller, fly a whole trip, look up the phraseology and test yourself. EASA SERA, by voice or keyboard, free.</p>
     </div>
     <div class="hright"></div>
   </header>
+  <div class="rhub" aria-label="Radio">
+    <a class="rh" href="#trainer"><b>Practise calls</b><span>Lessons from the phonetic alphabet to IFR, emergencies and A320 crew, with a live airport.</span><em>Start</em></a>
+    <a class="rh" href="radio.html"><b>Fly a whole trip</b><span>DA42 gate to gate: flows, checklists, briefings and every radio call in the right order.</span><em>Open</em></a>
+    <a class="rh" href="#ref"><b>Look it up</b><span>Phraseology, what to read back, conditional clearances and the Norwegian specifics.</span><em>Read</em></a>
+    <a class="rh" href="#quiz"><b>Test yourself</b><span>A short test on the rules, with the reason behind each answer.</span><em>Take the test</em></a>
+  </div>
   <nav class="snav" aria-label="Sections"><a href="#trainer">Trainer</a><a href="#ref">Phraseology</a><a href="#norway">Norway</a><a href="#quiz">Test yourself</a><a href="#sources">Sources</a></nav>
 
   <section class="card" id="trainer" data-ai aria-label="Radio trainer">
@@ -492,7 +505,12 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
 const {el,quiz,shuffle}=LAB;
 LAB.add({},{
  'Radio Drills':'Radiodriller','Beginner':'Nybegynner','Intermediate':'Middels','Check-ready':'Klar for sjekk',
- 'NORDAP · Training':'NORDAP · Trening','Radio drills':'Radiodriller',
+ 'NORDAP · Training':'NORDAP · Trening','Radio drills':'Radiodriller','Radio':'Radio',
+ 'Everything for the radio in one place: practise your calls with a controller, fly a whole trip, look up the phraseology and test yourself. EASA SERA, by voice or keyboard, free.':'Alt om radio på ett sted: øv på oppkallene dine med en flygeleder, fly en hel tur, slå opp fraseologien og test deg selv. EASA SERA, med stemme eller tastatur, gratis.',
+ 'Practise calls':'Øv på oppkall','Lessons from the phonetic alphabet to IFR, emergencies and A320 crew, with a live airport.':'Leksjoner fra det fonetiske alfabetet til IFR, nødsituasjoner og A320-besetning, med live flyplass.','Start':'Start',
+ 'Fly a whole trip':'Fly en hel tur','DA42 gate to gate: flows, checklists, briefings and every radio call in the right order.':'DA42 gate to gate: flows, sjekklister, briefinger og hvert radiooppkall i riktig rekkefølge.','Open':'Åpne',
+ 'Look it up':'Slå opp','Phraseology, what to read back, conditional clearances and the Norwegian specifics.':'Fraseologi, hva som skal leses tilbake, betingede klareringer og det som er spesielt for Norge.','Read':'Les',
+ 'A short test on the rules, with the reason behind each answer.':'En kort test på reglene, med begrunnelsen bak hvert svar.','Take the test':'Ta testen',
  'Talk to the controller by voice or keyboard, from the first radio check to a full IFR flight. Every call is checked element by element, with the correct readback and the rule behind it. No account and no AI needed.':'Snakk med flygelederen med stemme eller tastatur, fra den første radiosjekken til en hel IFR-tur. Hvert oppkall sjekkes element for element, med riktig tilbakelesing og regelen bak. Du trenger verken konto eller AI.',
  'Trainer':'Trener','Phraseology':'Fraseologi','Norway':'Norge','Test yourself':'Test deg selv','What do you want to practise?':'Hva vil du øve på?','How it works':'Slik virker det','Work through it in order, or jump to what you need.':'Gå gjennom i rekkefølge, eller hopp til det du trenger.','Level':'Nivå',
  'Voice and settings':'Stemme og innstillinger','Your callsign':'Kallesignalet ditt','Controller speed':'Flygelederens tempo',
