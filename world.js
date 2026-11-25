@@ -17,7 +17,7 @@ const W={ready:false, loaded:{}, meta:null};
 const LV=['far','mid','near'];
 let lev={}, apt=null, group=null, terrain=null, tmat=null, sky=null, lights=null, bldg=null, inst=null, instAttr=null;
 let shdCv=null, shdTex=null, casters=[], FLEETI=[], fleetMats=[], TRAF={}, tlights=null, detailTex=null, aptTex=null, digitTex=null, waterT=0, trees=null, treeAttr=null, treeBuf=null;
-let TREE_R=1000;                                  // 3D trees out to this distance (m); the forest canopy takes over beyond
+let TREE_R=1000, CARS_R=3200, carsMesh=null;                                  // 3D trees out to this distance (m); the forest canopy takes over beyond
 const GRID=16;                                   // quads per patch side
 const P0=160;                                    // finest patch size (m) -> 10 m vertex spacing
 const NLEV=11;                                   // quadtree levels: root = 160*2^10 = 163.84 km
@@ -561,12 +561,13 @@ W.update=function(camera,dt){
   waterT+=dt||0.016; tmat.uniforms.wt.value=waterT;
   if(sky){ sky.position.copy(c); sky.material.uniforms.time.value=waterT; }
   for(const m of [bldg&&bldg.material,lights&&lights.material,trees&&trees.material,...fleetMats]) if(m){ m.uniforms.camW.value.copy(c); if(m.uniforms.time) m.uniforms.time.value=waterT; }
+  if(carsMesh) carsMesh.visible=Math.hypot(c.x+300,-c.z-500)<CARS_R&&c.y<1200;          // cars: only near the airport (they are sub-pixel further out)
   if(trees) updateTrees(c);
   updateTraffic(W.__t!==undefined?W.__t+(waterT-(W.__t0??(W.__t0=waterT))):waterT);
   if(lights) lights.material.uniforms.pxs.value=(G.innerHeight||800)/(2*Math.tan((camera.fov||60)*Math.PI/360));
 };
 W.stats=()=>({patches:nI,tris,trees:trees?trees.geometry.instanceCount:0,levels:Object.keys(W.loaded)});
-W.quality=function(q){ TREE_R=q==='low'?550:q==='high'?1400:1000; if(tmat) tmat.uniforms.treeR.value=lev.near?TREE_R:0; if(trees){ trees.material.uniforms.treeR.value=TREE_R; lastTC=null; } };
+W.quality=function(q){ TREE_R=q==='low'?550:q==='high'?1400:1000; CARS_R=q==='low'?1500:q==='high'?4000:3200; if(tmat) tmat.uniforms.treeR.value=lev.near?TREE_R:0; if(trees){ trees.material.uniforms.treeR.value=TREE_R; lastTC=null; } };
 
 /* ---------- 3D trees near the camera (instanced cones from the lidar canopy) ---------- */
 const TILE=250, MAXT=30000; const TC=new Map(); let lastTC=null;
@@ -853,21 +854,23 @@ function buildBuildings(){
     casters.push({p:[L(-0.25,-5.5),L(-0.25,5.5),L(-1.6,5.5),L(-1.6,-5.5)],h:2.4,z0:2.2}); casters.push({p:[L(1.6,-0.5),L(1.6,0.5),L(-6.6,0.15),L(-6.6,-0.15)],h:1.9,z0:0.8}); };
   const occ=['2','4','5','11','13','15'];
   let ci=0; for(const st of (apt.rwy.stands||[])){ if(occ.includes(st.id)) airliner(st,ci++); if(st.id==='33'||st.id==='34') ga(st); }
-  // parked cars found in the lidar (car parks only), simple body + glasshouse + wheels
+  // parked cars found in the lidar (car parks only), simple body + glasshouse; their own mesh, hidden from a distance
+  const carA=P.length/3;
   { const CARC=[[0.84,0.84,0.83],[0.07,0.07,0.08],[0.58,0.59,0.61],[0.32,0.33,0.35],[0.12,0.17,0.28],[0.42,0.10,0.10],[0.17,0.22,0.20],[0.62,0.60,0.55]], GLC=[0.07,0.08,0.10], TY=[0.05,0.05,0.05];
     for(const cr of (apt.cars||[])){ const g=cr[2]; const o=[cr[0],cr[1],g], f=[Math.cos(cr[3]),Math.sin(cr[3])], col=CARC[cr[4]%8];
       const L=4.2+((cr[4]*7)%5)*0.12;
       obox(o,f,0,0,0.55,L,1.76,0.72,col); obox(o,f,-0.2,0,1.15,L*0.46,1.52,0.50,GLC); obox(o,f,-0.2,0,1.42,L*0.40,1.46,0.05,col);
       casters.push({p:[[cr[0]+f[0]*L/2+f[1]*0.9,cr[1]+f[1]*L/2-f[0]*0.9],[cr[0]+f[0]*L/2-f[1]*0.9,cr[1]+f[1]*L/2+f[0]*0.9],[cr[0]-f[0]*L/2-f[1]*0.9,cr[1]-f[1]*L/2+f[0]*0.9],[cr[0]-f[0]*L/2+f[1]*0.9,cr[1]-f[1]*L/2-f[0]*0.9]],h:1.5}); } }
+  const carB=P.length/3;
   // roof plant on the larger airport buildings
   apt.buildings.forEach((b,bi)=>{ if(!b.k||b.p.length<4) return; let cx=0,cy=0; for(const q of b.p){ cx+=q[0]; cy+=q[1]; } cx/=b.p.length; cy/=b.p.length;
     let area=0; for(let i=0;i<b.p.length;i++){ const a=b.p[i],c=b.p[(i+1)%b.p.length]; area+=a[0]*c[1]-c[0]*a[1]; } area=Math.abs(area)/2; if(area<500) return;
     const n=Math.min(4,1+Math.floor(area/1500)); const f=[1,0];
     for(let k=0;k<n;k++){ const da=((bi*37+k*53)%17-8)*0.9, db=((bi*11+k*29)%13-6)*0.9; obox([cx,cy,b.e],f,da,db,0.9,4.0,2.6,1.8,[0.62,0.63,0.64]); } });
-  const g=new (T().BufferGeometry)();
-  g.setAttribute('position',new (T().Float32BufferAttribute)(P,3)); g.setAttribute('normal',new (T().Float32BufferAttribute)(Nn,3));
-  g.setAttribute('color',new (T().Float32BufferAttribute)(Cc,3)); g.setAttribute('bk',new (T().Float32BufferAttribute)(K,2));
-  g.computeBoundingSphere();
+  const geo=(ranges)=>{ const gg=new (T().BufferGeometry)(), cut=(A,n)=>{ const out=[]; for(const [a,b] of ranges) for(let i=a*n;i<b*n;i++) out.push(A[i]); return out; };
+    gg.setAttribute('position',new (T().Float32BufferAttribute)(cut(P,3),3)); gg.setAttribute('normal',new (T().Float32BufferAttribute)(cut(Nn,3),3));
+    gg.setAttribute('color',new (T().Float32BufferAttribute)(cut(Cc,3),3)); gg.setAttribute('bk',new (T().Float32BufferAttribute)(cut(K,2),2)); gg.computeBoundingSphere(); return gg; };
+  const nV=P.length/3, g=geo([[0,carA],[carB,nV]]), gCars=carB>carA?geo([[carA,carB]]):null;
   const m=new (T().ShaderMaterial)({uniforms:{camW:{value:new (T().Vector3)()},sunDir:{value:new (T().Vector3)()},sunCol:{value:new (T().Color)()},skyCol:{value:new (T().Color)()},horCol:{value:new (T().Color)()},amb:{value:0.5},fogD:{value:0},expo:{value:1},night:{value:0}},
     vertexShader:`attribute vec3 color; attribute vec2 bk; varying vec3 vC; varying vec3 vN; varying vec3 vW; varying vec2 vK; void main(){ vC=color; vN=normal; vW=position; vK=bk; gl_Position=projectionMatrix*viewMatrix*vec4(position,1.0); }`,
     fragmentShader:`${COMMON} uniform vec3 camW; uniform float night; varying vec3 vC; varying vec3 vN; varying vec3 vW; varying vec2 vK;
@@ -930,6 +933,7 @@ function buildBuildings(){
         if(kind>2.5&&kind<3.5) col+=vec3(1.0,0.86,0.66)*night*3.0;                    // underside of the mast heads
         gl_FragColor=vec4(tone(aerial(col,vW,camW)),1.0); }`});
   bldg=new (T().Mesh)(g,m); bldg.name='buildings'; group.add(bldg);
+  if(gCars){ carsMesh=new (T().Mesh)(gCars,m); carsMesh.name='cars'; group.add(carsMesh); }
 }
 
 /* ---------- parked aircraft (fleet.js): one instanced draw per type ---------- */

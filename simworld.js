@@ -36,7 +36,8 @@ function start(){
     W.tod(OTW.tod()==='dusk'?'dusk':OTW.tod()==='night'?'night':'day');
     // the flight model sees the real terrain, over the runway datum
     if(G.TERRAIN){ const orig=G.TERRAIN.height; G.TERRAIN.height=(N,E)=>{ const p=toEnto(N,E), h=W.height(p[0],p[1]); return isFinite(h)?h-datum(p[0],p[1]):orig(N,E); }; }
-    ready=true; SW.ready=true;
+    W.quality((OTW.lvl||0)===2?'low':(OTW.lvl||0)?'med':'high');
+    ready=true; SW.ready=true; mapStart();
   }).catch(e=>{ console.warn('simworld: ENTO world not loaded',e); });
 }
 /* called by otw.js once the camera is placed in the simulator frame: move it into the ENTO frame, update the world */
@@ -49,6 +50,30 @@ OTW.xf=function(cam,S,eye){
   W.update(cam,dt);
 };
 OTW.onTod=function(k){ if(ready) W.tod(k==='dusk'?'dusk':k==='night'?'night':'day'); };
+/* ---------- the moving map's terrain (glass.js, G.TERRAIN.mapImages): drawn from the real heights, a few rows per idle slice ---------- */
+const MAPS=[{R:25000,PX:600},{R:90000,PX:600}]; let mapsDone=null;
+function mapStart(){ if(!G.TERRAIN||!G.document) return; const T=G.TERRAIN, col=T.color, mi0=T.mapImages;
+  T.mapImages=()=>mapsDone||mi0();                                     // the old images until the new ones are ready
+  const out=[]; let k=0, j=0, d=null;
+  const idle=f=>setTimeout(f,40);                                      // not requestIdleCallback: a busy simulator page never goes idle
+  const slice=()=>{ const t0=performance.now();
+    while(k<MAPS.length&&performance.now()-t0<6){ const M=MAPS[k]; if(!d) d=new Uint8ClampedArray(M.PX*M.PX*4);
+      const sp=2*M.R/M.PX, kx=Math.max(1,Math.round(300/sp)), row=new Float32Array(M.PX+kx);
+      for(let n=0;n<6&&j<M.PX;n++,j++){ const N=M.R-(j+0.5)*sp;
+        for(let i=0;i<M.PX+kx;i++){ const p=toEnto(N,-M.R+(i+0.5)*sp); row[i]=W.height(p[0],p[1]); }
+        for(let i=0;i<M.PX;i++){ const h=row[i], dx=(row[i+kx]-h)*300/(kx*sp);
+        const sea=!(h>0.6); let [r,g,b]=col(sea?-5:h); if(!sea){ const sh=Math.max(-25,Math.min(25,-dx*0.25)); r+=sh; g+=sh; b+=sh; }
+        const o=(j*M.PX+i)*4; d[o]=r*0.55; d[o+1]=g*0.55; d[o+2]=b*0.55; d[o+3]=255; } }
+      if(j>=M.PX){ const c=document.createElement('canvas'); c.width=c.height=M.PX; const g=c.getContext('2d'), id=g.createImageData(M.PX,M.PX); id.data.set(d); g.putImageData(id,0,0);
+        out.push({canvas:c,R:M.R,PX:M.PX}); k++; j=0; d=null; } }
+    if(k<MAPS.length) idle(slice); else mapsDone=out; };
+  SW.mapState=()=>({k,j,done:!!mapsDone}); idle(slice); }
+/* ---------- A320 (own flight model, a320fm.js): radio altitude and ground contact over the real terrain ---------- */
+function hookA320step(){ const F=G.A320FM; if(!F||F.__swStep) return; F.__swStep=true; const s0=F.step;
+  F.step=function(M,dt,sys){ const r=s0.apply(this,arguments);
+    if(ready&&M&&!M.gnd&&!M.crash&&G.TERRAIN){ const th=G.TERRAIN.height(M.N,M.E);
+      if(th>0){ M.ra=Math.max(0,M.h-th); if(th>5&&M.h<=th){ M.crash='Controlled flight into terrain'; M.h=th; } } }
+    return r; }; }
 const init0=OTW.init;
 OTW.init=function(c){ const r=init0.apply(this,arguments); if(r) start(); return r; };
 const q0=OTW.quality;
@@ -78,7 +103,7 @@ function hookA320(){ const F=G.A320FM; if(!F||F.__sw) return; F.__sw=true; const
 /* the flight models may load after this file: hook them the moment they are defined */
 function when(name,hook){ if(G[name]){ hook(); return; } let v;
   try{ Object.defineProperty(G,name,{configurable:true,enumerable:true,get:()=>v,set:x=>{ Object.defineProperty(G,name,{value:x,writable:true,enumerable:true,configurable:true}); hook(); }}); }catch(e){} }
-when('FDM',hookFDM); when('A320FM',hookA320);
+when('FDM',hookFDM); when('A320FM',()=>{ hookA320(); hookA320step(); });
 /* stand 3 at Torp in the simulator frame: N, E, heading (deg) */
 const SW={ready:false, toSim(Ee,Ne){ return {N:Ee*U[0]+Ne*U[1], E:Ee*V[0]+Ne*V[1]}; },
   stand(id){ if(!ready) return null; const st=(W.airport.rwy.stands||[]).find(x=>x.id===String(id)); if(!st) return null; const p=SW.toSim(st.E,st.N);
