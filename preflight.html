@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Preflight · NORDAP</title>
-<meta name="description" content="Preparation on the ground in one place: the briefing pack for the paperwork and Route Explorer to see the route, with weather, a navigation log, sun and twilight times and kneeboard sheets.">
+<meta name="description" content="Preparation on the ground in one place: the briefing pack for the paperwork and Route Explorer to see the route, with weather, the aerodrome AIP, a navigation log and kneeboard sheets.">
 <link rel="canonical" href="https://nordap.eu/preflight">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NORDAP">
 <meta property="og:title" content="Preflight · NORDAP">
-<meta property="og:description" content="Preparation on the ground in one place: the briefing pack for the paperwork and Route Explorer to see the route, with weather, a navigation log, sun and twilight times and kneeboard sheets.">
+<meta property="og:description" content="Preparation on the ground in one place: the briefing pack for the paperwork and Route Explorer to see the route, with weather, the aerodrome AIP, a navigation log and kneeboard sheets.">
 <meta property="og:url" content="https://nordap.eu/preflight">
 <meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
 <meta property="og:image:width" content="1200">
@@ -452,7 +452,7 @@
   .pf .th-feat.th-route{grid-column:auto}
   .pf .th-feat img{object-position:85% 30%}
 }
-.pf .th-s1 img,.pf .th-s3 img{object-position:0 0!important}
+.pf .th-s1 img,.pf .th-s2 img,.pf .th-s3 img,.pf .th-s4 img{object-position:0 0!important}
 
 /* how a preparation goes: four steps in a row, each a link, above the tiles */
 .pf .pf-flow{list-style:none;margin:0 0 14px;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;background:var(--sheet,#fff);border:1px solid var(--rl);border-radius:10px;overflow:hidden;counter-reset:s}
@@ -507,7 +507,7 @@
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
 <body data-title="Preflight">
-<script src="site.js?v=139"></script>
+<script src="site.js?v=140"></script>
 <main class="tv pf" id="main">
 
   <div class="th">
@@ -535,14 +535,14 @@
           <div class="th-go"><a class="th-btn" href="route.html" data-tx="rGo2">Open the map</a></div></div>
       </div>
       <a class="th-t th-s1" href="weather.html"><img src="img/preflight/wx-640.webp" srcset="img/preflight/wx-640.webp 640w, img/preflight/wx-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The METAR and TAF for Oslo Gardermoen, with a VFR status badge." data-alt-no="METAR og TAF for Oslo Gardermoen, med et VFR-merke." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tWx">Weather</b><span data-tx="tWxL">METAR, TAF and forecast.</span></div></a>
-      <a class="th-t th-s2" href="sun.html"><img src="img/preflight/sun-640.webp" srcset="img/preflight/sun-640.webp 640w, img/preflight/sun-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="Civil twilight, sunrise and sunset at Torp, and the day as a bar from night to daylight." data-alt-no="Sivilt tussmørke, soloppgang og solnedgang på Torp, og døgnet som en stolpe fra natt til dagslys." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tSu">Sun and twilight</b><span data-tx="tSuL">When night begins.</span></div></a>
-      <a class="th-t th-s3" href="planning.html"><img src="img/preflight/nav-640.webp" srcset="img/preflight/nav-640.webp 640w, img/preflight/nav-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The navigation log with four legs and the wind triangle for the first leg." data-alt-no="Navigasjonsloggen med fire etapper og vindtrekanten for den første." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tNl">Navigation log</b><span data-tx="tNlL">Headings, times, fuel.</span></div></a>
-      <a class="th-t th-s4" href="sheets.html"><img src="img/preflight/sheets-640.webp" srcset="img/preflight/sheets-640.webp 640w, img/preflight/sheets-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="Two A5 kneeboard sheets: the VFR operational flight plan and the IFR kneeboard." data-alt-no="To A5-kneeboardark: VFR operativ flygeplan og IFR-kneeboardet." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tKb">Kneeboards</b><span data-tx="tKbL">VFR, IFR and risk sheets.</span></div></a>
+      <a class="th-t th-s2" href="prep.html#minima"><img src="img/preflight/minima-640.webp" srcset="img/preflight/minima-640.webp 640w, img/preflight/minima-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The planning minima page of an IFR briefing pack: destination and alternates checked against the forecast." data-alt-no="Planleggingsminima i en IFR-briefingpakke: destinasjon og alternativer sjekket mot prognosen." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tMi">Planning minima</b><span data-tx="tMiL">EASA alternates.</span></div></a>
+      <a class="th-t th-s3" href="aerodrome.html"><img src="img/preflight/ad-640.webp" srcset="img/preflight/ad-640.webp 640w, img/preflight/ad-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="Torp (ENTO): the link to the AIP and charts, NOTAM, the runways with the wind, and the frequencies." data-alt-no="Torp (ENTO): lenken til AIP og kart, NOTAM, banene med vinden, og frekvensene." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tAd">Aerodrome &amp; AIP</b><span data-tx="tAdL">AIP, charts, NOTAM.</span></div></a>
+      <a class="th-t th-s4" href="planning.html"><img src="img/preflight/nav-640.webp" srcset="img/preflight/nav-640.webp 640w, img/preflight/nav-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The navigation log with four legs and the wind triangle for the first leg." data-alt-no="Navigasjonsloggen med fire etapper og vindtrekanten for den første." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tNl">Navigation log</b><span data-tx="tNlL">Headings, times, fuel.</span></div></a>
       <aside class="th-rail" aria-label="Your preparation" data-aria-no="Din forberedelse">
         <section class="th-cont"><h2 data-tx="cC">Continue</h2><div id="pfCont"><a href="prep.html"><img src="img/preflight/pack-thumb.webp" alt=""><div><b data-tx="cN">Briefing pack</b><span data-tx="cS">New here? Start a pack for your next flight.</span></div><em data-tx="cGo">Start →</em></a></div></section>
         <section><h2 data-tx="wH">Weather now</h2><form class="th-wx" action="weather.html" method="get" role="search"><label class="vh" for="pfWx" data-tx="wL">ICAO code</label><input id="pfWx" name="icao" type="text" maxlength="4" autocomplete="off" spellcheck="false" placeholder="ICAO code, e.g. ENGM" data-ph-no="ICAO-kode, f.eks. ENGM" pattern="[A-Za-z]{4}" required><button type="submit" data-tx="wGo">Show</button></form><p class="th-wxh" data-tx="wP">METAR, TAF, SIGMET and the freezing level.</p></section>
         <section><h2 data-tx="qH">Quick start</h2><ul class="th-qs">
-          <li><a href="prep.html#minima"><span class="tg t2">IFR</span><b data-tx="q2">Planning minima</b></a></li>
+          <li><a href="prep.html#rwy"><span class="tg t2">RWY</span><b data-tx="q2">Runway performance</b></a></li>
           <li><a href="prep.html#fuel"><span class="tg t5" data-tx="qFu">Fuel</span><b data-tx="q3">Fuel plan</b></a></li>
           <li><a href="prep.html#mb"><span class="tg t3">M&amp;B</span><b data-tx="q4">Mass and balance</b></a></li>
           <li><a href="sheets.html#risk"><span class="tg t4" data-tx="qRk">Risk</span><b data-tx="q5">Risk assessment</b></a></li>
@@ -552,9 +552,9 @@
       </aside>
     </div>
     <nav class="th-ac" aria-label="More for preflight" data-aria-no="Mer til preflight">
-      <a href="essentials.html"><img src="img/preflight/sheets-thumb.webp" alt=""><div><b data-tx="m1">Essentials</b><span data-tx="m1s">VFR and IFR</span></div></a>
       <a href="outlook.html"><img src="img/preflight/wx-thumb.webp" alt=""><div><b data-tx="m2">Forecast</b><span data-tx="m2s">Up to 14 days</span></div></a>
-      <a href="prep.html#met"><img src="img/preflight/pack-thumb.webp" alt=""><div><b data-tx="m3">Met page</b><span data-tx="m3s">In the pack</span></div></a>
+      <a href="essentials.html"><img src="img/preflight/ess-thumb.webp" alt=""><div><b data-tx="m1">Essentials</b><span data-tx="m1s">VFR and IFR</span></div></a>
+      <a href="sheets.html"><img src="img/preflight/sheets-thumb.webp" alt=""><div><b data-tx="m3">Kneeboards</b><span data-tx="m3s">VFR, IFR and risk sheets</span></div></a>
       <a class="all" href="#pack" data-tx="mAll">Both parts in detail ↓</a>
     </nav>
   </div>
@@ -643,7 +643,7 @@
     </div>
     <ul class="tv-more-l">
       <li><a href="weather.html"><span class="t"><b data-tx="t1">Weather</b></span><span class="d" data-tx="t1d">METAR, TAF and SIGMET now, the forecast up to 14 days, and every report decoded line by line.</span><span class="ar" aria-hidden="true">→</span></a></li>
-      <li><a href="sun.html"><span class="t"><b data-tx="t3">Sun and twilight</b></span><span class="d" data-tx="t3d">Sunrise, sunset and civil twilight at any European aerodrome, local time and UTC. Part of Weather.</span><span class="ar" aria-hidden="true">→</span></a></li>
+      <li><a href="aerodrome.html"><span class="t"><b data-tx="t3">Aerodrome and AIP</b></span><span class="d" data-tx="t3d">Type an ICAO code: the AIP and charts in force today, NOTAM, runways with the wind, frequencies and daylight.</span><span class="ar" aria-hidden="true">→</span></a></li>
       <li><a href="planning.html"><span class="t"><b data-tx="t2">Navigation log</b></span><span class="d" data-tx="t2d">The wind triangle per leg, fuel, and the ICAO flight plan format.</span><span class="ar" aria-hidden="true">→</span></a></li>
       <li><a href="sheets.html"><span class="t"><b data-tx="t4">Kneeboard sheets</b></span><span class="d" data-tx="t4d">Blank A5 sheets: the VFR operational flight plan, the IFR kneeboard and a risk assessment.</span><span class="ar" aria-hidden="true">→</span></a></li>
       <li><a href="essentials.html"><span class="t"><b data-tx="t5">VFR and IFR essentials</b></span><span class="d" data-tx="t5d">The rules and numbers you look up most, on one page.</span><span class="ar" aria-hidden="true">→</span></a></li>
@@ -662,12 +662,12 @@ LAB.tx({
  rB1:'Høyeste terreng under ruten', rB2:'Fly den i 3D over satellittbilder', rB3:'Én knapp sender den til pakken',
  fK:'For hver flyging', fH:'Briefingpakke', fP:'Alt for én flyging, side for side.', fGo:'Åpne pakken', fAlt:'Kneeboard-ark',
  rK:'Valgfritt · Se ruten', rH:'Route Explorer', rP:'Se hva som ligger langs linjen, før du flyr den.', rGo2:'Åpne kartet',
- tWx:'Vær', tWxL:'METAR, TAF og varsel.', tNl:'Navigasjonslogg', tNlL:'Kurser, tider, drivstoff.', tSu:'Sol og tussmørke', tSuL:'Når natten begynner.', tKb:'Kneeboards', tKbL:'VFR-, IFR- og risikoark.',
+ tWx:'Vær', tWxL:'METAR, TAF og varsel.', tNl:'Navigasjonslogg', tNlL:'Kurser, tider, drivstoff.', tMi:'Planleggingsminima', tMiL:'EASA-alternativer.', tAd:'Flyplass og AIP', tAdL:'AIP, kart, NOTAM.', tKb:'Kneeboards', tKbL:'VFR-, IFR- og risikoark.',
  cC:'Fortsett', cN:'Briefingpakke', cS:'Ny her? Start en pakke for neste flyging.', cGo:'Start →',
  wH:'Været nå', wL:'ICAO-kode', wGo:'Vis', wP:'METAR, TAF, SIGMET og frysenivået.',
- qH:'Hurtigstart', qRt:'Rute', q1:'Sjekk terrenget', q2:'Planleggingsminima', qFu:'Drivstoff', q3:'Drivstoffplan', q4:'Masse og balanse', qRk:'Risiko', q5:'Risikovurdering',
+ qH:'Hurtigstart', qRt:'Rute', q1:'Sjekk terrenget', q2:'Rullebaneytelse', qFu:'Drivstoff', q3:'Drivstoffplan', q4:'Masse og balanse', qRk:'Risiko', q5:'Risikovurdering',
  aL:'Spør Flight Intelligence', aGo:'Spør',
- m1:'Det viktigste', m1s:'VFR og IFR', m2:'Værvarsel', m2s:'Opptil 14 dager', m3:'Værsiden', m3s:'I pakken', mAll:'Begge delene i detalj ↓',
+ m1:'Det viktigste', m1s:'VFR og IFR', m2:'Værvarsel', m2s:'Opptil 14 dager', m3:'Kneeboards', m3s:'VFR-, IFR- og risikoark', mAll:'Begge delene i detalj ↓',
  pH:'Briefingpakke', pP:'Papirarbeidet for én flyging, i den rekkefølgen du trenger det, fra forsiden til ATC-flygeplanen.',
  pL:'Start en pakke, velg VFR eller IFR, og fyll den ut side for side. NORDAP regner ut det den kan, du sjekker hvert tall mot AIP, flyhåndboken og den offisielle briefingen, og pakken skrives ut som et hefte til flygingen.',
  pN:'sider å velge mellom: fly, pilot, NOTAM, meteorologi, planleggingsminima, navigasjonslogg, tverrsnitt, rullebaneytelse, stigegradienter, drivstoff, masse og balanse, radiosvikt, risiko og ATC-flygeplanen.',
@@ -690,7 +690,7 @@ LAB.tx({
  tH:'Verktøy for dagen', tP:'Sidene du åpner ved siden av pakken.',
  t1:'Vær', t1d:'METAR, TAF og SIGMET nå, varselet opptil 14 dager frem, og hver melding dekodet linje for linje.',
  t2:'Navigasjonslogg', t2d:'Vindtrekanten per etappe, drivstoff og ICAO-formatet for flygeplanen.',
- t3:'Sol og tussmørke', t3d:'Soloppgang, solnedgang og sivilt tussmørke på enhver europeisk flyplass, i lokal tid og UTC. En del av Vær.',
+ t3:'Flyplass og AIP', t3d:'Skriv en ICAO-kode: AIP og kart som gjelder i dag, NOTAM, baner med vinden, frekvenser og dagslys.',
  t4:'Kneeboard-ark', t4d:'Tomme A5-ark: VFR operativ flygeplan, IFR-kneeboardet og en risikovurdering.',
  t5:'Det viktigste i VFR og IFR', t5d:'Reglene og tallene du slår opp oftest, på én side.',
  note:'Et hjelpemiddel for forberedelse, ikke en kilde. Sjekk hvert tall mot AIP, flyhåndboken, offisielt vær og NOTAM, og operatørens prosedyrer.', noteGo:'Datakilder og lisenser'
