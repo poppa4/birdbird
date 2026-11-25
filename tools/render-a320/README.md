@@ -133,3 +133,33 @@ corner; the page's dark lining shows there instead) and loose strips (parts of a
 gives each surface kind its own grain and its own sheen towards the windshield light (lining stipple paint, satin panels
 and console paint, matt black frames and breakers, glossy smoked visors, seat fabric, carpet, leather); `neo_look.MATID`.
 Order: neo_clean.py -> bake2.py -> seals.py.
+
+## Standard cockpit: FlightGear below, the owner's upper shell above (2026-11-25, evening)
+
+The standard cockpit is the FlightGear structure again (`models/a320-shell.bin`; the full owner structure stays on `?test=1`).
+Its weak part was everything above the windows (loose rails, dark slabs under the overhead, a hand-built lining). That part
+now comes from the owner's Blender flight deck: ceiling lining with its panel joints, the header ring on the window tops,
+ceiling lights, the visor knobs with their arms and stowed visors, the handle recesses. Tools in `hybrid/`:
+
+- `export_full.py` (run with Blender's Python): the Blender model as `full.npz` (vertices, triangles, object of each triangle).
+  The exported frame is mirrored left-right; `hyb.py` flips x, so the circuit-breaker wall is on the right as in the aircraft.
+- `warp.py`: the two models differ by centimetres (the Blender deck is wider and shorter, its window tops lower), so the upper
+  shell is carried over by a smooth map between two plan curves seen from a vertical axis between the seats: the border of
+  the overhead panel and the line of the window tops (measured in both models); heights are shifted so the lining meets the
+  page's overhead plane and the ring sits 15 mm into the window tops.
+- `hyb.py`: which Blender parts go in, which FlightGear parts go out (header pieces, the ceiling up to the rear wall, loose bits
+  that hung on the old windshield beam, the pale strips of the old breaker wall), trim panels behind the overhead's cut front
+  corners, one clean band closing the wall above the side-window tops.
+- `build.py`: straight cuts (faces are clipped, not dropped whole: level under the ring round the side windows, and the slanted
+  wall pieces beyond the aft window), crease-split normals, light per vertex (`light.py`: daylight through the windows, the room's
+  bounce where a surface is open to the room, contact shade), lining paint taken from the FlightGear window posts.
+- `rc.py`: quick ray-cast preview from either seat without a browser (`rc.py out.png L|R yaw pitch fov files...`).
+- `export_occ.py` (Playwright, local server): the page's other meshes (panels, backstop) as light blockers.
+
+    FG_SHELL=<models/a320-shell.bin of commit 41aa815> NEO_NPZ=full.npz OCC=occ.npy python3 hybrid/build.py ../../models/a320-shell.bin occ.npy
+
+The rear right circuit-breaker panels (120VU: 121VU above, 122VU below) are a picture on two flat polygons:
+`cbscan.py full.npz cb_layout.json` reads the two panel outlines and every breaker (two kinds) from the Blender model,
+`cbwall.py cb_layout.json ../../models/a320-cb-wall.jpg cb.json <shell> occ.npy` draws them (blue-grey plates, black breakers,
+green collars on the second kind, row letters, column numbers, name plates, fasteners) and bakes the wall's light;
+the polygons in `cb.json` are pasted into `a320-3d.js` (CBP).

@@ -109,25 +109,15 @@ function init(o){
      the panel planes), so no sky shows through the roof or the corners. The windows stay open. ---- */
   const TEST3=!CF3&&/[?&]test=1/.test(location.search);   /* the structure from the owner's model (models/a320-shell-test.bin, cleaned by tools/render-a320/neo_clean.py); standard is the earlier FlightGear structure again (owner preferred it); ?test=1 shows the trial structure */
   const BACK=new THREE.Group(); scene.add(BACK);
-  /* the circuit-breaker wall behind the right seat: the model has only pale strips there. A drawn panel (sub-panels with a frame,
-     lettered rows and numbered columns of breakers) lies 12 mm in front of that wall; the roof lining in front of it hides
-     the part above the slanted ceiling. One small canvas, one draw call. */
-  if(!TEST3){ try{ const CW=1024, CH=840, cv=document.createElement('canvas'); cv.width=CW; cv.height=CH; const c=cv.getContext('2d');
-      c.fillStyle='#566579'; c.fillRect(0,0,CW,CH);
-      const sub=(x,y,w,h,rows,cols,r0)=>{ c.fillStyle='#3d4a5d'; c.fillRect(x,y,w,h); c.strokeStyle='#8492a6'; c.lineWidth=2; c.strokeRect(x+1,y+1,w-2,h-2);
-        c.fillStyle='#222a35'; for(const [sx,sy] of [[x+9,y+9],[x+w-9,y+9],[x+9,y+h-9],[x+w-9,y+h-9]]){ c.beginPath(); c.arc(sx,sy,3.2,0,6.3); c.fill(); }
-        const px=(w-56)/cols, py=(h-34)/rows; c.font='bold 11px Arial,sans-serif'; c.textAlign='center'; c.textBaseline='middle';
-        for(let j=0;j<cols;j++){ c.fillStyle='#d5dbe4'; c.fillText(String(j+1),x+40+px*(j+0.5),y+13); }
-        for(let i=0;i<rows;i++){ const cy=y+24+py*(i+0.5); c.fillStyle='#d5dbe4'; c.fillText(String.fromCharCode(65+r0+i),x+20,cy);
-          c.fillStyle='#4a586c'; c.fillRect(x+34,cy-py*0.42,w-48,2);
-          for(let j=0;j<cols;j++){ const cx=x+40+px*(j+0.5), R=Math.min(px,py)*0.30; if(((i*7+j*13+r0)%17)===0) continue;   /* a few empty positions, as on the aircraft */
-            c.fillStyle='#1b2029'; c.beginPath(); c.arc(cx+1,cy+1.5,R+1.5,0,6.3); c.fill(); c.fillStyle='#8f9aaa'; c.beginPath(); c.arc(cx,cy,R+0.5,0,6.3); c.fill();
-            c.fillStyle='#14171c'; c.beginPath(); c.arc(cx,cy,R*0.80,0,6.3); c.fill(); c.fillStyle='#2e343d'; c.beginPath(); c.arc(cx-R*0.18,cy-R*0.20,R*0.42,0,6.3); c.fill(); } } };
-      sub(14,14,620,250,6,20,0); sub(646,14,364,250,6,11,0); sub(14,276,620,250,6,20,6); sub(646,276,364,250,6,11,6); sub(14,538,996,288,7,32,12);
-      const tx=new THREE.CanvasTexture(cv); tx.anisotropy=Math.min(8,o_R.capabilities.getMaxAnisotropy()); if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tx.encoding=THREE.sRGBEncoding;
-      const X0=0.125, X1=0.88, Y0=0.56, Y1=1.31, Z=1.258, gg=new THREE.BufferGeometry();
-      gg.setAttribute('position',new THREE.BufferAttribute(new Float32Array([X0,Y0,Z, X1,Y0,Z, X1,Y1,Z, X0,Y1,Z]),3)); gg.setAttribute('uv',new THREE.BufferAttribute(new Float32Array([1,0, 0,0, 0,1, 1,1]),2)); gg.setIndex([0,1,2,0,2,3]);   /* seen from the front (looking aft) +x is to the left */
-      const cm=new THREE.Mesh(gg,new THREE.MeshBasicMaterial({map:tx,side:THREE.DoubleSide})); cm.material.color.setScalar(0.82); scene.add(cm); }catch(e){ console.warn('A320 3D breaker wall',e); } }
+  /* the rear right circuit-breaker panels (120VU: 121VU above, 122VU below), behind the right seat: a picture of the two
+     panels with every breaker, drawn from the layout of the owner's Blender flight deck and lit from the cockpit geometry
+     (tools/render-a320/cbwall.py -> models/a320-cb-wall.jpg). Each panel is one flat polygon with its cut corner, 12 mm in
+     front of the model's wall. Vertices: x, y, u, v. */
+  if(!TEST3&&!CF3){ try{ const CBP=[[[0.6787,1.3452,0.3631,0.99898],[0.1224,1.3452,0.99163,0.99898],[0.1195,1.3422,0.9949,0.99503],[0.1152,0.9755,0.9998,0.51755],[0.1181,0.9724,0.99653,0.51359],[0.9412,0.9724,0.06639,0.51359],[0.9441,0.9755,0.06312,0.51755],[0.9441,1.0819,0.06312,0.65609],[0.9438,1.083,0.06353,0.65758],[0.9423,1.0864,0.06517,0.66203],[0.6833,1.3433,0.3578,0.99651]],[[0.1177,0.578,0.99694,0.0],[0.9972,0.578,0.00313,0.0],[0.9998,0.5807,0.00027,0.00346],[0.9998,0.8349,0.00027,0.33448],[0.9983,0.8406,0.0019,0.3419],[0.9463,0.9458,0.06068,0.47896],[0.9427,0.9481,0.06476,0.48193],[0.1177,0.9481,0.99694,0.48193],[0.1152,0.9455,0.9998,0.47846],[0.1152,0.5807,0.9998,0.00346]]], Z=1.258;
+      const tx=new THREE.TextureLoader().load('models/a320-cb-wall.jpg?v=1'); tx.anisotropy=Math.min(8,o_R.capabilities.getMaxAnisotropy()); if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tx.encoding=THREE.sRGBEncoding;
+      const pos=[], uv=[], idx=[]; for(const P of CBP){ const b0=pos.length/3; for(const q of P){ pos.push(q[0],q[1],Z); uv.push(q[2],q[3]); } for(let i=1;i+1<P.length;i++) idx.push(b0,b0+i,b0+i+1); }
+      const gg=new THREE.BufferGeometry(); gg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); gg.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2)); gg.setIndex(idx);
+      scene.add(new THREE.Mesh(gg,new THREE.MeshBasicMaterial({map:tx,side:THREE.DoubleSide}))); }catch(e){ console.warn('A320 3D breaker wall',e); } }
   const wT0=0.90, wZa=-0.70; // top of the side windows, their front edge
   { const bm=new THREE.MeshBasicMaterial({color:0x6d7a8a,side:THREE.DoubleSide}), bp=[], q4=(a,b,c,d)=>bp.push(a,b,c,a,c,d), d=0.14 /* well outside the structure: a backstop that lies in a wall of the model flickers through it */, X2=XW+d, cy=(z)=>ceilAt(0,z)+d;
     const XR=0.80; q4(v3(-XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zF-0.05),zF-0.05),v3(XR,cy(zB),zB+d),v3(-XR,cy(zB),zB+d));   /* runs back to the backstop's back wall (a slit of sky showed between them) */   // roof (inboard of the side windows)
@@ -136,47 +126,22 @@ function init(o){
        back wall and the side lining: a second back wall just behind all of it, so that slit shows lining, not sky */
     if(TEST3) q4(v3(-1.86,yF,1.66),v3(1.86,yF,1.66),v3(1.86,1.70,1.66),v3(-1.86,1.70,1.66));
     for(const sg of [-1,1]){ q4(v3(sg*XR,cy(zF-0.05),zF-0.05),v3(sg*X2,cy(zF-0.05),zF-0.05),v3(sg*X2,cy(zB),zB+d),v3(sg*XR,cy(zB),zB+d));      // roof, outboard part
-      if(!TEST3) q4(v3(sg*X2,wT0+0.09,wZa),v3(sg*X2,wT0+0.09,zB),v3(sg*X2,cy(zB),zB),v3(sg*X2,cy(zF-0.05),wZa));
+      if(!TEST3){ const yb=CF3?wT0+0.09:wT0; q4(v3(sg*X2,yb,wZa),v3(sg*X2,yb,zB),v3(sg*X2,cy(zB),zB),v3(sg*X2,cy(zF-0.05),wZa)); }   /* from just above the header ring: hidden behind it from both seats */
       else q4(v3(sg*1.86,0.85,1.0),v3(sg*1.86,0.85,1.66),v3(sg*1.86,1.70,1.66),v3(sg*1.86,1.70,1.0)); }   /* trial structure: its own walls reach further out; only behind the seats, clear of what the side windows see */                              // side walls above the side windows                                      // back wall
-    /* a strip just outside the beams over the side and aft windows: the model has a slit between those beams and the ceiling
-       lining, and the sky showed through it as a thin bright line */
-    if(!TEST3) for(const sg of [-1,1]){ q4(v3(sg*0.80,0.86,-0.02),v3(sg*1.02,0.86,0.36),v3(sg*1.02,1.04,0.36),v3(sg*0.80,1.04,-0.02)); q4(v3(sg*1.02,0.86,0.36),v3(sg*1.03,0.86,0.97),v3(sg*1.03,1.04,0.97),v3(sg*1.02,1.04,0.36)); }
+    /* the other aircraft that use this engine (CF3) keep the strips beside the roof they have always had; the A320-only
+       pieces below (rear frame and wall of the aft window, circuit-breaker panels) are not drawn in their cockpits */
+    if(CF3) for(const sg of [-1,1]){ q4(v3(sg*0.80,0.86,-0.02),v3(sg*1.02,0.86,0.36),v3(sg*1.02,1.04,0.36),v3(sg*0.80,1.04,-0.02)); q4(v3(sg*1.02,0.86,0.36),v3(sg*1.03,0.86,0.97),v3(sg*1.03,1.04,0.97),v3(sg*1.02,1.04,0.36)); }
     /* the wall behind the aft side windows, at window height: the model is open there between the window's rear edge and the
        rear wall, and the outside showed in the corner above the seats */
-    if(!TEST3) for(const sg of [-1,1]) q4(v3(sg*X2,wS-0.14,0.93),v3(sg*X2,wS-0.14,zB),v3(sg*X2,wT0+0.10,zB),v3(sg*X2,wT0+0.10,0.93));   /* from the aft window's real rear edge (z .93), so the whole window is open */
+    if(!TEST3&&!CF3) for(const sg of [-1,1]) q4(v3(sg*X2,wS-0.14,0.93),v3(sg*X2,wS-0.14,zB),v3(sg*X2,wT0+0.10,zB),v3(sg*X2,wT0+0.10,0.93));   /* from the aft window's real rear edge (z .93), so the whole window is open */
     /* and a clean lining panel in the plane of the window posts, from the aft window's rear edge to the rear wall: the model's
        own wall starts there as loose slanted pieces further out, which showed as fins under the beam */
-    if(!TEST3) for(const sg of [-1,1]) q4(v3(sg*1.005,0.91,0.95),v3(sg*1.005,0.91,1.29),v3(sg*1.355,0.36,1.29),v3(sg*1.355,0.36,0.95));
+    if(!TEST3&&!CF3) for(const sg of [-1,1]) q4(v3(sg*1.005,0.91,0.95),v3(sg*1.005,0.91,1.29),v3(sg*1.355,0.36,1.29),v3(sg*1.355,0.36,0.95));
     /* its front edge is the aft window's rear frame: a lighter band, a hand wide, standing 12 mm proud of the panel */
-    /* one clean lining over the side and aft windows, from the windshield corner back into the rear wall: underside, a chamfer
-       and an inboard face. The model has several loose beams and rails lying along each other there, which read as a jumble;
-       they are inside this cover now. */
-    if(!TEST3){ const path=[[0.775,0.02],[0.99,0.36],[1.0,1.29]], Y0=0.842, Y1=1.07, IN=0.085, OUT=0.10, CH=0.022;
-      const mk=(col,pts)=>{ const g=new THREE.BufferGeometry(), a=new Float32Array(pts.length*3); pts.forEach((v,i)=>{ a[i*3]=v.x; a[i*3+1]=v.y; a[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(a,3)); BACK.add(new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:col,side:THREE.DoubleSide}))); };
-      const bot=[], chf=[], inn=[], Q=(arr,a,b,c,d)=>arr.push(a,b,c,a,c,d);
-      for(const sg of [-1,1]) for(let i=0;i<path.length-1;i++){ const [x0,z0]=path[i],[x1,z1]=path[i+1];
-        Q(bot,v3(sg*(x0+OUT),Y0,z0),v3(sg*(x1+OUT),Y0,z1),v3(sg*(x1-IN+CH),Y0,z1),v3(sg*(x0-IN+CH),Y0,z0));
-        Q(chf,v3(sg*(x0-IN+CH),Y0,z0),v3(sg*(x1-IN+CH),Y0,z1),v3(sg*(x1-IN),Y0+CH,z1),v3(sg*(x0-IN),Y0+CH,z0));
-        Q(inn,v3(sg*(x0-IN),Y0+CH,z0),v3(sg*(x1-IN),Y0+CH,z1),v3(sg*(x1-IN),Y1,z1),v3(sg*(x0-IN),Y1,z0)); }
-      mk(0x5f6b79,bot); mk(0x97a4b5,chf); mk(0x7f8c9d,inn); }
-    if(!TEST3){ const fp=[], fm=new THREE.MeshBasicMaterial({color:0x93a0b2,side:THREE.DoubleSide}); for(const sg of [-1,1]){ const a=v3(sg*0.993,0.91,0.915), b=v3(sg*0.993,0.91,0.985), c=v3(sg*1.343,0.36,0.985), d=v3(sg*1.343,0.36,0.915); fp.push(a,b,c,a,c,d); }
+    if(!TEST3&&!CF3){ const fp=[], fm=new THREE.MeshBasicMaterial({color:0x93a0b2,side:THREE.DoubleSide}); for(const sg of [-1,1]){ const a=v3(sg*0.993,0.91,0.915), b=v3(sg*0.993,0.91,0.985), c=v3(sg*1.343,0.36,0.985), d=v3(sg*1.343,0.36,0.915); fp.push(a,b,c,a,c,d); }
       const fg=new THREE.BufferGeometry(), fa=new Float32Array(fp.length*3); fp.forEach((v,i)=>{ fa[i*3]=v.x; fa[i*3+1]=v.y; fa[i*3+2]=v.z; }); fg.setAttribute('position',new THREE.BufferAttribute(fa,3)); BACK.add(new THREE.Mesh(fg,fm)); }
-    /* over the side windows, as on the aircraft: a smooth lining that curves down from the overhead into the window header,
-       no sun visors (the owner does not want them). The model's loose rails, fins and mounts there are
-       left out of models/a320-shell.bin (tools/render-a320/header_cut.py). */
-    if(!TEST3){ const ceil=z=>0.863+(z+0.241)*0.388, pathX=z=>z<0.02?0.775:z<0.36?0.775+(z-0.02)/0.34*0.215:0.99+(z-0.36)/0.93*0.01;
-      const xin=z=>pathX(z)-0.085, yb=z=>z<=0.95?Math.min(0.95,ceil(z)-0.012):0.95+Math.min(1,(z-0.95)/0.30)*0.35, NZ=44, NS=14, Z0=-0.241, Z1=1.25;   /* aft of the windows it rises to the top edge of the circuit-breaker wall and ends on it */
-      const pos=[], col=[], idx=[], vc=(r,g,b)=>col.push(r,g,b);
-      for(const sg of [-1,1]){ const base=pos.length/3;
-        for(let i=0;i<=NZ;i++){ const z=Z0+(Z1-Z0)*i/NZ, yA=ceil(z)-0.004, xA=0.40, xB=xin(z)+0.004, yB=yb(z), cx=xB-0.03, cyy=yA;
-          for(let j=0;j<=NS;j++){ const t=j/NS, u=1-t, x=u*u*xA+2*u*t*cx+t*t*xB, y=u*u*yA+2*u*t*cyy+t*t*yB;
-            pos.push(sg*x,y,z); const k=0.86+0.14*(1-t*t)-0.10*Math.max(0,t-0.75)/0.25*(yA-yB>0.05?1:0.3), b=k*0.94;   /* lighter on the flat, a soft shade where it turns into the header */
-            vc(0x8e/255*b,0x9a/255*b,0xa8/255*b); } }
-        for(let i=0;i<NZ;i++) for(let j=0;j<NS;j++){ const a=base+i*(NS+1)+j, b=a+NS+1; idx.push(a,b,a+1, a+1,b,b+1); } }
-      const lg=new THREE.BufferGeometry(); lg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); lg.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); lg.setIndex(idx);
-      BACK.add(new THREE.Mesh(lg,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide})));
-    }
-
+    /* the lining over the windows, the header ring on the window tops, the ceiling lights and the visor knobs are the owner's
+       Blender model, fitted onto this structure (tools/render-a320/hybrid_upper.py) and stored in models/a320-shell.bin */
     const g=new THREE.BufferGeometry(), arr=new Float32Array(bp.length*3); bp.forEach((v,i)=>{ arr[i*3]=v.x; arr[i*3+1]=v.y; arr[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(arr,3)); BACK.add(new THREE.Mesh(g,bm));
     /* below the windshield sill: a dark tub (wall behind the main panel, side walls, floor) a little outside the structure, so a
        gap between two parts of the model shows dark lining and never the ground outside */
@@ -194,7 +159,7 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch(CF3?CF3.shell:(TEST3?'models/a320-shell-test.bin?v=7':'models/a320-shell.bin?v=32')).then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:(TEST3?'models/a320-shell-test.bin?v=7':'models/a320-shell.bin?v=33')).then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
