@@ -113,7 +113,7 @@ def canopy(z, a):
 MATS = {
     'trim':      dict(color=(0.66, 0.67, 0.68), rough=0.65, tex='plastic', tile=0.15, nstr=0.6),
     'trim_dark': dict(color=(0.58, 0.57, 0.54), rough=0.7, tex='plastic', tile=0.15, nstr=0.6),
-    'frame':     dict(color=(0.84, 0.83, 0.80), rough=0.5, tex='plastic', tile=0.15, nstr=0.3),
+    'frame':     dict(color=(0.80, 0.80, 0.79), rough=0.4),      # painted canopy frame: smooth
     'glareshield': dict(color=(0.022, 0.024, 0.027), rough=0.95, tex='leather', tile=0.18, nstr=0.8),
     'panel_body': dict(color=(0.13, 0.14, 0.15), rough=0.55, tex='plastic', tile=0.15, nstr=0.35),
     'console':   dict(color=(0.15, 0.16, 0.18), rough=0.9, tex='plastic', tile=0.15, nstr=0.4),
@@ -342,18 +342,14 @@ def shell():
     def arch(u, v):
         p = canopy(zb, -1 + 2 * u); return (p[0] * 1.006, YS + v * (p[1] + 0.004 - YS), zb)
     grid(g, 28, 4, arch, 'trim_dark', toward=cab)
-    # canopy frame, as in the aircraft (photos; AFM fig. 1.7 top view): a broad lined hoop between the windshield and the two
-    # top panes, and a spine from it back to the roll bar. The glass lies outside it.
+    # canopy, as in the reference photos: one clear bubble from the windshield back, and at its rear an opaque lined cap over
+    # the crew's heads whose front edge sweeps back and down each side into the frame at the roll bar. No frame ahead of the crew.
     def ins(p, k=0.986): return v3(p[0] * k, YS + (p[1] - YS) * k, p[2])
-    def hoop(u, v):
-        a = -1 + 2 * u; t = abs(a); zc = -0.28 - 0.36 * t ** 2.2; hw = 0.12 - 0.075 * t ** 1.2
-        return ins(canopy(zc + (2 * v - 1) * hw, a))
-    grid(g, 44, 5, hoop, 'liner', toward=cab)
-    for e in (0, 1):                                                # its two edges: a rolled rim
-        tube(g, [hoop(i / 44, e) for i in range(45)], 0.011, 'liner', sides=6)
-    grid(g, 4, 12, lambda u, v: ins(canopy(-0.165 + v * (0.47 + 0.165), (-1 + 2 * u) * 0.075)), 'liner', toward=cab)
-    for sd in (-1, 1):
-        tube(g, [ins(canopy(-0.165 + i / 12 * (0.47 + 0.165), sd * 0.075)) for i in range(13)], 0.009, 'liner', sides=6)
+    def cap_edge(a): return -0.06 + 0.50 * abs(a) ** 1.7
+    def cap(u, v):
+        a = (-1 + 2 * u) * 0.97; z0 = cap_edge(a); return ins(canopy(z0 + v * (0.475 - z0), a))
+    grid(g, 48, 8, cap, 'liner', toward=cab)
+    tube(g, [cap(i / 48, 0) for i in range(49)], 0.012, 'liner', sides=7)      # rolled rim along its front edge
     # roof behind the roll bar: the solid centre the rear door hinges from, with a liner; the glass goes on at each side of it
     RA = 0.40
     def roof(u, v):
@@ -361,16 +357,6 @@ def shell():
     grid(g, 14, 10, roof, 'trim', toward=cab)
     for sd in (-1, 1):   # its edge, a rounded frame where the door window starts
         tube(g, [v3(*canopy(0.47 + i / 12 * (zb - 0.47), sd * RA)) * 1.0 + v3(-sd * 0.004, -0.008, 0) for i in range(13)], 0.014, 'frame', sides=8)
-    # storm window in each side of the canopy: a rubber-edged frame on the glass with its latch
-    for sd in (-1, 1):
-        z0, z1, a0, a1 = -0.24, -0.07, 0.70, 0.83
-        def onc(z, a, d=0.004):
-            p = v3(*canopy(z, sd * a)); n = v3(p[0], p[1] - YS, 0); n = n / (math.sqrt(float(n[0] * n[0] + n[1] * n[1])) or 1); return p - n * d
-        ring_ = [onc(z0 + (z1 - z0) * i / 6, a0) for i in range(7)] + [onc(z1, a0 + (a1 - a0) * i / 4) for i in range(1, 5)] \
-            + [onc(z1 - (z1 - z0) * i / 6, a1) for i in range(1, 7)] + [onc(z0, a1 - (a1 - a0) * i / 4) for i in range(1, 5)]
-        tube(g, ring_ + ring_[:1], 0.0042, 'rubber', sides=6)
-        q = onc((z0 + z1) / 2, a1 - 0.012, 0.010)
-        rbox(g, (0.009, 0.009, 0.034), 0.003, 'black', m=T(q[0], q[1], q[2]), seg=2, flat=1)
     console_body(g, cab)
     # stick gaiters (reference photos): a tall, loose leather boot from the floor up to the grip
     for xc in (-0.27, 0.27):
