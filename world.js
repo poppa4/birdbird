@@ -77,6 +77,8 @@ W.load=async function(base){
     // line offsets must not be mip-averaged (opposite vectors would cancel and fatten the lines far away)
     const tl=texFromBitmap(bl,false); tl.generateMipmaps=false; tl.minFilter=T().LinearFilter;
     if(tmat){ tmat.uniforms.tApt.value=aptTex; tmat.uniforms.tAptL.value=tl; tmat.uniforms.aptOn.value=1; } });
+  const mt=b=>{ const t=texFromBitmap(b,false); t.wrapS=t.wrapT=T().RepeatWrapping; t.anisotropy=8; return t; };
+  Promise.all([bitmap(base+'../tex/mat_l.jpg?v=1'),bitmap(base+'../tex/mat_n.jpg?v=1')]).then(([a,b])=>{ if(tmat){ tmat.uniforms.tML.value=mt(a); tmat.uniforms.tMN.value=mt(b); tmat.uniforms.matOn.value=1; } }).catch(()=>{});
   W.full=p;
   return W;
 };
@@ -259,8 +261,8 @@ out highp vec4 pc_fragColor;
 #define gl_FragColor pc_fragColor
 ${COMMON}
 uniform vec3 camW; uniform float night; uniform float wt; uniform float treeR;
-uniform sampler2D tNF,tNM,tNN, tAF,tAM,tAN, tWF,tWM,tWN, tDet, tApt, tAptL, tDig, tShd;
-uniform vec4 extF,extM,extN, aextF,aextM,aextN; uniform float onM,onN, aptOn;
+uniform sampler2D tNF,tNM,tNN, tAF,tAM,tAN, tWF,tWM,tWN, tDet, tApt, tAptL, tShd, tML, tMN;
+uniform vec4 extF,extM,extN, aextF,aextM,aextN; uniform float onM,onN, aptOn, matOn;
 uniform vec4 aptE; uniform vec2 rwyU; uniform vec4 rwyS; uniform float rwyAim;
 uniform sampler2D tSD; uniform vec4 stands[16]; uniform int nStands; uniform vec3 masts[40]; uniform int nMasts;
 varying vec3 vW; varying vec2 vEN; varying float vSp; varying float vCan;
@@ -305,6 +307,7 @@ void main(){
     }
     c*=1.0+m*dk;
     float ov=clamp(1.0-fr-wat-pv,0.0,1.0)*dk;
+    if(matOn>0.5){ float lg=texture2D(tML,EN/2.0).b, lg2=texture2D(tML,EN/7.3+0.37).b; c*=mix(1.0,(0.55+0.9*lg)*(0.8+0.4*lg2),ov*(1.0-smoothstep(150.0,900.0,dist))); }
     c*=mix(vec3(1.0),mix(vec3(1.06,1.02,0.86),vec3(0.90,1.0,1.06),d2.g),0.55*ov);
   }
   // airport pavement (signed distance field) and taxiway centrelines
@@ -317,8 +320,10 @@ void main(){
       paved=smoothstep(-aa,aa,sd);
       float concrete=s.b;
       vec4 dd=texture2D(tDet,EN/2.3);
-      vec3 asph=lin(vec3(0.27,0.28,0.29))*(0.86+0.28*dd.b);
-      vec3 conc=lin(vec3(0.47,0.46,0.43))*(0.88+0.18*dd.b);
+      float la=0.5, lc=0.5;
+      if(matOn>0.5){ la=texture2D(tML,EN/2.1).r; lc=texture2D(tML,EN/2.5).g; }
+      vec3 asph=lin(vec3(0.27,0.28,0.29))*(0.90+0.16*dd.b)*(0.55+0.9*la);
+      vec3 conc=lin(vec3(0.47,0.46,0.43))*(0.92+0.12*dd.b)*(0.62+0.76*lc);
       pc=mix(asph,conc,concrete);
       // shoulder darkening near the edge, rubber-free look
       pc*=0.92+0.08*smoothstep(0.0,3.0,sd);
@@ -369,7 +374,8 @@ void main(){
   AA=vec2(max(fwidth(rp.x),0.02),max(fwidth(rp.y),0.02))*0.75; float onR=box(rp,vec2((rwyS.x+rwyS.y)*0.5,0.0),vec2((rwyS.y-rwyS.x)*0.5,rw),0.0);
   if(onR>0.0){
     vec4 dd=texture2D(tDet,EN/2.0); vec4 de=texture2D(tDet,EN/27.0);
-    vec3 rc=lin(vec3(0.20,0.21,0.22))*(0.82+0.22*dd.b)*(0.92+0.16*de.a);
+    float lr=matOn>0.5?texture2D(tML,EN/2.1).r:0.5;
+    vec3 rc=lin(vec3(0.20,0.21,0.22))*(0.88+0.14*dd.b)*(0.92+0.16*de.a)*(0.55+0.9*lr);
     float L=rwyS.w; float s=rp.x, t=rp.y; AA=vec2(max(fwidth(s),0.02),max(fwidth(t),0.02))*0.75; float aa=AA.y;
     // rubber deposits in both touchdown zones
     float tz=smoothstep(200.0,350.0,s)*(1.0-smoothstep(650.0,900.0,s))+smoothstep(200.0,350.0,L-s)*(1.0-smoothstep(650.0,900.0,L-s));
@@ -399,16 +405,18 @@ void main(){
       // designator: '17'/'35' read from the approach, 9 m tall, starting 12 m after the threshold stripes
       vec2 q=vec2(tt,d-(6.0+30.0+12.0));
       if(q.y>0.0&&q.y<9.0&&abs(q.x)<4.6){
-        float gi=q.x<0.0?(e==0?2.0:0.0):(e==0?3.0:1.0);
-        float lx=(fract((q.x+4.6)/4.6)) ; vec2 du=vec2((gi+0.12+lx*0.76)/4.0, 1.0-q.y/9.0);
-        float dg=texture2D(tDig,du).r; mk=max(mk,smoothstep(0.35,0.65,dg));
+        float dgt=q.x<0.0?(e==0?3.0:1.0):(e==0?5.0:7.0);
+        float lx=(fract((q.x+4.6)/4.6)) ; vec2 du=vec2((dgt+0.06+lx*0.88)/10.0, 1.0-q.y/9.0);
+        float dg=texture2D(tSD,du).r; mk=max(mk,smoothstep(0.35,0.65,dg));
       }
     }
     vec3 paint=lin(vec3(0.86,0.87,0.86))*(0.90+0.1*dd.r);
     rc=mix(rc,paint,mk*0.94);
     pc=mix(pc,rc,onR); paved=max(paved,onR);
   }
-  if(paved>0.0){ c=mix(c,pc,paved); fr*=1.0-paved; wat*=1.0-paved; N=normalize(mix(N,vec3(0,1,0),paved*0.8)); }
+  if(paved>0.0){ c=mix(c,pc,paved); fr*=1.0-paved; wat*=1.0-paved; N=normalize(mix(N,vec3(0,1,0),paved*0.8));
+    if(matOn>0.5){ vec2 nb=texture2D(tMN,EN/2.1).rg*2.0-1.0; float bk=paved*(1.0-smoothstep(40.0,250.0,dist));
+      N=normalize(N+vec3(nb.x,0.0,-nb.y)*0.55*bk); } }
   // lighting: sun, sky ambient, bounce; baked shadows and contact shading around the airport's buildings and aircraft
   float ndl=max(dot(N,sunDir),0.0);
   float sunVis=smoothstep(-0.05,0.08,sunDir.y);
@@ -456,7 +464,7 @@ function build(){
   group=new (T().Group)(); group.name='WORLD';
   detailTex=makeDetail(); digitTex=makeDigits();
   const U=Object.assign(levUniforms(),{
-    camW:{value:new (T().Vector3)()}, morph:{value:[]}, treeR:{value:TREE_R}, tDet:{value:detailTex}, tApt:{value:null}, tAptL:{value:null}, tShd:{value:null}, aptOn:{value:0}, tDig:{value:digitTex},
+    camW:{value:new (T().Vector3)()}, morph:{value:[]}, treeR:{value:TREE_R}, tDet:{value:detailTex}, tApt:{value:null}, tAptL:{value:null}, tShd:{value:null}, tML:{value:null}, tMN:{value:null}, matOn:{value:0}, aptOn:{value:0}, tDig:{value:digitTex},
     aptE:{value:new (T().Vector4)(apt.rwy.sdf.E0,apt.rwy.sdf.N1,apt.rwy.sdf.w*apt.rwy.sdf.res,apt.rwy.sdf.h*apt.rwy.sdf.res)},
     rwyU:{value:new (T().Vector2)(apt.rwy.u[0],apt.rwy.u[1])}, tSD:{value:makeStandDigits()},
     stands:{value:(()=>{ const a=(apt.rwy.stands||[]).slice(0,16).map(st=>new (T().Vector4)(st.E,st.N,st.hdg*Math.PI/180,+st.id)); while(a.length<16) a.push(new (T().Vector4)(0,0,0,0)); return a; })()}, nStands:{value:Math.min(16,(apt.rwy.stands||[]).length)},
