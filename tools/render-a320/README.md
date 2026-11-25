@@ -71,3 +71,16 @@ cockpit distance. `shell.py` no longer ships them: each face gets the median col
 into a few materials (five paints, seat fabric, carpet, glareshield leather), small islands of a second material are removed,
 and the material colour times the baked light is written per vertex (`models/a320-shell.bin`, one draw call, no textures).
 The sun patches are gone from the bake (per-vertex shadows read as dents); a soft key from the windshield gives the form.
+
+## Structure from the owner's own model (2026-11-25)
+
+The structure comes from Daniel Nilsson's own Blender model of the flight deck (A320neo-cockpit.blend, no materials; the source file is kept by him, not in this repository). It is the same size as
+the FlightGear deck, so it is used unscaled for everything around the panels: window frames and posts, roof and sun visors,
+side consoles, seats, floor, back wall. The panels, the glareshield hood, the pedestal and the beam over the windshield stay
+FlightGear's (they are what the panel pictures were rendered from).
+    SUBD=0 DISS=0.05 blender-python neo_exp.py -- A320neo-cockpit.blend neo.npz     # modifiers applied, flat areas dissolved
+    python3 panels.py <res> ../../models
+    NEO=neo.npz python3 shell.py <res> ../../models
+`shell.py` keeps each model on its side of the "panel zones", keeps only the faces of the new model that can be seen from the
+page's eye points, turns them towards the eye, bakes the light and gives them four clean materials by where the part lies
+(lining, seat cover, carpet, console slate; hand controls dark).

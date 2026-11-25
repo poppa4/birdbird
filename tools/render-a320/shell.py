@@ -25,14 +25,49 @@ TEX = {'fd_main.png': 2048, 'fd_other.png': 2048, 'fd_leather.png': 1024, 'fabri
 SKIP = re.compile(r'(?i)hud|efb|headset|screw|plug|extinguisher|checklist|torch|cable|knb|btn|breaker')
 WHOLE = re.compile(r'(?i)^(sidestick|tiller)')  # hand controls: finely modelled (the grip is all small faces), kept whole or the grip has holes
 import trimesh
+# ---- the structure (lining, window frames and posts, roof, side consoles, seats, floor, back wall) can come from a second model:
+# NEO=<npz from neo_exp.py> (vertices in Blender's frame, metres). It is the same flight deck at the same size; NEO_T places it
+# (x, y, z in the page's frame). The panels, the glareshield and the pedestal stay the FlightGear model's, so each model is used
+# only on its side of a border: the "panel zones" (each panel picture's rectangle, 3 cm wider, from 25 cm behind the panel's
+# surface (60 cm for the pedestal, so its whole box) to 30 cm in front). FlightGear faces are kept inside the zones, the new
+# structure's faces outside them.
+NEO = os.environ.get('NEO'); NEOT = np.array([float(x) for x in os.environ.get('NEO_T', '0,-0.14,4.74').split(',')])
+_pb = open(os.path.join(OUT, 'a320-panels.bin'), 'rb').read(); _hl = struct.unpack('<I', _pb[:4])[0]; _ph = json.loads(_pb[4:4 + _hl]); ZH = {}
+for _k, _hv in _ph['views'].items(): ZH[_k] = (np.frombuffer(_pb, '<i2', _hv['nx'] * _hv['ny'], 4 + _hl + _hv['off']).reshape(_hv['ny'], _hv['nx']) / _ph['hs'], _hv)
+def in_zone(P):   # P (n,3) in the page's frame
+    out = np.zeros(len(P), bool)
+    for (k_, _), (c_, n_, up_, x_, W_, H_) in zip(V.items(), B):
+        if k_ not in ZH: continue
+        hf, hv = ZH[k_]; M_ = np.stack([P[:, 2], P[:, 1], -P[:, 0]], 1) - c_; u = M_ @ x_; t = M_ @ up_; hg = -(M_ @ n_)
+        ii = np.clip(np.round((u / W_ + 0.5) * (hv['nx'] - 1)).astype(int), 0, hv['nx'] - 1); jj = np.clip(np.round((0.5 - t / H_) * (hv['ny'] - 1)).astype(int), 0, hv['ny'] - 1); h0 = np.maximum(hf[jj, ii], hv['hr'][0] + 0.06)
+        lo_, hi_ = {'ped': (0.60, 0.30), 'front': (0.25, 0.30), 'ovh': (0.10, 0.16)}[k_]
+        if k_ == 'front': out |= (np.abs(u) < W_ / 2 - 0.05) & (np.abs(t) < H_ / 2 + 0.01) & (hg > h0 - lo_) & (hg < h0 + 0.30)   # the hood over the glareshield stands 25 cm proud, the table under the main panel 20 cm
+        else: out |= (np.abs(u) < W_ / 2 + 0.01) & (np.abs(t) < H_ / 2 + 0.01) & (hg > h0 - lo_) & (hg < h0 + hi_)
+    # the beam over the windshield, under the overhead panel's front edge: the new model's sits 3 cm lower and covered the
+    # panel's front row, so this box is a zone too (the FlightGear beam fits our overhead panel)
+    out |= (np.abs(P[:, 0]) < 0.80) & (P[:, 1] > 0.79) & (P[:, 1] < 0.97) & (P[:, 2] > -0.50) & (P[:, 2] < -0.10)
+    return out
+if NEO:
+    _d = np.load(NEO); _v = _d['v'].astype(float); NV = np.stack([_v[:, 0], _v[:, 2], _v[:, 1]], 1) + NEOT; NF = _d['f']; NOB = _d['ob']
+    # what each part is, from where it lies: a seat (all of it inside one seat's space), a hand control (small, on a side console)
+    NKIND = {}
+    for _o in np.unique(NOB):
+        _p = NV[NF[NOB == _o]].reshape(-1, 3); _lo, _hi = _p.min(0), _p.max(0); _ax = np.abs(_p[:, 0])
+        if _ax.min() > 0.20 and _ax.max() < 0.90 and _lo[2] > 0.05 and _hi[2] < 1.12 and _hi[1] < 0.92: NKIND[int(_o)] = 1
+        elif _ax.min() > 0.72 and _hi[1] < 0.40 and np.linalg.norm(_hi - _lo) < 0.40 and _lo[1] > -0.2 and (_hi[0] < 0 or _lo[0] > 0): NKIND[int(_o)] = 4
+    _k = (np.abs(NV[NF]).max((1, 2)) < 2.03); NF = NF[_k]; NOB = NOB[_k]   # positions are stored in 16 bits: +-2.04 m
+    _k = ~in_zone(NV[NF].mean(1)); NF = NF[_k]; NOB = NOB[_k]; print('new structure: triangles outside the panel zones', len(NF))
 OV, OF, OFO = [], [], []
 for _oi, o in enumerate(O):
     if o['tex'] == 'fd_glare.png' or re.search(r'(?i)glass|^sfl', o['name']): continue
     b = sum(len(x) for x in OV)
+    _vz = np.asarray(o['v'], float).reshape(-1, 3); _zin = in_zone(np.stack([-_vz[:, 2], _vz[:, 1], _vz[:, 0]], 1)) if NEO and len(_vz) else None
     for mat, idx, uvs, flags in o['faces']:
+        if _zin is not None and not _zin[idx].any(): continue
         for i_, j_, k_ in ac3d.tris(np.asarray(o['v'], float).reshape(-1, 3)[idx]): OF.append([b + idx[i_], b + idx[j_], b + idx[k_]]); OFO.append(_oi)
     OV.append(o['v'])
-OVa = np.concatenate(OV); OCC = trimesh.Trimesh(vertices=np.stack([-OVa[:, 2], OVa[:, 1], OVa[:, 0]], 1), faces=np.array(OF), process=False)
+OVa = np.concatenate(OV); _ov = np.stack([-OVa[:, 2], OVa[:, 1], OVa[:, 0]], 1)
+OCC = trimesh.Trimesh(vertices=np.concatenate([_ov, NV]) if NEO else _ov, faces=np.concatenate([np.array(OF), NF + len(_ov)]) if NEO else np.array(OF), process=False)
 RAY = trimesh.ray.ray_pyembree.RayMeshIntersector(OCC)
 rng = np.random.default_rng(7); NS = 160
 SUN = np.array([-0.50, 0.62, -0.60]); SUN /= np.linalg.norm(SUN)  # sun ahead and to the left, 38° up (three frame)
@@ -148,9 +183,9 @@ def post(p0, p1, R=0.10, NR=28, foot=0.0):
         rings.append(ring)
     return dict(p0=p0, a=a, L=Lh, u=u, v=v, fit=fit, rings=rings)
 POSTS = []
-for p0, p1 in (((-0.915, 0.40, -0.41), (-0.77, 0.88, 0.0)), ((-1.30, 0.40, 0.32), (-0.99, 0.88, 0.36))):
+for p0, p1 in [] if NEO else (((-0.915, 0.40, -0.41), (-0.77, 0.88, 0.0)), ((-1.30, 0.40, 0.32), (-0.99, 0.88, 0.36))):
     POSTS.append(post(p0, p1, foot=0.20)); POSTS.append(post((-p0[0],) + p0[1:], (-p1[0],) + p1[1:], foot=0.20))
-POSTS.append(post((0, 0.45, -0.865), (0, 0.88, -0.41)))
+if not NEO: POSTS.append(post((0, 0.45, -0.865), (0, 0.88, -0.41)))
 # ---- window headers, rebuilt the same way, part by part. Along the top of each window the model has a frame lip and a padded
 # beam, each a box of flat plates. Every part of the model that runs along a header as a beam (cut at 12 stations: present in
 # most of them, between 12 mm and 20 cm across) is replaced by one rounded loft of its own size and colour. ----
@@ -192,7 +227,7 @@ def header(p0, p1, R=0.17, NR=24):
 HEADS = []
 # (not the beam over the windshield: its section is slanted, and the rounded box around it reached over the lowest row of the
 # overhead panel; the model's own beam is kept there)
-for p0, p1 in (((-0.77, 0.88, 0.0), (-0.99, 0.88, 0.36)), ((-0.99, 0.88, 0.36), (-1.0, 0.88, 0.95))):
+for p0, p1 in [] if NEO else (((-0.77, 0.88, 0.0), (-0.99, 0.88, 0.36)), ((-0.99, 0.88, 0.36), (-1.0, 0.88, 0.95))):
     HEADS += header(p0, p1); HEADS += header((-p0[0],) + p0[1:], (-p1[0],) + p1[1:])
 def in_post(pt, oi=None):   # pt in the page's frame
     for b in HEADS:
@@ -200,7 +235,7 @@ def in_post(pt, oi=None):   # pt in the page's frame
         d = pt - b['p0']; t = (d @ b['a']) / b['L']
         if t < -0.12 or t > 1.12: continue   # a little past the ends: the old beam's end cap stuck out of the new one as a spike
         u0, u1, v0, v1 = (np.polyval(f, t) for f in b['fit']); pu, pv = d @ b['u'], d @ b['v']
-        if u0 - 0.02 < pu < u1 + 0.02 and v0 - 0.02 < pv < v1 + 0.02: return True
+        if u0 - 0.035 < pu < u1 + 0.035 and v0 - 0.035 < pv < v1 + 0.035: return True
     for b in POSTS:
         d = pt - b['p0']; t = (d @ b['a']) / b['L']
         if t < -0.04 or t > 1.04: continue
@@ -217,6 +252,7 @@ for oi, o in enumerate(O):
     if diag < 0.10 and 200 < len(o['faces']) < 400: continue
     if SKIP.search(o['name']) and diag < 0.6: continue
     if re.search(r'(?i)^(hud|efb|headset|sfl)|glass', o['name']): continue  # HUD, EFBs, headsets, sun blinds, glass
+    if o['name'] in LEVERS: continue   # the page draws the levers itself; a second, fixed copy of the thrust levers' red buttons hung in the air when the levers moved
     rep, off = o['rep'], o['off']; g = G['flat']; tim = TXA[o['tex']]
     # a small fitting on a post (light panel, handle, clip) is kept and moved out onto the new post's surface
     PSH = None
@@ -240,6 +276,11 @@ for oi, o in enumerate(O):
         if TR_ and all(tk_) and (oi, fi) not in PARTV: continue
         P = v[idx]; ctr = P.mean(0); inside = False
         if PSH is None and in_post(np.array([-ctr[2], ctr[1], ctr[0]]), oi): continue
+        if NEO:
+            _c = np.stack([-P[:, 2], P[:, 1], P[:, 0]], 1).mean(0)
+            if not in_zone(_c[None])[0]: continue
+            # the old lining object reaches into the zones as wedge plates beside the glareshield: kept only inboard of them (behind the panels, round the pedestal) and in the beam over the windshield
+            if o['name'].startswith('pedestal_low_glare') and not abs(_c[0]) < 0.72 and not (_c[1] > 0.79): continue
         # (the bright green lamp / marking areas of the textures are painted over in the saved pictures below: skipping those
         # faces left holes to the outside)
         tu = np.mean([uvs[j][0] * rep[0] + off[0] for j in range(len(idx))]) % 1; tv = 1 - (np.mean([uvs[j][1] * rep[1] + off[1] for j in range(len(idx))]) % 1)
@@ -329,6 +370,29 @@ for b in POSTS[:2]:
     _poly(b, 0.74, _rr(w, 0.105, 0.008), 0.0012, (30, 33, 37), 'fd_leather.png')
     _poly(b, 0.74, [(0.011 * np.cos(a_), 0.022 + 0.011 * np.sin(a_)) for a_ in np.linspace(0, 2 * np.pi, 20, endpoint=False)], 0.0024, (71, 85, 104), 'fd_other.png')
     _poly(b, 0.74, _rr(0.011, 0.018, 0.002, 0.0, -0.026, 3), 0.0024, (71, 85, 104), 'fd_other.png')
+NEOF = []
+if NEO:
+    # only what can be seen from where the page's eye can be (both seats, leaning in, the wide view), with the faces around it
+    cen_ = NV[NF].mean(1); fn_ = np.cross(NV[NF[:, 1]] - NV[NF[:, 0]], NV[NF[:, 2]] - NV[NF[:, 0]]); fa_ = np.linalg.norm(fn_, axis=1); fn_ /= np.maximum(fa_[:, None], 1e-12)
+    _m = trimesh.Trimesh(NV, NF, process=False); _r = trimesh.ray.ray_pyembree.RayMeshIntersector(_m)
+    EYES = [(-0.53, 0.63, 0.31), (0.53, 0.63, 0.31), (0, 0.75, 0.95), (0, 0.63, 0.31), (-0.2, 0.63, 0.31), (0.2, 0.63, 0.31), (-0.02, 0.63, 0.31), (0.02, 0.63, 0.31), (0, 0.9, 1.5)]
+    EYES = np.array([np.array(e) + np.array(j) for e in EYES for j in ((0, 0, 0), (0.08, 0, 0), (-0.08, 0, 0), (0, 0.08, 0), (0, -0.08, 0), (0, 0, 0.08), (0, 0, -0.08))])
+    vis = np.zeros(len(NF), bool); seen = np.zeros((len(NF), 3))
+    for e in EYES:
+        for pts in (cen_, NV[NF[:, 0]] * 0.8 + cen_ * 0.2, NV[NF[:, 1]] * 0.8 + cen_ * 0.2, NV[NF[:, 2]] * 0.8 + cen_ * 0.2):
+            d = pts - e; dl = np.linalg.norm(d, axis=1); ii = np.nonzero(~vis)[0]
+            if len(ii): hit = ii[_r.intersects_first(np.repeat(e[None], len(ii), 0), d[ii] / dl[ii, None]) == ii]; vis[hit] = True; seen[hit] = e
+    # the model's normals point either way: each face is turned towards the eye that sees it (light is baked on that side)
+    flip = vis & (np.einsum('ij,ij->i', fn_, seen - cen_) < 0); fn_[flip] *= -1
+    for _ in range(2): vv = np.zeros(len(NV), bool); vv[NF[vis].ravel()] = True; vis |= vv[NF].any(1)
+    vis &= fa_ > 1e-10; print('new structure: seen from the seats', int(vis.sum()), 'of', len(NF))
+    for fi in np.nonzero(vis)[0]:
+        c3 = cen_[fi]; n3 = fn_[fi]
+        if not np.any(seen[fi]) and n3 @ (np.array([0.0, 0.55, 0.35]) - c3) < 0: n3 = -n3   # a neighbour of a seen face: towards the middle of the cockpit
+        kd = NKIND.get(int(NOB[fi]), 0)
+        mat = kd if kd else 2 if c3[1] < -0.40 else 3 if (c3[1] < 0.22 and abs(c3[0]) > 0.62 and c3[2] < 1.3) else 0
+        fid = len(FCOL); FCOL.append(np.array([71.0, 85.0, 104.0])); FAREA.append(float(fa_[fi]) / 2); FOBJ.append(POST_OI); FTEX.append('fd_other.png'); FY.append(0.0); FEDG.append([]); NEOF.append((fid, mat))
+        G['flat']['F'].append(([(NV[v_], (fid, 0)) for v_ in NF[fi]], n3))
 # ---- materials: the face colours fall into a handful of clean ones (k-means, area-weighted); an object that is almost all one
 # material is given that material throughout ----
 FC = np.array(FCOL); FA = np.array(FAREA); FO = np.array(FOBJ); FT = np.array(FTEX); K = 5
@@ -416,6 +480,9 @@ for f_, (x_, z_) in FXZ.items():
     if f_ >= len(lab) or not (0.24 < abs(x_) < 0.84 and 0.22 < z_ < 1.15 and FY[f_] < 0.80): continue
     if lab[f_] == _lt: lab[f_] = len(cen) - 2
     elif lab[f_] == _dk and FY[f_] > -0.30: lab[f_] = len(cen) - 1   # harness straps, buckle and seat pan frame: dark
+if NEOF:   # the new structure's materials: lining, seat cover, carpet, console slate
+    _b = len(cen); cen = np.vstack([cen, [78.0, 92.0, 111.0], [44.0, 62.0, 100.0], [44.0, 47.0, 62.0], [58.0, 68.0, 84.0], [24.0, 26.0, 30.0]])
+    for fid, mat in NEOF: lab[fid] = _b + mat
 PAL = cen / 255.0; print('materials', np.round(cen).astype(int).tolist(), 'area share', np.round(np.bincount(lab, weights=FA, minlength=K) / FA.sum(), 2).tolist())
 hdr = {'S': 16000, 'groups': [], 'lmax': LMAX}; blob = b''
 COS = np.cos(np.radians(72))
