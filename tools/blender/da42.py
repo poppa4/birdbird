@@ -139,7 +139,7 @@ MATS = {
     'strap':     dict(color=(0.30, 0.32, 0.36), rough=0.9, tex='fabric', tile=0.12, nstr=0.8),
     'skin':      dict(color=(0.95, 0.95, 0.94), rough=0.3, ao=False),
     'skin_under': dict(color=(0.84, 0.84, 0.83), rough=0.45, ao=False),
-    'prop':      dict(color=(0.05, 0.05, 0.05), rough=0.5, ao=False),
+    'prop':      dict(color=(0.60, 0.61, 0.63), rough=0.45, ao=False),      # composite blades, light grey (reference photo)
     'prop_tip':  dict(color=(0.90, 0.90, 0.88), rough=0.45, ao=False),
     'tks':       dict(color=(0.56, 0.57, 0.60), rough=0.35, metal=0.5, ao=False),      # porous de-icing panel on the leading edge
     'seam':      dict(color=(0.60, 0.61, 0.62), rough=0.4, ao=False),                 # panel joint in the white skin
@@ -351,10 +351,10 @@ def shell():
         q = onc((z0 + z1) / 2, a1 - 0.012, 0.010)
         rbox(g, (0.009, 0.009, 0.034), 0.003, 'black', m=T(q[0], q[1], q[2]), seg=2, flat=1)
     console_body(g, cab)
-    # stick boots: leather bellows on the floor
+    # stick gaiters (reference photos): a tall, loose leather boot from the floor up to the grip
     for xc in (-0.27, 0.27):
-        lathe(g, [(0, 0), (0.078, 0), (0.078, 0.006), (0.066, 0.016), (0.070, 0.024), (0.054, 0.036), (0.058, 0.044), (0.040, 0.058), (0.043, 0.066), (0.024, 0.082), (0.016, 0.094), (0, 0.094)],
-              'rubber', seg=24, m=T(xc, YF, -0.42))
+        lathe(g, [(0, 0), (0.100, 0), (0.104, 0.010), (0.094, 0.030), (0.098, 0.052), (0.082, 0.085), (0.086, 0.110), (0.066, 0.150), (0.069, 0.176), (0.050, 0.220),
+                  (0.052, 0.246), (0.037, 0.292), (0.038, 0.316), (0.027, 0.350), (0.021, 0.372), (0, 0.372)], 'leather_cream', seg=28, m=T(xc, YF, -0.42))
     panel_body(g, cab)
     for xc in (-0.27, 0.27):
         Pt.seat(g, xc, SEAT_Z, YF, SEATM, cush_y=-0.80, w=0.40, back_h=0.66, recline=18, headrest=True)
@@ -446,9 +446,10 @@ def nacelle_detail(g, sd, stn):
     for tc in (0.0, math.pi):                                       # air inlet low on each side, and the two cooling inlets under the spinner
         e = lambda u, v, tc=tc: npt(0.44 + v * 0.105 * math.cos(2 * math.pi * u), tc - 0.30 + v * 0.115 * math.sin(2 * math.pi * u), 0.004)
         mid = npt(0.44, tc - 0.30, 0.6); grid(g, 18, 2, e, 'intake', toward=mid + (mid - out) * 5)
-    for tc in (-math.pi / 2 - 0.62, -math.pi / 2 + 0.62):
-        e = lambda u, v, tc=tc: npt(0.078 + v * 0.036 * math.cos(2 * math.pi * u), tc + v * 0.36 * math.sin(2 * math.pi * u), 0.004)
-        mid = npt(0.078, tc, 0.6); grid(g, 16, 2, e, 'intake', toward=mid + (mid - out) * 5)
+    def chin(u, v):                                                 # the one wide cooling inlet under the spinner (reference photo)
+        c, sn = math.cos(2 * math.pi * u), math.sin(2 * math.pi * u)
+        return npt(0.105 + v * 0.060 * spw(c, 0.5), -math.pi / 2 + v * 0.80 * spw(sn, 0.5), 0.004)
+    mid = npt(0.105, -math.pi / 2, 0.6); grid(g, 24, 2, chin, 'intake', toward=mid + (mid - out) * 5)
     tube(g, [v3(nx - sd * 0.10, NAC_Y - 0.275, PROP_Z + 0.86), v3(nx - sd * 0.10, NAC_Y - 0.34, PROP_Z + 0.99)], 0.026, 'steel_dark', sides=10)   # exhaust stub
 
 
