@@ -8,6 +8,8 @@
 const RWY={x0:-1250,x1:1250,w:45}, TWY_A=180, LANE=275, HOLD_A1={x:-1200,y:78};
 const STAND_Y=372, standX=k=>-460+90*(k-1);
 const SPEED={push:6,taxi:16,taxiTurn:9};
+/* from taxiway Alpha through the apron connector to stand k, nose in */
+const IN=k=>[{x:200,y:TWY_A+25},{x:200,y:LANE-25},{x:175,y:LANE},{x:standX(k)+35,y:LANE},{x:standX(k)+4,y:LANE+28},{x:standX(k),y:STAND_Y}];
 const COL={grass:'#17221c',grass2:'#1a271f',apron:'#262d35',twy:'#2c333b',rwy:'#343a42',edge:'#5a6470',mark:'#e8edf2',yel:'#e2bd45',
   term:'#1d2733',termEdge:'#3b4a5a',lbl:'#a9b6c3',own:'#5aa9ff',ownEdge:'#cfe6ff',ai:'#c8d1da',aiEdge:'#8996a3',shadow:'rgba(0,0,0,.35)'};
 
@@ -18,6 +20,7 @@ let own=null, ai=[], cam={x:-190,y:300,s:1}, camT={x:-190,y:300,s:1}, phase='sta
 function plane(o){ return Object.assign({x:0,y:0,a:0,alt:0,path:null,pi:0,v:0,vmax:SPEED.taxi,back:false,label:'',own:false,done:true,onDone:null},o); }
 function follow(p,pts,o){ o=o||{}; p.path=pts; p.pi=0; p.done=false; p.back=!!o.back; p.vmax=o.v||SPEED.taxi; p.onDone=o.onDone||null; p.endA=o.endA; }
 function step(p,dt){
+  if(p.delay>0){ p.delay-=dt; return; }
   if(p.done||!p.path) return;
   const tgt=p.path[p.pi]; const dx=tgt.x-p.x, dy=tgt.y-p.y, d=Math.hypot(dx,dy);
   // slow down for turns and for the end of the path
@@ -37,11 +40,15 @@ function step(p,dt){
 const norm=a=>{ while(a>Math.PI) a-=2*Math.PI; while(a<-Math.PI) a+=2*Math.PI; return a; };
 
 /* ---------- scenario ---------- */
-function reset(){
-  waiters.forEach(w=>w.res()); waiters=[];
-  own=plane({x:standX(4),y:STAND_Y,a:Math.PI/2,label:'FJORDAIR 412',own:true});
-  ai=[plane({x:standX(2),y:STAND_Y,a:Math.PI/2,label:''}),plane({x:standX(6),y:STAND_Y,a:Math.PI/2,label:''}),plane({x:standX(8),y:STAND_Y,a:Math.PI/2,label:''})];
-  phase='stand'; camT={x:standX(4)+40,y:280,s:fit(700)}; cam=Object.assign({},camT);
+let MODE='dep';
+function reset(mode){
+  waiters.forEach(w=>w.res()); waiters=[]; MODE=mode==='arr'?'arr':'dep'; ACTS._t=null;
+  const parked=k=>plane({x:standX(k),y:STAND_Y,a:Math.PI/2,label:''});
+  if(MODE==='dep'){ own=plane({x:standX(4),y:STAND_Y,a:Math.PI/2,label:'FJORDAIR 412',own:true}); ai=[parked(2),parked(6),parked(8)]; phase='stand'; }
+  else { own=plane({x:-9000,y:0,a:0,alt:1,label:'FJORDAIR 412',own:true,hidden:true}); ai=[parked(2),parked(4),parked(8)];
+    // a departure lined up on 36: it goes when you are on final, so the runway is free for you
+    const d=plane({x:-1150,y:0,a:0,label:'NORVIK 51'}); d.hold=true; ai.push(d); ACTS._d=d; phase='inbound'; }
+  camera(10); cam=Object.assign({},camT);
   if(!running) loop(); draw();
 }
 function fit(m){ return Math.max(0.12,Math.min(W/m,H/(m*0.42))); }
@@ -55,10 +62,18 @@ const ACTS={
     return Promise.resolve(); },
   hold(){ return wait(()=>own.done&&phase==='taxi'); },
   traffic(){ // an A320 on final lands on 36, vacates via Bravo and taxis to stand 7
-    const t=plane({x:-5200,y:0,a:0,alt:1,label:'NORVIK 27'}); t.acc=14; ai.push(t);
-    follow(t,[{x:-1000,y:0,v:68,alt:0},{x:-200,y:0,v:40},{x:240,y:0,v:12},{x:290,y:25},{x:300,y:90},{x:260,y:TWY_A},{x:120,y:TWY_A},{x:standX(7)+60,y:LANE},{x:standX(7)+10,y:LANE+20},{x:standX(7),y:STAND_Y}],{v:68});
-    t.v=68; t.onDone=null; ACTS._t=t; return Promise.resolve(); },
-  clear(){ const t=ACTS._t; return t? wait(()=>t.pi>=6||t.done) : Promise.resolve(); },
+    const t=plane({x:-4600,y:0,a:0,alt:0.55,label:'NORVIK 27'}); t.acc=12; ai.push(t);
+    follow(t,[{x:-1000,y:0,v:55,alt:0},{x:-200,y:0,v:38},{x:240,y:0,v:12},{x:290,y:25},{x:300,y:90},{x:250,y:TWY_A},{x:215,y:TWY_A+8}].concat(IN(7)),{v:55});
+    t.v=55; ACTS._t=t; return Promise.resolve(); },
+  clear(){ const t=ACTS._t; return t? wait(()=>t.y>40||t.done) : Promise.resolve(); },
+  /* arrival */
+  final(){ phase='final'; own.hidden=false; Object.assign(own,{x:-6200,y:0,a:0,alt:0.75}); own.acc=6;
+    follow(own,[{x:-1080,y:0,v:70,alt:0},{x:-1000,y:0,v:68,alt:0}],{v:70}); own.v=70;
+    const d=ACTS._d; if(d){ d.acc=3.2; follow(d,[{x:-200,y:0,v:75},{x:900,y:0,v:82,alt:0.5},{x:4200,y:0,v:90,alt:1}],{v:75}); d.delay=1.5; }
+    return Promise.resolve(); },
+  land(){ return wait(()=>own.done).then(()=>{ phase='landing'; own.acc=5; follow(own,[{x:-200,y:0,v:38},{x:230,y:0,v:11}],{v:62}); return wait(()=>own.done); }); },
+  vacate(){ phase='taxiin'; follow(own,[{x:290,y:25},{x:300,y:90},{x:255,y:TWY_A},{x:225,y:TWY_A}],{v:SPEED.taxiTurn}); return wait(()=>own.done); },
+  taxiin(){ follow(own,[{x:210,y:TWY_A+10}].concat(IN(6)),{v:SPEED.taxi}); return wait(()=>own.done).then(()=>{ phase='parked'; }); },
   lineup(){ phase='lineup';
     follow(own,[{x:HOLD_A1.x,y:30},{x:HOLD_A1.x+20,y:4},{x:HOLD_A1.x+50,y:0}],{v:7,endA:0});
     return wait(()=>own.done); },
@@ -71,7 +86,12 @@ function act(name){ const f=ACTS[name]; return f? f() : Promise.resolve(); }
 
 /* ---------- camera ---------- */
 function camera(dt){
-  if(phase==='stand') camT={x:sx+40,y:290,s:fit(620)};
+  if(phase==='inbound') camT={x:0,y:170,s:fit(2700)};
+  else if(phase==='final'){ const span=Math.max(1900,(-700-own.x)*1.3); camT={x:(own.x-700)/2,y:90,s:fit(span)}; }
+  else if(phase==='landing') camT={x:own.x+150,y:70,s:fit(1500)};
+  else if(phase==='taxiin') camT={x:own.x-60,y:own.y+70,s:fit(950)};
+  else if(phase==='parked') camT={x:standX(6),y:300,s:fit(620)};
+  else if(phase==='stand') camT={x:sx+40,y:290,s:fit(620)};
   else if(phase==='push') camT={x:own.x+30,y:300,s:fit(560)};
   else if(phase==='taxi') camT={x:own.x-120,y:Math.min(260,own.y+40),s:fit(1150)};
   else camT={x:Math.min(own.x+350,600),y:120,s:fit(2000)};
@@ -91,7 +111,7 @@ function draw(){
   ctx.fillStyle=COL.term; ctx.strokeStyle=COL.termEdge; ctx.lineWidth=1.5*px; ctx.fillRect(-560,STAND_Y+60,780,70); ctx.strokeRect(-560,STAND_Y+60,780,70);
   // taxiways
   ctx.strokeStyle=COL.twy; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=23;
-  path([[RWY.x0+50,TWY_A],[620,TWY_A]]); path([[-1200,TWY_A],[-1200,0]]); path([[300,0],[300,90],[260,TWY_A]]); path([[-590,TWY_A],[-560,LANE-35],[-520,LANE]]);
+  path([[RWY.x0+50,TWY_A],[620,TWY_A]]); path([[-1200,TWY_A],[-1200,0]]); path([[300,0],[300,90],[260,TWY_A]]); path([[-590,TWY_A],[-560,LANE-35],[-520,LANE]]); path([[200,TWY_A],[200,LANE]]);
   // runway
   ctx.fillStyle=COL.rwy; ctx.fillRect(RWY.x0,-RWY.w/2,RWY.x1-RWY.x0,RWY.w);
   ctx.strokeStyle=COL.edge; ctx.lineWidth=1.2*px; ctx.strokeRect(RWY.x0,-RWY.w/2,RWY.x1-RWY.x0,RWY.w);
@@ -102,7 +122,7 @@ function draw(){
   num('36',RWY.x0+58,0,-Math.PI/2); num('18',RWY.x1-58,0,Math.PI/2);
   // taxiway centre lines
   ctx.strokeStyle=COL.yel; ctx.lineWidth=Math.max(0.8,1.2*px);
-  path([[RWY.x0+50,TWY_A],[620,TWY_A]]); path([[-1200,TWY_A],[-1200,HOLD_A1.y-6]]); path([[300,0],[300,90],[260,TWY_A]]); path([[-590,TWY_A],[-560,LANE-35],[-520,LANE],[260,LANE]]);
+  path([[RWY.x0+50,TWY_A],[620,TWY_A]]); path([[-1200,TWY_A],[-1200,HOLD_A1.y-6]]); path([[300,0],[300,90],[260,TWY_A]]); path([[-590,TWY_A],[-560,LANE-35],[-520,LANE],[260,LANE]]); path([[200,TWY_A],[200,LANE]]);
   for(let k=1;k<=8;k++) path([[standX(k),LANE],[standX(k),STAND_Y+30]]);
   // A1 holding point: two solid and two dashed yellow lines across the taxiway
   ctx.fillStyle=COL.yel; for(let i=0;i<2;i++) ctx.fillRect(-1212,HOLD_A1.y-4+i*1.6,24,0.7);
@@ -112,10 +132,11 @@ function draw(){
   for(let k=1;k<=8;k++) lbl(String(k),standX(k),STAND_Y+48);
   lbl('Terminal',-170,STAND_Y+102,'center',COL.lbl,13);
   // aircraft: ground first, then airborne on top
-  ai.concat([own]).filter(Boolean).sort((p,q)=>p.alt-q.alt).forEach(drawPlane);
+  ai.concat([own]).filter(p=>p&&!p.hidden).sort((p,q)=>p.alt-q.alt).forEach(drawPlane);
   // north arrow and scale
   ctx.setTransform(dpr,0,0,dpr,0,0); ctx.fillStyle=COL.lbl; ctx.font='600 11px system-ui,sans-serif'; ctx.textAlign='right'; ctx.fillText('N →',W-12,18);
   ctx.textAlign='left'; ctx.fillText('NORDAP · training layout',12,H-10);
+  if(own&&own.hidden){ ctx.textAlign='right'; ctx.fillStyle=COL.ownEdge; ctx.fillText('FJORDAIR 412 inbound from the south',W-12,H-10); }
 }
 function path(pts){ ctx.beginPath(); pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y)); ctx.stroke(); }
 function num(t,x,y,rot){ ctx.save(); ctx.translate(x,y); ctx.rotate(rot); ctx.fillStyle=COL.mark; ctx.font='700 18px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(t,0,0); ctx.restore(); }

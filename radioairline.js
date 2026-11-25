@@ -77,17 +77,19 @@ function departure(V,u){
   {who:'PM',unit:u.gnd,text:`Taxi to holding point A1 runway 36 via Alpha, ${A}.`,task:tr('Read back the taxi clearance.','Les tilbake taksiklareringen.'),els:[hp('A1'),rwy(36),cs()]},
   {who:'PF',ch:'crew',text:'Clear left side.',task:tr('Both of you understand the clearance. Before you release the brakes: check your side.','Begge har forstått klareringen. Før du slipper bremsene: sjekk din side.'),els:[P('“Clear left side”','«Clear left side»',/\bleft\b/)]},
   {who:'PM',ch:'crew',text:'Clear right side.',task:tr('Check your side before the aircraft moves.','Sjekk din side før flyet ruller.'),els:[P('“Clear right side”','«Clear right side»',/\bright\b/)]},
-  {act:'taxi'},{act:'traffic'},
+  {act:'taxi'},
   {t:'sit',text:tr('Taxiing. Brake check, flight control check and Taxi flow done. The cabin-ready memo shows on the ECAM.','Takser. Bremsesjekk, flight control check og Taxi-flow ferdig. Kabin klar vises på ECAM.')},
   {who:'PM',ch:'crew',text:'Cabin is ready.',task:tr('Tell PF the cabin is ready (then the Taxi checklist).','Si til PF at kabinen er klar (så Taxi-sjekklisten).'),els:[P('Cabin ready','Kabin klar',/\bcabin\b.*\bready\b/)]},
-  {act:'hold',wait:1},
+  {act:'hold',wait:1},{act:'traffic'},
   {t:'sit',text:tr('Taxi checklist complete. Approaching A1.','Taxi-sjekkliste ferdig. Nærmer dere A1.')},
   {who:'ATC',unit:u.gnd,text:`${A}, contact Tower 118.300.`},
   {who:'PM',unit:u.gnd,text:`Tower 118.300, ${A}.`,task:tr('Read back the frequency change.','Les tilbake frekvensskiftet.'),els:[freq('118.300','Tower'),cs()]},
   {who:'PM',unit:u.twr,text:`NORDAP Tower, ${c}, holding point A1, ready for departure.`,task:tr('First call to Tower.','Første kall til Tower.'),els:[stn('NORDAP Tower'),cs(),hp('A1'),P('Ready for departure','Klar for avgang',/\bready\b/)]},
+  {who:'ATC',unit:u.twr,text:`${A}, behind the landing A320 on short final, line up runway 36 and wait, behind.`},
+  {who:'PM',unit:u.twr,text:`Behind the landing A320, line up runway 36 and wait, behind, ${A}.`,task:tr('Read back the conditional line-up: the condition first, the clearance, the condition again.','Les tilbake den betingede oppstillingen: betingelsen først, klareringen, så betingelsen igjen.'),
+   els:[P('Condition: “behind the landing A320”','Betingelse: «behind the landing A320»',/\bbehind\b.*\b(landing|a ?320|traffic)\b/,{say:'behind the landing A320'}),P('Line up','Line up',/\b(lineup|lining up)\b/),rwy(36),P('And wait','And wait',/\bwait\b/),P('“Behind” again at the end','«Behind» igjen til slutt',/\bbehind\b.*\b(lineup|lining up)\b.*\bbehind\b/,{say:'behind'}),cs()]},
+  {t:'sit',text:tr('You hold at A1 while the A320 lands in front of you.','Du venter på A1 mens A320-en lander foran deg.')},
   {act:'clear',wait:1},
-  {who:'ATC',unit:u.twr,text:`${A}, line up runway 36 and wait.`},
-  {who:'PM',unit:u.twr,text:`Line up runway 36 and wait, ${A}.`,task:tr('Read back the line-up clearance.','Les tilbake oppstillingsklareringen.'),els:[P('Line up','Line up',/\b(lineup|lining up)\b/),rwy(36),P('And wait','And wait',/\bwait\b/),cs()]},
   {act:'lineup',wait:1},
   {t:'sit',text:tr('Line-up flow: runway confirmed, approach path clear, TCAS TA/RA, packs off.','Line-up-flow: bane bekreftet, innflygingen klar for trafikk, TCAS TA/RA, packs av.')},
   {who:'PM',ch:'pa',text:'Cabin crew, take-off.',task:tr('Tell the cabin on the PA.','Si fra til kabinen på PA.'),els:[P('“Cabin crew”','«Cabin crew»',/\bcabin crew\b/),P('“Take-off”','«Take-off»',/\btakeoff\b/)]},
@@ -150,6 +152,7 @@ function arrival(V,u){
   {who:'ATC',unit:u.app,text:`${A}, turn right heading 330, cleared ILS approach runway 36, report established.`},
   {who:'PM',unit:u.app,text:`Right heading 330, cleared ILS approach runway 36, wilco, ${A}.`,task:tr('Read back the approach clearance.','Les tilbake innflygingsklareringen.'),
    els:[turn('right'),hdg('330'),P('Cleared ILS','Klarert ILS',/\bils\b/),rwy(36),P('“Wilco”','«Wilco»',/\b(wilco|will report)\b/,OPT),cs()]},
+  {act:'final'},
   {t:'sit',text:tr('Localizer and glideslope captured.','Localizer og glidebane fanget.')},
   {who:'PM',unit:u.app,text:`${A}, established ILS runway 36.`,task:tr('Report established.','Meld etablert.'),els:[cs(),P('Established','Etablert',/\bestablished\b/),rwy(36)]},
   {who:'ATC',unit:u.app,text:`${A}, contact Tower 118.300.`},
@@ -157,13 +160,16 @@ function arrival(V,u){
   {who:'PM',unit:u.twr,text:`NORDAP Tower, ${c}, ILS runway 36.`,task:tr('First call to Tower.','Første kall til Tower.'),els:[stn('NORDAP Tower'),cs(),P('ILS','ILS',/\bils\b/),rwy(36)]},
   {who:'ATC',unit:u.twr,text:`${A}, wind ${V.wd} degrees ${V.ws} knots, runway 36, cleared to land.`},
   {who:'PM',unit:u.twr,text:`Runway 36, cleared to land, ${A}.`,task:tr('Read back the landing clearance.','Les tilbake landingsklareringen.'),els:[rwy(36),P('“Cleared to land”','«Cleared to land»',/\bcleared (to |for )?land/),cs()]},
+  {act:'land',wait:1},
   {t:'sit',text:tr('Landed. Decelerating on the runway.','Landet. Bremser ned på banen.')},
   {who:'ATC',unit:u.twr,text:`${A}, vacate via Bravo, contact Ground 121.700.`},
   {who:'PM',unit:u.twr,text:`Vacate via Bravo, Ground 121.700, ${A}.`,task:tr('Read back.','Les tilbake.'),els:[P('Via Bravo','Via Bravo',/\bb\b/),freq('121.700','Ground'),cs()]},
+  {act:'vacate',wait:1},
   {t:'sit',text:tr('Runway vacated. After Landing flow running.','Banen forlatt. After Landing-flow pågår.')},
   {who:'PM',unit:u.gnd,text:`NORDAP Ground, ${c}, runway vacated via Bravo.`,task:tr('First call to Ground after landing.','Første kall til Ground etter landing.'),els:[stn('NORDAP Ground'),cs(),P('Vacated','Forlatt',/\bvacated\b/)]},
   {who:'ATC',unit:u.gnd,text:`${A}, taxi to stand 6 via Alpha.`},
   {who:'PM',unit:u.gnd,text:`Taxi to stand 6 via Alpha, ${A}.`,task:tr('Read back the taxi to the stand.','Les tilbake taksing til stand.'),els:[P('Stand 6','Stand 6',/\bstand 6\b/),P('Via Alpha','Via Alpha',/\ba\b/),cs()]},
+  {act:'taxiin',wait:1},
   {t:'sit',text:tr('On stand 6, parking brake set: Parking flow and checklist. The flight is done.','På stand 6, parkeringsbrems satt: Parking-flow og -sjekkliste. Turen er ferdig.')}
   ];
 }
@@ -209,10 +215,12 @@ const AIRLINE=[
   mk('a320arr-pm',2,tr('A320 arrival: you are PM','A320 ankomst: du er PM'),tr('Radio handover for the ATIS, descent, cabin PA, QNH, ILS, landing, taxi to the stand.','Overføring av radio for ATIS, nedstigning, kabin-PA, QNH, ILS, landing, taksing til stand.'),arrival,'PM'),
   mk('a320arr-pf',2,tr('A320 arrival: you are PF','A320 ankomst: du er PF'),tr('Hand over and take back control and radio, order QNH, confirm what you set. PM talks to ATC.','Gi fra deg og ta tilbake kontroll og radio, be om QNH, bekreft det du setter. PM snakker med ATC.'),arrival,'PF')
 ];
-const live=(k,role,t,d)=>Object.assign(mk(k,2,t,d,departure,role),{map:true});
+const live=(k,role,t,d,sc,mode)=>Object.assign(mk(k,2,t,d,sc||departure,role),{map:mode||'dep'});
 AIRLINE.unshift(
   live('a320live-pm','PM',tr('Live airport: A320 departure as PM','Live flyplass: A320-avgang som PM'),tr('See your A320 push, taxi via Alpha, wait for landing traffic and take off as your calls are accepted.','Se A320-en din pushe, takse via Alpha, vente på landende trafikk og ta av når kallene dine godkjennes.')),
-  live('a320live-pf','PF',tr('Live airport: A320 departure as PF','Live flyplass: A320-avgang som PF'),tr('The ground crew pushes you when your interphone calls are right; PM talks to ATC.','Bakkemannskapet pusher deg når interphone-kallene dine er riktige; PM snakker med ATC.')));
+  live('a320live-pf','PF',tr('Live airport: A320 departure as PF','Live flyplass: A320-avgang som PF'),tr('The ground crew pushes you when your interphone calls are right; PM talks to ATC.','Bakkemannskapet pusher deg når interphone-kallene dine er riktige; PM snakker med ATC.')),
+  live('a320livearr-pm','PM',tr('Live airport: A320 arrival as PM','Live flyplass: A320-ankomst som PM'),tr('From cruise to the stand: you appear on the ILS, land as traffic departs, vacate via Bravo and taxi to stand 6.','Fra cruise til stand: du dukker opp på ILS, lander mens trafikk tar av, forlater via Bravo og takser til stand 6.'),arrival,'arr'),
+  live('a320livearr-pf','PF',tr('Live airport: A320 arrival as PF','Live flyplass: A320-ankomst som PF'),tr('Control and radio handover, QNH, and the landing on the map; PM talks to ATC.','Overføring av kontroll og radio, QNH, og landingen på kartet; PM snakker med ATC.'),arrival,'arr'));
 S.SCEN.push(...AIRLINE); S.ALL.push(...AIRLINE);
 S.AIRLINE={departure,arrival,build,CH};
 })(typeof window!=='undefined'?window:globalThis);
