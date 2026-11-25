@@ -287,11 +287,28 @@ void main(){
   float nearT=1.0-smoothstep(treeR*0.72,treeR,distance(EN,vec2(camW.x,-camW.z)));
   vec2 nxz=mix(nrm.rg,nrm.ba,nearT)*2.0-1.0;
   vec3 N=vec3(nxz.x,0.0,nxz.y); N.y=sqrt(max(0.0,1.0-N.x*N.x-N.z*N.z)); N=normalize(N);
-  vec3 c=lin(alb); { float lu=dot(c,vec3(0.2126,0.7152,0.0722)); c=mix(vec3(lu),c,0.80)*vec3(1.0,0.98,0.95); }
+  // satellite colours: undo the old per-channel grade back to the Sentinel-2 true colour, then a neutral one (same gamma on
+  // all channels keeps the scene's own colours: brown and golden fields, deep green forest, instead of pale yellow-green)
+  vec3 raw=pow(clamp(alb/vec3(0.787,1.13,0.64),0.0,1.0),vec3(1.0/0.574,1.0/0.736,1.0/0.575));
+  vec3 gr=pow(raw,vec3(1.0))*0.92; { float lu=dot(gr,vec3(0.2126,0.7152,0.0722)); gr=mix(vec3(lu),gr,1.0); }
+  vec3 c=lin(clamp(gr,0.0,1.0));
   float fz=smoothstep(1.0,5.0,vCan);
   if(fz>0.0){ vec4 df=texture2D(tDet,EN/9.0); vec3 fc=lin(vec3(0.14,0.20,0.12))*(0.75+0.5*df.g);
     float side=1.0-N.y; fc*=1.0-0.45*smoothstep(0.25,0.8,side);
     c=mix(c,mix(c,fc,0.55+0.45*smoothstep(0.2,0.6,side)),fz); fr=max(fr,fz); }
+  // forest from the air: tree crowns (two scales of the detail noise as a height field, lit from the sun), faded out
+  // before they could shimmer; 3D trees take over near the camera
+  { float wf=max(fz,fr*(1.0-wat)); float fp=max(fwidth(EN.x),fwidth(EN.y));
+    if(wf>0.01&&fp<30.0){
+      float k1=1.0-smoothstep(1.2,6.0,fp), k2=1.0-smoothstep(8.0,30.0,fp);
+      vec2 a=EN/5.5, b=EN/21.0, e=vec2(0.9/5.5,0.0), e2=vec2(3.5/21.0,0.0);
+      float h0=texture2D(tDet,a).g, hx=texture2D(tDet,a+e).g, hy=texture2D(tDet,a+e.yx).g;
+      float H0=texture2D(tDet,b+0.37).r, Hx=texture2D(tDet,b+0.37+e2).r, Hy=texture2D(tDet,b+0.37+e2.yx).r;
+      vec2 gN=vec2(hx-h0,hy-h0)*k1*2.2+vec2(Hx-H0,Hy-H0)*k2*1.4;        // slope of the crown surface (E, N)
+      vec2 sd=normalize(vec2(sunDir.x,-sunDir.z)+1e-4);
+      float lam=clamp(1.0-dot(gN,sd)*1.6,0.55,1.35);                     // crowns facing the sun brighter, the far side darker
+      float gaps=mix(1.0,0.72+0.5*smoothstep(0.25,0.7,h0),k1)*mix(1.0,0.85+0.3*H0,k2);   // dark gaps between crowns
+      c*=mix(1.0,lam*gaps,wf*0.9); } }
   vec3 V=camW-vW; float dist=length(V); V/=dist;
   float under=fr*(1.0-smoothstep(treeR*0.72,treeR,distance(EN,vec2(camW.x,-camW.z))));
   if(under>0.0){ vec4 dfl=texture2D(tDet,EN/3.0); c=mix(c,lin(vec3(0.11,0.13,0.08))*(0.7+0.6*dfl.g),under*0.85); }
@@ -458,7 +475,11 @@ void main(){
   float shS=0.0, shA=0.0;
   { vec2 ua3=vec2((EN.x-aptE.x)/aptE.z,(aptE.y-EN.y)/aptE.w);
     if(aptOn>0.5&&ua3.x>0.0&&ua3.y>0.0&&ua3.x<1.0&&ua3.y<1.0){ vec2 sh=texture2D(tShd,ua3).rg; shS=sh.r; shA=sh.g; } }
-  vec3 lit=sunCol*ndl*sunVis*(1.0-0.25*fr)*(1.0-0.88*shS) + (skyCol*amb*(0.55+0.45*N.y)*2.0 + horCol*amb*0.25*(1.0-N.y))*(1.0-0.55*shA);
+  float cs=0.0;                                                         // shadows of the cumulus layer at 1 800 m (same clouds as the sky)
+  if(sunDir.y>0.04&&vW.y<1700.0){ vec2 cp=vec2(vW.x,vW.z)+sunDir.xz/sunDir.y*(1800.0-vW.y)+vec2(wt*4.0,wt*1.5);
+    float n=texture2D(tDet,cp/52000.0).a*0.50+texture2D(tDet,cp/17000.0+0.31).r*0.30+texture2D(tDet,cp/5200.0+0.73).g*0.14+texture2D(tDet,cp/1500.0+0.19).r*0.06;
+    cs=smoothstep(0.515,0.70,n)*0.82; }
+  vec3 lit=sunCol*ndl*sunVis*(1.0-cs)*(1.0-0.25*fr)*(1.0-0.88*shS) + (skyCol*amb*(0.55+0.45*N.y)*2.0 + horCol*amb*0.25*(1.0-N.y))*(1.0-0.55*shA);
   lit*=1.0-0.18*fr*(1.0-ndl);
   vec3 col=c*lit;
   if(night>0.05&&aptOn>0.5){
