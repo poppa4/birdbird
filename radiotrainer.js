@@ -9,7 +9,7 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 const $=sel=>document.querySelector(sel);
 
 /* ---------------- storage ---------------- */
-const K={prefs:'naeroson-radio-prefs',srs:'naeroson-radio-srs',stats:'naeroson-radio-stats'};
+const K={prefs:'naeroson-radio-prefs',srs:'naeroson-radio-srs',stats:'naeroson-radio-stats',guide:'naeroson-radio-guide',coach:'naeroson-radio-coach'};
 const jget=(k,d)=>{ try{ const v=JSON.parse(localStorage.getItem(k)||'null'); return v==null?d:v; }catch(e){ return d; } };
 const jset=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
 const P=Object.assign({level:'intermediate',callsign:'LN-NAE',voice:true,rate:1,fx:true,auto:true,mic:'en-GB'},jget(K.prefs,{}));
@@ -18,12 +18,12 @@ const best=k=>{ try{ return +(localStorage.getItem('naeroson-radio-'+k)||0); }ca
 
 /* ---------------- texts ---------------- */
 const GROUPS={
-  quick:{t:tr('Quick drill','Kjapp drill'),d:tr('2 minutes · six readbacks, your weak ones first','2 minutter · seks tilbakelesinger, de svake først'),ic:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2'},
+  basic:{t:tr('Basics','Grunnleggende'),d:tr('Phonetic alphabet, numbers, callsigns, standard words','Fonetisk alfabet, tall, kallesignaler, standardord'),ic:'M5 6h14M5 12h14M5 18h9'},
   vfr:{t:tr('VFR flight','VFR-tur'),d:tr('Taxi, zones, FIS, AFIS, circuits, uncontrolled fields','Taksing, soner, FIS, AFIS, landingsrunder, ukontrollerte plasser'),ic:'M3 15l9-9 9 9M12 6v14'},
   ifr:{t:tr('IFR flight','IFR-tur'),d:tr('Clearance, SID, levels, holds, vectors, approach','Klarering, SID, nivåer, venting, vektorer, innflyging'),ic:'M4 20l8-16 8 16M8 13h8'},
   emerg:{t:tr('Emergencies','Nødsituasjoner'),d:tr('MAYDAY, PAN PAN, radio failure, lost, fuel, diversion','MAYDAY, PAN PAN, radiosvikt, usikker posisjon, drivstoff, mål-endring'),ic:'M12 4l9 16H3zM12 10v4M12 17v.5'},
   airline:{t:tr('Airline: A320 crew','Flyselskap: A320-besetning'),d:tr('Two pilots: who says what, to whom, after which checklist','To piloter: hvem sier hva, til hvem, etter hvilken sjekkliste'),ic:'M2 13l8-2 5-7h2l-2 7 5-1 2-2h2l-1 4 1 4h-2l-2-2-5-1 2 7h-2l-5-7-8-2z'},
-  basic:{t:tr('Basics','Grunnleggende'),d:tr('Phonetic alphabet, numbers, callsigns, standard words','Fonetisk alfabet, tall, kallesignaler, standardord'),ic:'M5 6h14M5 12h14M5 18h9'}
+  quick:{t:tr('Quick drill','Kjapp drill'),d:tr('2 minutes · six readbacks, your weak ones first','2 minutter · seks tilbakelesinger, de svake først'),ic:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2'}
 };
 const LEVELS={beginner:{t:tr('Learning','Lære'),d:tr('New to the radio: slow controller, the items to include are shown, three tries per call.','Ny på radio: rolig flygeleder, elementene du skal ta med vises, tre forsøk per oppkall.')},
   intermediate:{t:tr('Refresher','Oppfriskning'),d:tr('You have flown before: normal pace, a hint only if you ask, two tries.','Du har flydd før: normalt tempo, hint bare om du ber om det, to forsøk.')},
@@ -161,14 +161,49 @@ let ses=null, cur=null, group='vfr';
 
 function drawHome(){
   const db=jget(K.srs,{}); const pool=S.QUICK_POOL(); const due=R.SRS.due(db).filter(id=>pool.includes(id));
-  el('goals').innerHTML=Object.entries(GROUPS).map(([k,g])=>`<button class="goal" data-g="${k}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${g.ic}"/></svg><span><b>${esc(L(g.t))}</b><small>${esc(L(g.d))}</small>${k==='quick'&&due.length?`<em>${due.length} ${L({en:'due for review',no:'til repetisjon'})}</em>`:''}</span></button>`).join('');
+  /* the learning path: basics → VFR → IFR → emergencies → airline; "Start here" on the first one not tried yet */
+  const tried=k=>S.ALL.some(s=>s.group===k&&best(s.k)>0);
+  const path=Object.keys(GROUPS).filter(k=>k!=='quick'); const next=path.find(k=>!tried(k));
+  el('goals').innerHTML=path.map((k,i)=>{ const g=GROUPS[k], t=tried(k);
+    return `<button class="goal${k===next?' next':''}" data-g="${k}"><span class="stepn">${i+1}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${g.ic}"/></svg><span><b>${esc(L(g.t))}</b><small>${esc(L(g.d))}</small>${k===next?`<span class="here">${L({en:'Start here',no:'Start her'})}</span>`:t?`<span class="tried">✓ ${L({en:'Practised',no:'Øvd'})}</span>`:''}</span></button>`; }).join('');
+  const anyTried=path.some(tried);
+  el('quickRow').innerHTML=`<b>${esc(L(GROUPS.quick.t))}</b><span>${esc(L(anyTried?{en:'Back for two minutes? Six readbacks, your weak ones first.',no:'Tilbake for to minutter? Seks tilbakelesinger, de svake først.'}:{en:'Two minutes, six readbacks from all over the trainer. Good once you have done a few lessons.',no:'To minutter, seks tilbakelesinger fra hele treneren. Fint når du har tatt noen leksjoner.'}))}</span>${due.length?`<em>${due.length} ${L({en:'due for review',no:'til repetisjon'})}</em>`:''}<button class="btn${anyTried?' pri':''}" id="quickGo" type="button">${L({en:'Start quick drill',no:'Start kjapp drill'})}</button>`;
+  el('quickGo').onclick=()=>startScenario('quick');
+  drawGuide();
   el('lvlTip').textContent=L(LEVELS[P.level].d);
   const st=jget(K.stats,{}); const weak=Object.entries(st).filter(([k,o])=>o.n>=3&&KIND[k]).map(([k,o])=>[k,o.ok/o.n]).sort((a,b)=>a[1]-b[1]).slice(0,3);
   el('homeStats').innerHTML= weak.length? `<b>${L({en:'Your weakest items so far',no:'Dine svakeste elementer så langt'})}:</b> `+weak.map(([k,v])=>`<span class="pill ${v<0.6?'bad':v<0.85?'mid':'good'}">${esc(L(KIND[k]))} ${Math.round(v*100)} %</span>`).join(' ') : '';
 }
+function drawGuide(force){
+  const g=el('guide'); const seen=jget(K.guide,0); if(!force&&seen){ g.hidden=true; return; }
+  g.hidden=false;
+  g.innerHTML=`<h3>${L({en:'How the radio trainer works',no:'Slik virker radiotreneren'})}</h3><ol>
+    <li><i>1</i><div><b>${L({en:'Pick a lesson',no:'Velg en leksjon'})}</b><span>${L({en:'New to the radio? Start with Basics and go in order. Each lesson is a short session with a real controller.',no:'Ny på radio? Start med Grunnleggende og gå i rekkefølge. Hver leksjon er en kort økt med en ekte flygeleder.'})}</span></div></li>
+    <li><i>2</i><div><b>${L({en:'Talk or type',no:'Snakk eller skriv'})}</b><span>${L({en:'Hold the talk button (or the space bar), say your call, let go. Or type it and press Transmit. Both are graded the same.',no:'Hold snakkeknappen (eller mellomromstasten), si oppkallet, slipp. Eller skriv det og trykk Transmit. Begge vurderes likt.'})}</span></div></li>
+    <li><i>3</i><div><b>${L({en:'Read the feedback',no:'Les tilbakemeldingen'})}</b><span>${L({en:'Every item of your call is checked, with the rule behind it. If something is missing, the controller asks for it and you try again.',no:'Hvert element i oppkallet sjekkes, med regelen bak. Mangler noe, ber flygelederen om det, og du prøver igjen.'})}</span>
+      <div class="keys"><span class="k ok">✓ ${L({en:'right',no:'riktig'})}</span><span class="k mid">! ${L({en:'note',no:'merknad'})}</span><span class="k bad">✕ ${L({en:'missing or wrong',no:'mangler eller feil'})}</span></div></div></li></ol>
+    <div class="gfoot"><button class="btn pri" id="guideOk" type="button">${L({en:'Got it',no:'Skjønner'})}</button><span>${L({en:'Level sets the pace: Beginner shows what to include, Check-ready hides the controller text until you answer.',no:'Nivået styrer tempoet: Nybegynner viser hva du skal ta med, Klar for sjekk skjuler flygelederens tekst til du har svart.'})}</span></div>`;
+  el('guideOk').onclick=()=>{ jset(K.guide,1); g.hidden=true; el('guideBtn').focus(); };
+}
+/* airline: three plain choices instead of eight cards */
+function drawAirline(){
+  const A=Object.assign({ph:'dep',seat:'PM',map:true},P.al||{}); P.al=A;
+  const opt=(grp,v,t,d)=>`<button class="opt" type="button" data-grp="${grp}" data-v="${v}" aria-pressed="${String(A[grp])===String(v)}"><b>${esc(L(t))}</b><small>${esc(L(d))}</small></button>`;
+  const key=(A.map?(A.ph==='dep'?'a320live-':'a320livearr-'):(A.ph==='dep'?'a320dep-':'a320arr-'))+A.seat.toLowerCase();
+  const sc=S.byKey(key), b=best(key);
+  el('pickL').innerHTML=`<div class="alc">
+    <div class="row"><span>${L({en:'Flight',no:'Tur'})}</span><div class="opts">${opt('ph','dep',{en:'Departure',no:'Avgang'},{en:'Stand to the climb: clearance, push and start, taxi, take-off.',no:'Stand til stigning: klarering, push og start, taksing, avgang.'})}${opt('ph','arr',{en:'Arrival',no:'Ankomst'},{en:'Top of descent to the stand: ATIS, descent, ILS, landing, taxi in.',no:'Top of descent til stand: ATIS, nedstigning, ILS, landing, taksing inn.'})}</div></div>
+    <div class="row"><span>${L({en:'Your seat',no:'Ditt sete'})}</span><div class="opts">${opt('seat','PM',{en:'PM – pilot monitoring',no:'PM – pilot monitoring'},{en:'You talk to ATC. Best place to start.',no:'Du snakker med ATC. Beste sted å starte.'})}${opt('seat','PF',{en:'PF – pilot flying',no:'PF – pilot flying'},{en:'You ask PM for the calls and talk to the ground crew.',no:'Du ber PM om kallene og snakker med bakkemannskapet.'})}</div></div>
+    <div class="row"><span>${L({en:'Airport map',no:'Flyplasskart'})}</span><div class="opts">${opt('map',true,{en:'Live map on',no:'Live kart på'},{en:'See your aircraft move as your calls are accepted.',no:'Se flyet ditt bevege seg når kallene godkjennes.'})}${opt('map',false,{en:'Radio only',no:'Bare radio'},{en:'Just the calls, faster.',no:'Bare kallene, raskere.'})}</div></div>
+    <div class="go"><button class="btn pri" id="alGo" type="button">${L({en:'Start',no:'Start'})}</button><p>${esc(L(sc.d))}${b?` · ${L({en:'Best',no:'Beste'})} ${b} %`:''}</p></div></div>`;
+  el('pickL').querySelectorAll('.opt').forEach(x=>x.onclick=()=>{ const v=x.dataset.v; A[x.dataset.grp]= v==='true'?true:v==='false'?false:v; saveP(); drawAirline(); });
+  el('alGo').onclick=()=>startScenario(sc);
+}
 function drawPick(){
-  const list=S.ALL.filter(s=>s.group===group);
   el('pickT').textContent=L(GROUPS[group].t);
+  if(group==='airline'){ el('pickL').className='alwrap'; drawAirline(); return; }
+  el('pickL').className='sclist';
+  const list=S.ALL.filter(s=>s.group===group);
   el('pickL').innerHTML=list.map(s=>{ const b=best(s.k); return `<button class="sc${s.full?' full':''}" data-k="${s.k}"><span class="lv" aria-label="${L({en:'Level',no:'Nivå'})} ${s.lvl}">${'●'.repeat(s.lvl)}${'○'.repeat(3-s.lvl)}</span><b>${esc(L(s.t))}</b><small>${esc(L(s.d))}</small>${b?`<i>${L({en:'Best',no:'Beste'})} ${b} %</i>`:''}</button>`; }).join('');
 }
 
@@ -235,7 +270,8 @@ function drawTurn(){
   const showList=ses.L.hints||box.dataset.hint==='1';
   if(need&&need.length&&ses.tries>0){ box.innerHTML=`<div class="tk"><b>${L({en:'Your turn',no:'Din tur'})}</b> ${esc(L({en:'The controller asked for ',no:'Flygelederen ba om '}))}<b class="need">${esc(need.join(', '))}</b>${esc(L({en:'. Give just that, with your callsign.',no:'. Gi bare det, med kallesignalet ditt.'}))}</div>`; el('btnAgain').disabled=!ses.lastAtc; return; }
   if(!ses.tries) need=null;
-  box.innerHTML=`<div class="tk"><b>${L({en:'Your turn',no:'Din tur'})}</b> ${esc(L(s.task))}</div>`+
+  const coach=!jget(K.coach,0)? `<div class="coach">${L({en:'Hold the talk button (or the space bar) and speak, or type your call and press Transmit.',no:'Hold snakkeknappen (eller mellomromstasten) og snakk, eller skriv oppkallet og trykk Transmit.'})}</div>` : '';
+  box.innerHTML=`<div class="tk"><b>${L({en:'Your turn',no:'Din tur'})}</b> ${esc(L(s.task))}</div>`+coach+
     (showList? `<div class="inc"><span>${L({en:'Include',no:'Ta med'})}:</span> ${req.map(chip).join('')}${opt.map(chip).join('')}</div>` : ses.level==='intermediate'? `<button class="lnk" id="hintBtn" type="button">${L({en:'Hint: what to include',no:'Hint: hva du skal ta med'})}</button>`:'');
   const hb=el('hintBtn'); if(hb) hb.onclick=()=>{ box.dataset.hint='1'; drawTurn(); };
   box.dataset.hint='';
@@ -260,7 +296,7 @@ function whyHtml(g,s){
 }
 let lastVoice=null, need=null;
 async function transmit(byVoice){
-  if(!ses||ses.done) return; const ta=el('say'); const txt=ta.value.trim(); if(!txt) return;
+  if(!ses||ses.done) return; const ta=el('say'); const txt=ta.value.trim(); if(!txt) return; jset(K.coach,1);
   hush(); ta.value=''; revealAll();
   const s=ses.step; const r=ses.submit(txt);
   if(!r.g||r.g.empty) return;
@@ -327,6 +363,7 @@ function aiSetup(){
 /* ---------------- wiring ---------------- */
 function init(){
   const lvl=LAB.seg(el('lvlSeg'),[['beginner','Beginner'],['intermediate','Intermediate'],['check','Check-ready']],P.level,v=>{ P.level=v; saveP(); el('lvlTip').textContent=L(LEVELS[v].d); });
+  el('guideBtn').onclick=()=>{ drawGuide(true); el('guide').scrollIntoView({behavior:'smooth',block:'nearest'}); };
   el('goals').addEventListener('click',e=>{ const b=e.target.closest('.goal'); if(!b) return; const g=b.dataset.g; if(g==='quick'){ startScenario('quick'); return; } group=g; drawPick(); show('pick'); el('pickBack').focus(); });
   el('pickL').addEventListener('click',e=>{ const b=e.target.closest('.sc'); if(!b) return; startScenario(S.byKey(b.dataset.k)); });
   el('pickBack').onclick=()=>{ drawHome(); show('home'); };

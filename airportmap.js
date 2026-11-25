@@ -14,7 +14,7 @@ const COL={grass:'#17221c',grass2:'#1a271f',apron:'#262d35',twy:'#2c333b',rwy:'#
   term:'#1d2733',termEdge:'#3b4a5a',lbl:'#a9b6c3',own:'#5aa9ff',ownEdge:'#cfe6ff',ai:'#c8d1da',aiEdge:'#8996a3',shadow:'rgba(0,0,0,.35)'};
 
 let cv=null, ctx=null, raf=0, last=0, W=0, H=0, dpr=1, running=false;
-let own=null, ai=[], cam={x:-190,y:300,s:1}, camT={x:-190,y:300,s:1}, phase='stand', waiters=[];
+let CLK=0, own=null, ai=[], cam={x:-190,y:300,s:1}, camT={x:-190,y:300,s:1}, phase='stand', waiters=[];
 
 /* ---------- aircraft ---------- */
 function plane(o){ return Object.assign({x:0,y:0,a:0,alt:0,path:null,pi:0,v:0,vmax:SPEED.taxi,back:false,label:'',own:false,done:true,onDone:null},o); }
@@ -144,6 +144,15 @@ function draw(){
   lbl('A',-900,TWY_A-16); lbl('A',350,TWY_A-16); lbl('A1',-1228,HOLD_A1.y+6,'end'); lbl('B',318,70,'start'); lbl('D1',1228,HOLD_D1.y+6,'start'); lbl('C',-318,70,'end');
   for(let k=1;k<=8;k++) lbl(String(k),standX(k),STAND_Y+48);
   lbl('Terminal',-170,STAND_Y+102,'center',COL.lbl,13);
+  // runway edge lights (white), threshold (green) and runway end (red); blue taxiway edge lights along Alpha
+  const dot=(x,y,c,r)=>{ ctx.fillStyle=c; ctx.beginPath(); ctx.arc(x,y,r*px,0,7); ctx.fill(); };
+  if(cam.s>0.18){ for(let x=RWY.x0;x<=RWY.x1;x+=60){ dot(x,-RWY.w/2-1,'rgba(255,244,214,.85)',1.3); dot(x,RWY.w/2+1,'rgba(255,244,214,.85)',1.3); }
+    for(let y=-RWY.w/2;y<=RWY.w/2;y+=7){ dot(RWY.x0-2,y,'#3ddc84',1.5); dot(RWY.x1+2,y,'#3ddc84',1.5); }
+    for(let x=RWY.x0+60;x<1200;x+=60){ dot(x,TWY_A-13,'rgba(90,150,255,.8)',1.1); dot(x,TWY_A+13,'rgba(90,150,255,.8)',1.1); } }
+  // the cleared taxi route ahead of you
+  if(own&&own.path&&!own.done&&/^(taxi|taxiin|push)$/.test(phase)){ ctx.save(); ctx.strokeStyle='rgba(120,200,255,.9)'; ctx.lineWidth=2.2*px; ctx.setLineDash([8*px,6*px]); ctx.lineDashOffset=-CLK*30*px;
+    ctx.beginPath(); ctx.moveTo(own.x,own.y); for(let i=own.pi;i<own.path.length;i++) ctx.lineTo(own.path[i].x,own.path[i].y); ctx.stroke();
+    const e=own.path[own.path.length-1]; ctx.setLineDash([]); ctx.fillStyle='rgba(120,200,255,.95)'; ctx.beginPath(); ctx.arc(e.x,e.y,4*px,0,7); ctx.fill(); ctx.restore(); }
   // aircraft: ground first, then airborne on top
   ai.concat([own]).filter(p=>p&&!p.hidden).sort((p,q)=>p.alt-q.alt).forEach(drawPlane);
   // north arrow and scale
@@ -157,11 +166,17 @@ function lbl(t,x,y,al,col,fs){ ctx.save(); ctx.translate(x,y); ctx.scale(1/cam.s
 /* A320 seen from above, nose along +x, 37.6 m long, 35.8 m span */
 const SHAPE=[[18.8,0],[17.6,1.5],[15,2],[3.5,2],[-4.5,17.9],[-7.5,17.9],[-5,2],[-13.5,2],[-17,6.3],[-18.6,6.3],[-17.2,1.2],[-18.8,0.4],[-18.8,-0.4],[-17.2,-1.2],[-18.6,-6.3],[-17,-6.3],[-13.5,-2],[-5,-2],[-7.5,-17.9],[-4.5,-17.9],[3.5,-2],[15,-2],[17.6,-1.5]];
 function drawPlane(p){
-  const sc=1+p.alt*1.4, minPx=p.own?22:16, k=Math.max(sc,minPx/(37.6*cam.s));
+  const sc=1+p.alt*1.4, minPx=p.own?34:24, k=Math.max(sc,minPx/(37.6*cam.s));
+  if(p.own&&p.alt<0.9){ const pr=(CLK*0.8)%1; ctx.save(); ctx.translate(p.x,p.y); ctx.strokeStyle=`rgba(90,169,255,${0.55*(1-pr)})`; ctx.lineWidth=2/cam.s; ctx.beginPath(); ctx.arc(0,0,(22+pr*18)*k,0,7); ctx.stroke(); ctx.restore(); }
   if(p.alt>0){ ctx.save(); ctx.translate(p.x+p.alt*40,p.y+p.alt*40); ctx.rotate(p.a); ctx.scale(k,k); poly(SHAPE); ctx.fillStyle=COL.shadow; ctx.fill(); ctx.restore(); }
   ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.a); ctx.scale(k,k);
   poly(SHAPE); ctx.fillStyle=p.own?COL.own:COL.ai; ctx.fill(); ctx.lineWidth=0.6; ctx.strokeStyle=p.own?COL.ownEdge:COL.aiEdge; ctx.stroke();
   ctx.fillStyle=p.own?'#2f6fb8':'#7d8996'; [[1,5.7],[1,-5.7]].forEach(([x,y])=>{ ctx.fillRect(x-1.5,y-0.9,4.2,1.8); });
+  // navigation lights: red left wing, green right wing, white tail; red beacon when engines run; white strobes on the runway
+  const L1=r=>r/k/cam.s, glow=(x,y,c,r)=>{ ctx.fillStyle=c; ctx.globalAlpha=0.28; ctx.beginPath(); ctx.arc(x,y,L1(r*2.6),0,7); ctx.fill(); ctx.globalAlpha=1; ctx.beginPath(); ctx.arc(x,y,L1(r),0,7); ctx.fill(); };
+  glow(-6.5,-17.6,'#ff4a4a',1.6); glow(-6.5,17.6,'#3dff8a',1.6); glow(-18.6,0,'#ffffff',1.2);
+  const moving=p.v>0.5||(p.own&&phase!=='stand'&&phase!=='parked'); if(moving&&(CLK*1.1)%1<0.18) glow(0,0,'#ff3030',2.2);
+  if(Math.abs(p.y)<30&&(p.v>3||p.alt>0)&&(CLK*1.4)%1<0.08){ glow(-6.5,-17.6,'#ffffff',2.6); glow(-6.5,17.6,'#ffffff',2.6); }
   ctx.restore();
   if(p.label&&p.alt<0.95){ ctx.save(); ctx.translate(p.x,p.y); ctx.scale(1/cam.s,1/cam.s); const t=p.label; ctx.font=`700 ${p.own?12:11}px system-ui,sans-serif`;
     const w=ctx.measureText(t).width+10; ctx.fillStyle='rgba(10,16,23,.82)'; ctx.fillRect(14,-26,w,17); ctx.fillStyle=p.own?COL.ownEdge:COL.lbl; ctx.textBaseline='middle'; ctx.fillText(t,19,-17.5); ctx.restore(); }
@@ -171,7 +186,7 @@ function poly(pts){ ctx.beginPath(); pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ct
 /* ---------- loop ---------- */
 function loop(){ running=true; last=performance.now();
   const f=t=>{ if(!running) return; const dt=Math.min(0.05,(t-last)/1000)*TIME; last=t;
-    if(own) step(own,dt); ai.forEach(p=>step(p,dt)); if(own) camera(dt/TIME);
+    CLK+=dt/TIME; if(own) step(own,dt); ai.forEach(p=>step(p,dt)); if(own) camera(dt/TIME);
     waiters=waiters.filter(w=>{ if(w.cond()){ w.res(); return false; } return true; });
     draw(); raf=requestAnimationFrame(f); };
   raf=requestAnimationFrame(f); }
