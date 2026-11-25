@@ -117,6 +117,9 @@ function init(o){
     /* a strip just outside the beams over the side and aft windows: the model has a slit between those beams and the ceiling
        lining, and the sky showed through it as a thin bright line */
     for(const sg of [-1,1]){ q4(v3(sg*0.80,0.86,-0.02),v3(sg*1.02,0.86,0.36),v3(sg*1.02,1.04,0.36),v3(sg*0.80,1.04,-0.02)); q4(v3(sg*1.02,0.86,0.36),v3(sg*1.03,0.86,0.97),v3(sg*1.03,1.04,0.97),v3(sg*1.02,1.04,0.36)); }
+    /* the wall behind the aft side windows, at window height: the model is open there between the window's rear edge and the
+       rear wall, and the outside showed in the corner above the seats */
+    for(const sg of [-1,1]) q4(v3(sg*X2,wS-0.14,0.66),v3(sg*X2,wS-0.14,zB),v3(sg*X2,wT0+0.10,zB),v3(sg*X2,wT0+0.10,0.66));
     const g=new THREE.BufferGeometry(), arr=new Float32Array(bp.length*3); bp.forEach((v,i)=>{ arr[i*3]=v.x; arr[i*3+1]=v.y; arr[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(arr,3)); BACK.add(new THREE.Mesh(g,bm));
     /* below the windshield sill: a dark tub (wall behind the main panel, side walls, floor) a little outside the structure, so a
        gap between two parts of the model shows dark lining and never the ground outside */
