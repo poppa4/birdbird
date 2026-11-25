@@ -390,8 +390,11 @@ if NEO:
             d = pts - e; dl = np.linalg.norm(d, axis=1); ii = np.nonzero(~vis)[0]
             if len(ii): hit = ii[_r.intersects_first(np.repeat(e[None], len(ii), 0), d[ii] / dl[ii, None]) == ii]; vis[hit] = True; seen[hit] = e
     # the model's normals point either way: each face is turned towards the eye that sees it (light is baked on that side)
-    flip = vis & (np.einsum('ij,ij->i', fn_, seen - cen_) < 0); fn_[flip] *= -1
     for _ in range(7): vv = np.zeros(len(NV), bool); vv[NF[vis].ravel()] = True; vis |= vv[NF].any(1)   # several rings round what is seen: with two, part-hidden panels kept a torn edge
+    # faces taken in by those rings were never seen from an eye: they face the middle of the flight deck (left as they came,
+    # their light was baked on a random side and they stood out as torn lighter patches)
+    seen[~seen.any(1)] = np.array([0.0, 0.65, 0.40])
+    flip = vis & (np.einsum('ij,ij->i', fn_, seen - cen_) < 0); fn_[flip] *= -1
     vis &= fa_ > 1e-10; print('new structure: seen from the seats', int(vis.sum()), 'of', len(NF))
     for fi in np.nonzero(vis)[0]:
         c3 = cen_[fi]; n3 = fn_[fi]
@@ -492,7 +495,7 @@ for f_, (x_, z_) in FXZ.items():
     if lab[f_] == _lt: lab[f_] = len(cen) - 2
     elif lab[f_] == _dk and FY[f_] > -0.30: lab[f_] = len(cen) - 1   # harness straps, buckle and seat pan frame: dark
 if NEOF:   # the new structure's materials: lining, seat cover, carpet, console slate
-    _b = len(cen); cen = np.vstack([cen, [78.0, 92.0, 111.0], [44.0, 62.0, 100.0], [44.0, 47.0, 62.0], [58.0, 68.0, 84.0], [24.0, 26.0, 30.0]])
+    _b = len(cen); cen = np.vstack([cen, [86.0, 101.0, 120.0], [44.0, 62.0, 100.0], [44.0, 47.0, 62.0], [40.0, 45.0, 55.0], [24.0, 26.0, 30.0]])
     for fid, mat in NEOF: lab[fid] = _b + mat
 # the kind of surface per palette entry, for the page's surface grain: 0 moulded plastic, 1 woven fabric, 2 carpet, 3 leather
 MCLS = np.zeros(len(cen), np.uint8); MCLS[K - 3] = 1; MCLS[K + 1] = 1; MCLS[K - 2] = 2; MCLS[K - 1] = 3
