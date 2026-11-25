@@ -23,7 +23,7 @@ const P0=160;                                    // finest patch size (m) -> 10 
 const NLEV=11;                                   // quadtree levels: root = 160*2^10 = 163.84 km
 const ROOT={E:0, N:1000, S:P0*Math.pow(2,NLEV-1)};
 const MAXI=2400;
-const DATA_V=1;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
+const DATA_V=2;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
 const V=f=>f+'?v='+DATA_V;
 
 /* ---------- loading ---------- */
@@ -49,13 +49,12 @@ async function loadLevel(base,name){
   const tH=new (T().DataTexture)(hc,m.hw,m.hh,T().RGFormat,T().FloatType); tH.internalFormat='RG32F';
   tH.minFilter=tH.magFilter=T().NearestFilter; tH.flipY=false; tH.generateMipmaps=false; tH.needsUpdate=true;
   // normals from the rendered surface (terrain + forest canopy)
+  // RG: normal of the visible surface (ground + forest canopy), BA: normal of the bare ground (used under 3D trees)
   const nr=new Uint8Array(n*4), w=m.hw, h=m.hh, d=m.hres;
-  for(let y=0;y<h;y++) for(let x=0;x<w;x++){
-    const i=y*w+x, xl=x>0?i-1:i, xr=x<w-1?i+1:i, yu=y>0?i-w:i, yd=y<h-1?i+w:i;
-    const dE=(rh[xr]-rh[xl])/(d*((x>0&&x<w-1)?2:1)), dN=(rh[yu]-rh[yd])/(d*((y>0&&y<h-1)?2:1));
-    let nx=-dE, ny=1, nz=dN; const k=1/Math.hypot(nx,ny,nz); nx*=k; ny*=k; nz*=k;
-    nr[i*4]=Math.round((nx*0.5+0.5)*255); nr[i*4+1]=Math.round((nz*0.5+0.5)*255); nr[i*4+2]=Math.round(ny*255); nr[i*4+3]=255;
-  }
+  const put=(arr,i,x,y,o)=>{ const xl=x>0?i-1:i, xr=x<w-1?i+1:i, yu=y>0?i-w:i, yd=y<h-1?i+w:i;
+    const dE=(arr[xr]-arr[xl])/(d*((x>0&&x<w-1)?2:1)), dN=(arr[yu]-arr[yd])/(d*((y>0&&y<h-1)?2:1));
+    const k=1/Math.hypot(dE,1,dN); nr[i*4+o]=Math.round((-dE*k*0.5+0.5)*255); nr[i*4+o+1]=Math.round((dN*k*0.5+0.5)*255); };
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const i=y*w+x; put(rh,i,x,y,0); put(dtm,i,x,y,2); }
   const tN=new (T().DataTexture)(nr,w,h,T().RGBAFormat,T().UnsignedByteType);
   tN.minFilter=T().LinearMipmapLinearFilter; tN.magFilter=T().LinearFilter; tN.generateMipmaps=true; tN.flipY=false; tN.needsUpdate=true;
   L.tH=tH; L.tN=tN; L.tA=texFromBitmap(ab,true); L.tW=texFromBitmap(wb,false);
@@ -232,11 +231,15 @@ float box(vec2 p,vec2 c,vec2 hs,float aa){ vec2 q=p-c; return cov1(q.x,hs.x,AA.x
 void main(){
   vec2 EN=vEN;
   vec2 uF=uvOf(aextF,EN), uM=uvOf(aextM,EN), uN=uvOf(aextN,EN);
-  vec3 alb=texture2D(tAF,uF).rgb; vec3 nrm=texture2D(tNF,uvOf(extF,EN)).rgb; float wat=texture2D(tWF,uF).r; float fr=0.0, pv=0.0;
+  vec3 alb=texture2D(tAF,uF).rgb; vec4 nrm=texture2D(tNF,uvOf(extF,EN)); float wat=texture2D(tWF,uF).r; float fr=0.0, pv=0.0;
   float km=onM*inside(extM,EN,1500.0), kn=onN*inside(extN,EN,350.0);
-  if(km>0.0){ alb=mix(alb,texture2D(tAM,uM).rgb,km); nrm=mix(nrm,texture2D(tNM,uvOf(extM,EN)).rgb,km); wat=mix(wat,texture2D(tWM,uM).r,km); }
-  if(kn>0.0){ vec3 w3=texture2D(tWN,uN).rgb; alb=mix(alb,texture2D(tAN,uN).rgb,kn); nrm=mix(nrm,texture2D(tNN,uvOf(extN,EN)).rgb,kn); wat=mix(wat,w3.r,kn); fr=w3.g*kn; pv=w3.b*kn; }
-  vec3 N=vec3(nrm.r*2.0-1.0,0.0,nrm.g*2.0-1.0); N.y=sqrt(max(0.0,1.0-N.x*N.x-N.z*N.z)); N=normalize(N);
+  if(km>0.0){ alb=mix(alb,texture2D(tAM,uM).rgb,km); nrm=mix(nrm,texture2D(tNM,uvOf(extM,EN)),km); wat=mix(wat,texture2D(tWM,uM).r,km); }
+  if(kn>0.0){ vec3 w3=texture2D(tWN,uN).rgb; vec3 an=texture2D(tAN,uN).rgb; vec3 ab=texture2D(tAN,uN,2.0).rgb;
+    an=clamp(an+(an-ab)*0.55,0.0,1.0);                  // unsharp mask: the 10 m satellite colours read crisper up close
+    alb=mix(alb,an,kn); nrm=mix(nrm,texture2D(tNN,uvOf(extN,EN)),kn); wat=mix(wat,w3.r,kn); fr=w3.g*kn; pv=w3.b*kn; }
+  float nearT=1.0-smoothstep(treeR*0.72,treeR,distance(EN,vec2(camW.x,-camW.z)));
+  vec2 nxz=mix(nrm.rg,nrm.ba,nearT)*2.0-1.0;
+  vec3 N=vec3(nxz.x,0.0,nxz.y); N.y=sqrt(max(0.0,1.0-N.x*N.x-N.z*N.z)); N=normalize(N);
   vec3 c=lin(alb);
   float fz=smoothstep(1.0,5.0,vCan);
   if(fz>0.0){ vec4 df=texture2D(tDet,EN/9.0); vec3 fc=lin(vec3(0.14,0.20,0.12))*(0.75+0.5*df.g);
@@ -246,11 +249,19 @@ void main(){
   float under=fr*(1.0-smoothstep(treeR*0.72,treeR,distance(EN,vec2(camW.x,-camW.z))));
   if(under>0.0){ vec4 dfl=texture2D(tDet,EN/3.0); c=mix(c,lin(vec3(0.11,0.13,0.08))*(0.7+0.6*dfl.g),under*0.85); }
   // close-up detail (fades out by 2 km)
-  float dk=1.0-smoothstep(300.0,2000.0,dist);
+  float dk=1.0-smoothstep(500.0,3200.0,dist);
   if(dk>0.0){
-    vec4 d1=texture2D(tDet,EN/5.0), d2=texture2D(tDet,EN/41.0);
-    float g=(d1.r-0.5)*0.42+(d2.r-0.5)*0.30, f=(d1.g-0.5)*0.55+(d2.g-0.5)*0.35;
+    vec4 d1=texture2D(tDet,EN/5.0), d2=texture2D(tDet,EN/41.0), d3=texture2D(tDet,EN/1.3);
+    float g=(d1.r-0.5)*0.40+(d2.r-0.5)*0.34+(d3.r-0.5)*0.22, f=(d1.g-0.5)*0.55+(d2.g-0.5)*0.35;
     float m=mix(g,f,fr);
+    // open farmland: crop rows / mowing lanes, one direction per 160 m block, filtered so they never shimmer
+    float open_=clamp(1.0-fr-wat-pv,0.0,1.0)*kn;
+    if(open_>0.0){
+      vec2 cell=floor(EN/160.0); float hr=fract(sin(dot(cell,vec2(127.1,311.7)))*43758.5453);
+      float a=hr*3.14159; vec2 dir=vec2(cos(a),sin(a)); float x=dot(EN,dir)/(2.2+hr*1.6);
+      float fw=fwidth(x); float rows=sin(x*6.2832)*(1.0-smoothstep(0.25,0.6,fw));
+      m+=rows*0.07*open_;
+    }
     c*=1.0+m*dk;
   }
   // airport pavement (signed distance field) and taxiway centrelines

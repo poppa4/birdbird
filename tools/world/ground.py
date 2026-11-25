@@ -46,7 +46,10 @@ def parcels(shape,res,E0,N1,seed,rows=500):
     return out
 FIELD=np.array([(92,114,56),(102,120,60),(86,106,52),(110,124,64),(98,118,58),(124,126,74),(134,130,86),(108,100,72),(94,112,60),(116,122,68)],np.float32)
 ROOF=np.array([(74,74,76),(96,62,52),(120,120,118),(62,64,68),(108,78,64)],np.float32)
-def build(h,dom,res,E0,N1,seed=1,near=False,nanmask=None):
+S2K=np.array([0.787,1.13,0.64],np.float32); S2G=np.array([0.574,0.736,0.575],np.float32)
+def s2grade(s2):   # Sentinel-2 TCI -> NORDAP albedo (fitted on forest and fields around Torp)
+    return 255.0*S2K*np.power(np.clip(s2.astype(np.float32),0.5,255)/255.0,S2G)
+def build(h,dom,res,E0,N1,seed=1,near=False,nanmask=None,s2=None):
     h=np.where(np.isnan(h),0,h).astype(np.float32)
     dom=np.where(np.isnan(dom),h,dom).astype(np.float32)
     c=np.clip(dom-h,0,45)
@@ -124,5 +127,15 @@ def build(h,dom,res,E0,N1,seed=1,near=False,nanmask=None):
         alt=np.where(fm[...,None],np.array([36,50,31],np.float32),np.array([98,108,62],np.float32))*(1+0.12*n1)[...,None]
         col[nanmask&~water]=alt[nanmask&~water]
         forest=np.where(nanmask,fm,forest)
+    if s2 is not None:
+        # real colours from the satellite; the lidar adds what 10 m pixels cannot show: tree crowns and roof edges
+        g=s2grade(s2)
+        det=np.ones(S,np.float32)
+        if res<=10:
+            cr=np.clip(1+0.11*(dom-nd.gaussian_filter(dom,max(0.7,2.5/res))),0.7,1.28)
+            det=np.where(forest,cr,det)
+        if res<=3 and bld.any():
+            edge=bld&~nd.binary_erosion(bld,iterations=1); det[edge]*=0.72
+        col=g*det[...,None]
     cls=dict(water=water,sea=sea,lake=lake,forest=forest,bld=bld,rock=rock,field=field)
     return np.clip(col,0,255),c*(forest|bld if False else forest),cls

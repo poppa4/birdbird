@@ -38,7 +38,7 @@ test('the reference scan sees the site (guards the test itself)', () => {
 });
 test('_headers caches only versioned kinds of file, and never HTML', () => {
   const h = fs.readFileSync(path.join(root, '_headers'), 'utf8').split('\n').filter(l => l && !l.startsWith('#') && !/^\s/.test(l));
-  assert.deepEqual(h, ['/*.js', '/*.css', '/fonts/*.woff2', '/models/*.glb']);
+  assert.deepEqual(h, ['/*.js', '/*.css', '/fonts/*.woff2', '/models/*.glb', '/world/*']);   // world.js loads world/ with ?v=DATA_V
 });
 
 test('every script in the site root parses (a browser-only file is not loaded by any other test)', async () => {

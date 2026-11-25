@@ -21,7 +21,7 @@ def chart_masks(E0,N1,res,shape):
                 L=to_local(pl); g.polygon([((e-E0)/res,(N1-n)/res) for e,n in L],fill=255)
         layers[name]=np.asarray(im)>127
     return layers
-def airport_paint(col,can,cls,E0,N1,res):
+def airport_paint(col,can,cls,E0,N1,res,real=False):
     m=chart_masks(E0,N1,res,col.shape[:2])
     S=col.shape[:2]
     apt=nd.binary_fill_holes(m['apt']|m['twy']|m['apron']|m['rwy'])
@@ -30,12 +30,15 @@ def airport_paint(col,can,cls,E0,N1,res):
     for r0 in range(0,S[0],800):
         X,_=np.meshgrid(E0+np.arange(S[1])*res,ys[r0:r0+800]); mow[r0:r0+800]=1+0.05*np.sign(np.sin(X*np.pi/9.0))
     grass=np.array([80,100,52],np.float32)*((1+0.10*n)*mow)[...,None]
-    sel=apt&~cls['water']; col[sel]=grass[sel]; can[sel]=0; cls['forest']&=~sel
+    sel=apt&~cls['water']
+    if not real: col[sel]=grass[sel]
+    can[sel]=0; cls['forest']&=~sel
     pav=m['twy']|m['apron']|m['rwy']
     asph=np.array([66,68,70],np.float32)*(1+0.06*n)[...,None]; conc=np.array([118,118,114],np.float32)*(1+0.05*n)[...,None]
     col[m['twy']]=asph[m['twy']]; col[m['apron']]=conc[m['apron']]
     col[m['rwy']]=np.array([52,54,56],np.float32)
-    b=m['bld']; col[b]=np.array([150,152,150],np.float32)
+    b=m['bld']
+    if not real: col[b]=np.array([150,152,150],np.float32)
     cls['paved']=pav; cls['apt']=apt
     return pav
 def enc_h(h,can):
@@ -46,13 +49,14 @@ def down(a,f):   # area-average downsample by float factor via PIL BOX
     if a.ndim==2: return np.asarray(Image.fromarray(a.astype(np.float32),'F').resize((W,H),Image.BOX))
     return np.dstack([np.asarray(Image.fromarray(a[...,i].astype(np.float32),'F').resize((W,H),Image.BOX)) for i in range(a.shape[2])])
 def level(name,dtm,dom,res,E0,N1,hres,ares,nanmask=None,near=False,apt=False):
-    col,can,cls=ground.build(dtm,dom,res,E0,N1,seed=1,near=near,nanmask=nanmask)
+    s2=np.load(f'loc_{name}_s2.npy').astype(np.float32) if os.path.exists(f'loc_{name}_s2.npy') else None
+    col,can,cls=ground.build(dtm,dom,res,E0,N1,seed=1,near=near,nanmask=nanmask,s2=s2)
     h=np.where(np.isnan(dtm),0,dtm).astype(np.float32)
     if nanmask is not None: h=np.where(nanmask,dtm,h)
     h[cls['sea']]=0.0
     pav=None
     if apt:
-        pav=airport_paint(col,can,cls,E0,N1,res)
+        pav=airport_paint(col,can,cls,E0,N1,res,real=s2 is not None)
     can=np.where(cls['forest'],can,0)*0.92
     # heights grid (point samples at hres, smoothed first so it is not aliased)
     f=hres/res; fi=int(round(f)); hs=nd.gaussian_filter(h,f*0.42) if f>1.5 else h
