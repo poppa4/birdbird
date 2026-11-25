@@ -16,7 +16,7 @@ const T=()=>G.THREE;
 const W={ready:false, loaded:{}, meta:null};
 const LV=['far','mid','near'];
 let lev={}, apt=null, group=null, terrain=null, tmat=null, sky=null, lights=null, bldg=null, inst=null, instAttr=null;
-let shdCv=null, shdTex=null, casters=[], detailTex=null, aptTex=null, digitTex=null, waterT=0, trees=null, treeAttr=null, treeBuf=null;
+let shdCv=null, shdTex=null, casters=[], FLEETI=[], fleetMats=[], detailTex=null, aptTex=null, digitTex=null, waterT=0, trees=null, treeAttr=null, treeBuf=null;
 let TREE_R=1000;                                  // 3D trees out to this distance (m); the forest canopy takes over beyond
 const GRID=16;                                   // quads per patch side
 const P0=160;                                    // finest patch size (m) -> 10 m vertex spacing
@@ -172,7 +172,7 @@ function drawShadows(sun){
 function applyTod(){
   const p=TOD[todK], v=new (T().Vector3)(...p.sun).normalize();
   if(apt&&casters.length) drawShadows(v);
-  for(const m of [tmat,sky&&sky.material,bldg&&bldg.material,lights&&lights.material,trees&&trees.material]){ if(!m) continue; const u=m.uniforms;
+  for(const m of [tmat,sky&&sky.material,bldg&&bldg.material,lights&&lights.material,trees&&trees.material,...fleetMats]){ if(!m) continue; const u=m.uniforms;
     if(u.sunDir) u.sunDir.value.copy(v); if(u.sunCol) u.sunCol.value.setRGB(p.sunCol[0]*p.sunI,p.sunCol[1]*p.sunI,p.sunCol[2]*p.sunI);
     if(u.skyCol) u.skyCol.value.setRGB(...p.sky); if(u.horCol) u.horCol.value.setRGB(...p.hor); if(u.amb) u.amb.value=p.amb;
     if(u.fogD) u.fogD.value=p.fog; if(u.night) u.night.value=p.lights; if(u.expo) u.expo.value=p.exp; }
@@ -478,7 +478,7 @@ function build(){
   terrain=new (T().Mesh)(patchGeometry(),tmat); terrain.frustumCulled=false; terrain.name='terrain';
   group.add(terrain);
   for(const n of LV) if(lev[n]) bindLevel(n);
-  buildSky(); buildBuildings(); buildLights(); buildTrees();
+  buildSky(); buildBuildings(); buildFleet(); buildLights(); buildTrees();
   setRanges();
   applyTod();
 }
@@ -526,7 +526,7 @@ W.update=function(camera,dt){
   tris=nI*GRID*GRID*2;
   waterT+=dt||0.016; tmat.uniforms.wt.value=waterT;
   if(sky){ sky.position.copy(c); }
-  for(const m of [bldg&&bldg.material,lights&&lights.material,trees&&trees.material]) if(m){ m.uniforms.camW.value.copy(c); if(m.uniforms.time) m.uniforms.time.value=waterT; }
+  for(const m of [bldg&&bldg.material,lights&&lights.material,trees&&trees.material,...fleetMats]) if(m){ m.uniforms.camW.value.copy(c); if(m.uniforms.time) m.uniforms.time.value=waterT; }
   if(trees) updateTrees(c);
   if(lights) lights.material.uniforms.pxs.value=(G.innerHeight||800)/(2*Math.tan((camera.fov||60)*Math.PI/360));
 };
@@ -682,43 +682,27 @@ function buildBuildings(){
     const LR=P(aRoot,b0,z), TR=P(aRoot-chordR,b0,z), LT=P(aRoot-sweep,b1,zt), TT=P(aRoot-sweep-chordT,b1,zt);
     const up=(p)=>[p[0],p[1]+thick,p[2]];
     for(const [a,b2,c,d] of [[LR,LT,TT,TR],[up(LR),up(TR),up(TT),up(LT)]]){ tri(a,b2,c,col,-1,0); tri(a,c,d,col,-1,0); tri(c,b2,a,col,-1,0); tri(d,c,a,col,-1,0); } };
-  const tails=[[0.10,0.22,0.48],[0.62,0.08,0.10],[0.85,0.85,0.86],[0.06,0.30,0.42],[0.92,0.50,0.08]];
+  FLEETI=[];
   const airliner=(st,ci)=>{ const h=st.hdg*Math.PI/180, f=[Math.sin(h),Math.cos(h)];
-    // nose gear on the stop point; reference = nose tip 2.5 m ahead of it
-    const g=hAt(st.E,st.N); const o=[st.E+f[0]*2.5,st.N+f[1]*2.5,g];
-    const W_=[0.93,0.93,0.94], BEL=[0.62,0.64,0.66], ENG=[0.70,0.71,0.73], DK=[0.08,0.09,0.11], TL=tails[ci%tails.length];
-    const zc=3.1, R=1.9;
+    const g=hAt(st.E,st.N); const o=[st.E,st.N,g];                       // nose gear on the stop point
+    FLEETI.push({type:'a320',E:st.E,N:st.N,g,h,liv:ci});
     { const r=[f[1],-f[0]], L=(a,b)=>[o[0]+f[0]*a+r[0]*b,o[1]+f[1]*a+r[1]*b];
-      casters.push({p:[L(-1,0),L(-4,-1.9),L(-30,-1.9),L(-37.5,-0.5),L(-37.5,0.5),L(-30,1.9),L(-4,1.9)],h:zc+1.6,z0:zc-1.9});
-      for(const sd of [-1,1]){ casters.push({p:[L(-13.5,sd*1.7),L(-22.0,sd*17.4),L(-23.4,sd*17.4),L(-20.7,sd*1.7)],h:zc-1.0,z0:zc-1.3});
-        casters.push({p:[L(-11,sd*4.7),L(-11,sd*6.5),L(-15.2,sd*6.5),L(-15.2,sd*4.7)],h:zc-1.4,z0:zc-3.2});
-        casters.push({p:[L(-31.5,sd*1.0),L(-34.7,sd*6.6),L(-36.1,sd*6.6),L(-35.5,sd*1.0)],h:zc+0.9,z0:zc+0.6}); }
-      casters.push({p:[L(-28.5,-0.15),L(-38,-0.15),L(-38,0.15),L(-28.5,0.15)],h:zc+7.6,z0:zc+1.2}); }
-    tube(o,f,-0.2,-2.6,0.25,1.25,zc-0.35,zc-0.1,10,W_); tube(o,f,-2.6,-5.0,1.25,R,zc-0.1,zc,12,W_);
-    tube(o,f,-5.0,-27.0,R,R,zc,zc,12,W_); tube(o,f,-27.0,-37.5,R,0.45,zc,zc+1.4,12,W_);
-    obox(o,f,-2.0,0,zc+0.55,1.6,2.0,0.45,DK);                                   // cockpit windows
-    obox(o,f,-16.0,0,zc-1.25,14.0,2.6,0.6,BEL);                                  // belly fairing
-    for(const sd of [-1,1]){ wing(o,f,-13.5,17.4,7.2,1.4,8.5,zc-1.2,0.10,[0.78,0.79,0.80],sd,0.35);
-      wing(o,f,-31.5,6.6,4.0,1.4,3.2,zc+0.7,0.10,[0.80,0.80,0.82],sd,0.2);
-      tube(o,f,-11.0,-15.2,0.95,0.80,zc-2.3,zc-2.3,10,ENG,sd*5.6); }
-    // fin
-    const r=[f[1],-f[0]]; const P=(a,b,zz)=>W3(o[0]+f[0]*a+r[0]*b, g+zz, o[1]+f[1]*a+r[1]*b);
-    const fa=P(-28.5,0,zc+1.2), fb=P(-36.8,0,zc+1.4), fc=P(-38.0,0,zc+7.6), fd=P(-34.8,0,zc+7.6);
-    tri(fa,fb,fc,TL,-1,0); tri(fa,fc,fd,TL,-1,0); tri(fc,fb,fa,TL,-1,0); tri(fd,fc,fa,TL,-1,0);
-    // gear
-    obox(o,f,-2.5,0,1.0,0.5,0.5,2.0,[0.25,0.25,0.27]); for(const sd of [-1,1]) obox(o,f,-16.0,sd*2.9,0.9,0.8,0.9,1.8,[0.25,0.25,0.27]);
-    // ground equipment: stairs at the front left door, tug ahead, baggage carts aft right, GPU at the nose
-    obox(o,f,-6.0,-4.2,1.4,5.2,1.9,1.2,[0.88,0.86,0.80]); obox(o,f,-5.6,-3.0,2.3,3.0,1.4,0.3,[0.60,0.60,0.62],-0.62);
-    obox(o,f,4.5,0,0.9,4.6,2.2,1.6,[0.95,0.80,0.10]);
-    for(let k=0;k<3;k++) obox(o,f,-24.0-k*3.6,5.6,0.65,3.0,1.6,1.0,[0.55,0.57,0.60]);
-    obox(o,f,-22.0,6.2,1.0,2.8,1.6,1.6,[0.95,0.95,0.96]);
-    obox(o,f,0.5,-3.6,0.7,1.8,1.1,1.2,[0.92,0.70,0.12]);
-    if(ci%3===0) obox(o,f,-14.0,11.5,1.7,10.0,2.6,3.0,[0.90,0.90,0.88]);      // fuel truck
+      casters.push({p:[L(5.0,0),L(3.0,-1.7),L(0.0,-1.98),L(-27,-1.98),L(-32.5,-0.3),L(-32.5,0.3),L(-27,1.98),L(0,1.98),L(3.0,1.7)],h:6.0,z0:2.0});
+      for(const sd of [-1,1]){ casters.push({p:[L(-8.6,sd*1.5),L(-17.2,sd*16.4),L(-18.75,sd*16.4),L(-15.8,sd*1.5)],h:3.2,z0:2.6});
+        casters.push({p:[L(-6.3,sd*4.7),L(-6.3,sd*6.8),L(-10.6,sd*6.8),L(-10.6,sd*4.7)],h:2.6,z0:0.6});
+        casters.push({p:[L(-28.6,sd*0.6),L(-31.9,sd*6.2),L(-33.25,sd*6.2),L(-32.3,sd*0.6)],h:5.0,z0:4.6}); }
+      casters.push({p:[L(-27.4,-0.2),L(-33.4,-0.2),L(-34.7,0.2),L(-27.4,0.2)],h:11.8,z0:5.9}); }
+    // ground equipment: stairs at the forward left door (L1), tug ahead, GPU at the nose, baggage carts at the aft hold
+    obox(o,f,-1.0,-4.4,1.2,5.2,1.9,1.1,[0.88,0.86,0.80]); obox(o,f,-0.9,-3.0,2.25,3.4,1.4,0.25,[0.62,0.62,0.64],-0.62);
+    obox(o,f,6.6,0,0.85,4.6,2.2,1.5,[0.95,0.80,0.10]);
+    obox(o,f,4.0,-2.6,0.65,1.8,1.1,1.1,[0.92,0.70,0.12]);
+    for(let k=0;k<3;k++) obox(o,f,-22.0-k*3.6,5.4,0.65,3.0,1.6,1.0,[0.55,0.57,0.60]);
+    obox(o,f,-19.5,4.0,1.1,3.6,1.8,1.8,[0.95,0.95,0.96]);
+    if(ci%3===0) obox(o,f,-9.5,10.5,1.7,10.0,2.6,3.0,[0.90,0.90,0.88]);       // fuel truck clear of the wing
   };
-  const ga=(st)=>{ const h=st.hdg*Math.PI/180, f=[Math.sin(h),Math.cos(h)], g=hAt(st.E,st.N), o=[st.E+f[0]*1.0,st.N+f[1]*1.0,g];
-    tube(o,f,0,-1.5,0.3,0.6,1.2,1.25,8,[0.95,0.95,0.95]); tube(o,f,-1.5,-4.5,0.6,0.55,1.25,1.35,8,[0.95,0.95,0.95]); tube(o,f,-4.5,-7.6,0.55,0.15,1.35,1.55,8,[0.95,0.95,0.95]);
-    for(const sd of [-1,1]){ wing(o,f,-2.2,5.5,1.5,1.2,0.0,2.25,0.0,[0.95,0.95,0.95],sd,0.12); wing(o,f,-6.8,1.8,0.9,0.6,0.2,1.5,0.0,[0.95,0.95,0.95],sd,0.08); }
-    obox(o,f,-1.8,0,1.75,1.2,1.1,0.5,[0.12,0.14,0.16]); obox(o,f,-7.0,0,2.2,1.0,0.12,1.4,[0.80,0.15,0.12]); };
+  const ga=(st)=>{ const h=st.hdg*Math.PI/180, g=hAt(st.E,st.N); FLEETI.push({type:'c172',E:st.E,N:st.N,g,h,liv:5});
+    const f=[Math.sin(h),Math.cos(h)], r=[f[1],-f[0]], L=(a,b)=>[st.E+f[0]*a+r[0]*b,st.N+f[1]*a+r[1]*b];
+    casters.push({p:[L(-0.25,-5.5),L(-0.25,5.5),L(-1.6,5.5),L(-1.6,-5.5)],h:2.4,z0:2.2}); casters.push({p:[L(1.6,-0.5),L(1.6,0.5),L(-6.6,0.15),L(-6.6,-0.15)],h:1.9,z0:0.8}); };
   const occ=['2','4','5','11','13','15'];
   let ci=0; for(const st of (apt.rwy.stands||[])){ if(occ.includes(st.id)) airliner(st,ci++); if(st.id==='33'||st.id==='34') ga(st); }
   // roof plant on the larger airport buildings
@@ -771,6 +755,22 @@ function buildBuildings(){
         if(kind>2.5) col+=vec3(1.0,0.86,0.66)*night*3.0;                    // underside of the mast heads
         gl_FragColor=vec4(tone(aerial(col,vW,camW)),1.0); }`});
   bldg=new (T().Mesh)(g,m); bldg.name='buildings'; group.add(bldg);
+}
+
+/* ---------- parked aircraft (fleet.js): one instanced draw per type ---------- */
+function fleetUniforms(){ return {camW:{value:new (T().Vector3)()},sunDir:{value:new (T().Vector3)()},sunCol:{value:new (T().Color)()},skyCol:{value:new (T().Color)()},horCol:{value:new (T().Color)()},amb:{value:0.5},fogD:{value:0},expo:{value:1},night:{value:0},xn:{value:5.07},yc:{value:4.0}}; }
+function buildFleet(){
+  const F=G.FLEET; if(!F||!FLEETI.length) return;
+  const api={uniforms:fleetUniforms,COMMON};
+  for(const type of ['a320','c172']){
+    const list=FLEETI.filter(a=>a.type===type); if(!list.length) continue;
+    const m=F[type](), g=m.g, io=new Float32Array(list.length*4), il=new Float32Array(list.length*3);
+    list.forEach((a,i)=>{ io.set([a.E,a.g,-a.N,a.h],i*4); il.set(F.LIV[a.liv%F.LIV.length],i*3); });
+    g.setAttribute('io',new (T().InstancedBufferAttribute)(io,4)); g.setAttribute('il',new (T().InstancedBufferAttribute)(il,3));
+    g.instanceCount=list.length; g.boundingSphere=new (T().Sphere)(new (T().Vector3)(),1e7);
+    const mat=F.material(api); if(type==='c172'){ mat.uniforms.xn.value=1.6; mat.uniforms.yc.value=1.35; }
+    const mesh=new (T().Mesh)(g,mat); mesh.frustumCulled=false; mesh.name='fleet-'+type; group.add(mesh); fleetMats.push(mat);
+  }
 }
 
 /* ---------- lights: approach, runway, PAPI, taxiway (points; sized and faded in the shader) ---------- */
