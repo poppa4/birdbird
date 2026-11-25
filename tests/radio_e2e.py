@@ -34,7 +34,7 @@ async def run(p,W,H,touch):
     await pg.goto(URL,wait_until='networkidle'); await pg.wait_for_timeout(400)
     tag=f'{W}x{H}'
     ov=lambda: pg.evaluate('document.documentElement.scrollWidth-document.documentElement.clientWidth')
-    ok(f'{tag} five goals',await pg.evaluate("document.querySelectorAll('#goals .goal').length")==5)
+    ok(f'{tag} six goals',await pg.evaluate("document.querySelectorAll('#goals .goal').length")==6)
     ok(f'{tag} level selector',await pg.evaluate("document.querySelectorAll('#lvlSeg button').length")==3)
     ok(f'{tag} home no overflow',await ov()<=0)
     await shot(pg,f'{tag}-1-home.png')

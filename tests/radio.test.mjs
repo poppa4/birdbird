@@ -3,7 +3,7 @@ import test from 'node:test'; import assert from 'node:assert/strict';
 import fs from 'node:fs'; import vm from 'node:vm'; import path from 'node:path'; import {fileURLToPath} from 'node:url';
 const here=path.dirname(fileURLToPath(import.meta.url));
 const ctx={}; ctx.globalThis=ctx; vm.createContext(ctx);
-for(const f of ['radiocore.js','radioscen.js']) vm.runInContext(fs.readFileSync(path.join(here,'..',f),'utf8'),ctx);
+for(const f of ['radiocore.js','radioscen.js','radioairline.js']) vm.runInContext(fs.readFileSync(path.join(here,'..',f),'utf8'),ctx);
 const R=ctx.RADIOCORE, S=ctx.RADIOSCEN;
 const T=s=>R.norm(s).toks.join(' ');
 const V0=()=>Object.assign(S.vars(7),{cs:R.parseCallsign('LN-NAE')});
@@ -289,4 +289,23 @@ test('voice repair: a repeated ICAO word merged by the speech recogniser is rest
 test('voice repair: common recogniser spellings of ICAO words', ()=>{
   assert.equal(T('lima november november alpha eco'),'l n n a e');
   assert.equal(T('juliette oskar siera'),'j o s');
+});
+
+test('airline A320: every seat, every call, the model call passes; others speak in order', ()=>{
+  for(const k of ['a320dep-pm','a320dep-pf','a320arr-pm','a320arr-pf']){
+    const sc=S.byKey(k); assert.ok(sc,k);
+    const ses=new R.Session(sc,{level:'check',seed:42});
+    let ev=ses.start(), n=0, said=0;
+    const count=e=>{ said+=e.filter(x=>x.t==='say').length; };
+    count(ev);
+    while(!ses.done&&n<80){ const m=ses.step.model; const r=ses.submit(m);
+      assert.equal(r.kind,'pass',`${k} step ${ses.i} "${m}": `+JSON.stringify(r.g&&r.g.res.filter(x=>x.st!=='ok'&&!x.opt).map(x=>x.k+':'+x.st+(x.got?':'+x.got:'')))); count(r.ev); n++; }
+    assert.ok(ses.done,k+' finished'); assert.ok(n>=5,k+' has '+n+' calls'); assert.ok(said>=6,k+' others spoke '+said);
+  }
+});
+test('airline A320: the wrong call is not accepted', ()=>{
+  const ses=new R.Session(S.byKey('a320dep-pm'),{level:'check',seed:3}); ses.start();
+  const r=ses.submit('NORDAP Ground, FJORDAIR 412, request taxi'); assert.notEqual(r.kind,'pass');
+  const ses2=new R.Session(S.byKey('a320dep-pf'),{level:'check',seed:3}); ses2.start(); ses2.submit(ses2.step.model); ses2.submit(ses2.step.model); ses2.submit(ses2.step.model);
+  assert.match(ses2.step.model,/stand ?by/i); const r2=ses2.submit('Cleared for pushback'); assert.notEqual(r2.kind,'pass');
 });

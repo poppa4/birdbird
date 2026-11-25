@@ -445,6 +445,8 @@ class Session{
     if(s.unit&&(!this.unit||this.unit.f!==s.unit.f||this.unit.n!==s.unit.n)){ this.unit=s.unit; ev.push({t:'tune',unit:s.unit}); }
     if(s.abbrOK) this.abbrOK=true;
     if(s.sit) ev.push({t:'sit',text:s.sit});
+    /* airline scenarios: the other pilot, the ground crew, the cabin and ATC say their lines before your call */
+    (s.pre||[]).forEach(x=>{ ev.push(Object.assign({t:'say'},x)); if(x.atc&&!x.atis) this.lastAtc=x.text; });
     if(s.prompt) ev.push({t:'prompt',text:s.prompt});
     if(s.atc) this._atc(s.atc,ev,{atis:!!s.atis,listen:!!s.listen});
     return ev;
@@ -465,6 +467,7 @@ class Session{
       const sc=this._score(g); this.results.push({n:this.i,id:s.id,cat:s.cat||'rb',ph:s.ph,score:sc,first:this.tries===1&&g.pass,pass:g.pass,res:g.res.map(r=>({k:r.k,st:r.st,opt:r.opt,label:r.label})),flags:g.flags.map(f=>f.k),task:s.task,model:s.model});
       if(!g.pass) ev.push({t:'model',text:s.model,fail:true});
       if(s.reply) this._atc(s.reply,ev);
+      this._after(s,ev);
       return {g,kind:g.pass?'pass':'fail',ev:ev.concat(this._enter(this.i+1))};
     }
     this.carry=mergedCarry;
@@ -474,7 +477,8 @@ class Session{
   }
   undo(){ const u=this._undo; if(!u) return false; Object.assign(this,{i:u.i,tries:u.tries,carry:u.carry,abbrOK:u.abbrOK,lastAtc:u.lastAtc,unit:u.unit,done:u.done}); this.results.length=u.nres; this._undo=null; return true; }
   skip(){ const s=this.step; if(!s) return []; this.results.push({n:this.i,id:s.id,cat:s.cat||'rb',ph:s.ph,score:0,first:false,pass:false,skipped:true,res:(s.els||[]).map(e=>({k:e.k,st:'miss',opt:!!e.opt,label:e.l||label(e,this.V)})),flags:[],task:s.task,model:s.model});
-    const ev=[{t:'model',text:s.model,fail:true}]; if(s.reply) this._atc(s.reply,ev); return ev.concat(this._enter(this.i+1)); }
+    const ev=[{t:'model',text:s.model,fail:true}]; if(s.reply) this._atc(s.reply,ev); this._after(s,ev); return ev.concat(this._enter(this.i+1)); }
+  _after(s,ev){ (s.after||[]).forEach(x=>ev.push(x.note? {t:'sit',text:x.text} : Object.assign({t:'say'},x))); }
   _score(g){
     let sc= g.pass? [1,0.7,0.5,0.4][this.tries-1]||0.4 : 0.4*g.frac;
     if(this.peek) sc=Math.min(sc,0.5);

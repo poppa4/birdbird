@@ -22,6 +22,7 @@ const GROUPS={
   vfr:{t:tr('VFR flight','VFR-tur'),d:tr('Taxi, zones, FIS, AFIS, circuits, uncontrolled fields','Taksing, soner, FIS, AFIS, landingsrunder, ukontrollerte plasser'),ic:'M3 15l9-9 9 9M12 6v14'},
   ifr:{t:tr('IFR flight','IFR-tur'),d:tr('Clearance, SID, levels, holds, vectors, approach','Klarering, SID, nivåer, venting, vektorer, innflyging'),ic:'M4 20l8-16 8 16M8 13h8'},
   emerg:{t:tr('Emergencies','Nødsituasjoner'),d:tr('MAYDAY, PAN PAN, radio failure, lost, fuel, diversion','MAYDAY, PAN PAN, radiosvikt, usikker posisjon, drivstoff, mål-endring'),ic:'M12 4l9 16H3zM12 10v4M12 17v.5'},
+  airline:{t:tr('Airline: A320 crew','Flyselskap: A320-besetning'),d:tr('Two pilots: who says what, to whom, after which checklist','To piloter: hvem sier hva, til hvem, etter hvilken sjekkliste'),ic:'M2 13l8-2 5-7h2l-2 7 5-1 2-2h2l-1 4 1 4h-2l-2-2-5-1 2 7h-2l-5-7-8-2z'},
   basic:{t:tr('Basics','Grunnleggende'),d:tr('Phonetic alphabet, numbers, callsigns, standard words','Fonetisk alfabet, tall, kallesignaler, standardord'),ic:'M5 6h14M5 12h14M5 18h9'}
 };
 const LEVELS={beginner:{t:tr('Learning','Lære'),d:tr('New to the radio: slow controller, the items to include are shown, three tries per call.','Ny på radio: rolig flygeleder, elementene du skal ta med vises, tre forsøk per oppkall.')},
@@ -74,11 +75,11 @@ function speak(text,o){ o=o||{}; const id=++speakId;
     const parts=R.spoken(text).split(/(?<=\.)\s+/).filter(Boolean); let k=0;
     const lvl=R.LEVELS[ses&&ses.level||P.level]||R.LEVELS.intermediate;
     const noise=o.atis?0.05:({beginner:0.014,intermediate:0.026,check:0.045})[ses&&ses.level||P.level]||0.02;
-    rx(true); AU.on(noise);
+    rx(true); if(!o.crew) AU.on(noise);
     const done=()=>{ if(id!==speakId){ res(false); return; } AU.off(); rx(false); res(true); };
     if(natural()&&NV.ready&&AU.init()){
       const sp=Math.max(0.7,Math.min(1.5,P.rate*lvl.rate*(o.atis?1.05:1)));
-      const h=NV.say(AU.ctx,parts,{atis:o.atis,speed:sp,radio:P.fx}); NVcur=h;
+      const h=NV.say(AU.ctx,parts,{atis:o.atis,speed:sp,radio:P.fx&&!o.crew,voice:o.voice||(o.unit&&!o.atis?NV.voiceFor(o.unit.n):undefined)}); NVcur=h;
       h.done.then(()=>{ if(NVcur===h) NVcur=null; done(); },()=>{ if(NVcur===h) NVcur=null; done(); });
       return; }
     if(natural()) nvPreload();
@@ -191,7 +192,10 @@ let queue=Promise.resolve();
 function run(ev){ queue=queue.then(()=>play(ev)).then(()=>{ drawTurn(); }); return queue; }
 async function play(ev){
   for(const e of ev){
-    if(e.t==='tune'){ el('fq').textContent=e.unit.f; el('stn').textContent=e.unit.n; addMsg('sys','',`${L({en:'Tuned',no:'Stilt inn'})} <b>${esc(e.unit.n)}</b> ${esc(e.unit.f)}`); AU.click(); }
+    if(e.t==='tune'){ el('fq').textContent=e.unit.f; el('stn').textContent=e.unit.n; if(/^(CREW|INT|PA)$/.test(e.unit.f)) continue; addMsg('sys','',`${L({en:'Tuned',no:'Stilt inn'})} <b>${esc(e.unit.n)}</b> ${esc(e.unit.f)}`); AU.click(); }
+    else if(e.t==='say'){ if(e.atc){ await atcMsg(e); continue; }
+      addMsg('crew ch-'+(e.ch||'crew'),L(e.label||{en:e.who,no:e.who})+(e.ch==='int'?' · interphone':e.ch==='pa'?' · PA':''),esc(e.text));
+      await speak(e.text,{voice:e.voice,crew:e.ch!=='int'&&e.ch!=='pa'}); }
     else if(e.t==='sit'){ addMsg('sys sit','',esc(L(e.text))); el('sitBox').innerHTML=`<b>${L({en:'Situation',no:'Situasjon'})}</b><p>${esc(L(e.text))}</p>`; el('sitBox').classList.remove('open'); el('sitBox').onclick=()=>el('sitBox').classList.toggle('open'); }
     else if(e.t==='prompt'){ addMsg('sys prompt','',L(e.text)); }
     else if(e.t==='note'){ addMsg('sys','',esc(L(e.text))); }
@@ -206,7 +210,7 @@ async function atcMsg(e){
   const hid=hideAtc(e);
   const d=addMsg('atc'+(e.atis?' atis':'')+(e.corr?' corr':''),who,hid?`<span class="hid">${L({en:'Listen…',no:'Lytt…'})}</span><button class="reveal" type="button">${L({en:'Show text',no:'Vis tekst'})}</button><span class="tx" hidden>${esc(e.text)}</span>`:esc(e.text));
   if(hid){ d.classList.add('hidden-tx'); d.querySelector('.reveal').onclick=()=>reveal(d,true); }
-  await speak(e.text,{atis:e.atis});
+  await speak(e.text,{atis:e.atis,unit:e.unit});
 }
 function reveal(d,peek){ const t=d.querySelector('.tx'); if(!t) return; t.hidden=false; const h=d.querySelector('.hid'); if(h) h.remove(); const b=d.querySelector('.reveal'); if(b) b.remove(); d.classList.remove('hidden-tx'); if(peek&&ses) ses.peekAtc=true; }
 function revealAll(){ document.querySelectorAll('#log .msg.hidden-tx').forEach(d=>reveal(d,false)); }
