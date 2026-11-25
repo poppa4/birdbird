@@ -53,17 +53,36 @@ function pickVoice(){ if(!TTS) return; const vs=speechSynthesis.getVoices(); if(
   for(const p of pref){ const v=vs.find(v=>p.test(v.name)&&/^en/i.test(v.lang)); if(v){ VOICE=v; return; } }
   VOICE=vs.find(v=>/en-GB/i.test(v.lang))||vs.find(v=>/en-(IE|AU|IN)/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null; }
 if(TTS){ pickVoice(); try{ speechSynthesis.addEventListener('voiceschanged',pickVoice); }catch(e){} }
-let speakId=0;
-function hush(){ speakId++; if(TTS) try{ speechSynthesis.cancel(); }catch(e){} AU.off(); rx(false); }
+let speakId=0, NVcur=null;
+const NV=window.NVOICE||{supported:false};
+const natural=()=>NV.supported&&P.tts!=='browser';
+function hush(){ speakId++; if(TTS) try{ speechSynthesis.cancel(); }catch(e){} if(NVcur){ NVcur.stop(); NVcur=null; } AU.off(); rx(false); }
+/* natural voice: downloaded once (about 90 MB), the browser voice speaks until it is ready */
+let nvP=null;
+function nvPreload(){ if(nvP) return nvP; nvP=nvLoad().finally(()=>{ if(!NV.ready) nvP=null; }); return nvP; }
+function nvLoad(){
+  const n=el('ttsEngNote'); const ready=()=>{ if(n) n.textContent=L({en:'Natural voice ready. Generated on this device.',no:'Naturlig stemme klar. Lages på denne enheten.'}); };
+  if(NV.ready){ ready(); return Promise.resolve(); }
+  if(n) n.textContent=L({en:'Downloading the natural voice (about 90 MB, once). The browser voice speaks meanwhile.',no:'Laster ned den naturlige stemmen (omtrent 90 MB, én gang). Nettleserstemmen snakker så lenge.'});
+  return NV.load(f=>{ if(n) n.textContent=L({en:'Downloading the natural voice',no:'Laster ned den naturlige stemmen'})+` ${Math.round(f*100)} %`; }).then(ready)
+    .catch(()=>{ if(n) n.textContent=L({en:'The natural voice could not be downloaded here. The browser voice is used.',no:'Den naturlige stemmen kunne ikke lastes ned her. Nettleserstemmen brukes.'}); });
+}
 function speak(text,o){ o=o||{}; const id=++speakId;
   return new Promise(res=>{
-    if(!TTS||!P.voice||!text){ res(false); return; }
-    try{ speechSynthesis.cancel(); }catch(e){}
+    if(!P.voice||!text||!(TTS||NV.ready)){ if(natural()&&P.voice&&text) nvPreload(); res(false); return; }
+    try{ if(TTS) speechSynthesis.cancel(); }catch(e){}
     const parts=R.spoken(text).split(/(?<=\.)\s+/).filter(Boolean); let k=0;
     const lvl=R.LEVELS[ses&&ses.level||P.level]||R.LEVELS.intermediate;
     const noise=o.atis?0.05:({beginner:0.014,intermediate:0.026,check:0.045})[ses&&ses.level||P.level]||0.02;
     rx(true); AU.on(noise);
     const done=()=>{ if(id!==speakId){ res(false); return; } AU.off(); rx(false); res(true); };
+    if(natural()&&NV.ready&&AU.init()){
+      const sp=Math.max(0.7,Math.min(1.5,P.rate*lvl.rate*(o.atis?1.05:1)));
+      const h=NV.say(AU.ctx,parts,{atis:o.atis,speed:sp,radio:P.fx}); NVcur=h;
+      h.done.then(()=>{ if(NVcur===h) NVcur=null; done(); },()=>{ if(NVcur===h) NVcur=null; done(); });
+      return; }
+    if(natural()) nvPreload();
+    if(!TTS){ done(); return; }
     const next=()=>{ if(id!==speakId) return res(false); if(k>=parts.length) return done();
       const u=new SpeechSynthesisUtterance(parts[k++]); if(VOICE) u.voice=VOICE; u.lang=(VOICE&&VOICE.lang)||'en-GB';
       u.rate=Math.max(0.6,Math.min(1.6,P.rate*lvl.rate*(o.atis?1.05:1))); u.pitch=0.92; u.onend=next; u.onerror=next; speechSynthesis.speak(u); };
@@ -153,7 +172,7 @@ function drawPick(){
 }
 
 /* ---------------- session ---------------- */
-function startScenario(sc){
+function startScenario(sc){ if(natural()&&P.voice) nvPreload();
   AU.init(); hush();
   if(sc==='quick'){ const db=jget(K.srs,{}); const pool=S.QUICK_POOL(); const ids=R.SRS.due(db).concat(R.SRS.weak(db)).filter(id=>pool.includes(id));
     const seed=(Date.now()>>>0)^0x5bd1; const V=S.vars(seed,{callsign:P.callsign});
@@ -181,7 +200,7 @@ async function play(ev){
     else if(e.t==='end'){ setTimeout(debrief,700); }
   }
 }
-function hideAtc(e){ const lv=ses?ses.level:P.level; return (e.listen||(e.atis&&lv!=='beginner')||(ses&&ses.L.hideAtc&&!e.atis))&&TTS&&P.voice; }
+function hideAtc(e){ const lv=ses?ses.level:P.level; return (e.listen||(e.atis&&lv!=='beginner')||(ses&&ses.L.hideAtc&&!e.atis))&&(TTS||NV.supported)&&P.voice; }
 async function atcMsg(e){
   const who=e.atis?(e.unit?e.unit.n:'ATIS'):(e.unit?e.unit.n:'ATC');
   const hid=hideAtc(e);
@@ -335,7 +354,11 @@ function init(){
     const sync=()=>{ el('setMic').closest('label').hidden=eng.value==='whisper'; if(eng.value==='whisper'){ if(P.engine==='whisper'||WH.ready) whPreload(); else el('engNote').textContent=L({en:'More accurate, and your voice never leaves this device. Downloads about 80 MB the first time you talk.',no:'Mer nøyaktig, og stemmen din forlater aldri denne enheten. Laster ned omtrent 80 MB første gang du snakker.'}); } else el('engNote').textContent=L({en:'Uses the browser’s own recogniser (Chrome and Edge send the audio to Google, Safari to Apple).',no:'Bruker nettleserens egen gjenkjenning (Chrome og Edge sender lyden til Google, Safari til Apple).'}); };
     eng.onchange=()=>{ P.engine=eng.value; saveP(); sync(); }; sync(); }
   el('setTest').onclick=()=>{ AU.init(); speak(`${R.parseCallsign(P.callsign).full}, NORDAP Tower, wind 340 degrees 8 knots, runway 36, cleared to land.`); };
-  if(!TTS){ el('setVoice').disabled=true; el('ttsNote').textContent=L({en:'This browser has no speech synthesis: the controller is shown as text.',no:'Denne nettleseren har ikke talesyntese: flygelederen vises som tekst.'}); }
+  const te=el('setTts'); if(te){ if(!NV.supported){ te.value='browser'; te.disabled=true; } else te.value=natural()?'natural':'browser';
+    const sync=()=>{ if(te.value==='natural'){ if(NV.ready||P.tts==='natural') nvPreload(); else el('ttsEngNote').textContent=L({en:'Sounds like a person, generated on this device. Downloads about 90 MB the first time.',no:'Høres ut som et menneske, laget på denne enheten. Laster ned omtrent 90 MB første gang.'}); }
+      else el('ttsEngNote').textContent=L({en:'The browser’s built-in voice: starts at once, sounds synthetic.',no:'Nettleserens innebygde stemme: starter med en gang, høres syntetisk ut.'}); };
+    te.onchange=()=>{ P.tts=te.value; saveP(); hush(); sync(); }; sync(); }
+  if(!TTS&&!NV.supported){ el('setVoice').disabled=true; el('ttsNote').textContent=L({en:'This browser has no speech synthesis: the controller is shown as text.',no:'Denne nettleseren har ikke talesyntese: flygelederen vises som tekst.'}); }
   drawHome(); show('home'); aiSetup();
   LAB.onLang(()=>{ drawHome(); if(!el('v-pick').hidden) drawPick(); if(ses&&!el('v-sess').hidden){ el('sessT').textContent=L(cur.t); drawBasis(); drawTurn(); } if(!el('v-deb').hidden&&ses) drawDeb(ses.summary()); });
   // test hooks (headless browsers cannot speak): type and transmit
