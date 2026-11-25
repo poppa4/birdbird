@@ -98,7 +98,9 @@ def shade(b, sun=1.0):
     amb, con, dr = b
     # the FlightGear textures are dark (made for a strong scene light): lifted here so the lining reads as the light
     # blue-grey of the real flight deck, with the windows' light, the contact shade and the sun on top
-    A = (0.97 + 0.80 * amb ** 0.5) * (1 - 0.25 * con)
+    # contact shade is strong: creases, the undersides of lips and the joints between parts go clearly darker, which is what
+    # makes edges and separate parts read
+    A = (0.97 + 0.80 * amb ** 0.5) * (1 - 0.46 * con ** 0.9)
     S = 0.35 * dr * sun
     col = np.stack([A * 1.03 + S * 1.10, A * 1.00 + S * 1.00, A * 0.95 + S * 0.86], 1)
     return np.clip(col, 0, 1.6)  # no more than 1.6x the texture: light texels would burn out to white

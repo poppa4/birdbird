@@ -134,7 +134,7 @@ function init(o){
   /* ---- the real flight deck structure (models/a320-shell.bin, built by tools/render-a320/shell.py from the FlightGear
      A320-family model, GPL-2.0): replaces the simple room above once it has loaded. One draw call per texture, Lambert shading
      from a sky light and a sun, compact Int16 / Uint16 / Int8 buffers. ---- */
-  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=24').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
+  fetch(CF3?CF3.shell:'models/a320-shell.bin?v=25').then(r=>r.ok?r.arrayBuffer():Promise.reject(r.status)).then(buf=>{
     const dv=new DataView(buf), hl=dv.getUint32(0,true), hdr=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))), base=4+hl, TL=new THREE.TextureLoader(), grp=new THREE.Group();
     for(const gr of hdr.groups){ let o=base+gr.off; const [sp,su,sn,si]=gr.sizes;
       const P=new Int16Array(buf,o,gr.nv*3); o+=sp; const UV=new Uint16Array(buf,o,gr.nv*2); o+=su; const N=new Int8Array(buf,o,gr.nv*4); o+=sn; const I=gr.i32?new Uint32Array(buf,o,gr.ni):new Uint16Array(buf,o,gr.ni);
@@ -142,7 +142,17 @@ function init(o){
       const uv=new Float32Array(gr.nv*2); for(let i=0;i<gr.nv;i++){ uv[i*2]=gr.uv[0]+UV[i*2]/65535*gr.uv[2]; uv[i*2+1]=gr.uv[1]+UV[i*2+1]/65535*gr.uv[3]; } g.setAttribute('uv',new THREE.BufferAttribute(uv,2));
       g.setAttribute('color',new THREE.InterleavedBufferAttribute(new THREE.InterleavedBuffer(new Uint8Array(buf,N.byteOffset,gr.nv*4),4),3,0,true)); g.setIndex(new THREE.BufferAttribute(I,1));
       const tex=gr.tex==='flat'?null:TL.load((CF3?CF3.shellTex:'models/a320-shell-')+gr.tex+'.jpg?v=5'); if(tex){ tex.anisotropy=Math.min(8,o_R.capabilities.getMaxAnisotropy()); tex.flipY=false; tex.wrapS=tex.wrapT=THREE.RepeatWrapping; if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tex.encoding=THREE.sRGBEncoding; }
-      const mat=new THREE.MeshBasicMaterial({map:gr.tex==='flat'?null:tex,vertexColors:true,side:THREE.DoubleSide /* the FlightGear surfaces are single-sided and many face outwards: seen from the seat they would vanish and leave holes */}); mat.color.setScalar((hdr.lmax||1)*1.22); const mesh=new THREE.Mesh(g,mat); mesh.scale.setScalar(32767/hdr.S); if(hdr.o) mesh.position.set(...hdr.o); mesh.matrixAutoUpdate=false; mesh.updateMatrix(); mesh.frustumCulled=false; grp.add(mesh); }
+      const mat=new THREE.MeshBasicMaterial({map:gr.tex==='flat'?null:tex,vertexColors:true,side:THREE.DoubleSide /* the FlightGear surfaces are single-sided and many face outwards: seen from the seat they would vanish and leave holes */}); mat.color.setScalar((hdr.lmax||1)*1.22); const mesh=new THREE.Mesh(g,mat); mesh.scale.setScalar(32767/hdr.S); mat.polygonOffset=true; mat.polygonOffsetFactor=1; mat.polygonOffsetUnits=1;
+      /* a thin dark line along every sharp edge of the structure (where two faces meet at more than 32 degrees): the outline of
+         each part, as the eye expects from a panel joint or a moulded edge. Computed once at load, desktop only. */
+      if(!CF3&&!mobile){ try{ /* only edges shared by exactly two faces that meet at more than 40 degrees: open edges and overlapping plates would draw stray lines */
+        const em=new Map(), fn=[], nt=I.length/3, k=v=>P[v*3]+','+P[v*3+1]+','+P[v*3+2];
+        for(let t=0;t<nt;t++){ const a=I[t*3],b=I[t*3+1],c=I[t*3+2]; const ax=P[a*3],ay=P[a*3+1],az=P[a*3+2]; const ux=P[b*3]-ax,uy=P[b*3+1]-ay,uz=P[b*3+2]-az,vx=P[c*3]-ax,vy=P[c*3+1]-ay,vz=P[c*3+2]-az; let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx; const l=Math.hypot(nx,ny,nz)||1; fn.push(nx/l,ny/l,nz/l);
+          const ks=[k(a),k(b),k(c)], vs=[a,b,c]; for(let e=0;e<3;e++){ const p=ks[e],q=ks[(e+1)%3]; if(p===q) continue; const key=p<q?p+'|'+q:q+'|'+p; const r=em.get(key); if(r){ r.n++; r.t2=t; } else em.set(key,{n:1,t1:t,t2:-1,a:vs[e],b:vs[(e+1)%3]}); } }
+        const out=[], cs=Math.cos(40*Math.PI/180), sc=1/hdr.S;
+        em.forEach(r=>{ if(r.n!==2) return; const d=Math.abs(fn[r.t1*3]*fn[r.t2*3]+fn[r.t1*3+1]*fn[r.t2*3+1]+fn[r.t1*3+2]*fn[r.t2*3+2]); if(d>cs) return; out.push(P[r.a*3]*sc,P[r.a*3+1]*sc,P[r.a*3+2]*sc,P[r.b*3]*sc,P[r.b*3+1]*sc,P[r.b*3+2]*sc); });
+        const lg=new THREE.BufferGeometry(); lg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(out),3));
+        const ln=new THREE.LineSegments(lg,new THREE.LineBasicMaterial({color:0x1a1f26,transparent:true,opacity:0.42,depthWrite:false})); if(hdr.o) ln.position.set(...hdr.o); ln.frustumCulled=false; ln.renderOrder=1; grp.add(ln); }catch(e){ console.warn('A320 3D edges',e); } } if(hdr.o) mesh.position.set(...hdr.o); mesh.matrixAutoUpdate=false; mesh.updateMatrix(); mesh.frustumCulled=false; grp.add(mesh); }
     if(hdr.panels) for(const k in hdr.panels){ const pb=hdr.panels[k], p=P[k]; if(!p) continue; const col=p.mesh.geometry.attributes.color, n=24;
       for(let j=0;j<=n;j++) for(let i=0;i<=n;i++){ const x=i/n*pb.nx, y=j/n*pb.ny, x0=Math.min(pb.nx-1,Math.floor(x)), y0=Math.min(pb.ny-1,Math.floor(y)), fx=x-x0, fy=y-y0, at=(a,b)=>pb.v[b*(pb.nx+1)+a];
         const L=(at(x0,y0)*(1-fx)+at(x0+1,y0)*fx)*(1-fy)+(at(x0,y0+1)*(1-fx)+at(x0+1,y0+1)*fx)*fy, c=Math.min(1,0.12+0.9*L); col.setXYZ(j*(n+1)+i,c,c,c*1.01); } col.needsUpdate=true; }
