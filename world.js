@@ -800,7 +800,7 @@ function buildBuildings(){
             float pier=step(abs(fract(u/9.0+0.5)-0.5)*9.0,0.35);                 // solid cladding column every 9 m
             glass=mull*tr*(1.0-pier)*step(0.6,hb);                               // dark plinth at the foot
             c=lin(vec3(0.74,0.75,0.76))*(1.0-0.55*step(hb,0.6));
-            lit=step(0.35,h1(vec2(floor(u/1.5),floor(y/4.2))));
+            lit=step(0.55,h1(vec2(floor(u/1.5),floor(y/4.2))));
           }
           else if(kind>3.5){                                                    // hangar: vertical ribbed cladding, a band of clerestory windows
             float rib=0.5+0.5*sin(u*6.2832/0.6); c*=0.86+0.14*smoothstep(0.3,0.7,rib)*(1.0-smoothstep(0.3,0.8,fu.x/0.6));
@@ -834,10 +834,10 @@ function buildBuildings(){
           float pv=h1(floor(vW.xz/1.5)+floor(vW.y/4.2));
           vec3 gc=mix(lin(vec3(0.03,0.045,0.06))*(skyCol*amb*2.0+sunCol*0.10)*(0.7+0.6*pv),skyAt(normalize(vec3(R.x,abs(R.y),R.z)))*(0.8+0.2*pv),clamp(fres*0.9+0.14,0.0,1.0));
           gc+=sunCol*pow(max(dot(R,sunDir),0.0),200.0)*1.5*smoothstep(-0.05,0.08,sunDir.y);
-          gc+=vec3(1.0,0.78,0.48)*lit*night*0.9;
+          gc+=vec3(1.0,0.78,0.48)*lit*night*(kind>4.5?0.16:kind>3.5?0.10:0.45);
           col=mix(col,gc,glass);
         }
-        if(kind>2.5) col+=vec3(1.0,0.86,0.66)*night*3.0;                    // underside of the mast heads
+        if(kind>2.5&&kind<3.5) col+=vec3(1.0,0.86,0.66)*night*3.0;                    // underside of the mast heads
         gl_FragColor=vec4(tone(aerial(col,vW,camW)),1.0); }`});
   bldg=new (T().Mesh)(g,m); bldg.name='buildings'; group.add(bldg);
 }
