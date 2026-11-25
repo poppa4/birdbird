@@ -195,6 +195,7 @@ function drawAirline(){
     <div class="row"><span>${L({en:'Flight',no:'Tur'})}</span><div class="opts">${opt('ph','dep',{en:'Departure',no:'Avgang'},{en:'Stand to the climb: clearance, push and start, taxi, take-off.',no:'Stand til stigning: klarering, push og start, taksing, avgang.'})}${opt('ph','arr',{en:'Arrival',no:'Ankomst'},{en:'Top of descent to the stand: ATIS, descent, ILS, landing, taxi in.',no:'Top of descent til stand: ATIS, nedstigning, ILS, landing, taksing inn.'})}</div></div>
     <div class="row"><span>${L({en:'Your seat',no:'Ditt sete'})}</span><div class="opts">${opt('seat','PM',{en:'PM – pilot monitoring',no:'PM – pilot monitoring'},{en:'You talk to ATC. Best place to start.',no:'Du snakker med ATC. Beste sted å starte.'})}${opt('seat','PF',{en:'PF – pilot flying',no:'PF – pilot flying'},{en:'You ask PM for the calls and talk to the ground crew.',no:'Du ber PM om kallene og snakker med bakkemannskapet.'})}</div></div>
     <div class="row"><span>${L({en:'Airport map',no:'Flyplasskart'})}</span><div class="opts">${opt('map',true,{en:'Live map on',no:'Live kart på'},{en:'See your aircraft move as your calls are accepted.',no:'Se flyet ditt bevege seg når kallene godkjennes.'})}${opt('map',false,{en:'Radio only',no:'Bare radio'},{en:'Just the calls, faster.',no:'Bare kallene, raskere.'})}</div></div>
+    <p class="note">${L({en:'ATC phraseology follows EASA SERA. The calls between the pilots, to the ground crew and to the cabin follow common A320 practice as an example: your operator’s SOP always comes first.',no:'ATC-fraseologien følger EASA SERA. Kallene mellom pilotene, til bakkemannskapet og til kabinen følger vanlig A320-praksis som eksempel: operatørens SOP gjelder alltid først.'})}</p>
     <div class="go"><button class="btn pri" id="alGo" type="button">${L({en:'Start',no:'Start'})}</button><p>${esc(L(sc.d))}${b?` · ${L({en:'Best',no:'Beste'})} ${b} %`:''}</p></div></div>`;
   el('pickL').querySelectorAll('.opt').forEach(x=>x.onclick=()=>{ const v=x.dataset.v; A[x.dataset.grp]= v==='true'?true:v==='false'?false:v; saveP(); drawAirline(); });
   el('alGo').onclick=()=>startScenario(sc);
@@ -224,7 +225,7 @@ function startScenario(sc){ if(natural()&&P.voice) nvPreload();
 }
 /* "Based on": the rules and documents the scenario's calls and readbacks are checked against (radioscen.js BASIS) */
 function drawBasis(){ const b=el('sessBasis'); if(!b) return; const list=(cur&&cur.basis)||[];
-  b.hidden=!list.length; b.innerHTML=list.length? `${L({en:'Based on',no:'Basert på'})}: ${list.map(esc).join(' · ')} <a href="#sources">${L({en:'Sources',no:'Kilder'})}</a>` : ''; }
+  b.hidden=!list.length; b.innerHTML=list.length? `${L(cur&&cur.sop?{en:'ATC calls based on',no:'ATC-kall basert på'}:{en:'Based on',no:'Basert på'})}: ${list.map(esc).join(' · ')} <a href="#sources">${L({en:'Sources',no:'Kilder'})}</a>`+(cur&&cur.sop?`<br>${L({en:'Crew, ground crew and cabin calls are example A320 SOP, not regulation. Your operator’s SOP always comes first.',no:'Kall mellom piloter, til bakkemannskap og kabin er eksempel på A320-SOP, ikke regelverk. Operatørens SOP gjelder alltid først.'})}`:'') : ''; }
 let queue=Promise.resolve(), MAPON=false, mapInit=false;
 function run(ev){ queue=queue.then(()=>play(ev)).then(()=>{ drawTurn(); }); return queue; }
 async function play(ev){

@@ -360,7 +360,7 @@ const BASIS={
   vfrfull:['SERA.8015(e)','SERA.8015(ec)','SERA.14055','SERA.14035','AMC1 SERA.14001 1.1.4, 1.1.7, 1.2.1, 1.4.7–1.4.20','ICAO Doc 4444 12.2.7, 12.3.4'],
   vcheck:['SERA.14070','SERA.14055(b)(1)'],
   vatis:['SERA.8015(e)(1)(iii)–(iv)','SERA.14055(b)(1)','AMC1 SERA.14001 1.4.7 a)'],
-  vfrdep:['SERA.8015(e)(1)(ii)–(iii)','SERA.8015(e)(2)','SERA.8015(ec)','SERA.14045(c)','AMC1 SERA.14001 1.4.7, 1.4.10 i)–j), 1.4.11 a)','ICAO Doc 4444 12.2.7'],
+  vfrdep:['SERA.8015(e)(1)(ii)–(iii)','SERA.8015(e)(2)','SERA.8015(ec)','AMC1 SERA.14001 1.4.7, 1.4.10 i)–j), 1.4.11 a)','ICAO Doc 4444 12.2.7'],
   vleave:['SERA.8015(e)(1)(iii)','SERA.14055(b)(1)','AMC1 SERA.14001 1.1.4, 1.1.7 c)–e), 2.1.8 a)'],
   vtma:['SERA.8015(e)(1)(i), (iii)','SERA.14035(a)(1)(iii)','AMC1 SERA.14001 1.1.4 f), 2.3.3'],
   vafis:['AIP Norway GEN 3.3 4.1.3–4.1.5','AMC1 SERA.14001 1.4.13 c), 1.4.15 c), 1.4.19 i)–j)','Reg. (EU) 2017/373 ATS.TR.115'],

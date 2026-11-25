@@ -89,7 +89,7 @@ function departure(V,u){
   ...(D.luv==='cond'?[
   {who:'ATC',unit:u.twr,text:`${A}, behind the landing ${D.ttype} on short final, line up runway ${R} and wait, behind.`},
   {who:'PM',unit:u.twr,text:`Behind the landing ${D.ttype}, line up runway ${R} and wait, behind, ${A}.`,task:tr('Read back the conditional line-up: the condition first, the clearance, the condition again.','Les tilbake den betingede oppstillingen: betingelsen først, klareringen, så betingelsen igjen.'),
-   els:[P(`Condition: “behind the landing ${D.ttype}”`,`Betingelse: «behind the landing ${D.ttype}»`,/\bbehind\b.*\b(landing|a ?320|737|boeing|traffic)\b/,{say:'behind the landing '+D.ttype}),P('Line up','Line up',/\b(lineup|lining up)\b/),rwy(R),P('And wait','And wait',/\bwait\b/),P('“Behind” again at the end','«Behind» igjen til slutt',/\bbehind\b.*\b(lineup|lining up)\b.*\bbehind\b/,{say:'behind'}),cs()]},
+   els:[P(`Condition: “behind the landing ${D.ttype}”`,`Betingelse: «behind the landing ${D.ttype}»`,/\bbehind\b.*\b(landing|a ?320|737|boeing|traffic)\b/,{say:'behind the landing '+D.ttype}),P('Line up','Line up',/\b(lineup|lining up)\b/),rwy(R),P('And wait','And wait',/\bwait\b/,OPT),P('“Behind” again at the end','«Behind» igjen til slutt',/\bbehind\b.*\b(lineup|lining up)\b.*\bbehind\b/,{say:'behind'}),cs()]},
   {t:'sit',text:tr(`You hold at ${HP} while the ${D.ttype} lands in front of you.`,`Du venter på ${HP} mens ${D.ttype}-en lander foran deg.`)},
   {act:'clear',wait:1}
   ] : D.luv==='hold'?[
@@ -124,7 +124,7 @@ function departure(V,u){
   {who:'PM',ch:'crew',text:'Checked.',task:tr('Check the FCU and confirm.','Sjekk FCU og bekreft.'),els:[P('“Checked”','«Checked»',/\bchecked\b/)]},
   {t:'sit',text:tr(`Climbing through the transition altitude, 7000 ft.`,`Stiger gjennom overgangshøyden, 7000 ft.`)},
   {who:'PF',ch:'crew',text:'Set standard.',task:tr('Order the standard altimeter setting.','Be om standard høydemålerinnstilling.'),els:[P('“Set standard”','«Set standard»',/\b(standard|std)\b/)]},
-  {who:'PM',ch:'crew',text:'Standard set and crosschecked, passing flight level 75 now.',task:tr('Set STD on both sides, crosscheck, and say the level you pass.','Sett STD på begge sider, kryssjekk, og si nivået du passerer.'),
+  {who:'PM',ch:'crew',text:`Standard set and crosschecked, passing flight level ${Math.round((7000+(1013-V.qnh)*27.3)/100)} now.`,task:tr('Set STD on both sides, crosscheck, and say the level you pass.','Sett STD på begge sider, kryssjekk, og si nivået du passerer.'),
    els:[P('Standard set','Standard satt',/\b(standard|std)\b/),P('Crosschecked','Kryssjekket',/\b(cross ?checked|crosschecked)\b/),P('Passing flight level','Passerer nivå',/\bpassing\b/)]},
   {who:'PF',ch:'crew',text:'Checked, flight level 240 blue.'}
   ];
@@ -152,14 +152,15 @@ function arrival(V,u){
   {who:'PM',ch:'pa',text:'Cabin crew, start of descent.',task:tr('Descent has started. Tell the cabin.','Nedstigningen har startet. Si fra til kabinen.'),els:[P('“Cabin crew”','«Cabin crew»',/\bcabin crew\b/),P('“Start of descent”','«Start of descent»',/\bdescent\b/)]},
   {t:'sit',text:tr('Passing FL150.','Passerer FL150.')},
   {who:'PM',ch:'pa',text:'Cabin crew, prepare for landing.',task:tr('Passing FL150: tell the cabin.','Passerer FL150: si fra til kabinen.'),els:[P('“Cabin crew”','«Cabin crew»',/\bcabin crew\b/),P('“Prepare for landing”','«Prepare for landing»',/\blanding\b/)]},
+  {t:'sit',text:tr('Descending through FL130.','Synker gjennom FL130.')},
   {who:'ATC',unit:u.ctl,text:`${A}, contact NORDAP Approach ${V.app}.`},
   {who:'PM',unit:u.ctl,text:`NORDAP Approach ${V.app}, ${A}.`,task:tr('Read back the frequency change.','Les tilbake frekvensskiftet.'),els:[freq(V.app,'Approach'),cs()]},
-  {who:'PM',unit:u.app,text:`NORDAP Approach, ${c}, descending flight level 100, information ${L}.`,task:tr('First call to Approach: level, ATIS letter.','Første kall til Approach: nivå, ATIS-bokstav.'),els:[stn('NORDAP Approach'),cs(),fl(100),info(V.info2)]},
+  {who:'PM',unit:u.app,text:`NORDAP Approach, ${c}, passing flight level 130, descending to flight level 100, information ${L}.`,task:tr('First call to Approach while descending: passing level, cleared level, ATIS letter (SERA.14065(a)).','Første kall til Approach i nedstigning: nivået du passerer, klarert nivå, ATIS-bokstav (SERA.14065(a)).'),els:[stn('NORDAP Approach'),cs(),P('Passing level','Nivå du passerer',/\bpassing\b/),fl(100),info(V.info2)]},
   {who:'ATC',unit:u.app,text:`${A}, descend to altitude 4000 feet, QNH ${Q}, turn left heading 270.`},
   {who:'PM',unit:u.app,text:`Descend to altitude 4000 feet, QNH ${Q}, left heading 270, ${A}.`,task:tr('Read back the clearance.','Les tilbake klareringen.'),els:[alt(4000),qnh(Q),turn('left'),hdg('270'),cs()]},
   {t:'sit',text:tr(`Passing the transition level, FL${V.tl}, cleared to an altitude.`,`Passerer overgangsnivået, FL${V.tl}, klarert til en høyde.`)},
   {who:'PF',ch:'crew',text:'Set QNH.',task:tr('Order the QNH setting.','Be om QNH-innstilling.'),els:[P('“Set QNH”','«Set QNH»',/\bqnh\b/)]},
-  {who:'PM',ch:'crew',text:`QNH ${Q} set and crosschecked, passing altitude 6500 feet now.`,task:tr('Set QNH on both sides, crosscheck, say the altitude you pass.','Sett QNH på begge sider, kryssjekk, si høyden du passerer.'),
+  {who:'PM',ch:'crew',text:`QNH ${Q} set and crosschecked, passing altitude ${Math.round((V.tl*100-(1013-Q)*27.3)/100)*100} feet now.`,task:tr('Set QNH on both sides, crosscheck, say the altitude you pass.','Sett QNH på begge sider, kryssjekk, si høyden du passerer.'),
    els:[qnh(Q),P('Crosschecked','Kryssjekket',/\b(cross ?checked|crosschecked)\b/),P('Passing altitude','Passerer høyde',/\bpassing\b/)]},
   {who:'PF',ch:'crew',text:'Checked, 4000 feet blue.'},
   {who:'ATC',unit:u.app,text:`${A}, turn right heading 330, cleared ILS approach runway 36, report established.`},
@@ -235,7 +236,7 @@ function build(script,role){
 }
 
 const BASIS_AL=['SERA.8015 (readback)','SERA Section 14 (phraseology)','ICAO Doc 4444 ch. 12'];
-const mk=(k,lvl,t,d,script,role)=>({k,group:'airline',lvl,t,d,basis:BASIS_AL,full:1,role,build:build(script,role)});
+const mk=(k,lvl,t,d,script,role)=>({k,group:'airline',lvl,t,d,basis:BASIS_AL,sop:true,full:1,role,build:build(script,role)});
 const AIRLINE=[
   mk('a320dep-pm',2,tr('A320 departure: you are PM','A320 avgang: du er PM'),tr('Clearance, start and push, taxi, line-up, take-off, first call to Approach, standard. You talk to ATC; PF and the ground crew speak.','Klarering, start og push, taksing, oppstilling, avgang, første kall til Approach, standard. Du snakker med ATC; PF og bakkemannskapet snakker.'),departure,'PM'),
   mk('a320dep-pf',2,tr('A320 departure: you are PF','A320 avgang: du er PF'),tr('Order the ATC requests, talk to the ground crew on the interphone through push and start, crosscheck the clearance. PM talks to ATC.','Bestill ATC-kallene, snakk med bakkemannskapet på interphone gjennom push og start, kryssjekk klareringen. PM snakker med ATC.'),departure,'PF'),
