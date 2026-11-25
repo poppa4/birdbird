@@ -98,3 +98,14 @@ baked light is even on flat plates and smoothed on curved parts (no streaks from
 In `a320-3d.js` the page's own backstop lining is kept outside this structure: no strip along the beams over the side
 windows (it cut through the model's recesses there and showed as torn patches), and the rear wall and the walls behind
 the seats stand further out, where this structure is wider.
+
+## Materials, colours and window seals (2026-11-25)
+
+The structure was one blue-grey paint everywhere. `classify.py` sorts its faces into parts from geometry (lining, sun visors,
+seat covers, seat frames and rails, console slate, carpet, glareshield leather, rear-wall lining, painted panels: the
+circuit-breaker panels and the tops of the side consoles); `neo_look.py` gives each part the colour it has on the aircraft
+(light neutral grey lining, smoked visors, dark blue-grey seats, dark grey consoles and carpet, Airbus blue-grey panels) and
+keeps the baked light (more contrast, smoothed on the rear wall); `seals.py` finds every window opening by casting rays
+from the seats and stores a 22 mm dark rubber band along its edge in the file's header (`seals`), which the page draws.
+    python3 neo_look.py ../../models/a320-shell-test.bin look.bin
+    python3 seals.py look.bin seals.json mask.png ../../models/a320-shell-test.bin
