@@ -508,6 +508,11 @@
 .lb .th-feat.th-route img{object-position:50% 35%}
 .lb .th-s1 img,.lb .th-s2 img,.lb .th-s3 img,.lb .th-s4 img{object-position:50% 40%!important}
 .lb .th-s3 img{object-position:0 50%!important}
+.lb .th-feat.bt img{object-position:22% 30%}
+.lb .th-feat.bt::after{background:linear-gradient(180deg,rgba(9,16,26,0) 0%,rgba(9,16,26,0) 42%,rgba(9,16,26,.82) 70%,rgba(9,16,26,.96) 100%)!important}
+.lb .th-feat.bt .th-tx .k{align-self:flex-start}
+.lb .th-feat.bt .th-tx{top:auto;bottom:0;max-width:none;padding:22px 26px 24px}
+.lb .th-feat.th-route img{object-position:40% 25%}
 .th-find{display:flex;border:1px solid var(--rl);border-radius:4px;overflow:hidden}
 .th-find input{flex:1;min-width:0;border:0;padding:9px 10px;font:inherit;font-size:14.5px;background:#fff;color:inherit}
 .th-find input:focus{outline:none}.th-find:focus-within{border-color:var(--accent,#1F5A8F);box-shadow:0 0 0 2px rgba(31,90,143,.15)}
@@ -585,24 +590,22 @@ mark{background:#DCE8F3;color:inherit;padding:0 1px}
       <li><a href="tunnel.html#quiz"><i>4</i><span><b data-tx="s4">Test yourself</b><small data-tx="s4s">Key points and a short quiz</small></span></a></li>
     </ol>
     <div class="th-grid">
-      <div class="th-t th-feat"><img src="img/front/labs/pof-1120.webp" srcset="img/front/labs/pof-640.webp 640w, img/front/labs/pof-1120.webp 1120w" sizes="(max-width:1100px) 100vw, 760px" alt="The 3D wind tunnel: an A320 with streamlines and the pressure on its surface in colour." data-alt-no="3D-vindtunnelen: en A320 med strømlinjer og trykket på overflaten i farger." fetchpriority="high" decoding="async">
+      <div class="th-t th-feat bt"><img src="img/front/labs/aero-stall-1000.webp" srcset="img/front/labs/aero-stall-1000.webp 1000w, img/front/labs/aero-stall-1600.webp 1600w" sizes="(max-width:1100px) 100vw, 760px" alt="An aerofoil close to the stall: low pressure over the nose, the flow separating on the upper surface and a turbulent wake." data-alt-no="Et vingeprofil nær stall: undertrykk over nesen, strømningen som løsner på oversiden og en turbulent kjølvann." fetchpriority="high" decoding="async">
         <a class="stretch" href="tunnel.html" tabindex="-1" aria-hidden="true"></a>
         <div class="th-tx"><span class="k" data-tx="fK">Area 01 · Start here</span><b data-tx="fH">Aerodynamics</b><span data-tx="fP">How a wing makes lift, from angle of attack to Mach.</span>
-          <ul class="pf-ok"><li data-tx="fB1">A 3D wind tunnel with live airflow</li><li data-tx="fB2">Stall, stability and load factor</li><li data-tx="fB3">Engine failure and VMC</li></ul>
           <div class="th-go"><a class="th-btn" href="tunnel.html" data-tx="fGo">Open the wind tunnel</a><a class="th-lk" href="#pof" data-tx="fAlt">All five labs</a></div></div>
       </div>
-      <div class="th-t th-feat th-route"><img src="img/front/storm-mature-1480.webp" srcset="img/front/storm-mature-800.webp 800w, img/front/storm-mature-1480.webp 1480w" sizes="(max-width:1100px) 100vw, 640px" alt="A mature thunderstorm in 3D, with the anvil spreading downwind." data-alt-no="Et modent tordenvær i 3D, med ambolten som brer seg med vinden." decoding="async">
+      <div class="th-t th-feat th-route bt"><img src="img/front/labs/cb-ltg-1480.webp" srcset="img/front/labs/cb-ltg-800.webp 800w, img/front/labs/cb-ltg-1480.webp 1480w" sizes="(max-width:1100px) 100vw, 640px" alt="A mature thunderstorm at night, lit from inside by a lightning strike to the ground." data-alt-no="Et modent tordenvær om natten, lyst opp innenfra av et lynnedslag mot bakken." decoding="async">
         <a class="stretch" href="storms.html" tabindex="-1" aria-hidden="true"></a>
         <div class="th-tx"><span class="k" data-tx="rK">Area 02</span><b data-tx="rH">Meteorology</b><span class="l" data-tx="rP">Pressure and wind first, then the weather that shapes every flight.</span>
-          <ul class="pf-ok"><li data-tx="rB1">A thunderstorm built in 3D</li><li data-tx="rB2">Fly through a front</li><li data-tx="rB3">Icing, turbulence and the reports</li></ul>
           <div class="th-go"><a class="th-btn" href="storms.html" data-tx="rGo">Open the storm lab</a><a class="th-lk" href="#met" data-tx="rAlt">All six labs</a></div></div>
       </div>
-      <a class="th-t th-s1" href="gennav.html"><img src="img/front/labs/nav-640.webp" srcset="img/front/labs/nav-640.webp 640w, img/front/labs/nav-1120.webp 1120w" sizes="(max-width:1100px) 50vw, 300px" alt="A holding pattern with the three entry sectors." data-alt-no="Et holdingmønster med de tre inngangssektorene." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tNv">Navigation</b><span data-tx="tNvL">Wind triangle to ILS.</span></div></a>
-      <a class="th-t th-s2" href="airdata.html"><img src="img/front/labs/inst-640.webp" srcset="img/front/labs/inst-640.webp 640w, img/front/labs/inst-1120.webp 1120w" sizes="(max-width:1100px) 50vw, 300px" alt="The pitot-static system feeding the airspeed indicator, altimeter and VSI." data-alt-no="Pitot-statisk system som forsyner fartsmåler, høydemåler og VSI." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tIn">Instruments</b><span data-tx="tInL">What they measure.</span></div></a>
-      <a class="th-t th-s3" href="engines.html"><img src="img/front/labs/sys-640.webp" srcset="img/front/labs/sys-640.webp 640w, img/front/labs/sys-1120.webp 1120w" sizes="(max-width:1100px) 50vw, 300px" alt="A turboprop engine cut open, with the stages numbered." data-alt-no="En turbopropmotor skåret opp, med trinnene nummerert." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tSy">Systems</b><span data-tx="tSyL">Engines and systems.</span></div></a>
-      <a class="th-t th-s4" href="performance.html"><img src="img/front/labs/perf-640.webp" srcset="img/front/labs/perf-640.webp 640w, img/front/labs/perf-1120.webp 1120w" sizes="(max-width:1100px) 50vw, 300px" alt="A take-off run with VMCG, the runway and the clearway." data-alt-no="En startrulling med VMCG, rullebanen og clearway." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tPf">Performance</b><span data-tx="tPfL">V1, runway and fuel.</span></div></a>
+      <a class="th-t th-s1" href="gennav.html"><img src="img/front/labs/gnss-640.webp" srcset="img/front/labs/gnss-640.webp 640w, img/front/labs/gnss-1120.webp 1120w" sizes="(max-width:1100px) 50vw, 300px" alt="The Earth from space with navigation satellites in orbit and lines of sight down to western Norway." data-alt-no="Jorden sett fra verdensrommet med navigasjonssatellitter i bane og siktlinjer ned til Vestlandet." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tNv">Navigation</b><span data-tx="tNvL">Wind triangle to ILS.</span></div></a>
+      <a class="th-t th-s2" href="airdata.html"><img src="img/front/labs/inst-promo-640.webp" srcset="img/front/labs/inst-promo-640.webp 640w, img/front/labs/inst-promo-1120.webp 1120w" sizes="(max-width:1100px) 50vw, 300px" alt="A panel of six flight instruments, with the attitude indicator in a gentle left bank." data-alt-no="Et panel med seks flyinstrumenter, med attitydeindikatoren i en slak venstresving." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tIn">Instruments</b><span data-tx="tInL">What they measure.</span></div></a>
+      <a class="th-t th-s3" href="engines.html"><img src="img/front/labs/fan-640.webp" srcset="img/front/labs/fan-640.webp 640w, img/front/labs/fan-1120.webp 1120w" sizes="(max-width:1100px) 50vw, 300px" alt="A turbofan taken apart: inlet, fan, compressors, combustor, turbines and nozzle in a row." data-alt-no="En turbofan tatt fra hverandre: innløp, vifte, kompressorer, brennkammer, turbiner og dyse på rad." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tSy">Systems</b><span data-tx="tSyL">Engines and systems.</span></div></a>
+      <a class="th-t th-s4" href="performance.html"><img src="img/front/labs/perf-promo-640.webp" srcset="img/front/labs/perf-promo-640.webp 640w, img/front/labs/perf-promo-1120.webp 1120w" sizes="(max-width:1100px) 50vw, 300px" alt="An airliner rotating on the runway at dusk, with V1, VR and V2 marked along the take-off path." data-alt-no="Et passasjerfly som roterer på rullebanen i skumringen, med V1, VR og V2 merket langs avgangsbanen." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tPf">Performance</b><span data-tx="tPfL">V1, runway and fuel.</span></div></a>
       <aside class="th-rail" aria-label="Your labs" data-aria-no="Dine labber">
-        <section class="th-cont"><h2 data-tx="cC">Continue</h2><div id="lbCont"><a href="tunnel.html"><img src="img/front/labs/pof-640.webp" alt=""><div><b data-tx="cN">Wind tunnel</b><span data-tx="cS">New here? Start with the first lab.</span></div><em data-tx="cGo">Start →</em></a></div></section>
+        <section class="th-cont"><h2 data-tx="cC">Continue</h2><div id="lbCont"><a href="tunnel.html"><img src="img/front/labs/aero-stall-640.webp" alt=""><div><b data-tx="cN">Wind tunnel</b><span data-tx="cS">New here? Start with the first lab.</span></div><em data-tx="cGo">Start →</em></a></div></section>
         <section><h2 data-tx="sH">Find a topic</h2><form class="th-find" id="lbFind" role="search"><label class="vh" for="lbQ" data-tx="sL">Search labs and topics</label><input id="lbQ" type="search" maxlength="60" autocomplete="off" placeholder="e.g. V1, QNH, icing" data-ph-no="f.eks. V1, QNH, ising"><button type="submit" data-tx="sGo">Search</button></form></section>
         <section><h2 data-tx="qH">Quick start</h2><ul class="th-qs">
           <li><a href="tunnel.html#concepts"><span class="tg t1">AoA</span><b data-tx="q1">Angle of attack</b></a></li>
@@ -671,13 +674,13 @@ const tops=l=>(TOP[l[0]]||[]).map(([a,en,no,ty])=>[a,a==='quiz'?t('Test yourself
 const NTOP=[...AREAS,...MORE].reduce((a,m)=>a+m.labs.reduce((b,l)=>b+tops(l).length,0),0);
 const tag=l=>{ const x=LVX[l[4]]||LVX['']; return `<span class="tag ${x.c}" title="${esc(L(LVTIP[l[4]]||LVTIP['']))}">${esc(L(x))}</span>`; };
 const pad=i=>String(i).padStart(2,'0');
-const IMG={pof:'pof',met:'met',nav:'nav',inst:'inst',sys:'sys',perf:'perf',law:'law'};
+const IMG={pof:'aero-stall-640',met:'cb-ltg-800',nav:'gnss-640',inst:'inst-promo-640',sys:'fan-640',perf:'perf-promo-640',law:'law-640'};
 let q='';
 
 function draw(){
   const no=LAB.lang==='no';
   el('arN').textContent=`${AREAS.length} ${no?'områder':'areas'} · ${ALL.length} ${no?'labber':'labs'}`;
-  el('arList').innerHTML=AREAS.map((m,i)=>{ const f=m.labs[0], img=m.k==='law'?'img/front/labs/law-640.webp':`img/front/labs/${IMG[m.k]}-640.webp`;
+  el('arList').innerHTML=AREAS.map((m,i)=>{ const f=m.labs[0], img=`img/front/labs/${IMG[m.k]}.webp`;
     return `<li class="lba" id="${m.k}"><a class="ar-ph" href="${f[0]}" tabindex="-1" aria-hidden="true"><img src="${img}" alt="" loading="lazy" decoding="async" width="640" height="400"></a>`+
       `<div class="ar-b"><span class="ar-n">${pad(i+1)}</span><h3><a href="${f[0]}">${esc(L(m))}</a></h3><p class="ar-d">${esc(L(m.d))}</p>`+
       `${(m.c||[]).length?`<ul class="ar-c" aria-label="${esc(L(t('Covers','Dekker')))}">${m.c.map(c=>`<li>${esc(L(c))}</li>`).join('')}</ul>`:''}</div>`+
@@ -704,7 +707,7 @@ function list(){
 /* Continue: the lab you opened last in this browser */
 function cont(){ const box=el('lbCont'); let o=null; try{ o=JSON.parse(localStorage.getItem('bb-last-lab')||'null'); }catch(e){}
   const x=o&&LAB.FLAT.find(f=>f.f===o.h); if(!x) return; const no=LAB.lang==='no', m=x.m, ai=AREAS.indexOf(m);
-  const img=ai>=0?(m.k==='law'?'img/front/labs/law-thumb.webp':`img/front/labs/${IMG[m.k]}-640.webp`):'img/front/labs/hf-thumb.webp';
+  const img=ai>=0?(m.k==='law'?'img/front/labs/law-thumb.webp':`img/front/labs/${IMG[m.k]}.webp`):'img/front/labs/hf-thumb.webp';
   const ago=Math.max(0,Math.round((Date.now()-(o.at||Date.now()))/864e5)), when=ago===0?(no?'I dag':'Today'):ago===1?(no?'I går':'Yesterday'):(no?`For ${ago} dager siden`:`${ago} days ago`);
   box.innerHTML=`<a href="${x.f}"><img src="${img}" alt=""><div><b>${esc(no?x.no:x.en)}</b><span>${esc(L(m))} · ${when}</span></div><em>${no?'Fortsett →':'Resume →'}</em></a>`; }
 function attrs(){ const no=LAB.lang==='no';
