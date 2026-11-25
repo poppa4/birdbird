@@ -139,6 +139,17 @@ MATS = {
     'skin':      dict(color=(0.95, 0.95, 0.94), rough=0.3, ao=False),
     'skin_under': dict(color=(0.84, 0.84, 0.83), rough=0.45, ao=False),
     'prop':      dict(color=(0.05, 0.05, 0.05), rough=0.5, ao=False),
+    'prop_tip':  dict(color=(0.90, 0.90, 0.88), rough=0.45, ao=False),
+    'tks':       dict(color=(0.56, 0.57, 0.60), rough=0.35, metal=0.5, ao=False),      # porous de-icing panel on the leading edge
+    'seam':      dict(color=(0.60, 0.61, 0.62), rough=0.4, ao=False),                 # panel joint in the white skin
+    'gap':       dict(color=(0.13, 0.13, 0.14), rough=0.7, ao=False),                 # open gap: control surface, cowling
+    'walk':      dict(color=(0.10, 0.10, 0.11), rough=0.95, ao=False),                # anti-skid walkway at the wing root
+    'intake':    dict(color=(0.025, 0.025, 0.03), rough=0.9, ao=False),
+    'cap':       dict(color=(0.50, 0.51, 0.53), rough=0.35, metal=0.6, ao=False),
+    'cap_red':   dict(color=(0.72, 0.13, 0.09), rough=0.5, ao=False),
+    'lens_red':  dict(color=(0.85, 0.10, 0.08), rough=0.15, ao=False),
+    'lens_green': dict(color=(0.08, 0.70, 0.30), rough=0.15, ao=False),
+    'lens_clear': dict(color=(0.86, 0.90, 0.94), rough=0.1, ao=False),
     'panel_face': dict(color=(1, 1, 1), rough=0.6, ao=False, tex='panelph', nstr=0),
     'glass':     dict(color=(0.80, 0.86, 0.90), rough=0.05, alpha=0.10, double=True, ao=False),
 }
@@ -353,6 +364,69 @@ def wing_pt(sd, s, c, top):
     return v3(sd * x, WING_Y + (x - WING_X0) * 0.095 + cam + (th if top else -th), le + c * ch)
 
 
+def wpatch(g, sd, s0, s1, c0, c1, mat, n=(10, 2), off=0.0016):
+    """a patch lying on the upper wing surface (s span 0..1, c chord 0..1), just proud of the skin"""
+    grid(g, n[0], n[1], lambda u, v: wing_pt(sd, s0 + (s1 - s0) * u, c0 + (c1 - c0) * v, True) + v3(0, off, 0), mat, toward=v3(sd * 3, 30, 0))
+
+
+def wing_detail(g, sd):
+    """what the crew sees on the upper wing: de-icing panel, control surfaces, panel joints, filler cap, walkway, tip lights"""
+    def dc(s, m): return m / (1.74 - 0.84 * s ** 1.15)            # metres → chord fraction at span s
+    SN = (NAC_X - WING_X0) / (WING_X1 - WING_X0); nw = 0.33 / (WING_X1 - WING_X0)   # nacelle centre and half width in span
+    HL = 0.74                                                       # hinge line of flaps and aileron
+    wpatch(g, sd, SN + nw, 0.975, 0.0, 0.034, 'tks', n=(16, 5)); wpatch(g, sd, 0.02, SN - nw, 0.0, 0.030, 'tks', n=(4, 5))
+    for s0, s1 in ((0.012, SN - nw), (SN + nw, 0.985)):             # hinge gap: one dark line along the span
+        grid(g, 14, 1, lambda u, v: wing_pt(sd, s0 + (s1 - s0) * u, HL + (v - 0.5) * dc(s0 + (s1 - s0) * u, 0.012), True) + v3(0, 0.0016, 0), 'gap', toward=v3(sd * 3, 30, 0))
+    for sc in (SN + nw + 0.004, 0.565, 0.985):                      # chordwise cuts: flap ends, flap to aileron, aileron tip
+        w = 0.010 / (WING_X1 - WING_X0); wpatch(g, sd, sc - w / 2, sc + w / 2, HL, 1.0, 'gap', n=(1, 6), off=0.0018)
+    for cc in (0.30, 0.52):                                         # spanwise skin joints
+        for s0, s1 in ((0.075, SN - nw), (SN + nw, 0.975)):
+            grid(g, 12, 1, lambda u, v: wing_pt(sd, s0 + (s1 - s0) * u, cc + (v - 0.5) * dc(s0 + (s1 - s0) * u, 0.0045), True) + v3(0, 0.0016, 0), 'seam', toward=v3(sd * 3, 30, 0))
+    for sc in (0.36, 0.60, 0.80):                                   # chordwise skin joints
+        w = 0.0045 / (WING_X1 - WING_X0); wpatch(g, sd, sc - w / 2, sc + w / 2, 0.034, HL, 'seam', n=(1, 10), off=0.0018)
+    wpatch(g, sd, 0.0, 0.070, 0.22, 0.97, 'walk', n=(2, 10), off=0.0020)        # walkway beside the cabin
+    for (sc, cc) in ((0.285, 0.20), (0.44, 0.20)):                  # fuel filler caps, flush, with a red ring
+        q = wing_pt(sd, sc, cc, True)
+        lathe(g, [(0, 0.0034), (0.036, 0.0034), (0.040, 0.0022)], 'cap', seg=20, m=T(q[0], q[1], q[2]))
+        lathe(g, [(0.040, 0.0022), (0.052, 0.0020), (0.054, 0.0)], 'cap_red', seg=20, m=T(q[0], q[1], q[2]))
+    q = wing_pt(sd, 0.992, 0.035, True)                              # position light and strobe in the tip, ahead of the winglet
+    rbox(g, (0.030, 0.026, 0.085), 0.011, 'lens_red' if sd < 0 else 'lens_green', m=T(q[0] + sd * 0.012, q[1] + 0.006, q[2] + 0.02), seg=3)
+    rbox(g, (0.026, 0.022, 0.050), 0.009, 'lens_clear', m=T(q[0] + sd * 0.012, q[1] + 0.006, q[2] + 0.10), seg=3)
+    for sc in (0.66, 0.74, 0.82, 0.90):                             # static wicks on the aileron trailing edge
+        q = wing_pt(sd, sc, 1.0, True); tube(g, [v3(*q) + v3(0, 0.002, -0.01), v3(*q) + v3(0, 0.004, 0.11)], 0.0022, 'gap', sides=5)
+
+
+def nacelle_detail(g, sd, stn):
+    """cowling joints, hatch, air inlets and the gap behind the spinner"""
+    nx = sd * NAC_X
+    def st(dz):
+        for i in range(len(stn) - 1):
+            if stn[i][0] <= dz <= stn[i + 1][0]:
+                k = (dz - stn[i][0]) / (stn[i + 1][0] - stn[i][0]); return [stn[i][j] + (stn[i + 1][j] - stn[i][j]) * k for j in (1, 2, 3)]
+        return list(stn[-1][1:])
+    def npt(dz, t, off=0.0035):
+        a, b, dy = st(dz); return v3(nx + (a + off) * spw(math.cos(t), 0.86), NAC_Y + dy + (b + off) * spw(math.sin(t), 0.86), PROP_Z + dz)
+    out = v3(nx, NAC_Y, PROP_Z + 0.8)
+    def npatch(z0, z1, t0, t1, mat, n=(8, 2), off=0.0035):
+        mid = npt((z0 + z1) / 2, (t0 + t1) / 2, 0.6)
+        grid(g, n[0], n[1], lambda u, v: npt(z0 + (z1 - z0) * u, t0 + (t1 - t0) * v, off), mat, toward=mid + (mid - out) * 5)
+    for t in (0.0, math.pi):                                        # split line between upper and lower cowling, both sides
+        npatch(0.05, 1.55, t - 0.014, t + 0.014, 'gap', n=(16, 1))
+    for z in (0.034, 0.74):                                         # behind the spinner, and the firewall joint
+        for k in range(4):
+            npatch(z, z + (0.014 if z < 0.1 else 0.007), k * math.pi / 2, (k + 1) * math.pi / 2, 'gap' if z < 0.1 else 'seam', n=(1, 9))
+    T0, T1 = math.pi / 2 - 0.40, math.pi / 2 + 0.40                 # oil-check hatch on top
+    for (z0, z1, t0, t1) in ((0.36, 0.60, T0, T0 + 0.022), (0.36, 0.60, T1 - 0.022, T1), (0.36, 0.366, T0, T1), (0.594, 0.60, T0, T1)):
+        npatch(z0, z1, t0, t1, 'seam', n=(4, 6), off=0.004)
+    for tc in (0.0, math.pi):                                       # air inlet low on each side, and the two cooling inlets under the spinner
+        e = lambda u, v, tc=tc: npt(0.44 + v * 0.105 * math.cos(2 * math.pi * u), tc - 0.30 + v * 0.115 * math.sin(2 * math.pi * u), 0.004)
+        mid = npt(0.44, tc - 0.30, 0.6); grid(g, 18, 2, e, 'intake', toward=mid + (mid - out) * 5)
+    for tc in (-math.pi / 2 - 0.62, -math.pi / 2 + 0.62):
+        e = lambda u, v, tc=tc: npt(0.078 + v * 0.036 * math.cos(2 * math.pi * u), tc + v * 0.36 * math.sin(2 * math.pi * u), 0.004)
+        mid = npt(0.078, tc, 0.6); grid(g, 16, 2, e, 'intake', toward=mid + (mid - out) * 5)
+    tube(g, [v3(nx - sd * 0.10, NAC_Y - 0.275, PROP_Z + 0.86), v3(nx - sd * 0.10, NAC_Y - 0.34, PROP_Z + 0.99)], 0.026, 'steel_dark', sides=10)   # exhaust stub
+
+
 def exterior():
     g = Geo(); cs = [(1 - math.cos(math.pi * k / 16)) / 2 for k in range(17)]
     # nose: from the base of the windshield forward
@@ -384,6 +458,7 @@ def exterior():
         for (dz, a, b, dy) in stn:
             secs.append([v3(nx + max(a, 1e-4) * spw(math.cos(t), 0.86), NAC_Y + dy + max(b, 1e-4) * spw(math.sin(t), 0.86), PROP_Z + dz) for t in np.linspace(0, 2 * math.pi, 37)[:-1]])
         loft(g, secs, 'skin', closed_u=True, toward=v3(nx + 10, NAC_Y, PROP_Z + 1))
+        wing_detail(g, sd); nacelle_detail(g, sd, stn)
         # fuselage side below the canopy sill
         grid(g, 24, 4, lambda u, v: (sd * (cw(ZF + u * 4.6) + 0.012 + 0.02 * math.sin(v * math.pi / 2)), YS - 0.004 - v * 0.8, ZF + u * 4.6), 'skin', toward=v3(sd * 3, 0, 0))
     return g
@@ -400,7 +475,7 @@ def propeller(sd):
             q = (r - 0.13) / (PROP_R - 0.13)
             path.append(hub + d * r + v3(0, 0, -0.01)); wd.append(0.030 + 0.070 * math.sin(math.pi * min(1, q * 1.15) ** 0.8) * (1 - 0.25 * q) + 0.004); tk.append(0.016 - 0.012 * q)
         tw = v3(0, 0, 1) * 0.55 + e * 0.83
-        tube(g, path, wd, 'prop', sides=10, ry=tk, up=tw)
+        tube(g, path[:10], wd[:10], 'prop', sides=10, ry=tk[:10], up=tw, caps=False); tube(g, path[9:], wd[9:], 'prop_tip', sides=10, ry=tk[9:], up=tw)
     tiny = 0.0008                                   # four specks on the tip circle, so the unit's box is centred on the hub
     for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
         c = hub + v3(dx * PROP_R, dy * PROP_R, -0.01)
