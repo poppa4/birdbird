@@ -106,6 +106,9 @@ nseg=0
 for ls in PKL:
     c=list(ls.coords)
     for a,b in zip(c[:-1],c[1:]): seg_dist(a,b); nseg+=1
+# holding position markings into the same distance field
+for h_ in (HOLDS if 'HOLDS' in globals() else []):
+    pass
 # skeleton outside the parking chart: distance to the (kept) skeleton pixels
 skm=np.zeros((H,W),bool); skm[ys_[keep_pts],xs_[keep_pts]]=True
 dsk,(iy,ix)=nd.distance_transform_edt(~skm,return_indices=True); dsk=dsk*AR
@@ -277,6 +280,31 @@ for g in gsa:
         h0=float(hat(E_,N_)[0]); MASTS.append([round(E_,2),round(N_,2),round(h0,2)])
         for k in (-1,0,1): add((E_+k*0.6,N_),(1.0,0.86,0.66),(0,0),180,2.2,dz=22.0)
 print('masts',len(MASTS))
+# ---- runway holding positions (CAT II/III, 90 m from the runway centre line) on every taxiway that joins the runway ----
+from geo import page_to_local as _p2l
+LBL={'A':(590.6,386.9),'B':(593,589),'C':(599,803),'W3':(525.6,787.5),'W2':(554.7,821.8),'W1':(535,935.6)}
+LBL={k:_p2l(*v) for k,v in LBL.items()}
+twc=unary_union(TWC)
+HOLDS=[]
+for side in (-1,1):
+    off=LineString([pt(S0-200,side*90.0),pt(S1+200,side*90.0)])
+    x=twc.intersection(off)
+    gs_=x.geoms if hasattr(x,'geoms') else [x]
+    for g_ in gs_:
+        if g_.is_empty or g_.length<8 or g_.length>60: continue
+        c=g_.centroid; lab=min(LBL,key=lambda k:math.hypot(LBL[k][0]-c.x,LBL[k][1]-c.y))
+        if math.hypot(LBL[lab][0]-c.x,LBL[lab][1]-c.y)>260: lab=''
+        a,b=list(g_.coords)[0],list(g_.coords)[-1]
+        HOLDS.append(dict(a=[round(a[0],2),round(a[1],2)],b=[round(b[0],2),round(b[1],2)],side=side,twy=lab))
+print('holds',[(h_['twy'],h_['side'],round(math.dist(h_['a'],h_['b']),1)) for h_ in HOLDS])
+# windsocks: left of each threshold, 120 m in and 75 m out from the edge
+SOCKS=[[round(v,2) for v in pt(150,-(WID/2+75))],[round(v,2) for v in pt(LTHR-150,(WID/2+75))]]
+# airport fence: outline of the airfield (chart), 25 m outside the movement area, simplified
+fz=unary_union([Polygon(to_local(pl)).buffer(0) for dd in dr if key(dd)==('f',(0.66,0.8,0.73),0) for pl in polys(dd) if len(pl)>=3])
+fz=fz.buffer(30).buffer(-10).simplify(4)
+ring=max(fz.geoms,key=lambda g:g.area).exterior if hasattr(fz,'geoms') else fz.exterior
+FENCE=[[round(x,1),round(y,1),round(float(hat(x,y)[0]),2)] for x,y in [ring.interpolate(d).coords[0] for d in np.arange(0,ring.length,8.0)]]
+print('fence points',len(FENCE),'length',round(ring.length))
 print('lights',len(L),'taxi',nt)
 STANDS=[('1',(10,15,14.02),(59,10,47.69)),('2',(10,15,14.35),(59,10,46.59)),('3',(10,15,14.37),(59,10,45.28)),('4',(10,15,14.39),(59,10,43.97)),
  ('5',(10,15,14.39),(59,10,42.66)),('10',(10,15,11.77),(59,10,47.95)),('11',(10,15,9.22),(59,10,47.95)),('12',(10,15,6.67),(59,10,47.94)),
@@ -295,7 +323,7 @@ for sid,lo,la in STANDS:
     if hdg is None: hdg=math.radians(90.0)        # GA stands 32-34: nose east, as drawn on the chart
     stands.append(dict(id=sid,E=round(E,2),N=round(N,2),hdg=round(math.degrees(hdg)%360,1),elev=round(float(hat(E,N)[0]),2),d=round(dmin,1) if dmin is not None else None))
 print('stands',[(s_['id'],s_['hdg'],s_['d']) for s_ in stands])
-meta=dict(masts=MASTS,stands=stands,thr35=[0,0],thr17=[round(float(T17[0]),3),round(float(T17[1]),3)],u=[float(U[0]),float(U[1])],s0=S0,s1=S1,width=WID,lthr=LTHR,
+meta=dict(holds=HOLDS,socks=SOCKS,fence=FENCE,masts=MASTS,stands=stands,thr35=[0,0],thr17=[round(float(T17[0]),3),round(float(T17[1]),3)],u=[float(U[0]),float(U[1])],s0=S0,s1=S1,width=WID,lthr=LTHR,
           elev35=round(float(hat(0,0)[0]),2),elev17=round(float(hat(*T17)[0]),2),papi=[round(p35,1),round(p17,1)],
           sdf=dict(E0=AE0,N1=AN1,w=W,h=H,res=AR),aiming=400.0)
 # runway centreline profile (for smooth runway surface & aircraft): every 10 m from s0 to s1

@@ -23,7 +23,7 @@ const P0=160;                                    // finest patch size (m) -> 10 
 const NLEV=11;                                   // quadtree levels: root = 160*2^10 = 163.84 km
 const ROOT={E:0, N:1000, S:P0*Math.pow(2,NLEV-1)};
 const MAXI=2400;
-const DATA_V=11;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
+const DATA_V=12;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
 const V=f=>f+'?v='+DATA_V;
 
 /* ---------- loading ---------- */
@@ -264,7 +264,7 @@ uniform vec3 camW; uniform float night; uniform float wt; uniform float treeR;
 uniform sampler2D tNF,tNM,tNN, tAF,tAM,tAN, tWF,tWM,tWN, tDet, tApt, tAptL, tShd, tML, tMN;
 uniform vec4 extF,extM,extN, aextF,aextM,aextN; uniform float onM,onN, aptOn, matOn;
 uniform vec4 aptE; uniform vec2 rwyU; uniform vec4 rwyS; uniform float rwyAim;
-uniform sampler2D tSD; uniform vec4 stands[16]; uniform int nStands; uniform vec3 masts[40]; uniform int nMasts;
+uniform sampler2D tSD; uniform vec4 stands[16]; uniform int nStands; uniform vec4 holdA[8]; uniform vec4 holdB[8]; uniform int nHolds; uniform vec3 masts[40]; uniform int nMasts;
 varying vec3 vW; varying vec2 vEN; varying float vSp; varying float vCan;
 vec2 uvOf(vec4 e,vec2 EN){ return vec2((EN.x-e.x)/e.z,(e.y-EN.y)/e.w); }
 float inside(vec4 e,vec2 EN,float m){ vec2 d=min(EN-vec2(e.x,e.y-e.w),vec2(e.x+e.z,e.y)-EN); return clamp(min(d.x,d.y)/m,0.0,1.0); }
@@ -350,6 +350,13 @@ void main(){
       float line=1.0-smoothstep(0.075-caa,0.075+caa,cd);
       vec3 yel=lin(vec3(0.88,0.68,0.10))*(0.85+0.2*texture2D(tDet,EN/1.1).r);
       pc=mix(pc,yel,line);
+      // runway holding positions, pattern A: two solid lines on the taxiway side, two dashed lines on the runway side
+      for(int i=0;i<8;i++){ if(i>=nHolds) break; vec2 A=holdA[i].xy, Bp=holdB[i].xy; vec2 dv=Bp-A; float Lh=length(dv); dv/=Lh;
+        vec2 nr=vec2(dv.y,-dv.x); vec2 tw=-holdA[i].z*vec2(rwyU.y,-rwyU.x); if(dot(nr,tw)<0.0) nr=-nr;     // nr points to the runway
+        vec2 q=EN-A; float al=dot(q,dv), ac=dot(q,nr);
+        if(al>-1.0&&al<Lh+1.0&&abs(ac)<2.0){ float w=max(fwidth(ac),0.01);
+          float ln=0.0; for(int k=0;k<4;k++){ float c0=-0.525+float(k)*0.3; float on=1.0-smoothstep(0.075-w,0.075+w,abs(ac-c0)); if(k>=2) on*=step(fract(al/1.8),0.5); ln=max(ln,on); }
+          pc=mix(pc,yel,ln*step(0.0,al)*step(al,Lh)); } }
       // stand stop bars and painted stand numbers (read from the cockpit as the aircraft taxies in)
       for(int i=0;i<16;i++){ if(i>=nStands) break; vec4 st=stands[i];
         vec2 f=vec2(sin(st.z),cos(st.z)); vec2 r=vec2(f.y,-f.x); vec2 q=EN-st.xy; float a=dot(q,f), b=dot(q,r);
@@ -475,6 +482,8 @@ function build(){
     camW:{value:new (T().Vector3)()}, morph:{value:[]}, treeR:{value:TREE_R}, tDet:{value:detailTex}, tApt:{value:null}, tAptL:{value:null}, tShd:{value:null}, tML:{value:null}, tMN:{value:null}, matOn:{value:0}, aptOn:{value:0}, tDig:{value:digitTex},
     aptE:{value:new (T().Vector4)(apt.rwy.sdf.E0,apt.rwy.sdf.N1,apt.rwy.sdf.w*apt.rwy.sdf.res,apt.rwy.sdf.h*apt.rwy.sdf.res)},
     rwyU:{value:new (T().Vector2)(apt.rwy.u[0],apt.rwy.u[1])}, tSD:{value:makeStandDigits()},
+    holdA:{value:(()=>{ const a=(apt.rwy.holds||[]).slice(0,8).map(h=>new (T().Vector4)(h.a[0],h.a[1],h.side,0)); while(a.length<8) a.push(new (T().Vector4)()); return a; })()},
+    holdB:{value:(()=>{ const a=(apt.rwy.holds||[]).slice(0,8).map(h=>new (T().Vector4)(h.b[0],h.b[1],0,0)); while(a.length<8) a.push(new (T().Vector4)()); return a; })()}, nHolds:{value:Math.min(8,(apt.rwy.holds||[]).length)},
     stands:{value:(()=>{ const a=(apt.rwy.stands||[]).slice(0,16).map(st=>new (T().Vector4)(st.E,st.N,st.hdg*Math.PI/180,+st.id)); while(a.length<16) a.push(new (T().Vector4)(0,0,0,0)); return a; })()}, nStands:{value:Math.min(16,(apt.rwy.stands||[]).length)},
     masts:{value:(()=>{ const a=(apt.rwy.masts||[]).slice(0,40).map(m=>new (T().Vector3)(m[0],m[1],m[2])); while(a.length<40) a.push(new (T().Vector3)(0,0,-9999)); return a; })()}, nMasts:{value:Math.min(40,(apt.rwy.masts||[]).length)}, rwyS:{value:new (T().Vector4)(apt.rwy.s0,apt.rwy.s1,apt.rwy.width,apt.rwy.lthr)}, rwyAim:{value:apt.rwy.aiming},
     sunDir:{value:new (T().Vector3)(0,1,0)}, sunCol:{value:new (T().Color)()}, skyCol:{value:new (T().Color)()}, horCol:{value:new (T().Color)()},
@@ -486,7 +495,7 @@ function build(){
   terrain=new (T().Mesh)(patchGeometry(),tmat); terrain.frustumCulled=false; terrain.name='terrain';
   group.add(terrain);
   for(const n of LV) if(lev[n]) bindLevel(n);
-  buildSky(); buildBuildings(); buildFleet(); buildLights(); buildTrees();
+  buildSky(); buildBuildings(); buildFleet(); buildDetails(); buildLights(); buildTrees();
   setRanges();
   applyTod();
 }
@@ -847,6 +856,81 @@ function buildFleet(){
     const mat=F.material(api); if(type==='c172'){ mat.uniforms.xn.value=1.6; mat.uniforms.yc.value=1.35; }
     const mesh=new (T().Mesh)(g,mat); mesh.frustumCulled=false; mesh.name='fleet-'+type; group.add(mesh); fleetMats.push(mat);
   }
+}
+
+/* ---------- airfield details: taxiway signs at the holds, windsocks, perimeter fence ---------- */
+function signAtlas(){
+  // 8 sign faces in a 4x2 grid: mandatory (red/white) '35-17', '17-35'; location (black/yellow) A, B, C, W1, W2, W3
+  const c=document.createElement('canvas'); c.width=1024; c.height=256; const g=c.getContext('2d');
+  const faces=[['35-17','m'],['17-35','m'],['A','l'],['B','l'],['C','l'],['W1','l'],['W2','l'],['W3','l']];
+  faces.forEach(([t,k],i)=>{ const x=(i%4)*256, y=Math.floor(i/4)*128;
+    g.fillStyle=k==='m'?'#c8102e':'#111'; g.fillRect(x,y,256,128);
+    g.strokeStyle=k==='m'?'#fff':'#f5c400'; g.lineWidth=k==='m'?0:8; if(k!=='m') g.strokeRect(x+14,y+14,228,100);
+    g.fillStyle=k==='m'?'#fff':'#f5c400'; g.font='bold 78px Arial, sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(t,x+128,y+68); });
+  const t=new (T().CanvasTexture)(c); t.flipY=false; t.anisotropy=8; t.minFilter=T().LinearMipmapLinearFilter; return {t,idx:Object.fromEntries(faces.map((f,i)=>[f[0],i]))};
+}
+function buildDetails(){
+  const P=[],Nn=[],UV=[],K=[];
+  const W3=(E,h,N)=>[E,h,-N];
+  const quad=(a,b,c,d,n,uv,k)=>{ for(const [p,u] of [[a,uv[0]],[b,uv[1]],[c,uv[2]],[a,uv[0]],[c,uv[2]],[d,uv[3]]]){ P.push(...p); Nn.push(...n); UV.push(...u); K.push(k); } };
+  const box=(E,N,h0,h1,hx,hz,col)=>{ const c=[[E-hx,N-hz],[E+hx,N-hz],[E+hx,N+hz],[E-hx,N+hz]];
+    for(let i=0;i<4;i++){ const a=c[i], d=c[(i+1)%4]; const n=[d[1]-a[1],0,d[0]-a[0]]; const L=Math.hypot(n[0],n[2])||1;
+      quad(W3(a[0],h0,a[1]),W3(d[0],h0,d[1]),W3(d[0],h1,d[1]),W3(a[0],h1,a[1]),[n[0]/L,0,n[2]/L],[[col,0],[col,0],[col,0],[col,0]],0); }
+    quad(W3(c[0][0],h1,c[0][1]),W3(c[1][0],h1,c[1][1]),W3(c[2][0],h1,c[2][1]),W3(c[3][0],h1,c[3][1]),[0,1,0],[[col,0],[col,0],[col,0],[col,0]],0); };
+  const SA=signAtlas();
+  // signs: on the left of a taxiing aircraft, 12 m from the taxiway centre, 1.1 m tall boards on two legs
+  for(const h of (apt.rwy.holds||[])){
+    const mid=[(h.a[0]+h.b[0])/2,(h.a[1]+h.b[1])/2]; const dv=[h.b[0]-h.a[0],h.b[1]-h.a[1]], L=Math.hypot(...dv); const u=[dv[0]/L,dv[1]/L];
+    const ru=apt.rwy.u; let tw=[-h.side*ru[1],h.side*ru[0]];                                    // towards the runway
+    let nr=[u[1],-u[0]]; if(nr[0]*tw[0]+nr[1]*tw[1]<0) nr=[-nr[0],-nr[1]];
+    const left=[-nr[1],nr[0]];                                                                  // left of an aircraft facing the runway
+    const g=W.height(mid[0],mid[1]);
+    const faces=[h.side<0?'35-17':'17-35', h.twy||'A'];
+    faces.forEach((f,j)=>{ const off=Math.max(L/2+6,13)+j*2.7; const cx=mid[0]+left[0]*off-nr[0]*1.5, cy=mid[1]+left[1]*off-nr[1]*1.5;
+      const i=SA.idx[f]??2, u0=(i%4)/4, v0=Math.floor(i/4)/2, u1=u0+0.25, v1=v0+0.5;
+      const hw=1.25, a=[cx-left[0]*hw,cy-left[1]*hw], b=[cx+left[0]*hw,cy+left[1]*hw];
+      // front face (towards the taxiing aircraft, i.e. away from the runway) and back face
+      // one board, both sides: the shader mirrors the face seen from behind so the text always reads correctly
+      quad(W3(a[0],g+0.4,a[1]),W3(b[0],g+0.4,b[1]),W3(b[0],g+1.5,b[1]),W3(a[0],g+1.5,a[1]),[-nr[0],0,nr[1]],[[u1,v1],[u0,v1],[u0,v0],[u1,v0]],1);
+      box(a[0],a[1],g,g+0.4,0.05,0.05,0.3); box(b[0],b[1],g,g+0.4,0.05,0.05,0.3); });
+    // red stop bar: in-pavement lights across the taxiway, facing away from the runway
+    for(let d=1.5; d<L-1; d+=3){ const q=[h.a[0]+u[0]*d+nr[0]*0.6,h.a[1]+u[1]*d+nr[1]*0.6], gg=W.height(q[0],q[1])+0.1;
+      apt.lights.push([q[0],q[1],gg,1.0,0.1,0.05,-nr[0],-nr[1],50,0.8,0,0]); }
+  }
+  // windsocks: 6 m mast, striped cone pointing down-wind (wind from 240 deg)
+  const wind=(240+180)*Math.PI/180, wd=[Math.sin(wind),Math.cos(wind)];
+  for(const s of (apt.rwy.socks||[])){ const g=W.height(s[0],s[1]); box(s[0],s[1],g,g+6.2,0.07,0.07,0.55);
+    for(let k=0;k<5;k++){ const r0=0.45-k*0.06, r1=0.45-(k+1)*0.06, x0=0.3+k*0.72, x1=x0+0.72, seg=10;
+      for(let i=0;i<seg;i++){ const t0=i/seg*Math.PI*2, t1=(i+1)/seg*Math.PI*2; const pt=(x,r,t)=>{ const lat=Math.cos(t)*r; return W3(s[0]+wd[0]*x+wd[1]*lat, g+6.0+Math.sin(t)*r-x*0.08, s[1]+wd[1]*x-wd[0]*lat); };
+        const col=k%2?0.97:0.62;                                     // 0.62 = orange, 0.97 = white (decoded in the shader)
+        quad(pt(x0,r0,t0),pt(x1,r1,t0),pt(x1,r1,t1),pt(x0,r0,t1),[0,1,0],[[col,0],[col,0],[col,0],[col,0]],2);
+        quad(pt(x0,r0,t1),pt(x1,r1,t1),pt(x1,r1,t0),pt(x0,r0,t0),[0,1,0],[[col,0],[col,0],[col,0],[col,0]],2); } }
+    apt.lights.push([s[0],s[1],g+6.4,1.0,0.95,0.85,0,0,180,0.9,0,0]); }
+  // perimeter fence: 2.4 m chain link on posts every 3 m (pattern in the shader), plus three strands of barbed wire
+  const F=apt.rwy.fence||[];
+  for(let i=0;i<F.length;i++){ const a=F[i], b=F[(i+1)%F.length]; const n=[b[1]-a[1],0,b[0]-a[0]]; const L=Math.hypot(n[0],n[2])||1;
+    const L0=i*8.0; quad(W3(a[0],a[2],a[1]),W3(b[0],b[2],b[1]),W3(b[0],b[2]+2.4,b[1]),W3(a[0],a[2]+2.4,a[1]),[n[0]/L,0,n[2]/L],[[L0,0],[L0+L,0],[L0+L,2.4],[L0,2.4]],3); }
+  const g=new (T().BufferGeometry)();
+  g.setAttribute('position',new (T().Float32BufferAttribute)(P,3)); g.setAttribute('normal',new (T().Float32BufferAttribute)(Nn,3));
+  g.setAttribute('uv',new (T().Float32BufferAttribute)(UV,2)); g.setAttribute('kk',new (T().Float32BufferAttribute)(K,1)); g.computeBoundingSphere();
+  const m=new (T().ShaderMaterial)({uniforms:Object.assign(fleetUniforms(),{tSign:{value:SA.t}}),
+    vertexShader:`attribute float kk; varying vec3 vN; varying vec3 vW; varying vec2 vU; varying float vK; void main(){ vN=normal; vW=position; vU=uv; vK=kk; gl_Position=projectionMatrix*viewMatrix*vec4(position,1.0); }`,
+    fragmentShader:`${COMMON} uniform vec3 camW; uniform float night; uniform sampler2D tSign; varying vec3 vN; varying vec3 vW; varying vec2 vU; varying float vK;
+      void main(){ vec3 N=normalize(vN); if(!gl_FrontFacing) N=-N; vec3 c; float a=1.0, glow=0.0;
+        if(vK<0.5) c=vec3(vU.x);                                                   // grey legs and posts
+        else if(vK<1.5){ vec2 cell=floor(vU*vec2(4.0,2.0)+1e-4), lc=vU*vec2(4.0,2.0)-cell; if(gl_FrontFacing) lc.x=1.0-lc.x; c=texture2D(tSign,(cell+clamp(lc,0.01,0.99))/vec2(4.0,2.0)).rgb; glow=0.9; }                      // sign face, lit at night
+        else if(vK<2.5){ c=vU.x>0.8?vec3(0.95):vec3(0.95,0.42,0.08); }               // windsock bands
+        else {                                                                       // chain-link fence
+          vec2 q=vU; float post=step(fract(q.x/3.0),0.03); float top=step(2.25,q.y);
+          vec2 d=abs(fract(vec2(q.x+q.y,q.x-q.y)/0.06)-0.5); float wfw=fwidth(q.x)/0.06;
+          float wire=max(1.0-smoothstep(0.0,0.08+wfw,d.x),1.0-smoothstep(0.0,0.08+wfw,d.y));
+          float cov=wfw>0.5?0.28:wire; a=max(max(post,top*step(fract(q.y/0.075),0.25)),cov*0.9); if(a<0.05) discard; c=vec3(0.45,0.47,0.48); }
+        vec3 cl=lin(c);
+        float ndl=abs(dot(N,sunDir)); vec3 lit=sunCol*ndl*smoothstep(-0.05,0.08,sunDir.y)+skyCol*amb*2.0+horCol*amb*0.3;
+        vec3 col=cl*lit+cl*glow*night*1.2;
+        gl_FragColor=vec4(tone(aerial(col,vW,camW)),a); }`,
+    side:T().DoubleSide, transparent:true});
+  const mesh=new (T().Mesh)(g,m); mesh.name='details'; mesh.renderOrder=2; group.add(mesh); fleetMats.push(m);
 }
 
 /* ---------- lights: approach, runway, PAPI, taxiway (points; sized and faded in the shader) ---------- */
