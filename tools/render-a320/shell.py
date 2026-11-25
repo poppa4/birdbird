@@ -224,6 +224,7 @@ def header(p0, p1, R=0.17, NR=24):
                 tu = np.mean([x[0] for x in uvs]) * o['rep'][0] + o['off'][0]; tv = 1 - (np.mean([x[1] for x in uvs]) * o['rep'][1] + o['off'][1])
                 cols.append(TXA[o['tex']][min(511, int((tv % 1) * 512)), min(511, int((tu % 1) * 512))])
         b['col'] = np.median(np.array(cols), 0).astype(float) if cols else np.array([71.0, 85.0, 104.0]); b['tex'] = o['tex']
+        if o['tex'] == 'fd_leather.png': b['col'] = np.array([84.0, 98.0, 118.0]); b['tex'] = 'fd_other.png'   # the rails over the side windows are light lining in the aircraft, not black leather
         out.append(b); print('  header part', o['name'], 'size mm', int(w_ * 1000), int(h_ * 1000), 'colour', b['col'].astype(int).tolist())
     return out
 HEADS = []
@@ -414,6 +415,10 @@ lab = np.zeros(len(FC), int); lab[pm] = pl
 for i_, t_ in enumerate(SPEC):
     m = FT == t_; lab[m] = K + i_; cen = np.vstack([cen, (FC[m] * FA[m, None]).sum(0) / max(1e-9, FA[m].sum()) if m.any() else [60, 60, 60]])
 K = len(cen)
+# the leather-mapped rails along the tops of the side windows: in the aircraft that is light lining, and as black blocks they
+# read as crude slabs across the roof. They take the roof lining's paint; the glareshield hood keeps its leather.
+_fy = np.array(FY); _up = pm & (_fy > 0.95)
+if _up.any(): lab[(lab == K - 1) & (_fy > 0.80)] = np.bincount(lab[_up], weights=FA[_up], minlength=K).argmax()
 # a few faces of a painted part mapped to the fabric or carpet texture (patches on the headrests and posts): the part's own paint
 for oi in np.unique(FO):
     m = FO == oi; sh = np.bincount(lab[m], weights=FA[m], minlength=K); tot = sh.sum()
