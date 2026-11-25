@@ -438,7 +438,8 @@ const mobile=matchMedia('(pointer:coarse)').matches;
 const portrait=matchMedia('(orientation:portrait) and (max-width:900px)');
 /* frame governor: level 0 full rate at up to 1.5 (phones) / 1.75 device pixels; 1: 1 pixel; 2: 30 Hz; 3: 20 Hz at 0.75 pixel;
    4: 15 Hz at 0.75 pixel. It steps down while the average frame interval stays over 21 ms (2 s windows), never back up. */
-const LV=[[0,0],[1,0],[1,1/30],[0.75,1/20],[0.75,1/15]];
+const LVM=[[0,0],[1,0],[1,1/30],[0.75,1/20],[0.75,1/15]], LVD=[[0,0],[0,0],[0,0],[0,1/30],[0,1/30]];   // phones give up sharpness and rate; a desktop keeps full sharpness and detail and never goes under 30 Hz
+const LV=matchMedia('(pointer:coarse)').matches?LVM:LVD;
 const dprNow=()=>{ const d=G.devicePixelRatio||1, l=LV[qLevel]; let r=l[0]?Math.min(d,l[0]):Math.min(d,mobile?1.5:1.75); const ol=(G.OTW&&G.OTW.lvl)||0; if(ol) r=Math.min(r,ol===2?0.75:1); return r; };
 D3.levels=LV;
 
@@ -777,7 +778,7 @@ D3.frame=function(S,st){
   const look=stepView(dt); D3.moving=look||view.yaw!==lastV[0]||view.pitch!==lastV[1]||view.zoom!==lastV[2]; lastV[0]=view.yaw; lastV[1]=view.pitch; lastV[2]=view.zoom;
   // frozen panel (see freeze()): a look drag stays frozen until released
   if(D3.moving||D3.dragging){ stillT=0; freeze(true); } else if(frz){ stillT+=dt; if(stillT>0.15) freeze(false); } const moved=D3.moving||needs>0; if(needs>0) needs--;
-  if(built.setLod) built.setLod(D3.lodForce!=null?D3.lodForce:qLevel>=2?1:0);
+  if(built.setLod) built.setLod(D3.lodForce!=null?D3.lodForce:(LV===LVM&&qLevel>=2)?1:0);
   const ch=built.anim?built.anim(st||{},dt):false;
   const active=st&&st.active;
   if(portrait.matches) return; // the page shows 'rotate your device' over the stage
