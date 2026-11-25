@@ -27,6 +27,13 @@ for o in L:
     la=np.array([float(p.split()[0]) for p in pts]); lo=np.array([float(p.split()[1]) for p in pts])
     E,N=ll_to_local(lo,la); lines.append((np.array(E),np.array(N),w,grav))
 print('road links',len(lines),'gravel',sum(l[3] for l in lines))
+# car parks: the area around the parked cars found in the lidar (cars.py) is asphalt
+from shapely.geometry import Point
+from shapely.ops import unary_union
+cars_=json.load(open(f'{OUT}/airport.json')).get('cars',[])
+lots=unary_union([Point(c[0],c[1]).buffer(5.5,8) for c in cars_]).buffer(3.0).buffer(-3.0) if cars_ else None
+lots=[g for g in (lots.geoms if hasattr(lots,'geoms') else [lots])] if lots is not None else []
+print('car park polygons',len(lots))
 im=np.asarray(Image.open('/home/claude/ento/near_w_orig.png').convert('RGB')).copy()
 G=np.zeros((ah,aw),np.uint8); A=np.zeros((ah,aw),np.uint8)
 R=1.0; M=20.0; step=300                                   # 300 texel rows per chunk, 1 m raster
@@ -40,6 +47,11 @@ for r0 in range(0,ah,step):
             if g!=gi or E.max()<e0 or E.min()>e1 or N.max()<nbot or N.min()>ntop: continue
             p=np.stack([(E-e0)/R,(ntop-N)/R],1)
             cv2.polylines(m,[np.round(p*4).astype(np.int32)],False,1,thickness=max(1,int(round(w/R))),lineType=cv2.LINE_8,shift=2)
+        if not gi:
+            for g_ in lots:
+                x0,y0,x1,y1=g_.bounds
+                if x1<e0 or x0>e1 or y1<nbot or y0>ntop: continue
+                pp=np.array(g_.exterior.coords); cv2.fillPoly(m,[np.round(np.stack([(pp[:,0]-e0)/R,(ntop-pp[:,1])/R],1)*4).astype(np.int32)],1,shift=2)
         if not m.any(): continue
         b=m>0; sd=(nd.distance_transform_edt(b)-nd.distance_transform_edt(~b))*R
         sd=np.where(b,sd-0.5*R,sd+0.5*R)                    # pixel centres -> edge

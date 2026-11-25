@@ -144,7 +144,15 @@ function material(world){
           float ws=step(1.9,d)*step(d,3.65)*step(yc+0.62+(3.65-d)*0.18,y)*step(y,yc+1.32)*step(abs(vSide),1.45);
           base=mix(base,vec3(0.04,0.05,0.07),ws); gloss=mix(gloss,1.0,ws);
           // livery: coloured belly stripe forward and tail band
-          base=mix(base,vL,smoothstep(28.0,29.0,d)*smoothstep(yc+0.6,yc+1.0,y)*0.9);
+          { float e=(d-27.2)+(y-(yc+0.2))*1.6, ae=max(fwidth(e),1e-3);             // tail sweep in the livery colour, crisp edge
+            base=mix(base,vL,smoothstep(-ae,ae,e)*smoothstep(yc-0.2-fwidth(y),yc-0.2+fwidth(y),y)); }
+          // panel joints: frames every 2.54 m, lap joints along the cabin, both fade before they can shimmer
+          { float fd=fwidth(d), fy=fwidth(y), fade=1.0-smoothstep(0.015,0.06,max(fd,fy));
+            float q=abs(fract(d/2.54+0.5)-0.5)*2.54, j=1.0-smoothstep(0.006,0.006+fd*1.2,q);
+            float l1=1.0-smoothstep(0.006,0.006+fy*1.2,abs(y-(yc+0.78))), l2=1.0-smoothstep(0.006,0.006+fy*1.2,abs(y-(yc-0.55)));
+            base*=1.0-0.13*max(j*step(2.0,d),max(l1,l2))*fade;
+            // grime: exhaust soot behind the APU, a dirty belly
+            base*=1.0-0.18*smoothstep(31.0,36.5,d)*smoothstep(yc+0.6,yc-0.6,y)-0.06*smoothstep(yc-0.4,yc-1.6,y); }
         } else if(part<1.5){ base=vec3(0.78,0.79,0.81); gloss=0.4; }
         else if(part<2.5){ base=vL; gloss=0.6; }
         else if(part<3.5){ base=mix(vec3(0.90,0.91,0.92),vL,0.85); gloss=0.6; }

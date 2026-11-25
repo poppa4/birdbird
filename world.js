@@ -23,7 +23,7 @@ const P0=160;                                    // finest patch size (m) -> 10 
 const NLEV=11;                                   // quadtree levels: root = 160*2^10 = 163.84 km
 const ROOT={E:0, N:1000, S:P0*Math.pow(2,NLEV-1)};
 const MAXI=2400;
-const DATA_V=17;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
+const DATA_V=19;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
 const V=f=>f+'?v='+DATA_V;
 
 /* ---------- loading ---------- */
@@ -137,7 +137,7 @@ function makeStandDigits(){
 
 /* ---------- time of day ---------- */
 const TOD={
-  day:  {sun:[0.42,0.62,-0.66], sunCol:[1.0,0.95,0.86], sunI:3.1, sky:[0.28,0.50,0.86], hor:[0.66,0.77,0.89], amb:0.62, fog:1/70000, lights:0.0, exp:1.0},
+  day:  {sun:[0.42,0.62,-0.66], sunCol:[1.0,0.95,0.86], sunI:3.5, sky:[0.28,0.50,0.86], hor:[0.66,0.77,0.89], amb:0.47, fog:1/70000, lights:0.0, exp:1.0},
   dusk: {sun:[-0.80,0.07,-0.58],sunCol:[1.0,0.58,0.30], sunI:2.0, sky:[0.20,0.30,0.52], hor:[0.88,0.62,0.44], amb:0.40, fog:1/45000, lights:0.65, exp:1.15},
   night:{sun:[0.30,0.55,0.70], sunCol:[0.40,0.48,0.70], sunI:0.035,sky:[0.006,0.010,0.024],hor:[0.018,0.024,0.042],amb:0.03, fog:1/26000, lights:1.0, exp:1.2}
 };
@@ -842,9 +842,9 @@ function buildBuildings(){
     cone(2.2,0); cone(-17.5,-18.2); cone(-17.5,18.2); cone(-34.8,0); cone(-13.0,-7.5); cone(-13.0,7.5);
     for(const [ca,cb] of [[0.75,0],[-0.75,0],[-13.0,-3.8],[-13.0,3.8]]) obox(o,f,ca,cb,0.12,0.25,0.9,0.22,[0.85,0.75,0.10]);
     veh('stairs',-1.0,-4.3,[0.92,0.92,0.90]);
-    veh('tug',6.8,0,[0.96,0.82,0.12]);
-    veh('gpu',3.6,-2.6,[0.94,0.70,0.14]);
-    veh('belt',-21.0,3.6,[0.96,0.82,0.12]);
+    veh('tug',6.8,0,[0.86,0.68,0.10]);
+    veh('gpu',3.6,-2.6,[0.84,0.60,0.12]);
+    veh('belt',-21.0,3.6,[0.86,0.68,0.10]);
     for(let k=0;k<3;k++) veh('cart',-25.5-k*3.8,6.4,[0.45,0.50,0.58]);
     if(ci%3===0) veh('fuel',-9.5,10.5,[0.85,0.12,0.10]);
   };
@@ -853,6 +853,12 @@ function buildBuildings(){
     casters.push({p:[L(-0.25,-5.5),L(-0.25,5.5),L(-1.6,5.5),L(-1.6,-5.5)],h:2.4,z0:2.2}); casters.push({p:[L(1.6,-0.5),L(1.6,0.5),L(-6.6,0.15),L(-6.6,-0.15)],h:1.9,z0:0.8}); };
   const occ=['2','4','5','11','13','15'];
   let ci=0; for(const st of (apt.rwy.stands||[])){ if(occ.includes(st.id)) airliner(st,ci++); if(st.id==='33'||st.id==='34') ga(st); }
+  // parked cars found in the lidar (car parks only), simple body + glasshouse + wheels
+  { const CARC=[[0.84,0.84,0.83],[0.07,0.07,0.08],[0.58,0.59,0.61],[0.32,0.33,0.35],[0.12,0.17,0.28],[0.42,0.10,0.10],[0.17,0.22,0.20],[0.62,0.60,0.55]], GLC=[0.07,0.08,0.10], TY=[0.05,0.05,0.05];
+    for(const cr of (apt.cars||[])){ const g=cr[2]; const o=[cr[0],cr[1],g], f=[Math.cos(cr[3]),Math.sin(cr[3])], col=CARC[cr[4]%8];
+      const L=4.2+((cr[4]*7)%5)*0.12;
+      obox(o,f,0,0,0.55,L,1.76,0.72,col); obox(o,f,-0.2,0,1.15,L*0.46,1.52,0.50,GLC); obox(o,f,-0.2,0,1.42,L*0.40,1.46,0.05,col);
+      casters.push({p:[[cr[0]+f[0]*L/2+f[1]*0.9,cr[1]+f[1]*L/2-f[0]*0.9],[cr[0]+f[0]*L/2-f[1]*0.9,cr[1]+f[1]*L/2+f[0]*0.9],[cr[0]-f[0]*L/2-f[1]*0.9,cr[1]-f[1]*L/2+f[0]*0.9],[cr[0]-f[0]*L/2+f[1]*0.9,cr[1]-f[1]*L/2-f[0]*0.9]],h:1.5}); } }
   // roof plant on the larger airport buildings
   apt.buildings.forEach((b,bi)=>{ if(!b.k||b.p.length<4) return; let cx=0,cy=0; for(const q of b.p){ cx+=q[0]; cy+=q[1]; } cx/=b.p.length; cy/=b.p.length;
     let area=0; for(let i=0;i<b.p.length;i++){ const a=b.p[i],c=b.p[(i+1)%b.p.length]; area+=a[0]*c[1]-c[0]*a[1]; } area=Math.abs(area)/2; if(area<500) return;
