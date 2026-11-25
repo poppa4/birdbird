@@ -352,7 +352,7 @@ void main(){
         joint*=1.0-smoothstep(0.08,0.3,max(jw.x,jw.y));
         vec3 cc=pc*(0.95+0.08*hs)*(0.9+0.2*texture2D(tDet,EN/13.0).r);
         cc*=1.0-0.20*joint*concrete;
-        for(int i=0;i<16;i++){ if(i>=nStands) break; vec4 st=stands[i];
+        for(int i=0;i<16;i++){ if(i>=nStands) break; vec4 st=stands[i]; vec2 dq=EN-st.xy; if(dot(dq,dq)>3000.0) continue;   // only the stands within 55 m
           vec2 f=vec2(sin(st.z),cos(st.z)); vec2 r=vec2(f.y,-f.x); vec2 q=EN-st.xy; float a=dot(q,f), b=dot(q,r);
           if(abs(a)<45.0&&abs(b)<30.0){
             float stain=exp(-pow(b/2.2,2.0)-pow((a+1.5)/3.0,2.0))*0.55            // nose gear position
@@ -369,14 +369,14 @@ void main(){
       pc=mix(pc,yel,line);
       if(paved>0.001){                                    // markings only on pavement: the loops cost every airport pixel otherwise
       // runway holding positions, pattern A: two solid lines on the taxiway side, two dashed lines on the runway side
-      for(int i=0;i<8;i++){ if(i>=nHolds) break; vec2 A=holdA[i].xy, Bp=holdB[i].xy; vec2 dv=Bp-A; float Lh=length(dv); dv/=Lh;
+      for(int i=0;i<8;i++){ if(i>=nHolds) break; vec2 A=holdA[i].xy, Bp=holdB[i].xy; vec2 dq=EN-A; if(dot(dq,dq)>1600.0) continue; vec2 dv=Bp-A; float Lh=length(dv); dv/=Lh;
         vec2 nr=vec2(dv.y,-dv.x); vec2 tw=-holdA[i].z*vec2(rwyU.y,-rwyU.x); if(dot(nr,tw)<0.0) nr=-nr;     // nr points to the runway
         vec2 q=EN-A; float al=dot(q,dv), ac=dot(q,nr);
         if(al>-1.0&&al<Lh+1.0&&abs(ac)<2.0){ float w=max(fwidth(ac),0.01);
           float ln=0.0; for(int k=0;k<4;k++){ float c0=-0.525+float(k)*0.3; float on=1.0-smoothstep(0.075-w,0.075+w,abs(ac-c0)); if(k>=2) on*=step(fract(al/1.8),0.5); ln=max(ln,on); }
           pc=mix(pc,yel,ln*step(0.0,al)*step(al,Lh)); } }
       // stand stop bars and painted stand numbers (read from the cockpit as the aircraft taxies in)
-      for(int i=0;i<16;i++){ if(i>=nStands) break; vec4 st=stands[i];
+      for(int i=0;i<16;i++){ if(i>=nStands) break; vec4 st=stands[i]; vec2 dq=EN-st.xy; if(dot(dq,dq)>3000.0) continue;   // only the stands within 55 m
         vec2 f=vec2(sin(st.z),cos(st.z)); vec2 r=vec2(f.y,-f.x); vec2 q=EN-st.xy; float a=dot(q,f), b=dot(q,r);
         if(st.w<20.0&&a>-40.0&&a<7.0&&abs(b)<20.0){
           // equipment restraint area: red line around the aircraft envelope
