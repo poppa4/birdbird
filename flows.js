@@ -114,9 +114,11 @@ function draw(o) { o = o || {}; marksDraw(); const g = $('ov'); if (!cur) { g.in
 function ripple(x, y, ok, keep) { const g = $('fx'), c = document.createElementNS(NS, 'circle'); c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 10); c.setAttribute('class', 'rip ' + (ok === true ? 'ok' : ok === false ? 'bad' : 'hint')); g.appendChild(c); setTimeout(() => c.remove(), keep || 1100); }
 
 /* ---------- zoom ---------- */
-function setZoom(z, cx, cy) { const st = $('stage'), old = zoom; zoom = Math.max(1, Math.min(5, z)); const svg = $('cv'); const fx = cx == null ? st.clientWidth / 2 : cx, fy = cy == null ? st.clientHeight / 2 : cy;
+/* the smallest zoom shows the whole cockpit in the stage (all panels at once); 1 = the cockpit as wide as the stage */
+function fitZ() { const st = $('stage'); if (!st || !st.clientWidth) return 1; const mh = parseFloat(getComputedStyle(st).maxHeight) || st.clientHeight || 800, k = H() / 1000; return Math.max(0.25, Math.min(1, mh / (st.clientWidth * k))); }
+function setZoom(z, cx, cy) { const st = $('stage'), old = zoom; zoom = Math.max(fitZ(), Math.min(5, z)); const svg = $('cv'); const fx = cx == null ? st.clientWidth / 2 : cx, fy = cy == null ? st.clientHeight / 2 : cy;
   const ax = (st.scrollLeft + fx) / old, ay = (st.scrollTop + fy) / old; svg.style.width = (zoom * 100) + '%'; st.scrollLeft = ax * zoom - fx; st.scrollTop = ay * zoom - fy; $('zl').textContent = Math.round(zoom * 100) + ' %'; }
-function fit() { setZoom(1); $('stage').scrollTop = 0; }
+function fit() { setZoom(fitZ()); const st = $('stage'); st.scrollTop = 0; st.scrollLeft = 0; }
 /* phone: pinch with two fingers to zoom around the fingers, and pan with them; one finger still scrolls the stage and taps */
 function pinch() { const st = $('stage'); let g = null; const two = e => { const [a, b] = e.touches, r = st.getBoundingClientRect(); return { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), x: (a.clientX + b.clientX) / 2 - r.left, y: (a.clientY + b.clientY) / 2 - r.top }; };
   st.addEventListener('touchstart', e => { if (e.touches.length === 2) { const t = two(e); g = { d: t.d, z: zoom, x: t.x, y: t.y }; SZ.told = true; } }, { passive: true });
@@ -185,7 +187,12 @@ function flowSel() { const s = $('fsel'), S = acKey(cur), mineS = FL.filter(f =>
   const stdO = F.PHASES.map(p => { const l = stdS.filter(x => x.phase === p[0]); return l.length ? `<optgroup label="NORDAP · ${esc(L({ en: p[1], no: p[2] }))}">` + l.map(x => `<option value="std:${x.id}">${esc(x.name[no ? 'no' : 'en'])}</option>`).join('') + '</optgroup>' : ''; }).join('');
   s.innerHTML = stdO + grp(mine, mineS.filter(f => !f.phase)) + F.PHASES.map(p => grp(mine + ' · ' + L({ en: p[1], no: p[2] }), mineS.filter(f => f.phase === p[0]))).join('') +
     exH;
-  s.value = cur ? (cur.std ? 'std:' + cur.std : cur.ex ? 'ex:' + cur.ac : cur.id) : ''; phaseBar(stdS, mineS, no); }
+  /* the flight phase as a dropdown, the flows of that phase in the Flow dropdown (NORDAP's first, then yours) */
+  const G = F.PHASES.map(p => ({ k: p[0], label: L({ en: p[1], no: p[2] }), items: stdS.filter(x => x.phase === p[0]).map(x => `<option value="std:${x.id}">${esc(short(x.name[no ? 'no' : 'en'], L({ en: p[1], no: p[2] })))}</option>`).concat(mineS.filter(f => f.phase === p[0]).map(opt)), vals: stdS.filter(x => x.phase === p[0]).map(x => 'std:' + x.id).concat(mineS.filter(f => f.phase === p[0]).map(f => f.id)) }))
+    .concat([{ k: 'mine', label: mine, items: mineS.filter(f => !f.phase).map(opt), vals: mineS.filter(f => !f.phase).map(f => f.id) }, { k: 'ex', label: L({ en: 'Example (not an SOP)', no: 'Eksempel (ikke SOP)' }), items: exA.map(exO), vals: exA.map(a => 'ex:' + a.id) }]).filter(g => g.vals.length);
+  const curV = cur ? (cur.std ? 'std:' + cur.std : cur.ex ? 'ex:' + cur.ac : cur.id) : '', g0 = G.find(g => g.vals.includes(curV)) || G[0];
+  const ps = $('fphs'); ps.innerHTML = G.map(g => `<option value="${g.k}">${esc(g.label)}</option>`).join(''); if (g0) ps.value = g0.k; ps._G = G;
+  s.innerHTML = g0 ? g0.items.join('') : ''; s.value = curV; const bar = $('fphase'); if (bar) bar.remove(); }
 /* the flight as a timeline: every flow of this aircraft under its phase, in the order of a flight, with its step count and
    the open one marked; abnormal and memory items last. One tap opens a flow. The short starter is marked "Start here". */
 const short = (n, ph) => { const t = n.split(' · '); return t.length > 1 && ph.toLowerCase().startsWith(t[0].toLowerCase().slice(0, 12)) ? t.slice(1).join(' · ').replace(/^./, c => c.toUpperCase()) : n; };
@@ -208,7 +215,7 @@ function starter(acId) { const L_ = F.stdList().filter(y => y.ac === acId); retu
 function stdGet(id) { const S = F.stdList().find(x => x.id === id), f = S && F.stdFlow(id, A, document.documentElement.lang === 'nb'); if (!f) return null; f.ex = true; f.std = id; f.stdSrc = S.src; return f; }
 async function quick(f) { if (!f) return; if (f !== cur) await open(f); if (mode !== 'practise') setMode('practise'); let k = 'flow'; try { k = localStorage.getItem('bb-flows-lvl') || 'flow'; } catch (e) {} pStart(['flow', 'draw', 'exam'].includes(k) ? k : 'flow'); toStage(); }
 async function open(f) { stopAll(); W.i = 0; W.done = false; W.cur = null; cur = f; try { if (f && A.get(f.ac)) localStorage.setItem('bb-flows-ac', f.ac); } catch (e) {} UNDO.length = 0; snap(); sel = null; placing = null; hidden = {}; role = f ? f.roles[0] : null; imgFor = null; await bg(); if (f && ac) { const B = JSON.stringify(f.steps.map(s => [s.x, s.y])); snapAll(); if (B !== JSON.stringify(f.steps.map(s => [s.x, s.y]))) save(); } fit(); draw(); flowSel(); panel(); setMode(mode);
-  try { localStorage.setItem('bb-flows-last', f ? (f.std ? 'std:' + f.std : f.ex ? 'ex:' + f.ac : f.id) : ''); if (f && A.get(f.ac)) localStorage.setItem('bb-flows-ac', f.ac); } catch (e) {} }
+  try { localStorage.setItem('bb-flows-last', f ? (f.std ? 'std:' + f.std : f.ex ? 'ex:' + f.ac : f.id) : ''); if (f && A.get(f.ac)) localStorage.setItem('bb-flows-ac', f.ac); } catch (e) {} startHint(); }
 function stepRow(s) { const other = cur.steps.filter(x => x.r !== s.r && x.k !== 'event'), i = cur.steps.indexOf(s);
   return `<li class="fs${sel === s.id ? ' on' : ''}${F.placed(s) || s.k !== 'act' ? '' : ' unp'}" data-s="${s.id}" style="--c:${col(s.r)}">` +
     `<span class="fbdg${s.k === 'call' ? ' call' : s.k === 'event' ? ' ev' : ''}">${s.k === 'event' ? '⚑' : esc(F.badge(cur, s))}</span>` +
@@ -745,6 +752,13 @@ function manWire() { const b = $('dmanb');
   $('dman').addEventListener('close', () => setTimeout(() => { if (!$('dman').open) manClose(); }, 0));
   $('fpdf').onchange = e => { const f = e.target.files && e.target.files[0]; if (f) manRead(f); e.target.value = ''; }; }
 
+/* ---------- the start hint: a few seconds after you arrive, a small card on the cockpit offers to play the flow or to be guided ---------- */
+function startHint() { const old = $('fhint0'); if (old) old.remove(); clearTimeout(startHint.t);
+  startHint.t = setTimeout(() => { if (!cur || !cur.steps.length || W.on || P.on || mode === 'build' || mode === 'together' || $('fhint0')) return;
+    const d = document.createElement('div'); d.id = 'fhint0'; d.className = 'fhint0'; d.setAttribute('role', 'status');
+    d.innerHTML = `<span>${esc(cur.name)}</span><button type="button" class="go" data-h="play">▶ ${esc(L({ en: 'Start flow', no: 'Start flow' }))}</button><button type="button" data-h="guide">${esc(L({ en: 'Guide me', no: 'Guide meg' }))}</button><button type="button" class="x" data-h="x" aria-label="${esc(L({ en: 'Close', no: 'Lukk' }))}">×</button>`;
+    d.addEventListener('click', e => { const b = e.target.closest('button[data-h]'); if (!b) return; d.remove(); if (b.dataset.h === 'play') { setMode('watch'); wPlay(); } else if (b.dataset.h === 'guide') { if (mode !== 'practise') setMode('practise'); pStart('flow'); toStage(); } });
+    document.querySelector('.fwrap').appendChild(d); requestAnimationFrame(() => d.classList.add('on')); }, 2500); }
 /* ---------- start ---------- */
 function init() { load(); wirePanel(); manWire();
   const svg = $('cv'); svg.addEventListener('pointerdown', onDown); svg.addEventListener('pointermove', onMove); svg.addEventListener('pointerup', onUp); svg.addEventListener('pointercancel', () => { drag = null; }); svg.addEventListener('click', onClick);
@@ -754,8 +768,11 @@ function init() { load(); wirePanel(); manWire();
   $('fcrb').onclick = e => { e.stopPropagation(); const w = $('fcr'), on = w.classList.toggle('on'); e.currentTarget.setAttribute('aria-expanded', on); }; document.addEventListener('click', e => { if (!e.target.closest('#fcr')) { const w = $('fcr'); if (w) w.classList.remove('on'); } });
   $('zin').onclick = () => setZoom(zoom * 1.4); $('zout').onclick = () => setZoom(zoom / 1.4); $('zfit').onclick = fit; $('zfull').onclick = () => focusMode();
   pinch(); stickTop(); addEventListener('resize', stickTop, { passive: true }); addEventListener('orientationchange', () => setTimeout(stickTop, 300));
+  document.addEventListener('click', e => { if (e.target.closest('.fmode button,#fsel,#fphs,#sac') && $('fhint0')) $('fhint0').remove(); }, true);
   document.querySelectorAll('.fmode button').forEach(b => b.onclick = () => { if (b.dataset.k) { if (mode !== 'practise') setMode('practise'); pStart(b.dataset.k); toStage(); return; } setMode(b.dataset.m); if (b.dataset.m === 'watch' && cur && cur.steps.length) wPlay(); });
   $('fmenu').addEventListener('click', e => { const b = e.target.closest('button[data-mm]'); if (!b) return; $('fmenu').closest('details').open = false; if (b.dataset.mm === 'new') return newDialog(); setMode(b.dataset.mm); });
+  const openV = v => { if (mode === 'build' || mode === 'together') setMode('view'); if (v.startsWith('std:')) return open(stdGet(v.slice(4))); if (v.startsWith('ex:')) return open(F.example(v.slice(3), A)); return open(FL.find(f => f.id === v)); };
+  $('fphs').onchange = e => { const g = (e.target._G || []).find(x => x.k === e.target.value); if (g && g.vals[0]) openV(g.vals[0]); };
   $('fsel').onchange = e => { const v = e.target.value; if (mode === 'build' || mode === 'together') setMode('practise'); if (v.startsWith('std:')) return open(stdGet(v.slice(4))); if (v.startsWith('ex:')) open(F.example(v.slice(3), A)); else open(FL.find(f => f.id === v)); };
   $('fnew').onclick = newDialog; $('dnew').addEventListener('close', () => { if ($('dnew').returnValue === 'ok') createFlow(); });
   $('dsop').addEventListener('close', () => { if ($('dsop').returnValue !== 'ok' || !cur) return; const S = F.parseSop($('soptxt').value); if (!S.length) return; if (cur.ex) adoptExample();
@@ -798,8 +815,8 @@ function init() { load(); wirePanel(); manWire();
   // from a cockpit page (#ac=b200): your newest flow on that cockpit, else its example
   const ha = location.hash.match(/#ac=([\w-]+)/); if (!first && ha && (A.get(ha[1]) || A.photo(ha[1]))) { first = FL.find(f => f.ac === ha[1]) || F.example(ha[1], A); history.replaceState(null, '', location.pathname); }
   const hf = location.hash.match(/#flow=([\w-]+)/); if (!first && hf) { first = FL.find(x => x.id === hf[1]) || null; history.replaceState(null, '', location.pathname); }   // from Workspace
-  if (!first) { let last = ''; try { last = localStorage.getItem('bb-flows-last') || ''; } catch (e) {} first = last.startsWith('std:') ? stdGet(last.slice(4)) || F.example(myAc(), A) : last.startsWith('ex:') ? F.example(last.slice(3), A) : FL.find(f => f.id === last) || FL[0] || (x => x && stdGet(x.id))(starter(myAc())) || F.example(myAc(), A); }
-  open(first).then(() => { if (fresh && cur && cur.steps.length <= 12) { setMode('watch'); setTimeout(() => { if (mode === 'watch' && !W.on) wPlay(); }, 900); } const rm = location.hash.match(/room=([\w-]+)/); let back = null; try { back = JSON.parse(sessionStorage.getItem('bb-flows-room') || 'null'); } catch (e) {}
+  if (!first) { let last = ''; try { last = localStorage.getItem('bb-flows-last') || ''; } catch (e) {} first = last.startsWith('std:') ? stdGet(last.slice(4)) || F.example(myAc(), A) : last.startsWith('ex:') ? F.example(last.slice(3), A) : FL.find(f => f.id === last) || (x => x && stdGet(x.id))(starter(myAc())) || FL.find(f => acKey(f) === myAc()) || F.example(myAc(), A); }
+  open(first).then(() => { startHint(); const rm = location.hash.match(/room=([\w-]+)/); let back = null; try { back = JSON.parse(sessionStorage.getItem('bb-flows-room') || 'null'); } catch (e) {}
     if (rm) { setMode('together'); if (back && back.code === rm[1]) rJoin(back.code, back.me); }
     else if (back && back.code) { if (back.host) { RM.code = back.code; RM.me = back.me; RM.host = true; RM.role = back.role; rPoll(); } else rJoin(back.code, back.me); } });
   // newer flows from the account (another device): take them in without a reload; an edit made in the last second is saved first
