@@ -126,7 +126,7 @@ G.DA42_3D=CK.make({
      foreground pass; the sticks and pedals are below it. The flat drawn levers they replace are hidden (touch zones stay) */
   glb:{id:'da42',v:11,detail:!matchMedia('(pointer:coarse)').matches,aoK:1.7,
     fg:['glare_lip','power_L','power_R','flap_switch','gear_handle','trim_wheel'],
-    grab:['stick_L','stick_R'], blades:['prop'], propDisc:true, direct:['stick_L','stick_R','pedal_L_l','pedal_L_r','pedal_R_l','pedal_R_r'],
+    grab:['stick_L','stick_R'], blades:['prop','prop_tip'], propDisc:true, direct:['stick_L','stick_R','pedal_L_l','pedal_L_r','pedal_R_l','pedal_R_r'],
     /* every switch, knob and bezel is a piece of the model standing on the panel (tools/blender/da42.py hardware()); the flat
        drawings they replace are hidden, their labels, lights and touch zones stay */
     hide:['g.ctl[data-id="pwr"] .lv0','g.ctl[data-id="pwr"] .lv1','g.ctl[data-id="gear"] .mv','g.ctl[data-id="flaps"] .mv','g.ctl[data-id="trim"] .mv.wr',

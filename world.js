@@ -754,7 +754,8 @@ function buildBuildings(){
     const ring=[0,1,3,2]; for(let k=0;k<8;k++){ const z0=k*H/8, z1=(k+1)*H/8;
       for(let j=0;j<4;j++){ const i0=ring[j], i1=ring[(j+1)%4]; strut(leg(i0,z0),leg(i1,z1),0.025,MC); if(k%2===0) strut(leg(i0,z1),leg(i1,z1),0.025,MC); } }
     box(m[0],m[1],m[2]+21.6,m[2]+22.4,1.2,[0.30,0.31,0.33],2); }
-  { const TE=-393, TN=850, tg=W.height(TE,TN), segs=12;
+  { const TE=-393, TN=850, segs=12; let tg=W.height(TE,TN);                // ground: the lidar base of the buildings around it (fine terrain may not be loaded yet)
+    { const nb=apt.buildings.filter(b=>b.p.some(q=>Math.hypot(q[0]-TE,q[1]-TN)<45)).map(b=>b.b); if(nb.length) tg=Math.min(...nb)+0.3; }
     const ring=(r,h0,h1,col,k)=>{ for(let i=0;i<segs;i++){ const a0=i/segs*Math.PI*2, a1=(i+1)/segs*Math.PI*2;
       const A=[TE+Math.cos(a0)*r,TN+Math.sin(a0)*r], B=[TE+Math.cos(a1)*r,TN+Math.sin(a1)*r];
       tri(W3(A[0],h0,A[1]),W3(B[0],h0,B[1]),W3(B[0],h1,B[1]),col,k,h0); tri(W3(A[0],h0,A[1]),W3(B[0],h1,B[1]),W3(A[0],h1,A[1]),col,k,h0);
@@ -791,7 +792,7 @@ function buildBuildings(){
     for(const [a,b2,c,d] of [[LR,LT,TT,TR],[up(LR),up(TR),up(TT),up(LT)]]){ tri(a,b2,c,col,-1,0); tri(a,c,d,col,-1,0); tri(c,b2,a,col,-1,0); tri(d,c,a,col,-1,0); } };
   FLEETI=[];
   const airliner=(st,ci)=>{ const h=st.hdg*Math.PI/180, f=[Math.sin(h),Math.cos(h)];
-    const g=hAt(st.E,st.N); const o=[st.E,st.N,g];                       // nose gear on the stop point
+    const g=st.elev!=null?st.elev:hAt(st.E,st.N); const o=[st.E,st.N,g];   // nose gear on the stop point; lidar elevation (the fine terrain may not be loaded yet)
     FLEETI.push({type:'a320',E:st.E,N:st.N,g,h,liv:ci});
     { const r=[f[1],-f[0]], L=(a,b)=>[o[0]+f[0]*a+r[0]*b,o[1]+f[1]*a+r[1]*b];
       casters.push({p:[L(5.0,0),L(3.0,-1.7),L(0.0,-1.98),L(-27,-1.98),L(-32.5,-0.3),L(-32.5,0.3),L(-27,1.98),L(0,1.98),L(3.0,1.7)],h:6.0,z0:2.0});
@@ -852,7 +853,7 @@ function buildBuildings(){
     for(let k=0;k<3;k++) veh('cart',-25.5-k*3.8,6.4,[0.45,0.50,0.58]);
     if(ci%3===0) veh('fuel',-9.5,10.5,[0.85,0.12,0.10]);
   };
-  const ga=(st)=>{ const h=st.hdg*Math.PI/180, g=hAt(st.E,st.N); FLEETI.push({type:'c172',E:st.E,N:st.N,g,h,liv:5});
+  const ga=(st)=>{ const h=st.hdg*Math.PI/180, g=st.elev!=null?st.elev:hAt(st.E,st.N); FLEETI.push({type:'c172',E:st.E,N:st.N,g,h,liv:5});
     const f=[Math.sin(h),Math.cos(h)], r=[f[1],-f[0]], L=(a,b)=>[st.E+f[0]*a+r[0]*b,st.N+f[1]*a+r[1]*b];
     casters.push({p:[L(-0.25,-5.5),L(-0.25,5.5),L(-1.6,5.5),L(-1.6,-5.5)],h:2.4,z0:2.2}); casters.push({p:[L(1.6,-0.5),L(1.6,0.5),L(-6.6,0.15),L(-6.6,-0.15)],h:1.9,z0:0.8}); };
   const occ=['2','4','5','11','13','15'];

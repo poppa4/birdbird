@@ -525,7 +525,7 @@ async function glbBuild(pk,side){ loading(0.9); await pause();
      blur where they sweep, as from the seat. One small textured circle each, drawn before the canopy glass */
   const discs=[]; if(cfg.propDisc) pk.units.forEach(u=>{ if(!u.blade||!(u.min.x<=u.max.x)) return; const R=Math.max(u.max.x-u.min.x,u.max.y-u.min.y)/2;
     const c=document.createElement('canvas'); c.width=c.height=128; const x=c.getContext('2d'), g=x.createRadialGradient(64,64,0,64,64,64), k='rgba(26,28,31,';
-    [[0,0],[0.17,0],[0.3,0.12],[0.7,0.07],[0.93,0.085],[0.985,0.035],[1,0]].forEach(([t,al])=>g.addColorStop(t,k+al+')')); x.fillStyle=g; x.fillRect(0,0,128,128);
+    [[0,0],[0.17,0],[0.3,0.07],[0.7,0.04],[0.93,0.06],[0.985,0.025],[1,0]].forEach(([t,al])=>g.addColorStop(t,k+al+')')); x.fillStyle=g; x.fillRect(0,0,128,128);
     const m=new THREE.Mesh(new THREE.CircleGeometry(R,48),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,side:THREE.DoubleSide}));
     m.position.copy(u.pivot); m.renderOrder=4; m.visible=false; m.frustumCulled=false; u.disc=m; discs.push(m); });
   const b={meshes:[back,...hq.main,...discs,...(gl?[gl]:[]),...mainHolders],fg:[...hq.fg,...fgHolders],grab:proxies,glb:true,lod:0};
