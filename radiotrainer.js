@@ -75,25 +75,63 @@ function rx(on){ const r=$('#rxi'); if(r) r.classList.toggle('rx',!!on); }
 
 /* ---------------- speech in ---------------- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-const MIC={rec:null,active:false,base:'',alts:[]};
+const MIC={rec:null,active:false,base:'',alts:[],heard:null};
+const WH=window.NWHISPER||{supported:false};
+/* which recogniser: the browser's own, or Whisper on the device (more accurate, audio stays on the device) */
+const useWhisper=()=>WH.supported&&(P.engine==='whisper'||(!SR&&P.engine!=='browser'));
+/* the candidates (the recogniser's alternatives) are graded against this call; the best one, with a merged
+   repeated ICAO word restored (R.voiceFix), is what gets sent. What was actually heard is shown with it. */
+function finishVoice(cands){
+  const ta=el('say'); cands=cands.map(c=>String(c||'').replace(/\s+/g,' ').trim()).filter(Boolean);
+  if(!cands.length){ ta.value=''; return; }
+  let txt=cands[0], heard=cands[0];
+  if(ses&&ses.step){ const o={V:ses.V,abbrOK:ses.abbrOK,level:ses.level}; let best=-1;
+    cands.forEach(c=>{ const f=R.voiceFix(ses.step,c,o); const g=R.grade(ses.step,f.text,o); const v=g.frac+(f.fixed?0:1e-6); if(v>best){ best=v; txt=f.text; heard=c; } }); }
+  ta.value=txt; MIC.heard= heard.toLowerCase()!==txt.toLowerCase()? heard : null; MIC.said=txt;
+  AU.click(); if(txt&&P.auto) transmit(true);
+}
 function micStart(){
-  if(!SR||MIC.active||!ses||ses.done) return; hush(); AU.click();
-  const ta=el('say'); MIC.active=true; MIC.alts=[]; MIC.base=''; ta.value='';
+  if(MIC.active||!ses||ses.done) return;
+  if(useWhisper()) return whStart();
+  if(!SR) return; hush(); AU.click();
+  const ta=el('say'); MIC.active=true; MIC.alts=[]; MIC.base=''; MIC.heard=null; ta.value='';
   const rec=new SR(); MIC.rec=rec; rec.lang=P.mic||'en-GB'; rec.interimResults=true; rec.continuous=true; rec.maxAlternatives=3;
   let fin=[];
   rec.onresult=e=>{ let interim=''; fin=[]; for(let i=0;i<e.results.length;i++){ const r=e.results[i]; if(r.isFinal) fin.push(Array.from(r).map(a=>a.transcript)); else interim+=r[0].transcript; }
     ta.value=(fin.map(a=>a[0]).join(' ')+' '+interim).replace(/\s+/g,' ').trim(); MIC.fin=fin; };
-  rec.onerror=e=>{ if(e.error==='not-allowed'||e.error==='service-not-allowed') note(tr('The microphone is blocked. Allow it in the browser settings, or type your call.','Mikrofonen er blokkert. Tillat den i nettleserinnstillingene, eller skriv oppkallet.')); else if(e.error==='network') note(tr('Speech recognition needs a network connection here. Type your call instead.','Talegjenkjenning trenger nettforbindelse her. Skriv oppkallet i stedet.')); };
+  rec.onerror=e=>{ if(e.error==='not-allowed'||e.error==='service-not-allowed') note(tr('The microphone is blocked. Allow it in the browser settings, or type your call.','Mikrofonen er blokkert. Tillat den i nettleserinnstillingene, eller skriv oppkallet.')); else if(e.error==='network') note(tr('Speech recognition needs a network connection here. Type your call instead, or switch to on-device recognition in the settings.','Talegjenkjenning trenger nettforbindelse her. Skriv oppkallet i stedet, eller bytt til talegjenkjenning på enheten i innstillingene.')); };
   rec.onend=()=>{ MIC.active=false; setTx(false);
-    const fin=MIC.fin||[]; MIC.fin=null;
-    // alternatives: try each final segment's alternatives and keep the combination that grades best
-    let txt=ta.value.trim();
-    if(fin.length&&ses&&ses.step){ const cands=[fin.map(a=>a[0]).join(' ')]; fin.forEach((alts,i)=>alts.slice(1).forEach(a=>{ const c=fin.map((x,j)=>j===i?a:x[0]).join(' '); cands.push(c); }));
-      let bestT=txt, bestF=-1; cands.forEach(c=>{ const g=R.grade(ses.step,c,{V:ses.V,abbrOK:ses.abbrOK,level:ses.level}); if(g.frac>bestF){ bestF=g.frac; bestT=c; } }); txt=bestT; ta.value=txt; }
-    AU.click(); if(txt&&P.auto) transmit(true); };
+    const fin=MIC.fin||[]; MIC.fin=null; const typed=ta.value.trim();
+    // every combination of one segment's alternatives with the others' first choice
+    const cands=fin.length? [fin.map(a=>a[0]).join(' ')] : [typed];
+    fin.forEach((alts,i)=>alts.slice(1).forEach(a=>cands.push(fin.map((x,j)=>j===i?a:x[0]).join(' '))));
+    finishVoice(cands); };
   try{ rec.start(); setTx(true); }catch(e){ MIC.active=false; }
 }
-function micStop(){ if(MIC.rec&&MIC.active){ try{ MIC.rec.stop(); }catch(e){} } }
+/* Whisper: record while the button is held, transcribe on release */
+let whBusy=false;
+async function whStart(){
+  if(whBusy) return; hush(); AU.click(); const ta=el('say'); MIC.heard=null; ta.value='';
+  MIC.active=true; setTx(true);
+  if(!WH.ready) whPreload();
+  try{ await WH.start(); if(!MIC.active) whStop(); }
+  catch(e){ MIC.active=false; setTx(false); note(tr('The microphone is blocked. Allow it in the browser settings, or type your call.','Mikrofonen er blokkert. Tillat den i nettleserinnstillingene, eller skriv oppkallet.')); }
+}
+async function whStop(){
+  if(!MIC.active) return; MIC.active=false; setTx(false); whBusy=true; const ta=el('say');
+  ta.placeholder=L({en:'Listening to what you said…',no:'Hører på det du sa …'});
+  try{ const t=await WH.stop(); finishVoice([t]); }
+  catch(e){ note(tr('On-device speech recognition could not start here. Type your call, or switch to the browser recogniser in the settings.','Talegjenkjenning på enheten kunne ikke starte her. Skriv oppkallet, eller bytt til nettleserens gjenkjenning i innstillingene.')); }
+  finally{ whBusy=false; ta.placeholder=L({en:'Type your call, or hold the talk button (space bar) and speak…',no:'Skriv oppkallet, eller hold snakkeknappen (mellomrom) og snakk …'}); }
+}
+function whPreload(){
+  const n=el('engNote'); if(WH.ready){ if(n) n.textContent=L({en:'More accurate, and your voice never leaves this device. Ready.',no:'Mer nøyaktig, og stemmen din forlater aldri denne enheten. Klar.'}); return Promise.resolve(); }
+  if(n) n.textContent=L({en:'Downloading the speech model (about 80 MB, once)…',no:'Laster ned talemodellen (omtrent 80 MB, én gang) …'});
+  return WH.load(f=>{ if(n) n.textContent=L({en:'Downloading the speech model',no:'Laster ned talemodellen'})+` ${Math.round(f*100)} %`; })
+    .then(()=>{ if(n) n.textContent=L({en:'More accurate, and your voice never leaves this device. Ready.',no:'Mer nøyaktig, og stemmen din forlater aldri denne enheten. Klar.'}); })
+    .catch(()=>{ if(n) n.textContent=L({en:'The speech model could not be downloaded. Check the connection, or use the browser recogniser.',no:'Talemodellen kunne ikke lastes ned. Sjekk forbindelsen, eller bruk nettleserens gjenkjenning.'}); });
+}
+function micStop(){ if(useWhisper()){ whStop(); return; } if(MIC.rec&&MIC.active){ try{ MIC.rec.stop(); }catch(e){} } }
 function setTx(on){ const t=$('#txi'), b=el('ptt'); if(t) t.classList.toggle('on',on); if(b){ b.classList.toggle('on',on); b.setAttribute('aria-pressed',on?'true':'false'); const s=b.querySelector('.pl'); if(s) s.textContent=on?L({en:'Release to send',no:'Slipp for å sende'}):L({en:'Hold to talk',no:'Hold for å snakke'}); } }
 
 /* ---------------- views ---------------- */
@@ -200,7 +238,8 @@ async function transmit(byVoice){
   hush(); ta.value=''; revealAll();
   const s=ses.step; const r=ses.submit(txt);
   if(!r.g||r.g.empty) return;
-  const me=addMsg('me',ses.V.cs.full,esc(txt));
+  const heard=MIC.heard&&MIC.said===txt? MIC.heard : null; MIC.heard=null;
+  const me=addMsg('me',ses.V.cs.full,esc(txt)+(heard?`<div class="heard">${esc(L({en:'Heard',no:'Hørt'}))}: <span class="mono">${esc(heard.replace(/[.,;\s]+$/,""))}</span>. ${esc(L({en:'A repeated word the recogniser merged was restored.',no:'Et gjentatt ord som gjenkjenningen slo sammen, ble lagt tilbake.'}))}</div>`:''));
   if(r.kind==='sayagain'||r.kind==='standby'){ await run(r.ev); return; }
   const g=r.g, ok=r.kind==='pass';
   document.querySelectorAll('#log .fb.full').forEach(x=>{ x.innerHTML=x._short||''; x.classList.remove('full'); });
@@ -278,7 +317,7 @@ function init(){
   el('btnUndo').onclick=undoVoice;
   // push to talk
   const ptt=el('ptt');
-  if(SR){ ptt.addEventListener('pointerdown',e=>{ e.preventDefault(); try{ ptt.setPointerCapture(e.pointerId); }catch(x){} micStart(); });
+  if(SR||WH.supported){ ptt.addEventListener('pointerdown',e=>{ e.preventDefault(); try{ ptt.setPointerCapture(e.pointerId); }catch(x){} micStart(); });
     ['pointerup','pointercancel'].forEach(t=>ptt.addEventListener(t,micStop)); ptt.addEventListener('keydown',e=>{ if((e.key===' '||e.key==='Enter')&&!e.repeat){ e.preventDefault(); micStart(); } }); ptt.addEventListener('keyup',e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); micStop(); } });
     window.addEventListener('keydown',e=>{ if(e.code!=='Space'||e.repeat||el('v-sess').hidden) return; const a=document.activeElement; if(a&&/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(a.tagName)) return; e.preventDefault(); micStart(); });
     window.addEventListener('keyup',e=>{ if(e.code==='Space'&&MIC.active){ e.preventDefault(); micStop(); } });
@@ -290,12 +329,17 @@ function init(){
   el('setAuto').checked=P.auto; el('setAuto').onchange=()=>{ P.auto=el('setAuto').checked; saveP(); };
   el('setRate').value=P.rate; const rt=()=>el('setRateV').textContent=(+P.rate).toFixed(2)+'×'; rt(); el('setRate').oninput=()=>{ P.rate=+el('setRate').value; saveP(); rt(); };
   el('setMic').value=P.mic; el('setMic').onchange=()=>{ P.mic=el('setMic').value; saveP(); };
+  const eng=el('setEng'); if(eng){
+    if(!WH.supported) eng.querySelector('[value=whisper]').disabled=true; if(!SR) eng.querySelector('[value=browser]').disabled=true;
+    eng.value=useWhisper()?'whisper':'browser';
+    const sync=()=>{ el('setMic').closest('label').hidden=eng.value==='whisper'; if(eng.value==='whisper'){ if(P.engine==='whisper'||WH.ready) whPreload(); else el('engNote').textContent=L({en:'More accurate, and your voice never leaves this device. Downloads about 80 MB the first time you talk.',no:'Mer nøyaktig, og stemmen din forlater aldri denne enheten. Laster ned omtrent 80 MB første gang du snakker.'}); } else el('engNote').textContent=L({en:'Uses the browser’s own recogniser (Chrome and Edge send the audio to Google, Safari to Apple).',no:'Bruker nettleserens egen gjenkjenning (Chrome og Edge sender lyden til Google, Safari til Apple).'}); };
+    eng.onchange=()=>{ P.engine=eng.value; saveP(); sync(); }; sync(); }
   el('setTest').onclick=()=>{ AU.init(); speak(`${R.parseCallsign(P.callsign).full}, NORDAP Tower, wind 340 degrees 8 knots, runway 36, cleared to land.`); };
   if(!TTS){ el('setVoice').disabled=true; el('ttsNote').textContent=L({en:'This browser has no speech synthesis: the controller is shown as text.',no:'Denne nettleseren har ikke talesyntese: flygelederen vises som tekst.'}); }
   drawHome(); show('home'); aiSetup();
   LAB.onLang(()=>{ drawHome(); if(!el('v-pick').hidden) drawPick(); if(ses&&!el('v-sess').hidden){ el('sessT').textContent=L(cur.t); drawBasis(); drawTurn(); } if(!el('v-deb').hidden&&ses) drawDeb(ses.summary()); });
   // test hooks (headless browsers cannot speak): type and transmit
-  window.__radio={get ses(){ return ses; },say(t){ el('say').value=t; return transmit(false); },model(){ return ses&&ses.step?ses.step.model:''; },start:k=>startScenario(k==='quick'?'quick':S.byKey(k)),idle:()=>queue};
+  window.__radio={get ses(){ return ses; },voice:c=>finishVoice(c),micStart,micStop,say(t){ el('say').value=t; return transmit(false); },model(){ return ses&&ses.step?ses.step.model:''; },start:k=>startScenario(k==='quick'?'quick':S.byKey(k)),idle:()=>queue};
 }
 init();
 })();

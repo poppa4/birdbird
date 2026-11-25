@@ -270,3 +270,23 @@ test('SERA.14070: radio check includes the frequency; SERA Appendix 1 light sign
 test('every scenario and drill names the rules it is based on', ()=>{
   for(const sc of S.ALL){ assert.ok(Array.isArray(sc.basis)&&sc.basis.length>=1,sc.k); sc.basis.forEach(b=>assert.match(b,/SERA|ICAO|AIP|CAP 413|2017\/373/,sc.k)); }
 });
+
+test('voice repair: a repeated ICAO word merged by the speech recogniser is restored, nothing else changes', ()=>{
+  const V=V0(), cs=step([{k:'cs'}],{rb:0});
+  let f=R.voiceFix(cs,'lima november alpha echo',{V});
+  assert.equal(f.text,'lima november november alpha echo'); assert.equal(f.fixed,'november');
+  assert.equal(st(R.grade(cs,f.text,{V}),'cs'),'ok');
+  f=R.voiceFix(cs,'Lima November November Alfa Echo',{V});            // already right: untouched
+  assert.equal(f.text,'Lima November November Alfa Echo'); assert.equal(f.fixed,null);
+  f=R.voiceFix(cs,'lima alfa bravo echo',{V});                         // genuinely wrong: not made right
+  assert.notEqual(st(R.grade(cs,f.text,{V}),'cs'),'ok');
+  const sq=step([{k:'sq',v:'7700'},{k:'cs'}]);
+  f=R.voiceFix(sq,'squawk seven zero zero lima november november alfa echo',{V});
+  assert.equal(st(R.grade(sq,f.text,{V}),'sq'),'ok'); assert.equal(f.fixed,'seven');
+  f=R.voiceFix(sq,'squawk 4521 lima november november alfa echo',{V}); // wrong code stays wrong
+  assert.notEqual(st(R.grade(sq,f.text,{V}),'sq'),'ok');
+});
+test('voice repair: common recogniser spellings of ICAO words', ()=>{
+  assert.equal(T('lima november november alpha eco'),'l n n a e');
+  assert.equal(T('juliette oskar siera'),'j o s');
+});

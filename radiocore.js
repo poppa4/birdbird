@@ -13,7 +13,9 @@
 'use strict';
 
 /* ---------------- small helpers ---------------- */
-const PH={alfa:'a',alpha:'a',bravo:'b',charlie:'c',charly:'c',delta:'d',echo:'e',foxtrot:'f',golf:'g',hotel:'h',india:'i',juliett:'j',juliet:'j',kilo:'k',lima:'l',mike:'m',november:'n',oscar:'o',papa:'p',quebec:'q',romeo:'r',sierra:'s',tango:'t',uniform:'u',victor:'v',whiskey:'w',whisky:'w',xray:'x',yankee:'y',zulu:'z'};
+const PH={alfa:'a',alpha:'a',bravo:'b',charlie:'c',charly:'c',delta:'d',echo:'e',foxtrot:'f',golf:'g',hotel:'h',india:'i',juliett:'j',juliet:'j',kilo:'k',lima:'l',mike:'m',november:'n',oscar:'o',papa:'p',quebec:'q',romeo:'r',sierra:'s',tango:'t',uniform:'u',victor:'v',whiskey:'w',whisky:'w',xray:'x',yankee:'y',zulu:'z',
+  /* how speech recognisers commonly spell the ICAO words */
+  eco:'e',ecko:'e',ecco:'e',foxtrott:'f',foxtrop:'f',juliette:'j',kilow:'k',novemeber:'n',novembre:'n',oskar:'o',romero:'r',siera:'s',cierra:'s',yanky:'y',yankie:'y',zoolu:'z'};
 const PHW={a:'Alfa',b:'Bravo',c:'Charlie',d:'Delta',e:'Echo',f:'Foxtrot',g:'Golf',h:'Hotel',i:'India',j:'Juliett',k:'Kilo',l:'Lima',m:'Mike',n:'November',o:'Oscar',p:'Papa',q:'Quebec',r:'Romeo',s:'Sierra',t:'Tango',u:'Uniform',v:'Victor',w:'Whiskey',x:'X-ray',y:'Yankee',z:'Zulu'};
 const DW={zero:'0',one:'1',wun:'1',two:'2',three:'3',tree:'3',four:'4',fower:'4',five:'5',fife:'5',six:'6',seven:'7',eight:'8',ait:'8',nine:'9',niner:'9'};
 const TEEN={ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19};
@@ -502,5 +504,24 @@ const SRS={
   weak(db,max){ return Object.entries(db||{}).filter(([k,o])=>o.last<80).sort((a,b)=>a[1].last-b[1].last).slice(0,max||99).map(([k])=>k); }
 };
 
-G.RADIOCORE={norm,key,grade,check,flags,label,RULE,spoken,altWords,freqWords,spellWords,parseCallsign,Session,summarize,SRS,LEVELS,prep,correction,rng,lev,PHW,NUMW,tr,eqFreq};
+/* ---------------- voice repair ----------------
+   Browser speech recognisers merge a repeated word ("November November" -> "November") and drop or swap single
+   ICAO words. Typed calls are graded exactly as typed. A spoken call is graded as heard, and also with each single
+   ICAO letter or digit said twice in a row; the best reading wins only when it scores strictly higher, so a correct
+   call is never changed and a wrong one is never made right by more than that one merged word.
+   Returns {text, heard, fixed} where `fixed` says which word was restored. */
+function voiceFix(step,heard,o){
+  heard=String(heard||'').replace(/\s+/g,' ').trim(); const out={text:heard,heard,fixed:null};
+  if(!heard||!step) return out;
+  const sc=g=>g.res.reduce((a,r)=>a+(r.st==='ok'?1:r.st==='warn'?0.5:0),0)-g.flags.length*0.01;
+  let best=sc(grade(step,heard,o)), bestT=heard;
+  const words=heard.split(' ');
+  words.forEach((w,i)=>{ const k=w.toLowerCase().replace(/[^a-z0-9-]/g,'');
+    if(!(PH[k]||DW[k]!==undefined||/^\d$/.test(k))) return;
+    const t=words.slice(0,i+1).concat([w],words.slice(i+1)).join(' ');
+    const v=sc(grade(step,t,o)); if(v>best+1e-9){ best=v; bestT=t; out.fixed=w.replace(/[^A-Za-z0-9-]/g,''); } });
+  out.text=bestT; return out;
+}
+
+G.RADIOCORE={voiceFix,norm,key,grade,check,flags,label,RULE,spoken,altWords,freqWords,spellWords,parseCallsign,Session,summarize,SRS,LEVELS,prep,correction,rng,lev,PHW,NUMW,tr,eqFreq};
 })(typeof window!=='undefined'?window:globalThis);

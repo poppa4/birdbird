@@ -69,6 +69,8 @@
 .rt-radio .log{height:min(46vh,430px);max-height:none;min-height:220px}
 .rt-radio .freq .act{font-size:28px}
 .msg .mono,.mono{font-family:var(--f-mono);font-size:12.5px}
+.msg .heard{margin-top:4px;font-size:12px;color:#9aa6b2}
+.rset #engNote{display:block;margin-top:4px;font-weight:400}
 .msg.atc.atis{background:#0b1a24;border-color:#20435a}
 .msg.atc.corr{border-color:#7a5b16;background:#1d1708}
 .msg.atc .hid{font-family:var(--f-mono);color:#7fa88b;letter-spacing:.1em;margin-right:10px}
@@ -276,6 +278,7 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
         <div class="grid">
           <label>Your callsign<input type="text" id="setCs" maxlength="12" autocomplete="off" spellcheck="false"></label>
           <label>Controller speed <output id="setRateV"></output><input type="range" id="setRate" min="0.7" max="1.4" step="0.05"></label>
+          <label>Speech recognition<select id="setEng"><option value="whisper">On this device</option><option value="browser">Browser</option></select><span class="note" id="engNote"></span></label>
           <label>Speech recognition accent<select id="setMic"><option value="en-GB">English (UK)</option><option value="en-US">English (US)</option><option value="en-IE">English (Ireland)</option><option value="en-IN">English (India)</option></select></label>
           <label class="chk"><input type="checkbox" id="setVoice"> Controller voice</label>
           <label class="chk"><input type="checkbox" id="setFx"> Radio static and squelch</label>
@@ -415,7 +418,8 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
 </div>
 <script src="lab.js?v=62"></script>
 <script src="ai.js?v=8"></script>
-<script src="radiocore.js?v=4"></script>
+<script src="radiocore.js?v=5"></script>
+<script src="whisper.js?v=1"></script>
 <script src="radioscen.js?v=4"></script>
 <script>
 (function(){
@@ -427,7 +431,7 @@ LAB.add({},{
  'Talk to the controller by voice or keyboard, from the first radio check to a full IFR flight. Every call is checked element by element, with the correct readback and the rule behind it. No account and no AI needed.':'Snakk med flygelederen med stemme eller tastatur, fra den første radiosjekken til en hel IFR-tur. Hvert oppkall sjekkes element for element, med riktig tilbakelesing og regelen bak. Du trenger verken konto eller AI.',
  'Trainer':'Trener','Phraseology':'Fraseologi','Norway':'Norge','Test yourself':'Test deg selv','What do you want to practise?':'Hva vil du øve på?','Level':'Nivå',
  'Voice and settings':'Stemme og innstillinger','Your callsign':'Kallesignalet ditt','Controller speed':'Flygelederens tempo',
- 'Speech recognition accent':'Aksent for talegjenkjenning','English (UK)':'Engelsk (UK)','English (US)':'Engelsk (US)','English (Ireland)':'Engelsk (Irland)','English (India)':'Engelsk (India)',
+ 'Speech recognition':'Talegjenkjenning','On this device':'På denne enheten','Browser':'Nettleser','Speech recognition accent':'Aksent for talegjenkjenning','English (UK)':'Engelsk (UK)','English (US)':'Engelsk (US)','English (Ireland)':'Engelsk (Irland)','English (India)':'Engelsk (India)',
  'Controller voice':'Flygelederstemme','Radio static and squelch':'Radiostøy og squelch','Send when I release the talk button':'Send når jeg slipper snakkeknappen','Test the controller voice':'Test flygelederstemmen',
  '← Back':'← Tilbake','Training data':'Treningsdata','NORDAP, Skarvik and Tjernmo, their frequencies, procedures and traffic are fictional and not for navigation.':'NORDAP, Skarvik og Tjernmo, frekvensene, prosedyrene og trafikken er oppdiktet og ikke for navigasjon.',
  '← End session':'← Avslutt økten','End session':'Avslutt økten','Calls':'Oppkall','How to talk to it':'Slik snakker du med den','Skip this call':'Hopp over dette oppkallet','Hold to talk':'Hold for å snakke','Type your call, or hold the talk button (space bar) and speak…':'Skriv oppkallet, eller hold snakkeknappen (mellomrom) og snakk …',
@@ -498,6 +502,6 @@ el('alpha').innerHTML=AL.map(a=>`<div><b>${a[0]}</b>${a[1]}<small>${a[2]}</small
 LAB.start('radio');
 })();
 </script>
-<script src="radiotrainer.js?v=8"></script>
+<script src="radiotrainer.js?v=9"></script>
 </body>
 </html>
