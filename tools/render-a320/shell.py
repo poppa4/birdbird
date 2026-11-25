@@ -482,10 +482,10 @@ for _ in range(6):
 # consoles, sidestick surround, rudder pedals) were a shapeless dark mass. On the aircraft it is a dark slate blue.
 # Small black parts (sidestick grips, tiller, belts, handles, knobs) stay black: they get a palette entry of their own.
 _dk = int(np.argmin(cen[:K - 3].sum(1))); _small = np.array([DIAGO.get(int(o_), 1.0) < 0.45 for o_ in FO[:len(lab)]]) if len(FO) >= len(lab) else np.zeros(len(lab), bool)
-cen = np.vstack([cen, cen[_dk]]); lab[(lab == _dk) & _small[:len(lab)]] = len(cen) - 1; cen[_dk] = np.array([52.0, 60.0, 73.0])
+cen = np.vstack([cen, cen[_dk]]); lab[(lab == _dk) & _small[:len(lab)]] = len(cen) - 1; cen[_dk] = np.array([40.0, 45.0, 55.0])   # charcoal: clearly darker than the lining, as on the aircraft
 # The seats' shells, backs, headrests and armrests are part of the lining object and had its pale paint, so the seats looked like
 # unpainted casts. Inside the two seat volumes that paint becomes the seats' blue-grey cover.
-_lt = int(np.argmin(np.linalg.norm(cen[:K - 3] - np.array([71.0, 85.0, 104.0]), axis=1))); cen = np.vstack([cen, [54.0, 67.0, 90.0], [30.0, 35.0, 46.0]])
+_lt = int(np.argmin(np.linalg.norm(cen[:K - 3] - np.array([71.0, 85.0, 104.0]), axis=1))); cen = np.vstack([cen, [54.0, 67.0, 90.0], [30.0, 35.0, 46.0]]); cen[_lt] = np.array([86.0, 101.0, 120.0])   # the lining a step lighter: three clear tones (charcoal consoles, grey lining, lighter panels)
 for f_, (x_, z_) in FXZ.items():
     if f_ >= len(lab) or not (0.24 < abs(x_) < 0.84 and 0.22 < z_ < 1.15 and FY[f_] < 0.80): continue
     if lab[f_] == _lt: lab[f_] = len(cen) - 2
