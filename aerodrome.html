@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Aerodrome and AIP · NORDAP</title>
-<meta name="description" content="Type an ICAO code and go straight to the aerodrome's AIP and charts (AD 2) in the edition in force today, with NOTAM, runways and wind, frequencies, the current weather and daylight.">
+<meta name="description" content="Type an ICAO code and go straight to the aerodrome's official AIP and charts (AD 2) in the edition in force today, with NOTAM, the current weather and daylight.">
 <link rel="canonical" href="https://nordap.eu/aerodrome">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NORDAP">
 <meta property="og:title" content="Aerodrome and AIP · NORDAP">
-<meta property="og:description" content="Type an ICAO code and go straight to the aerodrome's AIP and charts (AD 2) in the edition in force today, with NOTAM, runways and wind, frequencies, the current weather and daylight.">
+<meta property="og:description" content="Type an ICAO code and go straight to the aerodrome's official AIP and charts (AD 2) in the edition in force today, with NOTAM, the current weather and daylight.">
 <meta property="og:url" content="https://nordap.eu/aerodrome">
 <meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
 <meta property="og:image:width" content="1200">
@@ -28,7 +28,7 @@
 .ad-rec button:hover,.ad-rec button.on{border-color:var(--accent);color:var(--accent)}
 .ad-st{color:var(--ink-2);font-size:14px}
 
-.ad-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px 40px;align-items:end;margin-top:22px;padding:26px 28px;border-radius:10px;background:#0B1E34;color:#fff}
+.ad-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px 40px;align-items:center;margin-top:22px;padding:26px 28px;border-radius:10px;background:#0B1E34;color:#fff}
 .ad-hero .id{font:700 clamp(40px,5vw,58px)/1 var(--f-display);font-stretch:84%;letter-spacing:-.01em}
 .ad-hero .nm{margin-top:6px;font-size:18px;font-weight:600;color:#E3EAF1}
 .ad-hero .mt{margin-top:6px;font-family:var(--f-mono);font-size:13px;color:#A9BCCE}
@@ -37,6 +37,10 @@
 .ad-go .pri{background:#fff;color:#0B1E34}.ad-go .pri:hover{background:#E6EEF5}
 .ad-go .sec{border:1px solid rgba(255,255,255,.35);color:#fff}.ad-go .sec:hover{background:rgba(255,255,255,.08)}
 .ad-go small{font-weight:500;font-size:12.5px;opacity:.75}
+.ad-sec{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.ad-sec a{display:flex;flex-direction:column;gap:1px;padding:8px 12px;border:1px solid rgba(255,255,255,.22);border-radius:6px;color:#fff;text-decoration:none;font-size:14px;font-weight:600}
+.ad-sec a:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.45)}
+.ad-sec small{font:500 11px/1.3 var(--f-mono);letter-spacing:.05em;color:#A9BCCE}
 .ad-hn{grid-column:1/-1;margin:0;font-size:13px;line-height:1.5;color:#A9BCCE;border-top:1px solid rgba(255,255,255,.12);padding-top:12px}
 
 .ad-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
@@ -44,14 +48,6 @@
 .ad-box h2{margin:0 0 12px;font-family:var(--f-mono);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
 .ad-box h2 a{float:right;font-family:var(--f-body,system-ui);text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:600;color:var(--accent);text-decoration:none}
 .ad-box h2 a:hover{text-decoration:underline}
-.ad-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-.ad-t th,.ad-t td{padding:7px 10px 7px 0;border-bottom:1px solid var(--rule-2);text-align:left;font-size:14.5px;vertical-align:baseline}
-.ad-t th{font-size:12px;font-weight:600;color:var(--ink-2);border-bottom:1px solid var(--ink)}
-.ad-t tr:last-child td{border-bottom:0}
-.ad-t .m{font-family:var(--f-mono)}
-.ad-t .best td{background:#F2F7FB}
-.ad-t .best td:first-child b::after{content:'';display:inline-block;width:7px;height:7px;margin-left:7px;border-radius:50%;background:#1e8e3e;vertical-align:2px}
-.ad-x.hi{color:#b35c00;font-weight:600}.ad-tw{color:#d93025;font-weight:600}
 .ad-w{margin:10px 0 0;font-size:13px;color:var(--ink-2);line-height:1.5}
 .ad-raw{display:block;font-family:var(--f-mono);font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;margin:6px 0 0;color:var(--ink)}
 .ad-raw+.ad-raw{margin-top:10px;padding-top:10px;border-top:1px solid var(--rule-2)}
@@ -76,7 +72,7 @@
     <div class="brand">
       <div class="eyebrow">NORDAP · Preflight</div>
       <h1>Aerodrome and AIP</h1>
-      <p>Type an ICAO code and go straight to the aerodrome's AIP and charts, in the edition in force today. Next to it: NOTAM, the runways with today's wind, frequencies, the weather now and daylight.</p>
+      <p>Type an ICAO code and go straight to the aerodrome's official AIP and charts, in the edition in force today. Press Enter and the AIP opens. Next to it: NOTAM, the weather now and daylight.</p>
     </div>
   </header>
 
@@ -87,55 +83,31 @@
       <span class="ad-st" id="st"></span>
     </div>
     <div id="out"></div>
-    <p class="ad-note">A preparation aid, not a source. The AIP, NOTAM and the official weather briefing are the authority. Runway headings are worked out from the runway numbers and the wind from the METAR, corrected for magnetic variation.</p>
+    <p class="ad-note">Runways, declared distances, frequencies and charts are taken from the AIP itself, never copied into NORDAP. The AIP, NOTAM and the official weather briefing are the authority.</p>
   </section>
 </div>
 <script src="lab.js?v=62"></script>
 <script src="aip.js?v=7"></script>
 <script src="icaobrief.js?v=9"></script>
 <script src="sun.js?v=1"></script>
-<script src="wmm.js?v=2"></script>
 <script>
 (function(){
 'use strict';
 const {L,el}=LAB;
 LAB.add({},{
  'NORDAP · Preflight':'NORDAP · Preflight','Aerodrome and AIP':'Flyplass og AIP','ICAO code':'ICAO-kode',
- "Type an ICAO code and go straight to the aerodrome's AIP and charts, in the edition in force today. Next to it: NOTAM, the runways with today's wind, frequencies, the weather now and daylight.":'Skriv en ICAO-kode og gå rett til flyplassens AIP og kart, i utgaven som gjelder i dag. Ved siden av: NOTAM, rullebanene med dagens vind, frekvenser, været nå og dagslys.',
- 'A preparation aid, not a source. The AIP, NOTAM and the official weather briefing are the authority. Runway headings are worked out from the runway numbers and the wind from the METAR, corrected for magnetic variation.':'Et hjelpemiddel for forberedelse, ikke en kilde. AIP, NOTAM og den offisielle værbriefingen er fasit. Banekursene regnes ut fra banenumrene og vinden fra METAR, korrigert for misvisning.'
+ "Type an ICAO code and go straight to the aerodrome's official AIP and charts, in the edition in force today. Press Enter and the AIP opens. Next to it: NOTAM, the weather now and daylight.":'Skriv en ICAO-kode og gå rett til flyplassens offisielle AIP og kart, i utgaven som gjelder i dag. Trykk Enter, så åpnes AIP. Ved siden av: NOTAM, været nå og dagslys.',
+ 'Runways, declared distances, frequencies and charts are taken from the AIP itself, never copied into NORDAP. The AIP, NOTAM and the official weather briefing are the authority.':'Baner, deklarerte distanser, frekvenser og kart hentes fra AIP selv, aldri kopiert inn i NORDAP. AIP, NOTAM og den offisielle værbriefingen er fasit.'
 });
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let AP=null, apP=null; const FQ={}, WX={};
-const loadAp=()=>apP||(apP=fetch('data/nav-eu.json').then(r=>r.json()).then(d=>{ AP={}; (d.ap||[]).forEach(a=>{ AP[a[0]]={n:a[1],lat:a[2],lon:a[3],el:a[4],rw:a[6]||[]}; }); }));
-const loadFq=p=>FQ[p]||(FQ[p]=fetch('data/freq/'+p+'.json').then(r=>r.ok?r.json():{}).catch(()=>({})));
+let AP=null, apP=null; const WX={};
+const loadAp=()=>apP||(apP=fetch('data/nav-eu.json').then(r=>r.json()).then(d=>{ AP={}; (d.ap||[]).forEach(a=>{ AP[a[0]]={n:a[1],lat:a[2],lon:a[3]}; }); }));
 const inp=el('icao');
 const q=new URLSearchParams(location.search);
 let recent=[]; try{ recent=JSON.parse(localStorage.getItem('bb-ad-recent')||'[]').filter(x=>/^[A-Z0-9]{4}$/.test(x)).slice(0,6); }catch(e){}
 let icao=(q.get('icao')||'').toUpperCase(); if(!/^[A-Z0-9]{4}$/.test(icao)) icao=recent[0]||'ENTO';
 inp.value=icao;
 
-/* METAR wind: direction (true), speed and gust in knots */
-function wind(raw){ const m=/ (\d{3}|VRB)(\d{2,3})(?:G(\d{2,3}))?(KT|MPS)(?: (\d{3})V(\d{3}))? /.exec(' '+String(raw||'').toUpperCase()+' '); if(!m) return null;
-  const k=m[4]==='MPS'?1.94384:1; return {dir:m[1]==='VRB'?null:+m[1],spd:Math.round(+m[2]*k),gst:m[3]?Math.round(+m[3]*k):null}; }
-function variation(ap){ try{ return window.WMM?WMM.declination(ap.lat,ap.lon,ap.el||0):0; }catch(e){ return 0; } }
-function rwyRows(ap,w){ const vr=variation(ap); const ends=[]; (ap.rw||[]).forEach(r=>{ [r[0],r[1]].forEach(d=>{ if(!d) return; const n=parseInt(d,10); if(!(n>=1&&n<=36)) return; ends.push({d,hdg:n*10,len:r[2]}); }); });
-  if(!ends.length) return `<p class="ad-mu">${L({en:'No runway data for this aerodrome. See AD 2.12 in the AIP.',no:'Ingen banedata for denne flyplassen. Se AD 2.12 i AIP.'})}</p>`;
-  const calm=w&&(w.spd<=2), wm=w&&w.dir!=null?((w.dir-vr)%360+360)%360:null;
-  let best=null; ends.forEach(e=>{ if(wm==null||calm) return; const a=(wm-e.hdg)*Math.PI/180; e.h=Math.round(w.spd*Math.cos(a)); e.x=Math.round(w.spd*Math.sin(a)); if(w.gst){ e.gx=Math.round(w.gst*Math.abs(Math.sin(a))); } if(!best||e.h>best.h) best=e; });
-  const LR=x=>x>0?L({en:'from right',no:'fra høyre'}):x<0?L({en:'from left',no:'fra venstre'}):'';
-  let h=`<table class="ad-t"><tr><th>${L({en:'Runway',no:'Bane'})}</th><th>${L({en:'Length',no:'Lengde'})}</th><th>${L({en:'Head / tail',no:'Mot / med'})}</th><th>${L({en:'Crosswind',no:'Sidevind'})}</th></tr>`;
-  ends.forEach(e=>{ const m=Math.round(e.len*0.3048);
-    const hw=e.h==null?(calm?L({en:'calm',no:'stille'}):'—'):e.h>=0?e.h+' kt':`<span class="ad-tw">${L({en:'tail',no:'medvind'})} ${-e.h} kt</span>`;
-    const xw=e.x==null?'—':`<span class="ad-x${Math.abs(e.x)>=15?' hi':''}">${Math.abs(e.x)} kt</span> <small class="ad-mu">${LR(e.x)}${e.gx&&e.gx>Math.abs(e.x)?' · '+L({en:'gust ',no:'kast '})+e.gx:''}</small>`;
-    h+=`<tr class="${best===e&&e.h>0?'best':''}"><td class="m"><b>${esc(e.d)}</b></td><td class="m">${e.len?m.toLocaleString('en-GB').replace(/,/g,' ')+' m':'—'}</td><td class="m">${hw}</td><td class="m">${xw}</td></tr>`; });
-  h+='</table>';
-  const ws=w?(w.dir==null?'VRB':String(w.dir).padStart(3,'0')+'°')+' '+w.spd+(w.gst?'G'+w.gst:'')+' kt':null;
-  h+=`<p class="ad-w">${ws?L({en:'Wind in the METAR ',no:'Vind i METAR '})+ws+(w.dir!=null?' ('+L({en:'true; variation ',no:'rettvisende; misvisning '})+Math.abs(vr).toFixed(0)+'°'+(vr>=0?'E':'W')+')':'')+(best&&best.h>0?L({en:'. Green dot: most headwind.',no:'. Grønn prikk: mest motvind.'}):''):L({en:'Wind: no METAR yet.',no:'Vind: ingen METAR ennå.'})} ${L({en:'Lengths are the runway, not TORA or LDA: those are in AD 2.13.',no:'Lengdene er banen, ikke TORA eller LDA: de står i AD 2.13.'})}</p>`;
-  return h; }
-function fqRows(list){ if(!list||!list.length) return `<p class="ad-mu">${L({en:'No frequencies on file. See AD 2.18 in the AIP.',no:'Ingen frekvenser registrert. Se AD 2.18 i AIP.'})}</p>`;
-  const ord=['ATIS','AFIS','TWR','GND','APP','TCA','DEP','CTR','RDO','UNIC','CTAF'];
-  const s=list.slice().sort((a,b)=>{ const i=x=>{ const k=ord.indexOf(x[0]); return k<0?99:k; }; return i(a)-i(b); });
-  return `<table class="ad-t"><tr><th>${L({en:'Unit',no:'Enhet'})}</th><th>MHz</th></tr>${s.map(f=>`<tr><td>${esc(f[1]||f[0])}</td><td class="m"><b>${esc(f[2])}</b></td></tr>`).join('')}</table><p class="ad-w">${L({en:'From OurAirports, which can be out of date. AD 2.18 in the AIP is the authority.',no:'Fra OurAirports, som kan være utdatert. AD 2.18 i AIP er fasit.'})}</p>`; }
 function sunBox(ap){ if(!window.SUN) return '';
   const tz=SUN.tzOf(icao), D=SUN.day(SUN.localDate(new Date(),tz),ap.lat,ap.lon), t=d=>d?SUN.hm(d,tz):'—', u=d=>d?SUN.hm(d,'UTC')+'Z':'';
   const c=(lab,d,cls)=>`<div class="${cls||''}"><span>${lab}</span><b>${t(d)}</b><small>${u(d)}</small></div>`;
@@ -154,31 +126,29 @@ async function wxGet(id){ if(!/^https?:/.test(location.protocol)) { WX[id]={err:
   catch(e){ WX[id]={at:Date.now(),err:1}; }
   if(id===icao) draw(); }
 function recentBar(){ el('rec').innerHTML=recent.filter(x=>x!==icao||recent.length>1).map(x=>`<button type="button" data-i="${x}" class="${x===icao?'on':''}">${x}</button>`).join(''); }
-let fql=null;
 function draw(){ const st=el('st'), out=el('out'); const ap=AP&&AP[icao];
   recentBar();
   if(!AP){ st.textContent=L({en:'Loading aerodromes…',no:'Henter flyplasser …'}); return; }
   if(!ap){ st.textContent=L({en:'Unknown ICAO code: ',no:'Ukjent ICAO-kode: '})+icao; out.innerHTML=''; return; }
   st.textContent='';
   const pt=window.BBAIP&&BBAIP.of(icao), deep=window.BBAIP&&BBAIP.deep(icao), ns=window.ICB?ICB.notam(icao):null;
-  const elev=ap.el!=null?ap.el.toLocaleString('en-GB').replace(/,/g,' ')+' ft':'—';
-  const ll=(v,p,n)=>Math.abs(v).toFixed(4)+'°'+(v>=0?p:n);
-  let h=`<div class="ad-hero"><div><div class="id">${icao}</div><div class="nm">${esc(ap.n)}</div><div class="mt">${L({en:'Elevation ',no:'Høyde '})}${elev} · ${ll(ap.lat,'N','S')} ${ll(ap.lon,'E','W')}</div></div>
-    <div class="ad-go"><a class="pri" href="${BBAIP.ad(icao)}" target="_blank" rel="noopener"><span>${deep?L({en:'AIP and charts (AD 2)',no:'AIP og kart (AD 2)'}):L({en:'AIP',no:'AIP'})}</span><span>↗</span></a>
+  const A=BBAIP.ad(icao);
+  const sec=[['AD 2.12',{en:'Runways',no:'Rullebaner'}],['AD 2.13',{en:'Declared distances',no:'Deklarerte distanser'}],['AD 2.18',{en:'Frequencies',no:'Frekvenser'}],['AD 2.24',{en:'Charts',no:'Kart'}]];
+  let h=`<div class="ad-hero"><div><div class="id">${icao}</div><div class="nm">${esc(ap.n)}</div>${deep?`<div class="ad-sec">${sec.map(([k,t])=>`<a href="${A}" target="_blank" rel="noopener"><small>${k}</small>${L(t)}</a>`).join('')}</div>`:''}</div>
+    <div class="ad-go"><a class="pri" href="${A}" target="_blank" rel="noopener"><span>${deep?L({en:'AIP and charts (AD 2)',no:'AIP og kart (AD 2)'}):L({en:'AIP',no:'AIP'})}</span><span>↗</span></a>
       ${ns?`<a class="sec" href="${ns.url}" target="_blank" rel="noopener"><span>NOTAM <small>· ${esc(ns.name)}${ns.direct?'':L({en:' (type ',no:' (skriv '})+icao+')'}</small></span><span>↗</span></a>`:''}
       ${pt?`<a class="sec" href="${pt.url}" target="_blank" rel="noopener"><span>${L({en:'AIP portal',no:'AIP-portal'})} <small>· ${esc(pt.name)}</small></span><span>↗</span></a>`:''}</div>
     <p class="ad-hn">${deep?L({en:'Opens the aerodrome’s AD 2 page, with the charts, in the AIP edition in force today. The link follows each new AIRAC by itself.',no:'Åpner flyplassens AD 2-side, med kartene, i AIP-utgaven som gjelder i dag. Lenken følger hver nye AIRAC av seg selv.'}):L({en:'This state has no open eAIP page per aerodrome, so the link opens its AIP',no:'Denne staten har ingen åpen eAIP-side per flyplass, så lenken åpner AIP-en'})+(pt&&pt.note?' ('+esc(L(pt.note))+')':'')+'.'}</p></div>`;
-  h+=`<div class="ad-grid"><div class="ad-box"><h2>${L({en:'Runways and wind',no:'Rullebaner og vind'})}</h2>${rwyRows(ap,wind(WX[icao]&&WX[icao].m))}</div>`;
-  h+=`<div class="ad-box"><h2>${L({en:'Frequencies',no:'Frekvenser'})}</h2>${fql===null?`<p class="ad-mu">${L({en:'Loading…',no:'Henter …'})}</p>`:fqRows(fql)}</div>`;
-  h+=wxBox()+sunBox(ap)+'</div>';
+  h+='<div class="ad-grid">'+wxBox()+sunBox(ap)+'</div>';
   out.innerHTML=h;
 }
-function setIcao(v){ v=String(v||'').trim().toUpperCase(); if(!/^[A-Z0-9]{4}$/.test(v)) return; icao=v; inp.value=v; fql=null;
+function setIcao(v){ v=String(v||'').trim().toUpperCase(); if(!/^[A-Z0-9]{4}$/.test(v)) return; icao=v; inp.value=v;
   const p=new URLSearchParams(location.search); p.set('icao',v); history.replaceState(null,'','?'+p.toString());
-  if(AP&&AP[v]){ recent=[v,...recent.filter(x=>x!==v)].slice(0,6); try{ localStorage.setItem('bb-ad-recent',JSON.stringify(recent)); }catch(e){}
-    loadFq(v.slice(0,2)).then(d=>{ if(icao===v){ fql=d&&d[v]||[]; draw(); } }); wxGet(v); }
+  if(AP&&AP[v]){ recent=[v,...recent.filter(x=>x!==v)].slice(0,6); try{ localStorage.setItem('bb-ad-recent',JSON.stringify(recent)); }catch(e){} wxGet(v); }
   draw(); }
 inp.addEventListener('input',()=>{ inp.value=inp.value.replace(/[^a-z0-9]/gi,'').toUpperCase(); if(inp.value.length===4) setIcao(inp.value); });
+/* Enter opens the AIP straight away */
+inp.addEventListener('keydown',e=>{ if(e.key==='Enter'&&/^[A-Z0-9]{4}$/.test(inp.value)&&window.BBAIP){ e.preventDefault(); window.open(BBAIP.ad(inp.value),'_blank','noopener'); } });
 el('rec').addEventListener('click',e=>{ const b=e.target.closest('button[data-i]'); if(b) setIcao(b.dataset.i); });
 LAB.start('aerodrome');
 loadAp().then(()=>setIcao(icao)).catch(()=>{ el('st').textContent=L({en:'Could not load the aerodrome list.',no:'Kunne ikke hente flyplasslisten.'}); });
