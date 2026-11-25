@@ -34,7 +34,8 @@ import trimesh
 NEO = os.environ.get('NEO'); NEOT = np.array([float(x) for x in os.environ.get('NEO_T', '0,-0.14,4.74').split(',')])
 _pb = open(os.path.join(OUT, 'a320-panels.bin'), 'rb').read(); _hl = struct.unpack('<I', _pb[:4])[0]; _ph = json.loads(_pb[4:4 + _hl]); ZH = {}
 for _k, _hv in _ph['views'].items(): ZH[_k] = (np.frombuffer(_pb, '<i2', _hv['nx'] * _hv['ny'], 4 + _hl + _hv['off']).reshape(_hv['ny'], _hv['nx']) / _ph['hs'], _hv)
-def in_zone(P):   # P (n,3) in the page's frame
+def in_zone(P, grow=0.0):   # P (n,3) in the page's frame. grow: a wider band round the overhead panel (for keeping the old lining there:
+    # the new roof's opening for its own overhead panel is larger than our panel, and the sky showed in the difference)
     out = np.zeros(len(P), bool)
     for (k_, _), (c_, n_, up_, x_, W_, H_) in zip(V.items(), B):
         if k_ not in ZH: continue
@@ -42,7 +43,7 @@ def in_zone(P):   # P (n,3) in the page's frame
         ii = np.clip(np.round((u / W_ + 0.5) * (hv['nx'] - 1)).astype(int), 0, hv['nx'] - 1); jj = np.clip(np.round((0.5 - t / H_) * (hv['ny'] - 1)).astype(int), 0, hv['ny'] - 1); h0 = np.maximum(hf[jj, ii], hv['hr'][0] + 0.06)
         lo_, hi_ = {'ped': (0.60, 0.30), 'front': (0.25, 0.30), 'ovh': (0.10, 0.16)}[k_]
         if k_ == 'front': out |= (np.abs(u) < W_ / 2 - 0.05) & (np.abs(t) < H_ / 2 + 0.01) & (hg > h0 - lo_) & (hg < h0 + 0.30)   # the hood over the glareshield stands 25 cm proud, the table under the main panel 20 cm
-        else: out |= (np.abs(u) < W_ / 2 + 0.01) & (np.abs(t) < H_ / 2 + 0.01) & (hg > h0 - lo_) & (hg < h0 + hi_)
+        else: _g = grow if k_ == 'ovh' else 0.0; out |= (np.abs(u) < W_ / 2 + 0.01 + _g) & (np.abs(t) < H_ / 2 + 0.01 + _g) & (hg > h0 - lo_) & (hg < h0 + hi_)
     # the beam over the windshield, under the overhead panel's front edge: the new model's sits 3 cm lower and covered the
     # panel's front row, so this box is a zone too (the FlightGear beam fits our overhead panel)
     out |= (np.abs(P[:, 0]) < 0.80) & (P[:, 1] > 0.79) & (P[:, 1] < 0.97) & (P[:, 2] > -0.50) & (P[:, 2] < -0.10)
@@ -61,7 +62,7 @@ OV, OF, OFO = [], [], []
 for _oi, o in enumerate(O):
     if o['tex'] == 'fd_glare.png' or re.search(r'(?i)glass|^sfl', o['name']): continue
     b = sum(len(x) for x in OV)
-    _vz = np.asarray(o['v'], float).reshape(-1, 3); _zin = in_zone(np.stack([-_vz[:, 2], _vz[:, 1], _vz[:, 0]], 1)) if NEO and len(_vz) else None
+    _vz = np.asarray(o['v'], float).reshape(-1, 3); _zin = in_zone(np.stack([-_vz[:, 2], _vz[:, 1], _vz[:, 0]], 1), 0.16) if NEO and len(_vz) else None
     for mat, idx, uvs, flags in o['faces']:
         if _zin is not None and not _zin[idx].any(): continue
         for i_, j_, k_ in ac3d.tris(np.asarray(o['v'], float).reshape(-1, 3)[idx]): OF.append([b + idx[i_], b + idx[j_], b + idx[k_]]); OFO.append(_oi)
@@ -284,7 +285,7 @@ for oi, o in enumerate(O):
         if np.linalg.norm(np.array([-ctr[2], ctr[1], ctr[0]]) - np.array([0.0, 0.663, -0.584])) < 0.014: continue   # the eye-reference ball on the centre post: alone, without its two white ones, it read as a stray red dot
         if NEO:
             _c = np.stack([-P[:, 2], P[:, 1], P[:, 0]], 1).mean(0)
-            if not in_zone(_c[None])[0]: continue
+            if not in_zone(_c[None], 0.16)[0]: continue
             # the old lining object reaches into the zones as wedge plates beside the glareshield: kept only inboard of them (behind the panels, round the pedestal) and in the beam over the windshield
             if o['name'].startswith('pedestal_low_glare') and not abs(_c[0]) < 0.72 and not (_c[1] > 0.79): continue
         # (the bright green lamp / marking areas of the textures are painted over in the saved pictures below: skipping those
@@ -390,7 +391,7 @@ if NEO:
             if len(ii): hit = ii[_r.intersects_first(np.repeat(e[None], len(ii), 0), d[ii] / dl[ii, None]) == ii]; vis[hit] = True; seen[hit] = e
     # the model's normals point either way: each face is turned towards the eye that sees it (light is baked on that side)
     flip = vis & (np.einsum('ij,ij->i', fn_, seen - cen_) < 0); fn_[flip] *= -1
-    for _ in range(2): vv = np.zeros(len(NV), bool); vv[NF[vis].ravel()] = True; vis |= vv[NF].any(1)
+    for _ in range(7): vv = np.zeros(len(NV), bool); vv[NF[vis].ravel()] = True; vis |= vv[NF].any(1)   # several rings round what is seen: with two, part-hidden panels kept a torn edge
     vis &= fa_ > 1e-10; print('new structure: seen from the seats', int(vis.sum()), 'of', len(NF))
     for fi in np.nonzero(vis)[0]:
         c3 = cen_[fi]; n3 = fn_[fi]
