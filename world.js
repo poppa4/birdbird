@@ -367,6 +367,7 @@ void main(){
       float line=1.0-smoothstep(0.075-caa,0.075+caa,cd);
       vec3 yel=lin(vec3(0.88,0.68,0.10))*(0.85+0.2*texture2D(tDet,EN/1.1).r);
       pc=mix(pc,yel,line);
+      if(paved>0.001){                                    // markings only on pavement: the loops cost every airport pixel otherwise
       // runway holding positions, pattern A: two solid lines on the taxiway side, two dashed lines on the runway side
       for(int i=0;i<8;i++){ if(i>=nHolds) break; vec2 A=holdA[i].xy, Bp=holdB[i].xy; vec2 dv=Bp-A; float Lh=length(dv); dv/=Lh;
         vec2 nr=vec2(dv.y,-dv.x); vec2 tw=-holdA[i].z*vec2(rwyU.y,-rwyU.x); if(dot(nr,tw)<0.0) nr=-nr;     // nr points to the runway
@@ -398,6 +399,7 @@ void main(){
             float g=texture2D(tSD,du).r; pc=mix(pc,yel,smoothstep(0.35,0.65,g));
           }
         } }
+      }
     }
   }
   // runway: surface and ICAO markings computed analytically in runway coordinates
@@ -419,6 +421,7 @@ void main(){
     mk=max(mk,box(vec2(sm,t),vec2(15.0,0.0),vec2(15.0,0.45),aa)*step(70.0,s)*step(s,L-70.0));
     for(int e=0;e<2;e++){
       float d=e==0?s:L-s; float tt=e==0?t:-t;            // d: metres past this threshold, towards the other end
+      if(d>930.0) continue;                               // all end markings lie within 930 m of the threshold
       // threshold: 12 stripes, 30 m long, 1.8 m wide, 1.8 m spacing; double gap at the centre
       float ts=0.0;
       for(int k=0;k<6;k++){ float x=1.8+float(k)*3.6+0.9; ts=max(ts,box(vec2(d,abs(tt)),vec2(6.0+15.0,x),vec2(15.0,0.9),aa)); }
