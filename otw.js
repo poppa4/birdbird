@@ -329,6 +329,7 @@ function render(S,view){
   // straight ahead of the pilot (FR.cx: canvas column above the pilot's own attitude indicator), not the middle of the screen
   cam.projectionMatrix.elements[8]=(FR&&FR.cx!=null&&!view&&W)?1-2*FR.cx/W:0;
   cam.rotation.set((S.th||0)-lookDown(view),-(S.psi||0)+yawOff*D2R,-(S.phi||0)*(view?0.3:1),'YXZ');
+  if(G.OTW.xf) G.OTW.xf(cam,S,eye);                         // simworld.js: the real ENTO world (moves the camera into its frame)
   // nothing moved (paused, crashed, parked): the canvas keeps the last frame, once the resolution is back to full after a fast move
   const key=S.N+','+S.E+','+S.h+','+S.th+','+S.phi+','+S.psi+','+view+','+W+','+H+','+cam.projectionMatrix.elements[8]+','+(FR?FR.lip+','+FR.nose:'')+','+G.OTW.lvl;
   const now=performance.now(), dt=Math.min(0.25,Math.max(0.001,(now-prevT)/1000));
@@ -356,6 +357,7 @@ function render3d(S,qHead,fov,dpr,after,pre){
   if(cam.aspect!==w/h||cam.fov!==fov){ cam.aspect=w/h; cam.fov=fov; cam.updateProjectionMatrix(); } cam.projectionMatrix.elements[8]=0;
   const eye=1.55; cam.position.set(S.E,(S.h||0)+eye,-S.N);
   _e3=_e3||new THREE.Euler(0,0,0,'YXZ'); _e3.set(S.th||0,-(S.psi||0),-(S.phi||0),'YXZ'); cam.quaternion.setFromEuler(_e3).multiply(qHead);
+  if(G.OTW.xf) G.OTW.xf(cam,S,eye);
   scene.userData.sky.position.copy(cam.position);
   const d=Math.hypot(S.N-300,S.E+30), ang=Math.atan2((S.h||0)+eye-1.2,Math.max(1,d))/D2R;
   const th=[3.5,3.17,2.83,2.5]; for(let i=0;i<4;i++){ const white=ang>th[i]; papiCol[i*3]=1; papiCol[i*3+1]=white?1:0.12; papiCol[i*3+2]=white?1:0.1; }
@@ -405,6 +407,7 @@ function tod(k){ if(k===undefined) return todK; const t=TOD[k]; if(!t||!scene) r
   L.hemi.intensity=t.hemi; L.hemi.color.setHex(t.hs); L.hemi.groundColor.setHex(t.hg); L.sun.intensity=t.sun; L.sun.color.setHex(t.sc); L.sun.position.set(...t.sp);
   if(cloudMesh&&cloudMesh.material.uniforms.tint) cloudMesh.material.uniforms.tint.value.setRGB(...t.cl);
   if(rwyLights){ rwyLights.material.size=t.ls; rwyLights.material.opacity=t.lo; } if(papi) papi.material.size=t.ps;
+  if(G.OTW.onTod) G.OTW.onTod(k);
   return todK; }
-G.OTW={init,render,render3d,quality,frame,hud,tod,hudOn:()=>!!hudEl,get fov(){ return cam?{h:2*HF,v:cam.fov,w:W,h_:H}:null; },low:false,lvl:0,renderer:()=>R};
+G.OTW={init,render,render3d,quality,frame,hud,tod,hudOn:()=>!!hudEl,scene:()=>scene,camera:()=>cam,get fov(){ return cam?{h:2*HF,v:cam.fov,w:W,h_:H}:null; },low:false,lvl:0,renderer:()=>R};
 })(window);
