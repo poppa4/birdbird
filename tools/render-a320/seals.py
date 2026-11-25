@@ -64,7 +64,7 @@ for eye, yaw0, yaw1, side in [((-0.53, 0.63, 0.31), -40, 140, -1), ((0.53, 0.63,
             # split into runs at gaps (no point, or more than 4 cm between neighbours)
             run_a, run_b = [], []
             def flush():
-                if len(run_a) >= 4: loops.append({'eye': side, 'a': np.round(run_a, 4).tolist(), 'b': np.round(run_b, 4).tolist()})
+                if len(run_a) >= 4 and np.linalg.norm(np.diff(np.array(run_a), axis=0), axis=1).sum() > 0.08: loops.append({'eye': side, 'a': np.round(run_a, 4).tolist(), 'b': np.round(run_b, 4).tolist()})
                 run_a.clear(); run_b.clear()
             for a_, b_ in zip(pts_in, pts_out):
                 if a_ is None or (run_a and np.linalg.norm(a_ - run_a[-1]) > 0.04): flush()
@@ -89,7 +89,7 @@ if len(sys.argv) > 4:   # write the seals into the shell's header
         d = smooth(b - np.array(l['a']), 8); d /= np.linalg.norm(d, axis=1, keepdims=True) + 1e-9
         eye = np.array((0.53 * l['eye'], 0.63, 0.31))
         lift = eye - a; lift /= np.linalg.norm(lift, axis=1, keepdims=True)          # 3 mm towards the seat: never inside the frame
-        a = a + 0.003 * lift; b = a + W * d
+        a = a + 0.005 * lift; b = a + W * d
         l['a'] = a.round(4).tolist(); l['b'] = b.round(4).tolist()
     h['seals'] = [{'a': sum(l['a'], []), 'b': sum(l['b'], [])} for l in loops]
     shellbin.write(sys.argv[4], h, G)

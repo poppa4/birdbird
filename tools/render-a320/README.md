@@ -123,3 +123,13 @@ and one colour per flat region (no zig-zag where two classes met on one plate).
     python3 export_occ.py occ.npy          # page running on localhost:8765
     SPLIT=0.17 NWIN=320 python3 bake2.py <after neo_clean.py>.bin occ.npy baked.bin
     python3 seals.py baked.bin seals.json mask.png ../../models/a320-shell-test.bin
+
+## Shards, loose strips, materials (2026-11-25, afternoon)
+
+`neo_clean.py` now also leaves out the fan of slivers where each glareshield end meets the side wall (dark shards in the
+corner; the page's dark lining shows there instead) and loose strips (parts of at most 30 faces, under 12 mm wide and over
+10 cm long: rods and stray lines), except strips that close a slit (seen from a seat through the strip, nothing behind for
+25 cm). Seal runs shorter than 8 cm are dropped (black squares on the posts) and the seals lie 5 mm off the frame. The page
+gives each surface kind its own grain and its own sheen towards the windshield light (lining stipple paint, satin panels
+and console paint, matt black frames and breakers, glossy smoked visors, seat fabric, carpet, leather); `neo_look.MATID`.
+Order: neo_clean.py -> bake2.py -> seals.py.

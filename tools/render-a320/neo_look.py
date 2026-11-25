@@ -21,7 +21,9 @@ BASE = {
     'header':   (27, 29, 31),   # windshield header and visor rails: mid grey
     'lower':    (21, 23, 26),   # lower walls and footwells: dark grey
 }
-MATID = {'seat': 1, 'carpet': 2, 'leather': 3}   # surface grain in the page: 0 plastic, 1 fabric, 2 carpet, 3 leather
+MATID = {'seat': 1, 'carpet': 2, 'leather': 3, 'panel': 4, 'console': 5, 'lower': 5, 'seatdark': 6, 'visor': 7}
+# surface in the page: 0 textured lining paint, 1 seat fabric, 2 carpet, 3 leather, 4 satin painted panel, 5 satin dark
+# console, 6 matt black (frames, rails, breakers), 7 glossy smoked plastic (sun visors)
 
 if __name__ == '__main__':
     h, G = shellbin.read(sys.argv[1]); g = G[0]
