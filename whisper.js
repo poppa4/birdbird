@@ -62,7 +62,9 @@ async function stop(){
   return clean(out&&out.text||'');
 }
 /* Whisper writes punctuation and sometimes a bracketed noise tag ("[BLANK_AUDIO]", "(static)") */
-function clean(t){ return String(t).replace(/\[[^\]]*\]|\([^)]*\)/g,' ').replace(/\s+/g,' ').trim(); }
+function clean(t){ t=String(t).replace(/\[[^\]]*\]|\([^)]*\)/g,' ').replace(/\s+/g,' ').trim();
+  /* what Whisper says for silence or a click of the button */
+  return /^(you|thank you|thanks for watching|bye)[.!]?$/i.test(t)? '' : t; }
 
 G.NWHISPER={supported, get ready(){ return !!asr; }, load, start, stop, cancel, clean, toPcm16k, MODEL};
 })(typeof window!=='undefined'?window:globalThis);
