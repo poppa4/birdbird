@@ -125,7 +125,7 @@ function init(o){
             c.fillStyle='#14171c'; c.beginPath(); c.arc(cx,cy,R*0.80,0,6.3); c.fill(); c.fillStyle='#2e343d'; c.beginPath(); c.arc(cx-R*0.18,cy-R*0.20,R*0.42,0,6.3); c.fill(); } } };
       sub(14,14,620,250,6,20,0); sub(646,14,364,250,6,11,0); sub(14,276,620,250,6,20,6); sub(646,276,364,250,6,11,6); sub(14,538,996,288,7,32,12);
       const tx=new THREE.CanvasTexture(cv); tx.anisotropy=Math.min(8,o_R.capabilities.getMaxAnisotropy()); if(THREE.sRGBEncoding&&o_R.outputEncoding===THREE.sRGBEncoding) tx.encoding=THREE.sRGBEncoding;
-      const X0=0.125, X1=1.045, Y0=0.56, Y1=1.31, Z=1.258, gg=new THREE.BufferGeometry();
+      const X0=0.125, X1=0.88, Y0=0.56, Y1=1.31, Z=1.258, gg=new THREE.BufferGeometry();
       gg.setAttribute('position',new THREE.BufferAttribute(new Float32Array([X0,Y0,Z, X1,Y0,Z, X1,Y1,Z, X0,Y1,Z]),3)); gg.setAttribute('uv',new THREE.BufferAttribute(new Float32Array([1,0, 0,0, 0,1, 1,1]),2)); gg.setIndex([0,1,2,0,2,3]);   /* seen from the front (looking aft) +x is to the left */
       const cm=new THREE.Mesh(gg,new THREE.MeshBasicMaterial({map:tx,side:THREE.DoubleSide})); cm.material.color.setScalar(0.82); scene.add(cm); }catch(e){ console.warn('A320 3D breaker wall',e); } }
   const wT0=0.90, wZa=-0.70; // top of the side windows, their front edge
