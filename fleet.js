@@ -113,10 +113,13 @@ const LIV=[[0.10,0.22,0.48],[0.62,0.08,0.10],[0.05,0.38,0.42],[0.92,0.50,0.08],[
 function material(world){
   const T3=T();
   return new T3.ShaderMaterial({ uniforms:world.uniforms(),
-    vertexShader:`attribute vec3 pa; attribute vec4 io; attribute vec3 il; uniform vec3 camW; varying vec3 vN; varying vec3 vW; varying vec3 vP; varying vec3 vL; varying float vSide;
+    vertexShader:`attribute vec3 pa; attribute vec4 io; attribute vec3 il; attribute vec2 ip; uniform vec3 camW; varying vec3 vN; varying vec3 vW; varying vec3 vP; varying vec3 vL; varying float vSide;
+      vec3 att(vec3 p,float pit,float bank,float pivot){ p.x-=pivot; float cp=cos(pit), sp=sin(pit); p=vec3(p.x*cp-p.y*sp, p.x*sp+p.y*cp, p.z); p.x+=pivot;
+        float cb=cos(bank), sb=sin(bank); return vec3(p.x, p.y*cb-p.z*sb, p.y*sb+p.z*cb); }
       void main(){ float h=io.w; vec3 f=vec3(sin(h),0.0,-cos(h)), r=vec3(cos(h),0.0,sin(h));
-        vec3 p=position; vec3 w=io.xyz+f*p.x+vec3(0.0,p.y,0.0)+r*p.z;
-        vN=f*normal.x+vec3(0.0,normal.y,0.0)+r*normal.z; vW=w; vP=vec3(pa.x,position.x,position.y); vL=il; vSide=position.z;
+        vec3 p=att(position,ip.x,ip.y,-12.64); vec3 nn=att(normal,ip.x,ip.y,0.0);
+        vec3 w=io.xyz+f*p.x+vec3(0.0,p.y,0.0)+r*p.z;
+        vN=f*nn.x+vec3(0.0,nn.y,0.0)+r*nn.z; vW=w; vP=vec3(pa.x,position.x,position.y); vL=il; vSide=position.z;
         gl_Position=projectionMatrix*viewMatrix*vec4(w,1.0); }`,
     fragmentShader:`${world.COMMON} uniform vec3 camW; uniform float night; uniform float xn; uniform float yc;
       varying vec3 vN; varying vec3 vW; varying vec3 vP; varying vec3 vL; varying float vSide;
@@ -152,7 +155,7 @@ function material(world){
         float ndl=max(dot(N,sunDir),0.0), sv=smoothstep(-0.05,0.08,sunDir.y);
         float ao=0.55+0.45*smoothstep(-0.8,0.6,N.y);                              // undersides darker
         ao*=0.6+0.4*smoothstep(0.3,2.2,vW.y-0.0+0.0*vSide);
-        vec3 lit=sunCol*ndl*sv+(skyCol*amb*(0.55+0.45*N.y)*2.0+horCol*amb*0.3)*ao;
+        vec3 lit=sunCol*ndl*sv+(skyCol*amb*(0.55+0.45*N.y)*2.0+horCol*amb*0.3)*ao+vec3(1.0,0.84,0.62)*night*0.22*(0.5+0.5*N.y)*step(vW.y,140.0);
         vec3 col=c*lit;
         vec3 R=reflect(-V,N); float fres=0.04+0.96*pow(1.0-max(dot(N,V),0.0),5.0);
         col+=skyAt(normalize(vec3(R.x,abs(R.y),R.z)))*fres*gloss*0.6*ao;

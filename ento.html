@@ -20,7 +20,7 @@ canvas{display:block;width:100vw;height:100vh;touch-action:none}
 <body>
 <canvas id="cv"></canvas>
 <div id="bar">
-  <button data-v="f35" class="on">Finale 35</button><button data-v="f17">Finale 17</button><button data-v="ovh">Over plassen</button><button data-v="stand">På stand 3</button><button data-v="ldg">På banen</button><button data-v="free">Fri kamera</button>
+  <button data-v="f35" class="on">Finale 35</button><button data-v="f17">Finale 17</button><button data-v="ovh">Over plassen</button><button data-v="stand">På stand 3</button><button data-v="ldg">På banen</button><button data-v="twr">Tårnet</button><button data-v="free">Fri kamera</button>
   <span style="width:8px"></span>
   <button data-t="day" class="on">Dag</button><button data-t="dusk">Skumring</button><button data-t="night">Natt</button>
 </div>
@@ -29,8 +29,8 @@ canvas{display:block;width:100vw;height:100vh;touch-action:none}
 <div id="att">Høydedata © Kartverket (CC BY 4.0) · Contains modified Copernicus Sentinel data 2022–2025 · utenfor Norge: Mapzen Terrain Tiles · rullebane og lys: AIP Norge AD 2 ENTO · teksturer: Poly Haven (CC0)</div>
 <div id="help">Fri kamera: dra for å se, WASD/piltaster flytter, Q/E opp/ned, Shift raskere</div>
 <script src="three.min.js?v=128"></script>
-<script src="fleet.js?v=2"></script>
-<script src="world.js?v=19"></script>
+<script src="fleet.js?v=3"></script>
+<script src="world.js?v=22"></script>
 <script>
 (async function(){
 'use strict';
@@ -63,6 +63,7 @@ function frameView(t){
   else if(view==='ovh'){ const a=t*0.05, r=5200; const [cE,cN]=at(1200,0); setCam(cE+Math.cos(a)*r,900,cN+Math.sin(a)*r,cE,90,cN); }
   else if(view==='stand'){ const st=(WORLD.airport.rwy.stands||[]).find(x=>x.id==='3'); const hh=st.hdg*Math.PI/180, g=WORLD.height(st.E,st.N)+5.2;
     const E=st.E+Math.sin(hh)*3.4, N=st.N+Math.cos(hh)*3.4; const yw=+(qs.get('yaw')||-1.05); setCam(E,g,N,E+Math.sin(hh+yw)*100,g-7,N+Math.cos(hh+yw)*100); }
+  else if(view==='twr'){ setCam(-393,WORLD.height(-393,850)+26,850, 0,85,1100); }
   else if(view==='ldg'){ const [E,N]=at(30,0); const [E2,N2]=at(1200,0); setCam(E,A.rwy.elev35+3.2,N,E2,A.rwy.elev35+2,N2); }
   else { const sp=(keys.Shift?220:60)*0.016, f=new THREE.Vector3(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch)), r=new THREE.Vector3(Math.cos(yaw),0,Math.sin(yaw));
     if(keys.w||keys.ArrowUp) pos.addScaledVector(f,sp); if(keys.s||keys.ArrowDown) pos.addScaledVector(f,-sp);

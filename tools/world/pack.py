@@ -104,3 +104,50 @@ if __name__=='__main__':
         if which=='near':
             meta['near']=level('near',np.load('loc_near_dtm.npy'),np.load('loc_near_dom.npy'),2.0,-4000,7000,10.0,4.0,near=True,apt=True)
     json.dump(meta,open(f'{OUT}/meta.json','w'),indent=1)
+
+# ---------------------------------------------------------------------------------------------------------------
+# Near level along both finals: E -3500..3500, N -11500..14000; built in chunks (memory) and stitched.
+def near_long(E0=-3500.0,E1=3500.0,NS=-11500.0,NN=14000.0,res=2.0,hres=10.0,ares=6.25,chunk=8500.0,margin=250.0):
+    import resample, s2build, rasterio, gc
+    Wd=int(round((E1-E0)/res))+1
+    Hh_g=int(round((NN-NS)/hres))+1; Wh_g=int(round((E1-E0)/hres))+1
+    Ha_g=int(round((NN-NS)/ares))+1; Wa_g=int(round((E1-E0)/ares))+1
+    HG=np.zeros((Hh_g,Wh_g),np.float32); CG=np.zeros_like(HG)
+    AG=np.zeros((Ha_g,Wa_g,3),np.float32); WG=np.zeros((Ha_g,Wa_g,3),np.float32)
+    top=NN
+    while top>NS+1:
+        bot=max(NS,top-chunk); ct=min(NN,top+margin); cb=max(NS,bot-margin)
+        print('chunk',top,bot,flush=True)
+        dtm=resample.to_local('near2','dtm',E0,cb,E1,ct,res); dom=resample.to_local('near2','dom',E0,cb,E1,ct,res)
+        with rasterio.Env(GDAL_DISABLE_READDIR_ON_OPEN='EMPTY_DIR'):
+            s2,_=s2build.composite(E0,ct,res,dtm.shape[1],dtm.shape[0],10)
+        col,can,cls=ground.build(dtm,dom,res,E0,ct,seed=1,near=True,s2=s2)
+        del s2; gc.collect()
+        h=np.where(np.isnan(dtm),0,dtm).astype(np.float32); h[cls['sea']]=0.0
+        airport_paint(col,can,cls,E0,ct,res,real=True)
+        pv_=chart_masks(E0,ct,res,h.shape); pm_=pv_['twy']|pv_['apron']|pv_['rwy']
+        if pm_.any():
+            dd=nd.distance_transform_edt(~pm_)*res; w_=np.clip(1.0-(dd-2.0)/40.0,0,1)*(dd>0)
+            h=h*(1-w_)+nd.gaussian_filter(h,9.0/res)*w_; h=np.where(pm_,nd.gaussian_filter(h,4.0/res),h)
+        can=np.where(cls['forest'],can,0)*0.92
+        fi=int(round(hres/res)); hs=nd.gaussian_filter(h,fi*0.42)
+        H=hs[::fi,::fi]; r=fi//2; pad=np.pad(can,r,mode='edge'); Hc,Wc=H.shape
+        win=np.lib.stride_tricks.sliding_window_view(pad,(fi,fi))[::fi,::fi][:Hc,:Wc]
+        C=np.percentile(win.reshape(Hc,Wc,-1),60,axis=2).astype(np.float32)
+        sea_c=cls['sea'][::fi,::fi]; H[sea_c]=0
+        # place the core rows (top..bot) of this chunk into the global grids
+        def put(G,A,step):
+            r0=int(round((ct-top)/step)); r1=int(round((ct-bot)/step))+1; g0=int(round((NN-top)/step))
+            n=min(r1-r0,G.shape[0]-g0); G[g0:g0+n]=A[r0:r0+n,:G.shape[1]]
+        put(HG,H,hres); put(CG,C,hres)
+        A=down(col,ares/res); Wm=down(np.dstack([cls['water'],cls['forest'],cls.get('paved',np.zeros_like(cls['water']))]).astype(np.float32)*255,ares/res)
+        put(AG,A,ares); put(WG,Wm,ares)
+        del dtm,dom,col,can,cls,h,hs,pad,win; gc.collect()
+        top=bot
+    Image.fromarray(enc_h(HG,CG)).save(f'{OUT}/near_h.png',optimize=True)
+    Image.fromarray(np.clip(AG,0,255).astype(np.uint8)).save(f'{OUT}/near_a.jpg',quality=86,optimize=True,progressive=True)
+    Image.fromarray(np.clip(WG,0,255).astype(np.uint8)).save(f'{OUT}/near_w.png',optimize=True)
+    np.save('dtm_near.npy',HG)
+    info=dict(E0=E0,N1=NN,hres=hres,hw=Wh_g,hh=Hh_g,ares=ares,aw=Wa_g,ah=Ha_g)
+    meta=json.load(open(f'{OUT}/meta.json')); meta['near']=info; json.dump(meta,open(f'{OUT}/meta.json','w'),indent=1)
+    print('near_long',info)

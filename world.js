@@ -16,14 +16,14 @@ const T=()=>G.THREE;
 const W={ready:false, loaded:{}, meta:null};
 const LV=['far','mid','near'];
 let lev={}, apt=null, group=null, terrain=null, tmat=null, sky=null, lights=null, bldg=null, inst=null, instAttr=null;
-let shdCv=null, shdTex=null, casters=[], FLEETI=[], fleetMats=[], detailTex=null, aptTex=null, digitTex=null, waterT=0, trees=null, treeAttr=null, treeBuf=null;
+let shdCv=null, shdTex=null, casters=[], FLEETI=[], fleetMats=[], TRAF={}, tlights=null, detailTex=null, aptTex=null, digitTex=null, waterT=0, trees=null, treeAttr=null, treeBuf=null;
 let TREE_R=1000;                                  // 3D trees out to this distance (m); the forest canopy takes over beyond
 const GRID=16;                                   // quads per patch side
 const P0=160;                                    // finest patch size (m) -> 10 m vertex spacing
 const NLEV=11;                                   // quadtree levels: root = 160*2^10 = 163.84 km
 const ROOT={E:0, N:1000, S:P0*Math.pow(2,NLEV-1)};
 const MAXI=2400;
-const DATA_V=12;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
+const DATA_V=13;                                  // bump when anything under world/ento/ changes (files are cached as immutable)
 const V=f=>f+'?v='+DATA_V;
 
 /* ---------- loading ---------- */
@@ -137,8 +137,8 @@ function makeStandDigits(){
 
 /* ---------- time of day ---------- */
 const TOD={
-  day:  {sun:[0.42,0.62,-0.66], sunCol:[1.0,0.95,0.86], sunI:3.1, sky:[0.30,0.52,0.86], hor:[0.70,0.80,0.90], amb:0.62, fog:1/38000, lights:0.0, exp:1.0},
-  dusk: {sun:[-0.80,0.07,-0.58],sunCol:[1.0,0.58,0.30], sunI:2.0, sky:[0.20,0.30,0.52], hor:[0.88,0.62,0.44], amb:0.40, fog:1/30000, lights:0.65, exp:1.15},
+  day:  {sun:[0.42,0.62,-0.66], sunCol:[1.0,0.95,0.86], sunI:3.1, sky:[0.28,0.50,0.86], hor:[0.66,0.77,0.89], amb:0.62, fog:1/70000, lights:0.0, exp:1.0},
+  dusk: {sun:[-0.80,0.07,-0.58],sunCol:[1.0,0.58,0.30], sunI:2.0, sky:[0.20,0.30,0.52], hor:[0.88,0.62,0.44], amb:0.40, fog:1/45000, lights:0.65, exp:1.15},
   night:{sun:[0.30,0.55,0.70], sunCol:[0.40,0.48,0.70], sunI:0.035,sky:[0.006,0.010,0.024],hor:[0.018,0.024,0.042],amb:0.03, fog:1/26000, lights:1.0, exp:1.2}
 };
 let todK='day';
@@ -248,7 +248,7 @@ void main(){
   float dist=distance(vec3(EN.x,h0,-EN.y),camW);
   vec4 mr=morph[l]; float k=clamp((dist-mr.x)*mr.y,0.0,1.0);
   vec2 fr=fract(g*0.5)*2.0; g-=fr*k; EN=inst.xy+g*sp;
-  vec2 ha=mix(H2(EN,sp),H2(EN,sp*2.0),k);
+  vec2 ha=mix(H2(EN,sp),H2(EN,sp*2.0),k); ha.y*=0.55;                       // forest canopy relief: enough to read as forest, not as hills
   float dxz=distance(EN,vec2(camW.x,-camW.z)); ha.y*=smoothstep(treeR*0.72,treeR,dxz);
   float h=ha.x+ha.y;
   vEN=EN; vSp=sp; vCan=ha.y;
@@ -277,8 +277,8 @@ void main(){
   vec3 alb=texture2D(tAF,uF).rgb; vec4 nrm=texture2D(tNF,uvOf(extF,EN)); float wat=texture2D(tWF,uF).r; float fr=0.0, pv=0.0;
   float km=onM*inside(extM,EN,1500.0), kn=onN*inside(extN,EN,350.0);
   if(km>0.0){ alb=mix(alb,texture2D(tAM,uM).rgb,km); nrm=mix(nrm,texture2D(tNM,uvOf(extM,EN)),km); wat=mix(wat,texture2D(tWM,uM).r,km); }
-  if(kn>0.0){ vec3 w3=texture2D(tWN,uN).rgb; vec3 an=texture2D(tAN,uN).rgb; vec3 ab=texture2D(tAN,uN,2.0).rgb;
-    an=clamp(an+(an-ab)*0.55,0.0,1.0);                  // unsharp mask: the 10 m satellite colours read crisper up close
+  if(kn>0.0){ vec3 w3=texture2D(tWN,uN).rgb; vec3 an=texture2D(tAN,uN).rgb; vec3 ab=texture2D(tAN,uN,1.0).rgb;
+    an=clamp(an+(an-ab)*0.22,0.0,1.0);                  // unsharp mask: the 10 m satellite colours read crisper up close
     alb=mix(alb,an,kn); nrm=mix(nrm,texture2D(tNN,uvOf(extN,EN)),kn); wat=mix(wat,w3.r,kn); fr=w3.g*kn; pv=w3.b*kn; }
   float nearT=1.0-smoothstep(treeR*0.72,treeR,distance(EN,vec2(camW.x,-camW.z)));
   vec2 nxz=mix(nrm.rg,nrm.ba,nearT)*2.0-1.0;
@@ -495,7 +495,7 @@ function build(){
   terrain=new (T().Mesh)(patchGeometry(),tmat); terrain.frustumCulled=false; terrain.name='terrain';
   group.add(terrain);
   for(const n of LV) if(lev[n]) bindLevel(n);
-  buildSky(); buildBuildings(); buildFleet(); buildDetails(); buildLights(); buildTrees();
+  buildSky(); buildBuildings(); buildFleet(); buildDetails(); buildLights(); buildTrees(); buildTraffic(); buildTrafficLights();
   setRanges();
   applyTod();
 }
@@ -545,6 +545,7 @@ W.update=function(camera,dt){
   if(sky){ sky.position.copy(c); sky.material.uniforms.time.value=waterT; }
   for(const m of [bldg&&bldg.material,lights&&lights.material,trees&&trees.material,...fleetMats]) if(m){ m.uniforms.camW.value.copy(c); if(m.uniforms.time) m.uniforms.time.value=waterT; }
   if(trees) updateTrees(c);
+  updateTraffic(W.__t!==undefined?W.__t+(waterT-(W.__t0??(W.__t0=waterT))):waterT);
   if(lights) lights.material.uniforms.pxs.value=(G.innerHeight||800)/(2*Math.tan((camera.fov||60)*Math.PI/360));
 };
 W.stats=()=>({patches:nI,tris,trees:trees?trees.geometry.instanceCount:0,levels:Object.keys(W.loaded)});
@@ -849,13 +850,92 @@ function buildFleet(){
   const api={uniforms:fleetUniforms,COMMON};
   for(const type of ['a320','c172']){
     const list=FLEETI.filter(a=>a.type===type); if(!list.length) continue;
-    const m=F[type](), g=m.g, io=new Float32Array(list.length*4), il=new Float32Array(list.length*3);
+    const extra=type==='a320'?2:0, n=list.length+extra;
+    const m=F[type](), g=m.g, io=new Float32Array(n*4), il=new Float32Array(n*3), ip=new Float32Array(n*2);
     list.forEach((a,i)=>{ io.set([a.E,a.g,-a.N,a.h],i*4); il.set(F.LIV[a.liv%F.LIV.length],i*3); });
-    g.setAttribute('io',new (T().InstancedBufferAttribute)(io,4)); g.setAttribute('il',new (T().InstancedBufferAttribute)(il,3));
-    g.instanceCount=list.length; g.boundingSphere=new (T().Sphere)(new (T().Vector3)(),1e7);
+    for(let k=0;k<extra;k++){ const i=list.length+k; io.set([0,-2000,0,0],i*4); il.set(F.LIV[(k*3+1)%F.LIV.length],i*3); }
+    const ioA=new (T().InstancedBufferAttribute)(io,4), ipA=new (T().InstancedBufferAttribute)(ip,2); ioA.setUsage(T().DynamicDrawUsage); ipA.setUsage(T().DynamicDrawUsage);
+    g.setAttribute('io',ioA); g.setAttribute('il',new (T().InstancedBufferAttribute)(il,3)); g.setAttribute('ip',ipA);
+    if(extra){ TRAF.io=ioA; TRAF.ip=ipA; TRAF.base=list.length; }
+    g.instanceCount=n; g.boundingSphere=new (T().Sphere)(new (T().Vector3)(),1e7);
     const mat=F.material(api); if(type==='c172'){ mat.uniforms.xn.value=1.6; mat.uniforms.yc.value=1.35; }
     const mesh=new (T().Mesh)(g,mat); mesh.frustumCulled=false; mesh.name='fleet-'+type; group.add(mesh); fleetMats.push(mat);
   }
+}
+
+/* ---------- traffic: a departure on RWY 35 from W1 and an arrival on RWY 17 that vacates at W2 and taxies to stand 12 ---------- */
+function polyPath(pts){ // Catmull-Rom smoothed path, resampled every 2 m: [{E,N,d}]
+  const out=[]; const P=pts;
+  for(let i=0;i<P.length-1;i++){ const p0=P[Math.max(0,i-1)], p1=P[i], p2=P[i+1], p3=P[Math.min(P.length-1,i+2)];
+    const L=Math.hypot(p2[0]-p1[0],p2[1]-p1[1]), n=Math.max(2,Math.ceil(L/2));
+    for(let k=0;k<n;k++){ const t=k/n, t2=t*t, t3=t2*t;
+      const f=(a,b,c,d)=>0.5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t2+(-a+3*b-3*c+d)*t3);
+      out.push([f(p0[0],p1[0],p2[0],p3[0]),f(p0[1],p1[1],p2[1],p3[1])]); } }
+  out.push(P[P.length-1]);
+  let d=0; return out.map((q,i)=>{ if(i) d+=Math.hypot(q[0]-out[i-1][0],q[1]-out[i-1][1]); return {E:q[0],N:q[1],d}; });
+}
+function atDist(path,d){ d=Math.max(0,Math.min(path[path.length-1].d,d)); let lo=0,hi=path.length-1; while(hi-lo>1){ const m=(lo+hi)>>1; if(path[m].d<d) lo=m; else hi=m; }
+  const a=path[lo], b=path[hi], t=(d-a.d)/Math.max(1e-6,b.d-a.d); return {E:a.E+(b.E-a.E)*t, N:a.N+(b.N-a.N)*t, h:Math.atan2(b.E-a.E,b.N-a.N)}; }
+function buildTraffic(){
+  const r=apt.rwy, U=r.u, R=(s,t)=>[U[0]*s+U[1]*t, U[1]*s-U[0]*t];
+  const st12=(r.stands||[]).find(x=>x.id==='12'); if(!st12) return;
+  // departure: hold W1 -> line up at s=60 -> roll north
+  const dep=polyPath([[-92,170],[-62,118],[-30,82],R(60,0),R(140,0),R(3200,0),R(30000,0)]);
+  // arrival: final RWY 17 from the north -> touchdown 400 m past THR 17 -> W2 -> T -> taxilane -> stand 12
+  const arr=polyPath([R(r.lthr+12000,0),R(r.lthr-400,0),R(880,0),R(800,0),[-40,760],[-98,684],[-150,620],[-205,563],[-245,536],[-320,533],[st12.E,534],[st12.E,505],[st12.E,st12.N]]);
+  TRAF.dep=dep; TRAF.arr=arr; TRAF.cycle=600;
+  // departure timeline by distance along the path: taxi 8 m/s to the line-up point, wait, then accelerate 2.1 m/s^2
+  const dLine=dep.find(q=>Math.abs(q.E-R(140,0)[0])<2&&Math.abs(q.N-R(140,0)[1])<2)||dep[0];
+  TRAF.depLine=atDistIndex(dep,R(140,0));
+  TRAF.arrTd=atDistIndex(arr,R(r.lthr-400,0)); TRAF.arrExit=atDistIndex(arr,R(800,0));
+}
+function atDistIndex(path,p){ let best=0,bd=1e18; for(const q of path){ const d=Math.hypot(q.E-p[0],q.N-p[1]); if(d<bd){ bd=d; best=q.d; } } return best; }
+function updateTraffic(t){
+  if(!TRAF.io||!TRAF.dep) return;
+  const io=TRAF.io.array, ip=TRAF.ip.array, base=TRAF.base, r=apt.rwy, c=t%TRAF.cycle, L=[];
+  const put=(k,E,N,alt,h,pit,bank,show)=>{ const i=base+k; io[i*4]=E; io[i*4+1]=show?alt:-2000; io[i*4+2]=-N; io[i*4+3]=h; ip[i*2]=pit; ip[i*2+1]=bank; };
+  // ---- departure (0..230 s)
+  { const D=TRAF.dep, dl=TRAF.depLine; let d=0, alt=0, pit=0, v=0, show=c<230;
+    if(c<dl/8){ d=c*8; v=8; } else if(c<dl/8+12){ d=dl; v=0; }
+    else { const tr=c-dl/8-12; const vr=72; const tRot=vr/2.1;
+      if(tr<tRot){ d=dl+0.5*2.1*tr*tr; v=2.1*tr; }
+      else { const ta=tr-tRot; const d0=dl+0.5*2.1*tRot*tRot; v=vr+Math.min(ta,10)*0.8; d=d0+vr*ta+0.4*Math.min(ta,10)**2+(ta>10?8*(ta-10):0);
+        pit=Math.min(1,ta/3)*8*Math.PI/180; alt=Math.max(0,ta-3)*Math.min(9,(ta-3)*3); } }
+    const p=atDist(D,d), g=W.height(p.E,p.N); put(0,p.E,p.N,g+alt,p.h,pit,0,show);
+    if(show) L.push({E:p.E,N:p.N,g:g+alt,h:p.h,pit,land:c>dl/8,strobe:c>dl/8+8,air:alt>1}); }
+  // ---- arrival (250..600 s): 70 m/s on a 3 deg path, flare, roll-out to 12 m/s, taxi 8 m/s to stand 12
+  { const A=TRAF.arr, td=TRAF.arrTd, ex=TRAF.arrExit, ta=c-250; let d=0, alt=0, pit=0, show=ta>0;
+    const tFin=td/70;
+    if(ta<tFin){ d=ta*70; const dist=td-d; alt=dist*Math.tan(3*Math.PI/180); pit=(dist<180?2.5+3.0*(1-dist/180):2.5)*Math.PI/180; if(dist<180) alt=Math.max(0,alt*(dist/180)*0.8+alt*0.2*(dist/180)); }
+    else { const tr=ta-tFin; const tDec=(70-12)/2.2; if(tr<tDec){ d=td+70*tr-0.5*2.2*tr*tr; pit=Math.max(0,5-tr*2)*Math.PI/180; }
+      else { const d1=td+70*tDec-0.5*2.2*tDec*tDec; const tt=tr-tDec; d=d1+Math.min(tt*10,Math.max(0,A[A.length-1].d-d1)); } }
+    const p=atDist(A,d), g=W.height(p.E,p.N); put(1,p.E,p.N,g+alt,p.h,pit,0,show);
+    if(show) L.push({E:p.E,N:p.N,g:g+alt,h:p.h,pit,land:d<ex+200,strobe:d<ex,air:alt>1}); }
+  TRAF.io.needsUpdate=true; TRAF.ip.needsUpdate=true;
+  updateTrafficLights(L,t);
+}
+function updateTrafficLights(L,t){
+  if(!tlights) return; const P=tlights.geometry.attributes.position.array, C=tlights.geometry.attributes.lcol.array, D=tlights.geometry.attributes.ldir.array; let n=0;
+  const add=(a,x,y,z,col,dir,spread,size)=>{ const f=[Math.sin(a.h),Math.cos(a.h)], r=[f[1],-f[0]]; const yy=y+x*Math.sin(a.pit);
+    P[n*3]=a.E+f[0]*x+r[0]*z; P[n*3+1]=a.g+yy; P[n*3+2]=-(a.N+f[1]*x+r[1]*z); C.set(col,n*3);
+    const dd=dir?[f[0]*dir[0]+r[0]*dir[1],f[1]*dir[0]+r[1]*dir[1]]:[0,0]; D.set([dd[0],-dd[1],Math.cos(spread*Math.PI/180),size],n*4); n++; };
+  const beacon=(Math.sin(t*Math.PI*2*1.0)>0.6)?1:0, strobe=(t%1.2<0.06||(t%1.2>0.14&&t%1.2<0.2))?1:0;
+  for(const a of L){
+    add(a,-12,8.3,0,[beacon,0,0],null,180,1.4); add(a,-14,1.85,0,[beacon,0,0],null,180,1.4);
+    add(a,-17.4,3.4,-16.6,[1,0.05,0.03],[0.4,-1],110,1.2); add(a,-17.4,3.4,16.6,[0.1,1,0.25],[0.4,1],110,1.2); add(a,-32.9,5.3,0,[1,1,1],[-1,0],140,1.0);
+    if(a.strobe){ add(a,-17.6,3.4,-16.6,[strobe,strobe,strobe],null,180,2.2); add(a,-17.6,3.4,16.6,[strobe,strobe,strobe],null,180,2.2); }
+    if(a.land){ add(a,-8.5,2.7,-2.6,[1,0.97,0.9],[1,0],18,3.2); add(a,-8.5,2.7,2.6,[1,0.97,0.9],[1,0],18,3.2); add(a,0.3,1.4,0,[1,0.97,0.9],[1,0],25,2.0); }
+  }
+  for(let i=n;i<tlights.userData.max;i++){ C.set([0,0,0],i*3); P[i*3+1]=-5000; }
+  tlights.geometry.attributes.position.needsUpdate=true; tlights.geometry.attributes.lcol.needsUpdate=true; tlights.geometry.attributes.ldir.needsUpdate=true;
+}
+
+function buildTrafficLights(){
+  const max=28, g=new (T().BufferGeometry)();
+  g.setAttribute('position',new (T().BufferAttribute)(new Float32Array(max*3),3)); g.setAttribute('lcol',new (T().BufferAttribute)(new Float32Array(max*3),3));
+  g.setAttribute('ldir',new (T().BufferAttribute)(new Float32Array(max*4),4)); g.setAttribute('lk',new (T().BufferAttribute)(new Float32Array(max*2),2));
+  for(const k of ['position','lcol','ldir']) g.attributes[k].setUsage(T().DynamicDrawUsage);
+  tlights=new (T().Points)(g,lights.material); tlights.frustumCulled=false; tlights.renderOrder=6; tlights.userData.max=max; group.add(tlights);
 }
 
 /* ---------- airfield details: taxiway signs at the holds, windsocks, perimeter fence ---------- */
