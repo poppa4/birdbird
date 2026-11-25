@@ -107,7 +107,7 @@ function init(o){
   /* ---- backstop: the ceiling and the upper walls once more, a few centimetres outside the real structure. It stays on after
      the FlightGear shell has loaded and fills the gaps that model leaves between its pieces (the shell leaves out what sits on
      the panel planes), so no sky shows through the roof or the corners. The windows stay open. ---- */
-  const TEST3=!CF3&&!/[?&]old=1/.test(location.search);   /* the structure from the owner's model (models/a320-shell-test.bin, cleaned by tools/render-a320/neo_clean.py); ?old=1 shows the earlier FlightGear structure */
+  const TEST3=!CF3&&/[?&]test=1/.test(location.search);   /* the structure from the owner's model (models/a320-shell-test.bin, cleaned by tools/render-a320/neo_clean.py); standard is the earlier FlightGear structure again (owner preferred it); ?test=1 shows the trial structure */
   const BACK=new THREE.Group(); scene.add(BACK);
   /* the circuit-breaker wall behind the right seat: the model has only pale strips there. A drawn panel (sub-panels with a frame,
      lettered rows and numbered columns of breakers) lies 12 mm in front of that wall; the roof lining in front of it hides
