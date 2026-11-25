@@ -144,6 +144,17 @@ function init(o){
        own wall starts there as loose slanted pieces further out, which showed as fins under the beam */
     if(!TEST3) for(const sg of [-1,1]) q4(v3(sg*1.005,0.91,0.64),v3(sg*1.005,0.91,1.29),v3(sg*1.355,0.36,1.29),v3(sg*1.355,0.36,0.64));
     /* its front edge is the aft window's rear frame: a lighter band, a hand wide, standing 12 mm proud of the panel */
+    /* one clean lining over the side and aft windows, from the windshield corner back into the rear wall: underside, a chamfer
+       and an inboard face. The model has several loose beams and rails lying along each other there, which read as a jumble;
+       they are inside this cover now. */
+    if(!TEST3){ const path=[[0.775,0.02],[0.99,0.36],[1.0,1.29]], Y0=0.842, Y1=1.07, IN=0.085, OUT=0.10, CH=0.022;
+      const mk=(col,pts)=>{ const g=new THREE.BufferGeometry(), a=new Float32Array(pts.length*3); pts.forEach((v,i)=>{ a[i*3]=v.x; a[i*3+1]=v.y; a[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(a,3)); BACK.add(new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:col,side:THREE.DoubleSide}))); };
+      const bot=[], chf=[], inn=[], Q=(arr,a,b,c,d)=>arr.push(a,b,c,a,c,d);
+      for(const sg of [-1,1]) for(let i=0;i<path.length-1;i++){ const [x0,z0]=path[i],[x1,z1]=path[i+1];
+        Q(bot,v3(sg*(x0+OUT),Y0,z0),v3(sg*(x1+OUT),Y0,z1),v3(sg*(x1-IN+CH),Y0,z1),v3(sg*(x0-IN+CH),Y0,z0));
+        Q(chf,v3(sg*(x0-IN+CH),Y0,z0),v3(sg*(x1-IN+CH),Y0,z1),v3(sg*(x1-IN),Y0+CH,z1),v3(sg*(x0-IN),Y0+CH,z0));
+        Q(inn,v3(sg*(x0-IN),Y0+CH,z0),v3(sg*(x1-IN),Y0+CH,z1),v3(sg*(x1-IN),Y1,z1),v3(sg*(x0-IN),Y1,z0)); }
+      mk(0x5f6b79,bot); mk(0x97a4b5,chf); mk(0x7f8c9d,inn); }
     if(!TEST3){ const fp=[], fm=new THREE.MeshBasicMaterial({color:0x93a0b2,side:THREE.DoubleSide}); for(const sg of [-1,1]){ const a=v3(sg*0.993,0.91,0.605), b=v3(sg*0.993,0.91,0.675), c=v3(sg*1.343,0.36,0.675), d=v3(sg*1.343,0.36,0.605); fp.push(a,b,c,a,c,d); }
       const fg=new THREE.BufferGeometry(), fa=new Float32Array(fp.length*3); fp.forEach((v,i)=>{ fa[i*3]=v.x; fa[i*3+1]=v.y; fa[i*3+2]=v.z; }); fg.setAttribute('position',new THREE.BufferAttribute(fa,3)); BACK.add(new THREE.Mesh(fg,fm)); }
     const g=new THREE.BufferGeometry(), arr=new Float32Array(bp.length*3); bp.forEach((v,i)=>{ arr[i*3]=v.x; arr[i*3+1]=v.y; arr[i*3+2]=v.z; }); g.setAttribute('position',new THREE.BufferAttribute(arr,3)); BACK.add(new THREE.Mesh(g,bm));
