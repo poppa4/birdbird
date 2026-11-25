@@ -276,6 +276,7 @@ for oi, o in enumerate(O):
         if TR_ and all(tk_) and (oi, fi) not in PARTV: continue
         P = v[idx]; ctr = P.mean(0); inside = False
         if PSH is None and in_post(np.array([-ctr[2], ctr[1], ctr[0]]), oi): continue
+        if np.linalg.norm(np.array([-ctr[2], ctr[1], ctr[0]]) - np.array([0.0, 0.663, -0.584])) < 0.014: continue   # the eye-reference ball on the centre post: alone, without its two white ones, it read as a stray red dot
         if NEO:
             _c = np.stack([-P[:, 2], P[:, 1], P[:, 0]], 1).mean(0)
             if not in_zone(_c[None])[0]: continue
