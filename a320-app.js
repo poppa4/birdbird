@@ -771,7 +771,7 @@ function dispData(d){ d=effD(d);
     if(M.stall&&!M.gnd){ msg='STALL'; msgC=DSP.C.r; }
     { const gm=GPW&&GPW.pfdMsg(); if(gm){ msg=gm[0]; msgC=DSP.C.r; } }
     return {pwr,attOK,adrOK:!!adrOK,irOK,phi:M.phi*R2D,th:M.th*R2D,beta:(M.beta||0)*R2D,ias:M.ias,alt,vs:M.vs/FPM,hdg,trk,ra:M.ra/FT,gnd:M.gnd,conf:M.conf,
-      vls:sp.vls,vaprot:sp.vaprot,vamax:sp.vamax,vmax:sp.vmax,F:sp.F,S:sp.S,gd:sp.gd,v1:K.d.v1,vr:K.d.vr,vfeN:sp.vfeN,spdTgt:M.gnd&&!ap.vert?K.d.v2:ap.tgtSpd,spdMan:ap.spd.man,trend:(M.accel||0)*10,mach:M.mach,
+      vls:sp.vls,vaprot:sp.vaprot,vamax:sp.vamax,vmax:sp.vmax,F:sp.F,S:sp.S,gd:sp.gd,vdev:!CF&&M.ap.vert==='DES'&&M.ap.vn&&M.ap.vn.pathH!=null?M.h/FT-M.ap.vn.pathH:null,v1:K.d.v1,vr:K.d.vr,vfeN:sp.vfeN,spdTgt:M.gnd&&!ap.vert?K.d.v2:ap.tgtSpd,spdMan:ap.spd.man,trend:(M.accel||0)*10,mach:M.mach,
       selAlt:ap.alt.v,std:E.std,qnh:E.std?1013:E.qnh,selHdg:(ap.lat==='HDG'||ap.lat==='TRK'||ap.hdg.preset)?ap.hdg.v:null,fd:fdOn&&!!(ap.lat||ap.vert),fdOn:true,fdPitch:fdP,fdRoll:fdR,
       fpv:ap.hdg.trk,drift:w180(trk-hdg),gam:M.gam*R2D,ls,loc:M.nav.loc,gs:M.nav.gs,dme:M.nav.dme,lsCrs:K.d.ilsCrs,lsId:K.d.ilsId,lsFreq:K.d.ilsFreq,fma:fmaA,dh:dh&&dh!=='NO'?dh:0,
       dhTxt:dh!=null?(dh==='NO'?'NO DH':'DH '+dh):mda?'MDA '+mda:'',raAdv:GPW?GPW.ra():null,pfdMsg:msg,pfdMsgC:msgC,stick:M.gnd&&(A.eng[0].run||A.eng[1].run)?{x:M.ctl.sx,y:M.ctl.sy}:null};
@@ -785,7 +785,7 @@ function dispData(d){ d=effD(d);
     if(tf) tf.slice(Math.max(0,K.tmpy.act-1)).forEach(p=>{ const f=fx.find(x=>x.id===p.id); if(f) f.tmpy=true; else if(!p.rwy) fx.push({id:p.id,N:p.N,E:p.E,tmpy:true}); });
     const mode=MODES[E.mode]; const W=M.wind;
     return {tfc:GPW?GPW.traffic():null,pwr,irOK,mode,range:RANGES[E.range],N:M.N,E:M.E,hdg,trk,selHdg:(ap.lat==='HDG'||ap.lat==='TRK'||ap.hdg.preset)?ap.hdg.v:null,gs:M.gs/KT,tas:M.tas/KT,windDir:W.dir,windSpd:W.spd,
-      mapNA:noFM&&mode!=='ROSE ILS'&&mode!=='ROSE VOR',fixes:noFM?[]:fx,fpln:mode==='ROSE ILS'||mode==='ROSE VOR'?null:fp&&fp.slice(K.fpln.slice(0,Math.max(0,K.act-1)).reduce((s,q)=>s+(q.hold?27:1),0)),tmpy:mode==='ROSE ILS'||mode==='ROSE VOR'?null:tmp,toWpt:nav?nav.toWpt:null,toDist:nav?nav.toDist:null,toBrg:nav?nav.toBrg:null,lsOn:UI.ls[side]||ap.appr||ap.loc,loc:M.nav.loc,lsCrs:K.d.ilsCrs,lsFreq:K.d.ilsFreq,lsId:K.d.ilsId,
+      mapNA:noFM&&mode!=='ROSE ILS'&&mode!=='ROSE VOR',fixes:noFM?[]:fx,pseudo:noFM||CF||mode==='ROSE ILS'||mode==='ROSE VOR'?null:MC.pseudoPos(K,M,A).map(q=>Object.assign(q,{man:!!ap.spd.man})),fpln:mode==='ROSE ILS'||mode==='ROSE VOR'?null:fp&&fp.slice(K.fpln.slice(0,Math.max(0,K.act-1)).reduce((s,q)=>s+(q.hold?27:1),0)),tmpy:mode==='ROSE ILS'||mode==='ROSE VOR'?null:tmp,toWpt:nav?nav.toWpt:null,toDist:nav?nav.toDist:null,toBrg:nav?nav.toBrg:null,lsOn:UI.ls[side]||ap.appr||ap.loc,loc:M.nav.loc,lsCrs:K.d.ilsCrs,lsFreq:K.d.ilsFreq,lsId:K.d.ilsId,
       filt:{wpt:E.filt==='wpt',vord:E.filt==='vord'||E.filt==='ndb'},rwyLen:F.RWY.len,vor1:E.adf1===2?'ASN':null,vor2:E.adf2===2?'ASN':null,ndMsg:M.gnd&&!K.fpln.length&&mode!=='ROSE ILS'?'':''};
   }
   if(d.k==='ewd'){
@@ -829,6 +829,7 @@ function fma(){
   F_.boxThr=chg('thr',F_.thr); F_.boxVert=chg('vert',F_.vert); F_.boxLat=chg('lat',F_.lat);
   // special messages (columns 2 and 3, third line): direct law and mechanical backup
   if(!M.gnd&&A.law==='DIRECT'){ F_.msg='USE MAN PITCH TRIM'; F_.msgC=COL.a; } else if(!M.gnd&&A.law==='MECH'){ F_.msg='MAN PITCH TRIM ONLY'; F_.msgC=COL.r; }
+  else if(a.vert==='DES'&&a.moreDrag){ F_.msg='MORE DRAG'; F_.msgC=COL.w; } // above the descent path at idle: speed brakes
   // ALT CRZ: altitude hold at the cruise flight level from INIT A
   if(a.vert==='ALT'&&K.d.crzFl&&Math.abs((a.altHold||0)-K.d.crzFl*100)<50) F_.vert='ALT CRZ';
   return F_;

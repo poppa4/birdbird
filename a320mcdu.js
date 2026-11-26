@@ -43,10 +43,12 @@ function cstTxt(c){ return c?(c.t==='A'?'+':c.t==='B'?'-':'')+c.alt:''; }
 /* vertical guidance for managed CLB / DES: the next constraint that limits the climb or the descent, and the distance to it */
 function vnav(K,M,climb,fcuAlt){
   if(!K.fpln.length||K.act<1) return null; let d=0, prev={N:M.N,E:M.E}; const h=M.h/0.3048;
+  // descent: the FMS path here (altitude and gradient) and where the T/D is, for DES guidance and VDEV
+  const V=!climb&&K.fpln.length>1?vprof(K,M,K.fpln,K.act):null, P=V?{pathH:V.pathH(0),grad:Math.max(0,(V.pathH(0)-V.pathH(0.5))/0.5),tdS:V.td?V.td.s:null}:{};
   for(let i=K.act;i<K.fpln.length;i++){ const p=K.fpln[i]; d+=Math.hypot(p.N-prev.N,p.E-prev.E)/NM; prev=p; const c=p.cst; if(!c) continue;
     if(climb){ if((c.t==='B'||c.t==='AT')&&c.alt<fcuAlt&&c.alt>h-50) return {alt:c.alt,dist:d,id:p.id,t:c.t}; }
-    else { if(c.alt<h-50){ const floor=(c.t==='A'||c.t==='AT')&&c.alt>fcuAlt; return {alt:floor?c.alt:Math.max(fcuAlt,c.alt),pathAlt:c.alt,dist:d,id:p.id,t:c.t,floor}; } if((c.t==='A'||c.t==='AT')&&c.alt>fcuAlt&&Math.abs(c.alt-h)<=50) return {alt:c.alt,pathAlt:c.alt,dist:d,id:p.id,t:c.t,floor:true}; } }
-  return null; }
+    else { if(c.alt<h-50){ const floor=(c.t==='A'||c.t==='AT')&&c.alt>fcuAlt; return Object.assign({alt:floor?c.alt:Math.max(fcuAlt,c.alt),pathAlt:c.alt,dist:d,id:p.id,t:c.t,floor},P); } if((c.t==='A'||c.t==='AT')&&c.alt>fcuAlt&&Math.abs(c.alt-h)<=50) return Object.assign({alt:c.alt,pathAlt:c.alt,dist:d,id:p.id,t:c.t,floor:true},P); } }
+  return V?Object.assign({alt:fcuAlt,pathAlt:null,dist:0},P):null; }
 /* managed speed: speed constraint at the TO waypoint (or the last one passed in the descent) */
 function spdCst(K,M){ if(!M||!K.fpln.length||K.act<1) return 0; const b=K.fpln[K.act]; let v=b&&b.spd||0; if(!(M.ap&&M.ap.clbPh)){ const a=K.fpln[K.act-1]; if(a&&a.spd) v=v?Math.min(v,a.spd):a.spd; } return v; }
 
@@ -69,35 +71,71 @@ function apprSpds(K,M,A,lw){ const s=M&&M.spds; if(!s) return null; const gw=M.g
   return {vls:Math.round(vls),vapp,F:Math.round(s.F*k),S:Math.round(s.S*k),O:Math.round(s.gd+((lw||gw)-gw)/500)}; }
 function windHead(w){ const x=/^(\d{1,3})\/(\d{1,3})$/.exec(w||''); if(!x) return 0; return Math.max(0,+x[2]*Math.cos((+x[1]-360)*Math.PI/180)); }
 function vappOf(K,M,A){ const s=apprSpds(K,M,A); return s?s.vapp:137; }
+/* ---------- vertical profile (FMS): the climb at about 500 ft/NM, held under the climb constraints, up to the cruise level; the
+   descent path built back from the runway at 3° (318 ft/NM) through the descent constraints up to the cruise level; T/C, T/D and
+   DECEL (where the approach phase starts: about 7 NM before the final approach fix). Distances along the flight plan from the
+   aircraft (on the ground from the departure runway). ---------- */
+const DES_G=318, CLB_G=500;
+function decelDist(K,fp){ fp=fp||K.fpln; const last=fp.length-1; if(last<1||!fp[last].rwy) return null; let d=0, faf=null;
+  for(let i=last;i>0;i--){ d+=Math.hypot(fp[i].N-fp[i-1].N,fp[i].E-fp[i-1].E)/NM; if(d>8) break; if(fp[i-1].cst){ faf={i:i-1,d}; break; } }
+  return {d:(faf?faf.d:5)+7,fafI:faf?faf.i:null}; }
+/* the DECEL point on the flight plan: on the leg into waypoint j, at fraction f of it */
+function decelPos(K){ const fp=K.fpln, D=decelDist(K,fp); if(!D) return null; let left=D.d*NM;
+  for(let j=fp.length-1;j>0;j--){ const L=Math.hypot(fp[j].N-fp[j-1].N,fp[j].E-fp[j-1].E); if(left<=L) return {j,f:1-left/Math.max(L,1)}; left-=L; } return null; }
+function vprof(K,M,fp,act){
+  const d=K.d, last=fp.length-1; if(last<1) return null; const fly=!!(M&&!M.gnd), i0=fly?Math.max(1,act):1;
+  const h0=fly?M.h/FT:0, crz=d.crzFl?d.crzFl*100:Math.max(10000,h0);
+  const pts=[{i:fly?-1:0,s:0}]; let s=0, prev=fly?{N:M.N,E:M.E}:fp[0];
+  for(let i=i0;i<=last;i++){ s+=Math.hypot(fp[i].N-prev.N,fp[i].E-prev.E)/NM; pts.push({i,s}); prev=fp[i]; }
+  const n=pts.length, cst=k=>pts[k].i>0&&fp[pts[k].i].cst;
+  // descent path, back from the runway (50 ft over the threshold)
+  const hB=new Array(n).fill(null); hB[n-1]=fp[last].rwy?50:1500; let td=null, k0=0;
+  for(let k=n-2;k>=0;k--){ let h=hB[k+1]+DES_G*(pts[k+1].s-pts[k].s);
+    if(h>=crz){ td={s:pts[k+1].s-(crz-hB[k+1])/DES_G}; k0=k+1; break; }
+    const c=k>0&&cst(k); if(c) h=c.t==='AT'?c.alt:c.t==='B'?Math.min(h,c.alt):Math.max(h,c.alt);
+    hB[k]=Math.min(h,crz); }
+  const pathH=x=>{ if(td&&x<=td.s) return crz; for(let k=Math.max(k0,1);k<n;k++){ if(x<=pts[k].s||k===n-1){ const a=td&&k===k0?{s:td.s,h:crz}:{s:pts[k-1].s,h:hB[k-1]}, b={s:pts[k].s,h:hB[k]};
+      return a.h+(b.h-a.h)*Math.max(0,Math.min(1,(x-a.s)/Math.max(1e-6,b.s-a.s))); } } return hB[n-1]; };
+  // climb, forward: AT and at-or-below constraints before the T/D hold the climb until they are passed
+  const climbing=!fly||!!(M.ap&&M.ap.clbPh&&h0<crz-50); const hCn=new Array(n).fill(h0); let tc=null;
+  const cap=k=>{ let c_=crz; for(let j=k+1;j<n;j++){ if(td&&pts[j].s>td.s) break; const c=cst(j); if(c&&(c.t==='AT'||c.t==='B')) c_=Math.min(c_,Math.max(c.alt,0)); } return c_; };
+  if(climbing) for(let k=1;k<n;k++){ const len=pts[k].s-pts[k-1].s, cp=Math.max(cap(k-1),hCn[k-1]), up=hCn[k-1]+CLB_G*len;
+    if(!tc&&cp>=crz&&up>=crz&&hCn[k-1]<crz) tc={s:pts[k-1].s+(crz-hCn[k-1])/CLB_G}; hCn[k]=Math.min(cp,up); }
+  const hC=x=>{ if(!climbing) return h0; for(let k=1;k<n;k++){ if(x<=pts[k].s){ const cp=Math.max(cap(k-1),hCn[k-1]); return Math.min(cp,hCn[k-1]+CLB_G*(x-pts[k-1].s)); } } return hCn[n-1]; };
+  const alt=x=>Math.min(hC(x),pathH(x));
+  if(tc&&td&&tc.s>td.s) tc=null;
+  const D=decelDist(K,fp); let decel=D?{s:pts[n-1].s-D.d}:null; if(decel&&decel.s<0) decel=null;
+  return {pts,crz,td,tc,decel,pathH,hC,alt,dest:pts[n-1].s,fafI:D?D.fafI:null,climbing}; }
 function pred(K,M,A,fp,act){
   const d=K.d; if(!fp||fp.length<2) return null; const fly=!!(M&&!M.gnd);
   if(!fly&&!(d.zfw&&d.block&&d.crzFl&&d.ci!=null)) return null;
-  const sp=M&&M.spds||{}, last=fp.length-1, gw=fly&&A?A.gw:(d.zfw&&d.block?d.zfw+d.block-d.taxi:64000), lim=d.spdLim||{spd:250,alt:10000};
+  const V=vprof(K,M,fp,act); if(!V) return null;
+  const last=fp.length-1, gw=fly&&A?A.gw:(d.zfw&&d.block?d.zfw+d.block-d.taxi:64000), lim=d.spdLim, limA=lim?lim.alt:0;
   const as=apprSpds(K,M,A,gw)||{vapp:137,F:155,S:185,O:205};
   const out=new Array(fp.length).fill(null);
-  let pos=fly?{N:M.N,E:M.E}:fp[0], i0=fly?Math.max(1,act):1, h=fly?M.h/FT:0, t=0, cum=0;
-  let fuel=fly&&A?A.fuel.fob/1000:((d.block||(A?A.fuel.fob:6000))-d.taxi)/1000; const f0=fuel; let td=null;
-  if(!fly){ t=1.0; fuel-=0.12; out[0]={t:0,spd:d.v1||null,h:0,efob:fuel+0.12,cum:0}; }
-  const anchor=j=>{ const q=fp[j]; if(j===last&&q.rwy) return 50; return q.cst?q.cst.alt:null; };
-  for(let i=i0;i<=last;i++){ const p=fp[i], leg=Math.hypot(p.N-pos.N,p.E-pos.E)/NM;
-    // next altitude anchor ahead
-    let j=i, Dj=leg, aj=null; for(let q=i,pp=pos;q<=last;q++){ if(q>i) Dj+=Math.hypot(fp[q].N-pp.N,fp[q].E-pp.E)/NM; pp=fp[q]; const a=anchor(q); if(a!=null){ aj=a; j=q; break; } }
-    let hn=h; if(aj==null) hn=h; else if(aj>=h) hn=Math.min(aj,h+500*leg);
-    else { const sd=Dj-(h-aj)/318; if(leg>sd){ if(td==null) td={cum:cum+Math.max(0,sd),t:null}; hn=Math.max(aj,h-318*(leg-Math.max(0,sd))); } }
-    if(p.rwy&&i===last) hn=50; // threshold crossing height
-    const c=p.cst; let met=true; if(c){ met=c.t==='AT'?Math.abs(hn-c.alt)<150:c.t==='A'?hn>=c.alt-150:hn<=c.alt+150; }
-    const k=last-i; let ias;
-    if(p.via&&p.via===d.appr||k<=1&&p.rwy){ ias=k===0?as.vapp:k===1?as.F:k===2?as.S:as.O; }
-    else ias=hn<lim.alt?Math.max(lim.spd,as.O):300;
-    if(p.spd) ias=Math.min(ias,p.spd);
-    const hm=(h+hn)/2, gs=(i===i0&&fly&&M.gs>30*KT)?M.gs/KT:ias*(1+0.017*hm/1000);
-    const dt=leg/Math.max(gs,80)*60; if(td&&td.t==null) td.t=t+dt*Math.min(1,(td.cum-cum)/Math.max(leg,0.01));
-    const rate=(k<=1&&p.via===d.appr?1.9:BURN+0.03*hm/1000)*gw/66000;
-    fuel-=rate*dt/60+Math.max(0,hn-h)/1000*0.02-Math.max(0,h-hn)/1000*0.008;
-    t+=dt; cum+=leg; h=hn; pos=p; out[i]={t,spd:Math.round(ias),h:Math.round(hn),efob:fuel,cum,met};
-  }
+  let t=fly?0:1.0, fuel=fly&&A?A.fuel.fob/1000:((d.block||(A?A.fuel.fob:6000))-d.taxi)/1000; const f0=fuel;
+  if(!fly){ fuel-=0.12; out[0]={t:0,spd:d.v1||null,h:0,efob:fuel+0.12,cum:0,met:true}; }
+  const f1=fuel, t1=t;
+  const spdAt=(x,h,i)=>{ if(V.decel&&x>=V.decel.s-0.01){ return i===last?as.vapp:i===V.fafI?as.F:as.O; } return h<limA?Math.max(lim.spd,as.O):300; };
+  let hp=fly?M.h/FT:0;
+  for(let k=1;k<V.pts.length;k++){ const p=V.pts[k], i=p.i, q=fp[i], leg=p.s-V.pts[k-1].s, hn=i===last&&q.rwy?50:Math.round(V.alt(p.s));
+    let ias=spdAt(p.s,hn,i); if(q.spd) ias=Math.min(ias,q.spd);
+    const c=q.cst; let met=true; if(c) met=c.t==='AT'?Math.abs(hn-c.alt)<150:c.t==='A'?hn>=c.alt-150:hn<=c.alt+150;
+    const hm=(hp+hn)/2, gs=(k===1&&fly&&M.gs>30*KT)?M.gs/KT:ias*(1+0.017*hm/1000), dt=leg/Math.max(gs,80)*60;
+    const rate=(V.decel&&p.s>V.decel.s?1.9:BURN+0.03*hm/1000)*gw/66000;
+    fuel-=rate*dt/60+Math.max(0,hn-hp)/1000*0.02-Math.max(0,hp-hn)/1000*0.008;
+    t+=dt; hp=hn; out[i]={t,spd:Math.round(ias),h:hn,efob:fuel,cum:p.s,met}; }
+  // pseudo waypoints: time and fuel by distance between the waypoints around them
+  const at=x=>{ let a={s:0,t:t1,efob:f1}; for(let k=1;k<V.pts.length;k++){ const o=out[V.pts[k].i]; if(x<=o.cum){ const f=(x-a.s)/Math.max(1e-6,o.cum-a.s); return {t:a.t+(o.t-a.t)*f,efob:a.efob+(o.efob-a.efob)*f}; } a={s:o.cum,t:o.t,efob:o.efob}; } return a; };
+  const ps=(name,o,spd)=>o&&o.s>0.05&&o.s<V.dest-0.05?Object.assign({name,cum:o.s,s:o.s,h:Math.round(V.alt(o.s)),spd:Math.round(spd)},at(o.s)):null;
+  const crzSpd=V.crz>=limA?300:Math.max(lim?lim.spd:250,as.O);
+  const tc=ps('(T/C)',V.tc,crzSpd), td=ps('(T/D)',V.td,crzSpd), decel=V.decel?ps('(DECEL)',V.decel,V.alt(V.decel.s)<limA?lim.spd:300):null;
   const dst=out[last]||{t:0,cum:0,efob:fuel};
-  return {w:out,destT:dst.t,destDist:dst.cum,destEfob:dst.efob,trip:f0-dst.efob+(fly?0:0),tripT:dst.t,td,fly,gw}; }
+  return {w:out,destT:dst.t,destDist:dst.cum,destEfob:dst.efob,trip:f0-dst.efob,tripT:dst.t,tc,td,decel,pseudo:[tc,td,decel].filter(Boolean).sort((a,b)=>a.s-b.s),fly,gw,V}; }
+/* where the pseudo waypoints are (for the ND) */
+function pseudoPos(K,M,A){ const PR=K.fpln.length>1&&pred(K,M,A,K.fpln,K.act); if(!PR) return []; const V=PR.V;
+  const P=k=>{ const p=V.pts[k]; return p.i<0?{N:M.N,E:M.E}:K.fpln[p.i]; };
+  return PR.pseudo.map(q=>{ for(let k=1;k<V.pts.length;k++){ if(q.s<=V.pts[k].s){ const a=P(k-1), b=P(k), f=(q.s-V.pts[k-1].s)/Math.max(1e-6,V.pts[k].s-V.pts[k-1].s); return {k:q.name.replace(/[()]/g,''),N:a.N+(b.N-a.N)*f,E:a.E+(b.E-a.E)*f}; } } return null; }).filter(Boolean); }
 /* fuel planning (INIT FUEL PREDICTION / FUEL PRED) */
 function fuelPlan(K,M,A){ const d=K.d; const P=pred(K,M,A,K.fpln,K.act); if(!P) return null;
   const lw=(P.fly&&A?A.gw:d.zfw+d.block-d.taxi)-(P.trip*1000);
@@ -113,8 +151,10 @@ function v3(v){ return v==null?'___':String(v); }
 function brg(a,b){ return ((Math.atan2(b.E-a.E,b.N-a.N)*180/Math.PI)+360)%360; }
 const d3=x=>String(Math.round(x)%360||360).padStart(3,'0');
 /* F-PLN display list: waypoints, hold, end of flight plan and alternate */
-function fplnRows(K,fp,act,isTmpy){ const R=[], st=Math.max(0,act-1);
-  for(let i=st;i<fp.length;i++){ R.push({k:'wpt',i}); if(fp[i].hold){ R.push({k:'hold',i}); R.push({k:'hx',i}); } }
+function fplnRows(K,fp,act,isTmpy,PR){ const R=[], st=Math.max(0,act-1), ps=PR&&PR.pseudo?PR.pseudo.slice():[];
+  for(let i=st;i<fp.length;i++){ const c=PR&&PR.w[i]?PR.w[i].cum:null;
+    while(i>st&&c!=null&&ps.length&&ps[0].s<=c) R.push({k:'ps',p:ps.shift()}); // (T/C), (T/D), (DECEL) where they fall
+    R.push({k:'wpt',i}); if(fp[i].hold){ R.push({k:'hold',i}); R.push({k:'hx',i}); } }
   R.push({k:'end'}); const dest=isTmpy&&K.tmpy?K.tmpy.dest:K.d.to;
   if(K.d.altn&&dest!==K.d.altn){ R.push({k:'altn'}); R.push({k:'endaltn'}); } else R.push({k:'noaltn'});
   return R; }
@@ -125,6 +165,7 @@ function render(K,M,A,side){
   const fm=A&&A.afs&&A.afs.fmgc;
   if(fm&&!fm[0]&&!fm[1]){ P.title='MCDU MENU'; lines.push([2,'<FMGC',C.w,'l'],[4,'<ATSU',C.w,'l'],[6,'<AIDS',C.w,'l'],[8,'<CFDS',C.w,'l'],[12,'SELECT DESIRED SYSTEM',C.w,'c',SM]); if(!K.sp&&!K.msg){ P.scratch='FMGC 1+2 FAULT'; P.scratchC=C.a; } return P; }
   if(fm&&side!=null&&!fm[side]&&!K.sp&&!K.msg){ P.scratch='OPP FMGC IN PROGRESS'; P.scratchC=C.w; }
+  else if(M&&M.ap&&M.ap.moreDrag&&!K.sp&&!K.msg){ P.scratch='MORE DRAG'; P.scratchC=C.w; }
   const l=(row,txt,col,al,size)=>{ if(txt!=null&&txt!=='') lines.push([row,String(txt),col||C.w,al==null?'l':al,size]); };
   const seg=(row,parts,al)=>{ const n=parts.reduce((s,p)=>s+String(p[0]).length,0); let x=al==='r'?24-n:al==='c'?Math.floor((24-n)/2):(typeof al==='number'?al:0);
     for(const p of parts){ const s=String(p[0]); if(s) lines.push([row,s,p[1]||C.w,x,p[2]]); x+=s.length; } };
@@ -160,7 +201,8 @@ function render(K,M,A,side){
       if(d.fltNbr) l(0,d.fltNbr+'  ',C.w,'r',SM);
       if(!fp.length){ l(1,tHdr,C.w,8,SM); l(1,'SPD/ALT   ',C.w,'r',SM); l(2,'PPOS',C.g); l(2,'----',C.w,8); l(2,'   /  -----',C.w,'r');
         l(4,'---F-PLN DISCONTINUITY--',C.w,'c'); l(6,'------END OF F-PLN------',C.w,'c'); l(8,'-----NO ALTN F-PLN------',C.w,'c'); l(11,' DEST',C.w); l(11,tHdr,C.w,8,SM); l(11,'DIST  EFOB',C.w,'r'); l(12,'-------'); l(12,'----',C.w,8,SM); l(12,'---- ---.-',C.w,'r',SM); break; }
-      const R=fplnRows(K,fp,act,!!T_), PR=pred(K,M,A,fp,act), w=PR?PR.w:[];
+      const PR=isSec?null:pred(K,M,A,fp,act), R=fplnRows(K,fp,act,!!T_,PR), w=PR?PR.w:[];
+      const sOf=x=>!x?null:x.k==='ps'?x.p.s:(x.k==='wpt'||x.k==='hx'||x.k==='hold')?(x.i===act-1?0:w[x.i]?w[x.i].cum:null):null; // distance along the plan
       K.sub=Math.max(0,Math.min(K.sub,R.length-1)); const st=K.sub; if(st===0&&act>0&&!T_&&!isSec) l(0,' FROM',C.w,0,SM); else if(st===0&&act>0&&T_) l(0,' FROM',C.w,0,SM);
       if(T_) P.titleAl=6;
       let prevSpd=null, prevAlt=null, nmShown=false;
@@ -173,10 +215,12 @@ function render(K,M,A,side){
         const p=fp[e.i], col=T_?C.y:isSec?C.w:e.i===act?C.w:C.g;
         if(e.k==='hold'){ l(lab,'HOLD',C.w,1,SM); l(row,'HOLD '+p.hold.turn,col); seg(row,[['SPD ',C.w,SM],[String(Math.round(M&&M.spds?Math.max(210,M.spds.gd):210)),col]],8); prevSpd=prevAlt=null; continue; }
         if(e.k==='hx'){ l(lab,' C'+d3(p.hold.crs)+'°',C.w,0,SM); l(row,p.id,col); l(row,'----',C.w,8,SM); l(row,'---/ -----',C.w,'r',SM); prevSpd=prevAlt=null; continue; }
+        if(e.k==='ps'){ const q=e.p, pc=T_?C.y:C.g, s0=sOf(R[st+r-1]); if(r>0&&s0!=null){ seg(lab,[[String(Math.round(q.s-s0)),pc],[nmShown?'':'NM',pc,SM],[nmShown?'     ':'   ']],'r'); nmShown=true; }
+          l(row,q.name,pc); l(row,tFmt(q.t),pc,8,SM); const aT=altF(q.h,d.transAlt); seg(row,[[String(q.spd).padStart(3,' '),pc,SM],['/',pc],[' ',pc],[aT.padStart(5,' '),pc,SM]],'r'); prevSpd=q.spd; prevAlt=aT; continue; }
         // label line: annotation, BRG / TRK, distance
         const prev=fp[e.i-1];
         if(r>0||e.i>0){ let ann=''; if(prev){ ann=p.ann==='C'?'C'+d3(brg(prev,p))+'°':(p.via||''); } if(ann) l(lab,' '+ann,C.w,0,SM);
-          if(r>0&&prev){ const dist=Math.round(Math.hypot(p.N-prev.N,p.E-prev.E)/NM); const fpa=p.rwy&&p.via&&/^(ILS|RNAV|VOR)/.test(p.via)&&e.i===fp.length-1;
+          if(r>0&&prev){ const s1=sOf(e), s0=sOf(R[st+r-1]), dist=Math.round(s1!=null&&s0!=null?s1-s0:Math.hypot(p.N-prev.N,p.E-prev.E)/NM); const fpa=p.rwy&&p.via&&/^(ILS|RNAV|VOR)/.test(p.via)&&e.i===fp.length-1;
             if(fpa) seg(lab,[[String(dist),col],['-3.0°',C.w,SM],['  ']],'r'); else seg(lab,[[String(dist),col],[nmShown?'':'NM',col,SM],[nmShown?'     ':'   ']],'r'); nmShown=true;
             if(!isSec&&e.i===act&&M) l(lab,'BRG'+d3(brg({N:M.N,E:M.E},p))+'°',C.g,8,SM); else if(!isSec&&e.i===act+1) l(lab,'TRK'+d3(brg(prev,p))+'°',C.g,8,SM); } }
         // waypoint line
@@ -230,7 +274,7 @@ function render(K,M,A,side){
     case 'vrev': { const t=K.tmpy?K.tmpy.fp:K.fpln, p=t[K.vr]; if(!p){ K.page='fpln'; return render(K,M,A); } const isDest=K.vr===t.length-1&&p.rwy;
       title([['VERT REV '],['AT ',C.w,SM],[p.id,C.g]]); const PR=pred(K,M,A,t,K.tmpy?K.tmpy.act:K.act), q=PR&&PR.w[K.vr], FP=fuelPlan(K,M,A);
       seg(1,[[' EFOB=',C.w,SM],[q?fmt1(q.efob):'---.-',q?C.g:C.w,SM],['     EXTRA=',C.w,SM],[FP?fmt1(Math.max(0,FP.extra)):'---.-',FP?C.g:C.w,SM]],0);
-      const des=isDest||PR&&q&&K.vr>0&&PR.w[K.vr-1]&&q.h<PR.w[K.vr-1].h-50, lim=des?d.desLim:d.spdLim;
+      const des=isDest||!!(PR&&q&&(!PR.V.td||q.cum>=PR.V.td.s)&&!(PR.V.climbing&&!PR.V.td)), lim=des?d.desLim:d.spdLim;
       l(3,des?' DES SPD LIM':' CLB SPD LIM'); l(4,lim?String(lim.spd).padStart(3,'0')+'/'+altF(lim.alt,des?7000:d.transAlt):'*[ ]/[   ]',lim?C.m:C.c,'l',lim&&lim.p?BG:SM); l(4,'RTA>',C.w,'r');
       l(5,' SPD CSTR'); l(6,p.spd?String(p.spd):'*[   ]',p.spd?C.m:C.c);
       if(!isDest&&!p.orig){ l(5,'ALT CSTR ',C.w,'r'); l(6,p.cst?cstTxt(p.cst):'[    ]*',p.cst?C.m:C.c,'r'); }
@@ -292,6 +336,7 @@ function render(K,M,A,side){
     case 'prog': { title([[ph,C.g]],'l'); P.titleAl=Math.max(0,11-ph.length); if(d.fltNbr) l(0,d.fltNbr,C.w,13,SM);
       l(1,' CRZ'); l(2,d.crzFl?'FL'+String(d.crzFl).padStart(3,'0'):'-----',C.c); l(1,'OPT    REC MAX',C.w,'r'); l(2,'FL370   FL398 ',C.g,'r');
       l(4,'<REPORT'); l(7,'  BRG / DIST');
+      if(ph==='DES'&&M){ const V=vprof(K,M,K.fpln,K.act), dv=V?Math.round((M.h/FT-V.pathH(0))/10)*10:null; seg(4,[['VDEV=',C.w,SM],[dv!=null?((dv>0?'+':' ')+String(dv)).padStart(5,' '):'-----',dv!=null?C.g:C.w],['FT',C.w,SM]],'r'); }
       const pf=K.progFix&&wp(K,K.progFix); if(pf&&M){ l(8,d3(brg({N:M.N,E:M.E},pf))+'°/'+(Math.hypot(pf.N-M.N,pf.E-M.E)/NM).toFixed(1),C.g); } else l(8,' ---°/----.-',C.w);
       seg(8,[['TO ',C.w,SM],[K.progFix||'[    ]',C.c]],'r');
       l(9,' PREDICTIVE'); l(10,'<GPS'); l(10,'GPS PRIMARY',C.g,'r'); l(11,'REQUIRED'); l(11,'ACCUR',C.w,'c'); l(11,'ESTIMATED',C.w,'r'); seg(12,[['1.0',C.c],['NM',C.c,SM]]); l(12,'HIGH',C.g,'c'); l(12,'0.06NM',C.g,'r',SM); break; }
@@ -335,7 +380,7 @@ function key(K,k,M,A,api){
   const pages={DIR:'dir',PROG:'prog',PERF:'perf',INIT:'init',DATA:'data','F-PLN':'fpln','RAD NAV':'radnav','FUEL PRED':'fuel','MCDU MENU':'menu','SEC F-PLN':'sec','ATC COMM':'menu',AIRPORT:'fpln'};
   if(pages[k]){ const was=K.page; K.page=pages[k]; K.apprConf=false;
     if(k==='F-PLN'){ K.sub=0; }
-    if(k==='AIRPORT'){ const R=fplnRows(K,K.tmpy?K.tmpy.fp:K.fpln,K.tmpy?K.tmpy.act:K.act,!!K.tmpy); const di=R.findIndex(e=>e.k==='end'), ai=R.findIndex(e=>e.k==='altn');
+    if(k==='AIRPORT'){ const fp_=K.tmpy?K.tmpy.fp:K.fpln, ac_=K.tmpy?K.tmpy.act:K.act, R=fplnRows(K,fp_,ac_,!!K.tmpy,pred(K,M,A,fp_,ac_)); const di=R.findIndex(e=>e.k==='end'), ai=R.findIndex(e=>e.k==='altn');
       K.apC=was==='fpln'?((K.apC||0)+1)%(ai>=0?3:2):1; K.sub=K.apC===0?0:K.apC===1?Math.max(0,di-4):Math.max(0,ai-1); }
     if(k==='PERF') K.perfPh=PH[phase(K,M)]||'to';
     if(k==='DATA') K.dataPg=1;
@@ -348,7 +393,7 @@ function key(K,k,M,A,api){
   if(k==='+'||k==='-'){ if(K.sp==='CLR') K.sp=''; K.sp+=k; return true; } // from the PC keyboard
   if(k==='NEXT'||k==='→'||k==='←'){ if(K.page==='init') K.page='initb'; else if(K.page==='initb') K.page='init'; else if(K.page==='arr'){ K.arrTab=K.arrTab==='star'?'appr':'star'; K.arrOff=0; } else if(K.page==='dep'){ K.depTab=K.depTab==='sid'?'rwy':'sid'; K.depOff=0; } else if(K.page==='data') K.dataPg=K.dataPg===2?1:2; return true; }
   if(k==='↑'||k==='↓'){ const up=k==='↑';
-    if(K.page==='fpln'||K.page==='secfp'){ const fp=K.page==='secfp'?(K.sec?K.sec.fp:[]):K.tmpy?K.tmpy.fp:K.fpln, R=fplnRows(K,fp,K.page==='secfp'?(K.sec?K.sec.act:0):K.tmpy?K.tmpy.act:K.act,!!K.tmpy); K.sub=Math.max(0,Math.min(R.length-1,K.sub+(up?1:-1))); }
+    if(K.page==='fpln'||K.page==='secfp'){ const fp=K.page==='secfp'?(K.sec?K.sec.fp:[]):K.tmpy?K.tmpy.fp:K.fpln, ac_=K.page==='secfp'?(K.sec?K.sec.act:0):K.tmpy?K.tmpy.act:K.act, R=fplnRows(K,fp,ac_,!!K.tmpy,K.page==='secfp'?null:pred(K,M,A,fp,ac_)); K.sub=Math.max(0,Math.min(R.length-1,K.sub+(up?1:-1))); }
     else if(K.page==='arr'){ const n=K.arrTab==='star'?Object.keys(STARS).length+1:Object.keys(APPRS).length; K.arrOff=Math.max(0,Math.min(Math.max(0,n-3),K.arrOff+(up?1:-1))); }
     else if(K.page==='dep'&&K.depTab==='sid'){ K.depOff=Math.max(0,Math.min(Math.max(0,Object.keys(SIDS).length+1-4),K.depOff+(up?1:-1))); }
     else if(K.page==='dir') K.dirOff=Math.max(0,(K.dirOff||0)+(up?1:-1));
@@ -422,7 +467,8 @@ function key(K,k,M,A,api){
       if(K.tmpy&&n===6){ if(side==='L'){ K.tmpy=null; K.hold=null; K.dirSel=null; K.dirRad=null; } else insertTmpy(K,api); break; }
       const fp=K.tmpy?K.tmpy.fp:K.fpln, act=K.tmpy?K.tmpy.act:K.act;
       if(n===6){ if(side==='L'&&!s&&fp.length){ K.lr=fp.length-1; K.page='latrev'; } break; }
-      const R=fplnRows(K,fp,act,!!K.tmpy), e=R[K.sub+n-1]; if(!e) break;
+      const R=fplnRows(K,fp,act,!!K.tmpy,pred(K,M,A,fp,act)), e=R[K.sub+n-1]; if(!e) break;
+      if(e.k==='ps'){ if(side==='L'||s) err('NOT ALLOWED'); break; } // pseudo waypoints cannot be revised
       if(e.k==='hold'){ const p=fp[e.i]; K.hold=Object.assign({id:p.id,idx:e.i},p.hold); K.page='hold'; break; }
       if(e.k!=='wpt'&&e.k!=='hx') break; const i=e.i, p=fp[i];
       if(side==='R'){
@@ -551,6 +597,9 @@ function holdNav(K,M,F,h){ const g=holdGeo(F,h,M.gs), S=K.inHold, d=(p,q)=>({N:p
   return circ(g.C1); }
 function lnav(K,M){
   if(!K.fpln.length||K.act>=K.fpln.length||K.act<1) return null;
+  /* DECEL: with NAV, the approach phase starts by itself when the aircraft reaches the deceleration point (below 7,200 ft) */
+  const ap=M.ap; if(ap&&!ap.apprPh&&ap.lat==='NAV'&&!M.gnd&&M.h/FT<7200){ const Q=decelPos(K);
+    if(Q&&(K.act>Q.j||K.act===Q.j&&(()=>{ const a=K.fpln[Q.j-1], b=K.fpln[Q.j], L=Math.hypot(b.N-a.N,b.E-a.E)||1; return ((M.N-a.N)*(b.N-a.N)+(M.E-a.E)*(b.E-a.E))/L>=Q.f*L; })())){ ap.apprPh=true; K.changed++; M.events&&M.events.push('apprph'); } }
   const a=K.fpln[K.act-1], b=K.fpln[K.act];
   if(K.inHold&&K.inHold.id!==b.id) K.inHold=null;
   if(b.hold){ const dist=Math.hypot(b.N-M.N,b.E-M.E); if(!K.inHold&&dist<0.4*NM) K.inHold={id:b.id,ph:'t1'};
@@ -565,5 +614,5 @@ function lnav(K,M){
   if(toGo<ant&&K.act<K.fpln.length-1&&!b.hold){ K.pass[K.act]={t:K.now?K.now():Date.now(),h:M.h/FT}; K.act++; K.changed++; return lnav(K,M); }
   return {dtk,xtkCorr:Math.max(-35,Math.min(35,-xtk/NM*35)),toWpt:b.id,toDist:Math.hypot(b.N-M.N,b.E-M.E)/NM,toBrg:((Math.atan2(b.E-M.E,b.N-M.N)*180/Math.PI)+360)%360,xtk:xtk/NM};
 }
-G.A320MCDU={create,render,key,lnav,vnav,build,CST,STARS,APPRS,SIDS,ALTN,HOLDS,holdShape,pred,fuelPlan,phase,spdCst,vappOf,remDist};
+G.A320MCDU={create,render,key,lnav,vnav,build,CST,STARS,APPRS,SIDS,ALTN,HOLDS,holdShape,pred,fuelPlan,phase,spdCst,vappOf,remDist,vprof,pseudoPos,decelDist};
 })(typeof window!=='undefined'?window:globalThis);

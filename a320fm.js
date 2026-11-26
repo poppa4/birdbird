@@ -104,7 +104,7 @@ function apLogic(M,dt,sys,sp,nav){
   const apOn=A.ap1||A.ap2, fd=A.fd1||A.fd2;
   if(A.vert==='SRS') A.clbPh=true;
   if(['OP DES','DES','EXPED DES','G/S*','G/S'].includes(A.vert)||A.appr||A.loc) A.clbPh=false;
-  const tgtSpd=targetSpeed(M,sp);
+  const tgtSpd=targetSpeed(M,sp); if(A.vert!=='DES') A.moreDrag=false;
   A.tgtSpd=tgtSpd;
   // ----- take-off: both levers in FLX or TOGA on the ground -> SRS / RWY, MAN FLX / MAN TOGA, A/THR armed (blue)
   const tla=M.tla, toga=tla[0]>=TLA.TOGA-0.5||tla[1]>=TLA.TOGA-0.5, flxmct=!toga&&(tla[0]>=TLA.MCT-0.5||tla[1]>=TLA.MCT-0.5);
@@ -180,8 +180,14 @@ function apLogic(M,dt,sys,sp,nav){
       const e=(vt-ias), acc=M.accel||0; gamC=clamp(M.gam+(-e*0.0035+acc*0.06)*-1*-1*-1,-0.02,18*D2R-M.alpha);
       gamC=clamp(M.gam-(e*0.004-acc*0.05),M.gnd?0:0.02,18*D2R-M.alpha); if(ra<35&&!A.gaMode) gamC=Math.min(gamC,0.16); break; }
     case 'OP CLB': case 'CLB': case 'EXPED CLB': { const e=(tgtSpd-ias), acc=M.accel||0; gamC=clamp(M.gam-(e*0.004-acc*0.05),0.005,15*D2R); break; }
-    case 'DES': if(A.vn&&A.vn.pathAlt!=null&&A.vn.dist>0.3){ // geometric path to the next constraint: the V/S it needs at this ground speed
-        const need=(h-A.vn.pathAlt)/Math.max(0.3,A.vn.dist-5)*(M.gs/KT)/60; /* reach it a little before the waypoint (turn anticipation) */ A.desSpd=need<1700; const vsT=-clamp(need,300,3500); gamC=gamFromVs(vsT); if(!A.desSpd){ const e=(tgtSpd-ias); gamC=Math.max(gamC,clamp(M.gam-(e*0.004-(M.accel||0)*0.05),-12*D2R,-0.003)); } break; }
+    case 'DES': if(A.vn&&A.vn.pathH!=null){ /* the FMS descent path: its V/S at this ground speed, corrected by the vertical deviation;
+        below the path (an early descent) 1,000 ft/min until it is intercepted; well above it (a late descent) idle, speed allowed to rise */
+        const dev=h-A.vn.pathH, gsK=Math.max(M.gs/KT,100), vsP=-A.vn.grad*gsK/60; A.vdev=dev;
+        let vsT=dev<-200||A.vn.tdS!=null&&A.vn.tdS>0.2?-1000:vsP-clamp(dev,-200,1500)*1.2; vsT=clamp(vsT,-4000,0); // before the T/D: 1,000 ft/min
+        A.desSpd=dev<300&&vsT>-2200; gamC=gamFromVs(vsT); A.moreDrag=dev>500&&!A.desSpd&&(M.ctl.spd||0)<0.3; // MORE DRAG: speed brakes to regain the path
+        if(!A.desSpd){ const e=(tgtSpd+(dev>300?15:0)-ias); gamC=Math.max(gamC,clamp(M.gam-(e*0.004-(M.accel||0)*0.05),-12*D2R,-0.003)); } break; }
+      if(A.vn&&A.vn.pathAlt!=null&&A.vn.dist>0.3){ // no flight plan profile: geometric to the next constraint
+        const need=(h-A.vn.pathAlt)/Math.max(0.3,A.vn.dist-5)*(M.gs/KT)/60; A.desSpd=need<1700; const vsT=-clamp(need,300,3500); gamC=gamFromVs(vsT); if(!A.desSpd){ const e=(tgtSpd-ias); gamC=Math.max(gamC,clamp(M.gam-(e*0.004-(M.accel||0)*0.05),-12*D2R,-0.003)); } break; }
       // fall through: no constraint ahead, idle descent on speed
     case 'OP DES': case 'EXPED DES': { A.desSpd=false; const e=(tgtSpd-ias), acc=M.accel||0; gamC=clamp(M.gam-(e*0.004-acc*0.05),-12*D2R,-0.003); break; }
     case 'V/S': gamC=gamFromVs(A.vs.v); break;

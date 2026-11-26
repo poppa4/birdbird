@@ -117,6 +117,8 @@ function altTape(g,D){
   for(let s=Math.floor((a-1600)/100)*100;s<=a+1600;s+=100){ const y=cy-(s-a)*ppf; L(g,x0,y,x0+14,y,C.w,3); if(s%500===0) T(g,String(Math.abs(Math.round(s/100))).padStart(3,'0'),x0+20,y+11,C.w,30); }
   // selected altitude (cyan) on the tape
   const ys=cy-(D.selAlt-a)*ppf; if(ys>top&&ys<bot){ R(g,x0+2,ys-28,40,56,C.c,3); }
+  // VDEV (managed descent): the magenta yo-yo at the descent path's altitude, at most 500 ft off the index
+  if(D.vdev!=null){ const yv=cy+clamp(D.vdev,-500,500)*ppf; g.strokeStyle=C.m; g.lineWidth=3; g.beginPath(); g.arc(x0-8,yv,9,0,7); g.stroke(); L(g,x0-8,yv-17,x0-8,yv-9,C.m,3); L(g,x0-8,yv+9,x0-8,yv+17,C.m,3); }
   // ground (landing elevation) ribbon
   if(D.ra<600){ const yg=cy+(D.ra)*ppf; FR(g,x0,yg,14,bot-yg,C.r); }
   g.restore();
@@ -198,6 +200,10 @@ function nd(g,cv,D){
     if(f.vor){ g.strokeStyle=C.m; g.lineWidth=3; g.beginPath(); g.moveTo(x-12,y); g.lineTo(x+12,y); g.moveTo(x,y-12); g.lineTo(x,y+12); g.stroke(); if(D.filt.vord) T(g,f.id,x+16,y+26,C.m,26); continue; }
     if(!D.filt.wpt&&!f.fp&&!f.tmpy) continue; const fc=f.fp?(act?C.w:C.g):f.tmpy?C.y:C.m; g.save(); g.translate(x,y); g.rotate(Math.PI/4); R(g,-8,-8,16,16,fc,3); g.restore(); T(g,f.id,x+16,y+26,fc,26); } }
   if(D.fpln&&D.fpln.length>1){ g.strokeStyle=C.g; g.lineWidth=3; g.beginPath(); D.fpln.forEach((p,i)=>{ const [x,y]=toXY(p.N,p.E); i?g.lineTo(x,y):g.moveTo(x,y); }); g.stroke(); }
+  // pseudo waypoints: T/C and T/D (white), DECEL (magenta D, white with a selected speed)
+  if(D.pseudo) for(const q of D.pseudo){ const [x,y]=toXY(q.N,q.E); if(x<-40||x>1040||y<-40||y>1040) continue; g.lineWidth=3;
+    if(q.k==='DECEL'){ const c=q.man?C.w:C.m; g.strokeStyle=c; g.beginPath(); g.arc(x,y,14,0,7); g.stroke(); T(g,'D',x,y+9,c,24,'center'); }
+    else { g.strokeStyle=C.w; g.beginPath(); if(q.k==='T/D'){ g.moveTo(x-24,y-9); g.lineTo(x,y-9); g.lineTo(x+16,y+9); } else { g.moveTo(x-16,y+9); g.lineTo(x,y-9); g.lineTo(x+24,y-9); } g.stroke(); } }
   if(D.tmpy&&D.tmpy.length>1){ g.strokeStyle=C.y; g.lineWidth=3; g.setLineDash([18,12]); g.beginPath(); D.tmpy.forEach((p,i)=>{ const [x,y]=toXY(p.N,p.E); i?g.lineTo(x,y):g.moveTo(x,y); }); g.stroke(); g.setLineDash([]); }
   // TCAS traffic: open diamond (other), filled (proximate), amber circle (TA), red square (RA), relative altitude in hundreds of feet
   if(D.tfc) for(const t of D.tfc){ const [x,y]=toXY(t.N,t.E); const col=t.type==='ra'?C.r:t.type==='ta'?C.a:C.w; g.fillStyle=col; g.strokeStyle=col; g.lineWidth=3;

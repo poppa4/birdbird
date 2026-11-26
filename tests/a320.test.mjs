@@ -220,7 +220,8 @@ function run(R,sec,each){ const {A,M}=R; for(let i=0;i<sec*50;i++){ const C=M.ct
   key('L3'); const tgt=K.dirSel; key('R6'); ok('DIR TO INSERT: T-P then the waypoint become the active leg',!K.tmpy&&K.fpln[K.act].id===tgt&&K.fpln[K.act-1].id==='T-P',K.fpln.map(p=>p.id).join(' '));
   // constraints: F-PLN right key and VERT REV
   K.fpln=MC.build(K); K.act=1; key('F-PLN'); type('/'); key('+/-'); key('+/-'); type('7000'); key('R3'); ok('F-PLN: /+7000 on the right key sets an at-or-above constraint',K.fpln[2].cst&&K.fpln[2].cst.alt===7000&&K.fpln[2].cst.t==='A');
-  key('R3'); ok('VERT REV from the right key',K.page==='vrev'&&P().title==='VERT REV AT OSVIK'); type('220'); key('L3'); ok('VERT REV: SPD CSTR 220',K.fpln[2].spd===220);
+  const lskOf=id=>{ const L=P().lines.find(l=>l[0]%2===0&&l[0]>0&&l[1]===id&&(l[3]==='l'||l[3]===0)); return L?L[0]/2:null; }; // the line select key of a waypoint on the F-PLN page
+  key('R'+lskOf('OSVIK')); ok('VERT REV from the right key',K.page==='vrev'&&P().title==='VERT REV AT OSVIK'); type('220'); key('L3'); ok('VERT REV: SPD CSTR 220',K.fpln[2].spd===220);
   type('5000'); key('R3'); ok('VERT REV: ALT CSTR 5000 (AT)',K.fpln[2].cst.alt===5000&&K.fpln[2].cst.t==='AT'); key('L6');
   // DEPARTURE and ARRIVAL
   K.fpln=MC.build(K); K.act=1; key('F-PLN'); key('L1'); key('L1'); ok('LAT REV origin → DEPARTURES FROM ENRD',K.page==='dep'&&/DEPARTURES FROM ENRD/.test(P().title));
@@ -266,5 +267,33 @@ function run(R,sec,each){ const {A,M}=R; for(let i=0;i<sec*50;i++){ const C=M.ct
   { const R=fly(); const {A,M}=R; A.fail.eng1=true; run(R,4); ok('engine failure: CAT 3 DUAL lost (CAT 3 SINGLE at most), both APs still available',A.afs.cat==='CAT 3 SINGLE'&&A.afs.ap[0]&&A.afs.ap[1],A.afs.cat); }
   { const R=fly(); const {A,M}=R; A.fail.ir1=A.fail.ir2=true; run(R,2); ok('IR 1+2: alternate law and no AP',A.law==='ALTN'&&!A.afs.ap[0]&&!A.afs.ap[1]&&!M.ap.ap1,A.law); }
   { const R=rig({sys:{cold:true,gpu:true}}); R.A.sw.bat1=R.A.sw.bat2=1; R.A.sw.ext=1; run(R,2); ok('cold aircraft on the ground: no AP / A/THR / CAT items in STATUS',!R.A.afs.inop.length,R.A.afs.inop.join(',')); } }
+
+/* ---------- vertical profile: T/C, T/D, DECEL; managed descent on the path; approach phase at DECEL ---------- */
+{ const FX={HOLAN:{N:9*NM,E:0},OSVIK:{N:18*NM,E:-14*NM},TUSKA:{N:-22*NM,E:-8*NM},ALPOR:{N:-10*NM,E:-5*NM},RONAX:{N:-10*NM,E:0},FAPSO:{N:-5*NM,E:0}};
+  { const R=rig({sys:{cold:false},fm:{}}); run(R,0.2); const {A,M}=R; const K=MC.create(FX); K.now=()=>Date.UTC(2026,10,26,14,0);
+    Object.assign(K.d,{from:'ENRD',to:'ENRD',crzFl:100,ci:30,zfw:56500,block:8000}); K.fpln=MC.build(K); K.act=1;
+    const PR=MC.pred(K,M,A,K.fpln,K.act), V=PR.V, cumOf=id=>PR.w[K.fpln.findIndex(p=>p.id===id)].cum;
+    ok('profile: T/C after OSVIK (AT 6000 holds the climb), before the T/D',PR.tc&&PR.tc.s>cumOf('OSVIK')&&PR.td&&PR.tc.s<PR.td.s,PR.tc&&PR.tc.s.toFixed(1));
+    ok('profile: T/D about 15.7 NM before TUSKA (FL100 down to B5000 at 3°)',Math.abs(cumOf('TUSKA')-PR.td.s-15.7)<0.3,(cumOf('TUSKA')-PR.td.s).toFixed(1));
+    ok('profile: DECEL 12 NM before the threshold (FAF 5 NM + 7)',Math.abs(PR.destDist-PR.decel.s-12)<0.2,(PR.destDist-PR.decel.s).toFixed(1));
+    ok('profile: predicted 5000 at TUSKA, 3000 at ALPOR, 1650 at FAPSO',[['TUSKA',5000],['ALPOR',3000],['FAPSO',1650]].every(([id,a])=>Math.abs(PR.w[K.fpln.findIndex(p=>p.id===id)].h-a)<60));
+    K.page='fpln'; for(let i=0;i<3;i++) MC.key(K,'↑',M,A,{}); const rows=[]; for(let i=0;i<6;i++){ rows.push(...MC.render(K,M,A).lines.filter(l=>l[0]%2===0&&l[0]>0&&l[0]<11&&(l[3]==='l'||l[3]===0)).map(l=>l[1])); MC.key(K,'↑',M,A,{}); }
+    ok('F-PLN: (T/C), (T/D) and (DECEL) in the flight plan',['(T/C)','(T/D)','(DECEL)'].every(x=>rows.includes(x)),[...new Set(rows)].join(' ')); }
+  const flyDes=(distBefore,h,o)=>{ const R=rig({sys:{cold:false},fm:{air:true,h:h*FT,ias:o&&o.ias||250,hdg:171},gw:62000}); const {A,M}=R; A.sw.park=0; M.ctl.park=0; A.sw.gearLv=0;
+    const K=MC.create(FX); K.d.crzFl=100; K.d.from='ENRD'; K.fpln=MC.build(K); const iT=K.fpln.findIndex(p=>p.id==='TUSKA'), T=K.fpln[iT], O=K.fpln[iT-1], L=Math.hypot(O.N-T.N,O.E-T.E), f=distBefore*NM/L;
+    M.N=T.N+(O.N-T.N)*f; M.E=T.E+(O.E-T.E)*f; K.act=iT; M.lnavFn=m=>MC.lnav(K,m); M.vnavFn=(m,c,fa)=>MC.vnav(K,m,c,fa);
+    M.ctl.tla=[25,25]; F.fcu(M,'athr'); F.fcu(M,'ap1'); M.ap.lat='NAV'; M.ap.vert='ALT'; M.ap.altHold=h; M.ap.alt.v=3000; M.ap.clbPh=false; F.fcu(M,'altPush'); return {R,K}; };
+  { const {R,K}=flyDes(30,10000); const M=R.M; let vs=[]; run(R,40,t=>{ if(t>20) vs.push(M.vs/FPM); }); const av=vs.reduce((a,b)=>a+b,0)/vs.length;
+    ok('early descent (DES before the T/D): about −1,000 ft/min',M.ap.vert==='DES'&&av<-700&&av>-1400,M.ap.vert+' '+Math.round(av)); }
+  { const {R,K}=flyDes(8,10000); const M=R.M; run(R,5); const d0=M.ap.vn&&M.ap.vn.pathH!=null?M.h/FT-M.ap.vn.pathH:null; run(R,60); const d1=M.h/FT-M.ap.vn.pathH;
+    ok('late descent (above the path): DES at THR IDLE with MORE DRAG',M.ap.vert==='DES'&&d0>1500&&d1<d0&&M.ap.thr==='THR IDLE'&&M.ap.moreDrag,[Math.round(d0),Math.round(d1),M.ap.thr,M.ap.moreDrag].join(' '));
+    M.ctl.spd=1; run(R,60); const d2=M.h/FT-M.ap.vn.pathH; ok('speed brakes out: the path is caught up (VDEV down by more than 800 ft a minute)',d2<d1-800&&!M.ap.moreDrag,Math.round(d2)); M.ctl.spd=0;
+    ok('PROG in descent: VDEV',/VDEV=/.test(MC.render(Object.assign(K,{page:'prog'}),M,R.A).lines.map(l=>l[1]).join(''))); }
+  { const R=rig({sys:{cold:false},fm:{air:true,h:3000*FT,ias:250,hdg:90},gw:62000}); const {A,M}=R; A.sw.park=0; M.ctl.park=0; A.sw.gearLv=0; M.N=-10*NM; M.E=-4.5*NM;
+    const K=MC.create(FX); K.d.from='ENRD'; K.d.crzFl=100; K.fpln=MC.build(K); K.act=K.fpln.findIndex(p=>p.id==='RONAX'); M.lnavFn=m=>MC.lnav(K,m); M.vnavFn=(m,c,fa)=>MC.vnav(K,m,c,fa);
+    M.ctl.tla=[25,25]; F.fcu(M,'athr'); F.fcu(M,'ap1'); M.ap.lat='NAV'; M.ap.vert='ALT'; M.ap.altHold=3000; M.ap.alt.v=3000; let at=null;
+    let prev=null; run(R,60,t=>{ if(at==null&&M.ap.apprPh) at=prev; prev=MC.remDist(K,M); }); // distance to go along the plan just before
+    ok('DECEL with NAV: approach phase on by itself about 12 NM from the runway',at!=null&&Math.abs(at-12)<0.6,at&&at.toFixed(1));
+    ok('after DECEL: managed speed down to green dot, flight phase APPR',M.ap.tgtSpd<235&&MC.phase(K,M)==='APPR',Math.round(M.ap.tgtSpd)); } }
 
 console.log(`a320: ${pass} passed, ${fail} failed`); if(fail){ console.log(fails.map(f=>'  FAIL '+f).join('\n')); process.exit(1); }
