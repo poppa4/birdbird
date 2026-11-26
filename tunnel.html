@@ -405,6 +405,15 @@ body.depth-instructor .task .q{font-size:19px}
 body.depth-instructor .memo h3{font-size:20px}
 
 .pctl .pconf{grid-column:1/-1}
+/* aerofoil section: the picture with its controls beside it, like the 3D tunnel */
+#profil{container:pf/inline-size}
+.pbox{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:stretch}
+.pbox .pview{order:1}.pbox .pctl{order:2}
+@container pf (min-width:740px){
+  .pbox{grid-template-columns:minmax(0,1fr) 292px}
+  .pbox .pctl{grid-template-columns:minmax(0,1fr);align-content:start;gap:6px;height:0;min-height:100%;overflow:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:10px 12px}
+  .pbox .pview canvas{min-height:340px}
+}
 .pconf label{align-items:baseline}
 .tm{font-style:normal;font-size:11px;color:var(--muted);font-weight:400;margin-left:6px}
 .confseg{flex-wrap:nowrap}
@@ -495,6 +504,7 @@ body.depth-instructor .memo h3{font-size:20px}
         </div>
         <div class="pst"><span>Grensesjikt</span><div class="status ok" id="pStatus">Festet</div></div>
       </div>
+      <div class="pbox">
       <div class="pctl">
         <div class="ctl"><label for="p_alpha"><span>Angrepsvinkel α</span><output id="po_alpha"></output></label>
           <input type="range" id="p_alpha" min="-6" max="24" step="0.1" value="6"></div>
@@ -513,6 +523,7 @@ body.depth-instructor .memo h3{font-size:20px}
       </div>
       <div class="pview">
         <canvas id="sec2d" aria-label="Profilsnitt med strømlinjer, grensesjikt og separasjon"></canvas>
+      </div>
       </div>
         <div class="legend plegend">
           <span><i style="background:var(--smoke)"></i>Laminært</span>
