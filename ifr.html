@@ -17,6 +17,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="lab.css?v=16">
 <link rel="stylesheet" href="site.css?v=41">
+<link rel="stylesheet" href="trainhome.css?v=1">
 <style>
 /* ===== IFR trainer =====
    Two views. Home (paper): what the trainer is beside a live miniature of the guided screen, the path of eight core
@@ -28,27 +29,6 @@ body.v-trainer .ifr-head,body.v-trainer #home{display:none}
 body:not(.v-trainer) #trainer{display:none}
 
 /* ---- shared small things ---- */
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.btn2{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:15px;padding:10px 18px;border-radius:var(--radius);border:1px solid var(--ink);color:var(--ink);background:var(--sheet);white-space:nowrap;line-height:1.2}
-.btn2:hover{background:var(--wash)}
-.btn2.pri{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn2.pri:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
-.btn2.sm{font-size:14px;padding:7px 13px}
-.btn2.q{border-color:transparent;background:transparent;color:var(--ink-2);padding-inline:10px}
-.btn2.q:hover{color:var(--ink);background:var(--rule-2)}
-.btn2[disabled]{opacity:.4;cursor:not-allowed}
-.btn2:focus-visible,.lk:focus-visible,.gcard:focus-visible{outline:2px solid var(--info);outline-offset:2px}
-.lk{all:unset;cursor:pointer;color:var(--ink);font-weight:600;border-bottom:1px solid var(--ink-3)}
-.lk:hover{color:var(--accent);border-bottom-color:var(--accent)}
-.dif{display:inline-flex;gap:2px;align-items:flex-end;height:11px;margin-right:6px}
-.dif i{width:4px;background:var(--rule);display:block}
-.dif i:nth-child(1){height:5px}.dif i:nth-child(2){height:8px}.dif i:nth-child(3){height:11px}
-.dif i.on{background:var(--ink-2)}
-.pips{display:inline-flex;gap:3px;margin-right:7px;vertical-align:middle}
-.pips i{width:12px;height:4px;background:var(--rule);display:block}
-.pips i.on{background:var(--ok)}
-.pg{font-size:13px;color:var(--ink-2);white-space:nowrap;display:inline-flex;align-items:center}
-.pg.none{color:var(--ink-3)}
 
 /* ---- glossary chips: tap an abbreviation to have it explained ---- */
 .gl{all:unset;cursor:help;border-radius:3px;padding:0 .12em;margin:0 -.12em;background:var(--glb,rgba(31,95,153,.09));box-shadow:inset 0 -1.5px 0 var(--glc,var(--info));color:inherit;font:inherit;line-height:inherit;white-space:nowrap}
@@ -59,39 +39,10 @@ body:not(.v-trainer) #trainer{display:none}
 /* the pop-up itself (.glpop) is shared with the Virtual Labs: lab.css */
 
 /* ---- home: the head (what this is, beside the trainer in use) ---- */
-.home{margin:0}
-.ifr-head{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:36px 56px;align-items:center;margin:40px 0 0}
-.ifr-head .brand{flex:none;min-width:0}
-.ifr-head .lead2{margin:16px 0 0;color:var(--ink-2);font-size:var(--t-md);line-height:1.5;max-width:44ch}
-.promise{list-style:none;margin:26px 0 0;padding:0;border-top:1px solid var(--rule)}
-.promise li{display:grid;grid-template-columns:18px 84px minmax(0,1fr);gap:0 12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--rule-2);font-size:15px;line-height:1.4}
-.promise i{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--ink-3)}
-.promise b{font-family:var(--f-display);font-stretch:92%;font-weight:680;font-size:17px;color:var(--ink)}
-.promise span{color:var(--ink-2)}
 /* refresher check (instrument-rated pilots): six procedures in a row, map hidden, no help, one score */
-.chk .chk-box{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px 28px;align-items:center;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:16px 18px}
-.chk-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 8px;counter-reset:ck}
-.chk-list li{counter-increment:ck;display:inline-flex;align-items:center;gap:8px;font-size:14px;padding:6px 11px;border:1px solid var(--rule);border-radius:999px;background:var(--paper,#fff)}
-.chk-list li::before{content:counter(ck);font-family:var(--f-mono);font-size:11px;color:var(--ink-3)}
-.chk-go{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
-.chk-go small{font-size:12.5px;color:var(--ink-3)}
-.chk-res{margin-top:14px;background:var(--sheet);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:var(--radius-lg);padding:14px 18px}
-.chk-res h3{margin:0 0 8px;font-size:17px}
-.chk-res table{border-collapse:collapse;width:100%;font-size:14px}
-.chk-res td,.chk-res th{padding:7px 8px;border-bottom:1px solid var(--rule-2);text-align:left}
-.chk-res th{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
-.chk-res .ok{color:var(--ok);font-weight:600}.chk-res .no{color:var(--warning);font-weight:600}
-.chk-res .lk{all:unset;cursor:pointer;color:var(--accent);font-weight:600;text-decoration:underline}
 .chk-skip{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;color:var(--ink-2);cursor:pointer}
 .chk-skip input{accent-color:var(--accent);width:16px;height:16px}
 .chkbadge{font-family:var(--f-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#D2E5F7;border:1px solid rgba(240,107,180,.6);border-radius:3px;padding:1px 6px;margin-left:8px;white-space:nowrap}
-@media (max-width:700px){.chk .chk-box{grid-template-columns:minmax(0,1fr)}.chk-go{align-items:stretch}}
-.hero-cta{display:flex;flex-wrap:wrap;gap:10px 12px;margin:24px 0 18px;align-items:stretch}
-.btn2.lg{padding:9px 20px 10px;font-size:16.5px;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;white-space:normal;max-width:100%}
-.btn2.lg .k{font-size:12.5px;font-weight:500;opacity:.86}
-.btn2.lg small{font-weight:500;font-size:13px;opacity:.86}
-.btn2.q.lg{flex-direction:row;align-items:center;align-self:center;font-size:15px;text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:4px}
-.hero-fig{margin:0;min-width:0}
 .mini{background:#0B1217;border:1px solid #0a1015;border-radius:var(--radius-lg);padding:12px;display:flex;flex-direction:column;gap:8px;color:#DFE7EC;box-shadow:0 22px 44px -28px rgba(11,18,23,.6);user-select:none}
 .mini-bar{display:flex;align-items:center;gap:12px;font-size:12.5px;color:#7B8C96;padding:0 2px;min-height:22px}
 .mini-bar b{font-family:var(--f-display);font-stretch:88%;font-weight:700;font-size:16px;color:#fff}
@@ -110,83 +61,14 @@ body:not(.v-trainer) #trainer{display:none}
 .mini-inst canvas{width:100%;max-width:320px;aspect-ratio:1;display:block}
 .mini-map{min-height:230px;background:#0d151c}
 .mini-map canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.hero-fig figcaption{margin-top:12px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;align-items:baseline;font-size:14px;line-height:1.45;color:var(--ink-2)}
-.hero-fig figcaption b{font-family:var(--f-display);font-stretch:92%;font-weight:680;font-size:16px;color:var(--ink);white-space:nowrap}
-.ifr-head .tag{margin:0}
 
 /* ---- home: sections ---- */
-.sec{margin:52px 0 0;border-top:1px solid var(--ink);padding-top:24px;scroll-margin-top:12px}
-.sech{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 24px;align-items:end;margin:0 0 26px}
-.sech h2{font-family:var(--f-display);font-stretch:88%;font-weight:720;font-size:clamp(26px,2.5vw,34px);letter-spacing:-.01em;line-height:1.1;margin:0;color:var(--ink)}
-.sech p{grid-column:1;margin:0;color:var(--ink-2);font-size:15.5px;line-height:1.5;max-width:66ch}
-.sech .side{grid-column:2;grid-row:1/3;align-self:end;font-size:14px;color:var(--ink-2)}
-.sech .side b{font-family:var(--f-display);font-size:22px;font-weight:700;color:var(--ink)}
 
 /* ---- home: the path of eight ---- */
-.path8{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:38px 24px}
-.pstep{position:relative;display:flex;flex-direction:column;gap:8px;min-width:0;padding-top:36px}
-.pstep::before{content:"";position:absolute;left:0;right:-24px;top:12px;border-top:1px solid var(--rule)}
-.pstep:nth-child(4n)::before{right:0}
-.pn{position:absolute;top:0;left:0;display:flex;align-items:center;z-index:1}
-.pn i{box-sizing:border-box;width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:var(--paper);border:1px solid var(--ink-3);font-family:var(--f-mono);font-size:12.5px;font-weight:500;color:var(--ink-2);font-style:normal}
-.pn i svg{width:13px;height:13px}
-.pstep.done .pn i{background:var(--ok);border-color:var(--ok);color:#fff}
-.pstep.rec .pn i{background:var(--accent);border-color:var(--accent);color:#fff}
-.pn em{font-style:normal;font-size:13px;font-weight:600;color:var(--accent);background:var(--paper);padding:0 10px 0 8px}
-.pth{background:#FBFBF8;border:1px solid var(--rule);border-radius:var(--radius);aspect-ratio:16/10;display:grid;overflow:hidden}
-.pstep.rec .pth{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
-.thumb{width:100%;height:100%;display:block}
-.pstep h3{font-family:var(--f-display);font-stretch:92%;font-weight:680;font-size:19px;line-height:1.2;margin:6px 0 0;color:var(--ink);text-wrap:balance}
-.pstep p{margin:0;font-size:14.5px;line-height:1.45;color:var(--ink-2);flex:1 1 auto}
-.pm{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0;font-size:13px;color:var(--ink-2);padding-top:8px;border-top:1px solid var(--rule-2)}
-.pm .pg{margin-left:auto}
-.pstep .btn2{align-self:flex-start;margin-top:4px;min-width:104px}
-.warm{margin:26px 0 0;font-size:15px;color:var(--ink-2)}
 
 /* ---- home: every exercise, by topic ---- */
-.catq{position:relative;display:flex;align-items:center;width:min(340px,100%)}
-.catq svg{position:absolute;left:11px;width:15px;height:15px;color:var(--ink-3);pointer-events:none}
-.catq input{all:unset;box-sizing:border-box;width:100%;font-size:15px;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 34px 9px 34px;min-height:44px}
-.catq input::placeholder{color:var(--ink-3)}
-.catq input:focus{border-color:var(--ink)}
-.catq button{all:unset;cursor:pointer;position:absolute;right:6px;width:26px;height:26px;display:grid;place-items:center;border-radius:4px;color:var(--ink-2);font-size:18px}
-.catq button:hover{background:var(--rule-2);color:var(--ink)}
-.catq button[hidden]{display:none}
-.groups{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.groups[hidden]{display:none}
-.gcard{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:grid;grid-template-columns:40px minmax(0,1fr);grid-template-rows:auto 1fr auto;gap:2px 12px;padding:16px 16px 12px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);min-width:0}
-.gcard .pic{grid-row:1/3;width:38px;height:38px;color:var(--ink);margin-top:2px}
-.gcard b{font-family:var(--f-display);font-stretch:92%;font-weight:680;font-size:18.5px;line-height:1.2;color:var(--ink);padding-right:18px}
-.gcard .gs{grid-column:2;font-size:13.5px;color:var(--ink-2);line-height:1.4}
-.gcard .gm{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:10px;border-top:1px solid var(--rule-2);font-size:12.5px;color:var(--ink-2);white-space:nowrap}
 .gbar{flex:1 1 auto;min-width:16px;height:4px;background:var(--rule);border-radius:2px;overflow:hidden}
 .gbar i{display:block;height:100%;background:var(--ok)}
-.gcard .chev{position:absolute;right:14px;top:19px;width:12px;height:12px;color:var(--ink-3)}
-.gcard:hover{border-color:var(--ink-3)}
-.gcard:hover .chev{color:var(--ink)}
-.gcard.on{border-color:var(--ink);box-shadow:inset 0 -3px 0 var(--ink)}
-.gcard.on .chev{transform:rotate(180deg);color:var(--ink)}
-.gcard.build{background:transparent;border-style:dashed;border-color:var(--ink-3)}
-.gcard.build:hover{border-color:var(--ink);background:var(--sheet)}
-.gcard.build .go{color:var(--accent);font-weight:600;font-size:13.5px}
-.gpanel{grid-column:1/-1;background:var(--sheet);border:1px solid var(--ink);border-radius:var(--radius-lg);padding:16px 20px 6px;min-width:0;margin:2px 0 6px}
-.gpanel>header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 16px;align-items:center;margin:0 0 10px}
-.gpanel h3{font-family:var(--f-display);font-stretch:88%;font-weight:720;font-size:23px;line-height:1.15;margin:0;color:var(--ink)}
-.gpanel header p{grid-column:1;margin:2px 0 0;color:var(--ink-2);font-size:14.5px}
-.gpanel header .btn2{grid-column:2;grid-row:1/3}
-.rows{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
-.row{display:grid;grid-template-columns:44px minmax(0,1fr) auto auto;gap:4px 18px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule-2)}
-.rows .row:last-child{border-bottom:0}
-.row .pic{width:40px;height:40px;color:var(--ink-2)}
-.row.rec .pic{color:var(--accent)}
-.row .tx b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17.5px;line-height:1.2;color:var(--ink)}
-.row .tx span{display:block;font-size:14px;color:var(--ink-2);line-height:1.45;margin-top:2px;max-width:66ch}
-.row .tx em{font-style:normal;font-size:12.5px;font-weight:600;color:var(--accent);margin-left:8px;white-space:nowrap}
-.row .st{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:118px;font-size:13px;color:var(--ink-2)}
-.row .st .dl{display:inline-flex;align-items:center;white-space:nowrap}
-.row .acts{display:flex;gap:4px}
-.rescount{margin:0 0 10px;font-size:14px;color:var(--ink-2)}
-.cat-empty{padding:18px 0;color:var(--ink-2);margin:0}
 #catList[hidden]{display:none}
 
 /* ---- the builder: a dialog, form on the left, the picture on the right ---- */
@@ -535,21 +417,10 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
 
 /* narrow: stacked, instruments first, the map behind a toggle */
 @media (max-width:1180px){
-  .ifr-head{gap:28px 36px}
-  .groups{grid-template-columns:repeat(3,minmax(0,1fr))}
   .ccard{grid-template-columns:minmax(0,1fr) auto}
   .ccard .hlp{grid-column:1/-1;grid-row:2;flex-direction:row;flex-wrap:wrap;align-items:stretch;gap:4px 6px}
   .ccard .hlp .k{flex:1 0 100%;margin-left:0}
   .ccard .hlp button{flex:1 1 180px}
-}
-@media (max-width:900px){
-  .ifr-head{grid-template-columns:minmax(0,1fr);margin-top:28px}
-  .ifr-head .lead2{max-width:60ch}
-  .path8{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .pstep:nth-child(4n)::before{right:-24px}
-  .pstep:nth-child(2n)::before{right:0}
-  .groups{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .sec{margin-top:48px}
 }
 @media (max-width:900px){
   .bcols{grid-template-columns:minmax(0,1fr)}
@@ -580,34 +451,12 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
   .drawer{position:fixed;left:12px;right:12px;width:auto;bottom:calc(64px + env(safe-area-inset-bottom,0px))}
 }
 @media (max-width:640px){
-  .row{grid-template-columns:36px minmax(0,1fr);gap:6px 12px;padding:14px 0}
-  .row .pic{width:34px;height:34px;align-self:start}
-  .row .st{grid-column:2;flex-direction:row;align-items:center;justify-content:flex-start;gap:6px 14px;flex-wrap:wrap;min-width:0}
-  .row .acts{grid-column:2;justify-content:flex-start}
-  .sech{grid-template-columns:minmax(0,1fr)}
-  .sech .side{grid-column:1;grid-row:auto}
-  .catq{width:100%}
-  .path8{grid-template-columns:minmax(0,1fr);gap:26px}
-  .pstep{display:grid;grid-template-columns:118px minmax(0,1fr);gap:4px 14px;align-items:start}
-  .pstep::before,.pstep:nth-child(n)::before{right:0}
-  .pstep .pth{grid-row:1/5;margin-top:4px}
-  .pstep h3{margin:0;font-size:18px}
-  .pstep h3,.pstep p,.pstep .pm,.pstep .btn2{grid-column:2}
-  .pstep .pm{border-top:0;padding-top:0}
-  .pstep .btn2{justify-self:start}
-  .groups{grid-template-columns:minmax(0,1fr);gap:8px}
-  .gcard{padding:13px 14px 10px}
-  .gpanel{padding:14px 14px 4px}
-  .promise li{grid-template-columns:16px 72px minmax(0,1fr)}
-  .hero-cta .btn2.lg{flex:1 1 100%}
-  .hero-cta .btn2.q.lg{flex:0 1 auto}
   .mini{padding:8px;gap:6px}
   .mini-bar .hidep{display:none}
   .mini-guide{min-height:50px;padding:6px 10px;gap:9px}
   .mini-guide .pill0{display:none}
   .mini-inst{padding:6px}
   .mini-map{min-height:0}
-  .hero-fig figcaption{grid-template-columns:minmax(0,1fr)}
   .blddlg{width:100vw;height:100vh;height:100dvh;margin:0;max-width:100vw}
   .bld{border-radius:0;border:0;max-height:none;height:100%}
   .bh{padding:14px 14px 10px}
@@ -648,30 +497,15 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
 .notes p{margin:0;font-size:14.5px;line-height:1.55;color:var(--ink-2)}
 @media (max-width:900px){.notes{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){.stage *,.done-toast{transition:none!important}}
-@media (pointer:coarse){.btn2{min-height:44px}.lk{display:inline-flex;align-items:center;min-height:44px}}
 /* phones: while flying, the header shrinks to the title, Map and the run controls, so the instrument gets the screen */
 @media (max-width:700px){
   #trainer[data-run="1"] .steps,#trainer[data-run="1"] #helpK,#trainer[data-run="1"] #helpSeg,#trainer[data-run="1"] #setBtn,#trainer[data-run="1"] #keysBtn{display:none!important}
   #trainer[data-run="1"] .sbar{row-gap:6px}
 }
 /* two tracks on one page: the basics (anyone) and the refresher (pilots) */
-.modesw{display:flex;gap:6px;margin:14px 0 4px;flex-wrap:wrap}
-.modesw button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:1px;padding:9px 16px 10px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--sheet);min-width:210px}
-.modesw button b{font-size:15.5px;font-weight:650;color:var(--ink)}
-.modesw button span{font-size:13px;color:var(--ink-2)}
-.modesw button:hover{border-color:var(--ink-3)}
-.modesw button[aria-selected=true]{border-color:var(--ink);background:var(--ink)}
-.modesw button[aria-selected=true] b{color:#fff}.modesw button[aria-selected=true] span{color:#C9D2D8}
-.modesw button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-body.mode-refresh #pathSec,body.mode-refresh #heroFig,body.mode-refresh #promise{display:none}
-body:not(.mode-refresh) #chkSec{display:none}
-body.mode-refresh #chkSec{border-top:0;margin-top:12px;padding-top:0}
 .chk-skip{display:none!important}
 body.mode-refresh .chk-go{display:none}
 body.mode-refresh .chk .chk-box{grid-template-columns:minmax(0,1fr)}
-@media (max-width:560px){.modesw button{min-width:0;flex:1 1 140px;padding:8px 12px}}
-.hero-img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;border-radius:var(--radius-lg);box-shadow:0 26px 50px -30px rgba(11,18,23,.55)}
-.hero-fig .mini[hidden]{display:none}
 body.mode-refresh #heroFig{display:block!important}
 </style>
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
@@ -680,7 +514,7 @@ body.mode-refresh #heroFig{display:block!important}
 <script src="site.js?v=142"></script>
 <main id="main">
 <div class="page">
-  <header class="lhead ifr-head">
+  <header class="lhead th-head ifr-head">
     <div class="brand">
       <div class="eyebrow">NORDAP · Training</div>
       <h1>IFR trainer</h1>
@@ -688,7 +522,6 @@ body.mode-refresh #heroFig{display:block!important}
       <p class="lead2" id="lead">Learn one instrument procedure at a time. An instructor on screen tells you the next step, and the replay shows your first mistake.</p>
       <ol class="promise" id="promise"></ol>
       <div class="hero-cta" id="heroCta"></div>
-      <span class="tag caution" id="disc">Training aid · not for navigation</span>
     </div>
     <figure class="hero-fig" id="heroFig">
       <img class="hero-img" src="img/training/ifr-hero-1600.webp?v=2" srcset="img/training/ifr-hero-900.webp?v=2 900w, img/training/ifr-hero-1600.webp?v=2 1600w" sizes="(max-width:900px) calc(100vw - 48px), 620px" width="1600" height="1000" alt="View from the cockpit just above a layer of cloud at dusk, the sun low on the horizon and the attitude display glowing on the panel." data-alt-no="Utsikt fra cockpit like over et skylag i skumringen, med solen lavt over horisonten og attitydeskjermen opplyst i panelet.">
@@ -799,6 +632,7 @@ body.mode-refresh #heroFig{display:block!important}
 <script src="navgauges.js?v=5"></script>
 <script src="ifrcore.js?v=4"></script>
 <script src="glossary.js?v=4"></script>
-<script src="ifr.js?v=13"></script>
+<script src="trainhome.js?v=1"></script>
+<script src="ifr.js?v=14"></script>
 </body>
 </html>

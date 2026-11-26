@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Radio · NORDAP</title>
+<title>Radio trainer · NORDAP</title>
 <meta name="description" content="Radio trainer with EASA and ICAO phraseology: talk to the controller by voice or keyboard, VFR and IFR from gate to gate, emergencies and basics. Every readback is checked element by element, with the rule behind it.">
 <link rel="canonical" href="https://nordap.eu/radio-drills">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NORDAP">
-<meta property="og:title" content="Radio drills · NORDAP">
+<meta property="og:title" content="Radio trainer · NORDAP">
 <meta property="og:description" content="Radio trainer with EASA and ICAO phraseology: talk to the controller by voice or keyboard, VFR and IFR from gate to gate, emergencies and basics. Every readback is checked element by element, with the rule behind it.">
 <meta property="og:url" content="https://nordap.eu/radio-drills">
 <meta property="og:image" content="https://nordap.eu/img/og-nordap.jpg">
@@ -17,6 +17,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="lab.css?v=16">
 <link rel="stylesheet" href="site.css?v=41">
+<link rel="stylesheet" href="trainhome.css?v=1">
 <link rel="stylesheet" href="train.css?v=4">
 <style>
 /* ---- radio trainer ---- */
@@ -34,17 +35,7 @@
 .alc .go{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .alc .go p{margin:0;font-size:14px;color:var(--ink-2);flex:1 1 260px}
 @media (max-width:640px){.alc .row{grid-template-columns:minmax(0,1fr)}}
-.rhub{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:18px 0 0}
-.rh{display:flex;flex-direction:column;gap:5px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg,6px);padding:14px 15px;color:var(--ink);text-decoration:none;min-height:44px}
-.rh:hover{border-color:var(--accent)}.rh:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.rh b{font-size:16px}.rh span{font-size:13.5px;color:var(--ink-2);line-height:1.4;flex:1}.rh em{font-style:normal;font-size:13.5px;font-weight:600;color:var(--accent)}
-.rh em::after{content:" →"}
-@media (max-width:900px){.rhub{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:480px){.rhub{grid-template-columns:minmax(0,1fr)}.rh span{display:none}.rh{flex-direction:row;align-items:center;justify-content:space-between}}
 /* usability round 2 */
-.goal .prog{display:block;margin-top:6px;font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2)}
-.goal.next .prog,.goal:first-child .prog,.goal.next .nextl{color:inherit;opacity:.85}
-.goal .nextl{display:block;margin-top:6px;font-size:12.5px}
 .sc .lv{position:static!important;order:-1;font-family:var(--f-mono);font-size:11px;letter-spacing:.02em}
 .rbtns .btn{max-width:100%;white-space:normal}
 #v-deb,#trainer{scroll-margin-top:84px}
@@ -57,49 +48,14 @@
 .rset input[type=range]{min-height:44px}
 .rs-lamps .tx{color:#a9b4bf}
 @media (max-width:640px){
-  body.rt-live .snav,body.rt-live .rhub{display:none}
+  body.rt-live .snav{display:none}
   .rs-top{position:sticky;top:0;z-index:25;background:var(--paper);padding:8px 0}
   .rs:not(.hasmap) .log{height:36vh!important;min-height:200px!important}
 }
-.rt-qrow{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.rt-qrow .lnk{font-size:14px}
-.rt-path-note{margin:-6px 0 0;font-size:14.5px;color:var(--ink-2)}
-.goals.path .goal{position:relative}
-.goal .stepn{position:absolute;right:14px;top:14px;font-family:var(--f-mono);font-size:12px;color:var(--ink-2)}
-.goal .here{display:inline-block;margin-top:8px;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.04em;color:#fff;background:var(--accent);border-radius:3px;padding:2px 7px}
-.goal .tried{display:inline-block;margin-top:8px;font-family:var(--f-mono);font-size:11.5px;color:var(--ok)}
-.goal.next{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
-.quickrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg,6px);padding:12px 16px}
-.quickrow b{font-size:15px}.quickrow span{font-size:14px;color:var(--ink-2);flex:1 1 220px}
-.quickrow em{font-style:normal;font-family:var(--f-mono);font-size:11.5px;color:#0d1319;background:#29e05a;border-radius:3px;padding:2px 7px}
-.rt-guide{border:1px solid var(--rule);background:var(--sheet);border-radius:var(--radius-lg,6px);padding:18px 18px 16px}
-.rt-guide h3{margin:0 0 12px;font-size:18px}
-.rt-guide ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.rt-guide li{display:flex;gap:10px;align-items:flex-start}
-.rt-guide li i{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-style:normal;font-weight:700;font-size:13px;display:grid;place-items:center}
-.rt-guide li b{display:block;font-size:15px;margin-bottom:2px}.rt-guide li span{font-size:13.5px;color:var(--ink-2);line-height:1.45}
-.rt-guide .keys{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.rt-guide .k{font-family:var(--f-mono);font-size:11.5px;border-radius:3px;padding:1px 6px;border:1px solid var(--rule)}
-.rt-guide .k.ok{color:var(--ok)}.rt-guide .k.mid{color:#b7791f}.rt-guide .k.bad{color:#c0392b}
-.rt-guide .gfoot{display:flex;gap:12px;align-items:center;margin-top:14px;flex-wrap:wrap}
-.rt-guide .gfoot span{font-size:13px;color:var(--ink-2)}
-@media (max-width:900px){.rt-guide ol{grid-template-columns:minmax(0,1fr)}}
 .coach{margin-top:6px;font-size:13px;color:#9fc8ff}
 .rt-turn .tk.listen b{color:#9fc8ff}
 .rs .pttrow .txcol .btn:disabled{opacity:.45;cursor:default}
 .rt-q{font-family:var(--f-display);font-stretch:88%;font-weight:700;font-size:clamp(24px,2.3vw,30px);margin:0;line-height:1.15;color:var(--ink)}
-.goals{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
-@media (max-width:1180px){.goals{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:640px){.goals{grid-template-columns:minmax(0,1fr)}}
-.goal{display:flex;flex-direction:column;align-items:flex-start;gap:10px;text-align:left;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg,6px);padding:16px 16px 18px;cursor:pointer;color:var(--ink);min-height:150px;transition:border-color .15s,box-shadow .15s}
-.goal:hover,.goal:focus-visible{border-color:var(--ink);box-shadow:0 2px 0 var(--ink)}
-.goal:first-child{background:var(--instrument);border-color:var(--instrument);color:var(--instrument-ink)}
-.goal:first-child small{color:#9fb0bb}.goal:first-child svg{stroke:#29e05a}
-.goal svg{width:26px;height:26px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.goal b{display:block;font-family:var(--f-display);font-stretch:90%;font-weight:700;font-size:19px;line-height:1.2}
-.goal small{display:block;font-size:13.5px;color:var(--ink-2);line-height:1.4;margin-top:4px}
-.goal em{display:inline-block;margin-top:8px;font-style:normal;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.04em;color:#0d1319;background:#29e05a;border-radius:3px;padding:2px 7px}
-@media (max-width:640px){.goal{min-height:0;flex-direction:row;align-items:center;padding:14px}}
 .lvlrow{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
 .lvlrow>span{font-size:13px;font-weight:600;color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em;font-family:var(--f-mono)}
 .lvlrow .seg{min-width:min(420px,100%)}
@@ -224,7 +180,6 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
 .srcs{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.5}
 .srcs small{display:block;color:var(--ink-2);font-size:12.5px}
 .td{display:inline-block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--caution-ink);border:1px solid #EBD3A6;background:var(--caution-wash);border-radius:3px;padding:1px 6px;vertical-align:middle}
-@media (prefers-reduced-motion:reduce){.goal{transition:none}}
 
 /* ===== session: one radio deck + a flight strip (rebuilt Nov 2026) ===== */
 .rs{gap:12px}
@@ -335,35 +290,74 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
   .rs .pttrow textarea{height:52px!important}
   .rs .rt-turn .inc{gap:4px;font-size:12px}.rs .rt-turn .inc .ichip{padding:1px 6px}
 }
+
+/* the home (shared with the IFR trainer: trainhome.css) and the trainer itself: one at a time */
+body:not(.rt-in) #trainer{display:none}
+body.rt-in .rt-head,body.rt-in #home,body.rt-in .snav{display:none}
+#trainer{margin-top:28px}
+.rt-full{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+@media (max-width:760px){.rt-full{grid-template-columns:minmax(0,1fr)}}
+#setSec .lvlrow{margin:0 0 14px}
+#setSec .homestats{margin:0 0 14px}
+#ai{margin-top:16px}
+#ai .bar2{display:flex;justify-content:space-between;align-items:center;gap:12px}
+#ai h3{margin:0;font-size:19px}
+.xcard .pre{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.xcard .pre button{all:unset;box-sizing:border-box;cursor:pointer;font-size:13.5px;padding:6px 11px;border:1px solid var(--rule);border-radius:999px;background:var(--paper,#fff);color:var(--ink)}
+.xcard .pre button:hover{border-color:var(--ink)}
+.xcard .pre button:focus-visible{outline:2px solid var(--focus,var(--info));outline-offset:2px}
+.xcard.ai{border-style:dashed}
 </style>
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
-<body data-title="Radio">
+<body data-title="Radio trainer">
 <script src="site.js?v=142"></script>
 <div class="page">
-  <header class="lhead">
+  <header class="lhead th-head rt-head">
     <div class="brand">
       <div class="eyebrow">NORDAP · Training</div>
-      <h1>Radio</h1>
-      <p>Everything for the radio in one place: practise your calls with a controller, fly a whole trip, look up the phraseology and test yourself. EASA SERA, by voice or keyboard, free.</p>
+      <h1>Radio trainer</h1>
+      <div class="modesw" id="modeSw" aria-label="Who is it for"></div>
+      <p class="lead2" id="lead">Talk to a controller by voice or keyboard, one call at a time. Every call is checked item by item against EASA SERA, with the right readback and the rule behind it.</p>
+      <ol class="promise" id="promise"></ol>
+      <div class="hero-cta" id="heroCta"></div>
     </div>
+    <figure class="hero-fig" id="heroFig">
+      <img class="hero-img" src="img/training/hub3-radio-1200.webp?v=2" srcset="img/training/hub3-radio-640.webp?v=2 640w, img/training/hub3-radio-1200.webp?v=2 1200w" sizes="(max-width:900px) calc(100vw - 48px), 620px" width="1200" height="840" alt="A control tower at sunset, the controllers silhouetted behind the glass.">
+      <figcaption id="figCap"><b>On frequency</b><span>The controller answers each call like real ATC, by voice or in text. Read back what must be read back, and it moves on.</span></figcaption>
+    </figure>
     <div class="hright"></div>
   </header>
-  <div class="rhub" aria-label="Radio">
-    <a class="rh" href="#trainer"><b>Practise calls</b><span>Lessons from the phonetic alphabet to IFR, emergencies and A320 crew, with a live airport.</span><em>Start</em></a>
-    <a class="rh" href="radio.html"><b>Fly a whole trip</b><span>DA42 gate to gate: flows, checklists, briefings and every radio call in the right order.</span><em>Open</em></a>
-    <a class="rh" href="#ref"><b>Look it up</b><span>Phraseology, what to read back, conditional clearances and the Norwegian specifics.</span><em>Read</em></a>
-    <a class="rh" href="#quiz"><b>Test yourself</b><span>A short test on the rules, with the reason behind each answer.</span><em>Take the test</em></a>
-  </div>
-  <nav class="snav" aria-label="Sections"><a href="#trainer">Trainer</a><a href="#ref">Phraseology</a><a href="#norway">Norway</a><a href="#quiz">Test yourself</a><a href="#sources">Sources</a></nav>
 
-  <section class="card" id="trainer" data-ai aria-label="Radio trainer">
-    <div class="rt-wrap" id="v-home">
-      <div class="rt-guide" id="guide" hidden></div>
-      <div class="rt-qrow"><h2 class="rt-q">What do you want to practise?</h2><button class="lnk" id="guideBtn" type="button">How it works</button></div>
-      <p class="rt-path-note" id="pathNote">Work through it in order, or jump to what you need.</p>
-      <div class="goals path" id="goals"></div>
-      <div class="quickrow" id="quickRow"></div>
+  <section class="home" id="home" aria-label="What you can practise">
+    <section class="sec chk" id="chkSec" aria-labelledby="chkH">
+      <div class="sech"><h2 id="chkH">Radio refresher check</h2><p id="chkSub"></p></div>
+      <div class="chk-box"><ol class="chk-list" id="chkList"></ol><div class="chk-go" id="chkGo"></div></div>
+      <div class="rt-full" id="fullRow"></div>
+    </section>
+    <section class="sec" id="pathSec" aria-labelledby="pathH">
+      <div class="sech"><h2 id="pathH">Start here</h2><p id="pathSub"></p><div class="side" id="pathProg"></div></div>
+      <ol class="path8 c5" id="path"></ol>
+      <p class="warm" id="warm"></p>
+    </section>
+    <section class="sec" id="all" aria-labelledby="allH">
+      <div class="sech"><h2 id="allH">All lessons</h2><p id="allSub"></p></div>
+      <div class="groups g3" id="groups"></div>
+    </section>
+    <section class="sec" id="more" aria-labelledby="moreH">
+      <div class="sech"><h2 id="moreH">More ways to practise</h2><p id="moreSub"></p></div>
+      <div class="xgrid" id="xgrid"></div>
+    </section>
+    <section class="card" id="ai" hidden>
+      <div class="bar2"><h3 id="aiH">Open practice with the AI controller</h3><button class="lnkb" id="aiClose" type="button">Close</button></div>
+      <p class="note" id="aiLead"></p>
+      <div class="aiset"><label><span id="aiSitL">Situation</span><input id="aiSit" placeholder="e.g. VFR from Skarvik to NORDAP, 2500 ft, 12 NM south"></label></div>
+      <div class="radio"><div class="log" id="aiLog" style="height:300px"></div>
+        <div class="inrow"><textarea id="aiSay" placeholder="Type your first call…" aria-label="Your transmission to the AI controller"></textarea></div>
+        <div class="rbtns"><button class="btn pri" id="aiSend" type="button">Transmit</button><button class="btn" id="aiReset" type="button">New session</button><span class="note" id="aiNote"></span></div></div>
+    </section>
+    <section class="sec" id="setSec" aria-labelledby="setH">
+      <div class="sech"><h2 id="setH">Level and voice</h2><p id="setSub"></p></div>
       <div class="lvlrow"><span>Level</span><div id="lvlSeg"></div><p id="lvlTip"></p></div>
       <div class="homestats" id="homeStats"></div>
       <details class="rset">
@@ -380,8 +374,10 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
           <div><button class="btn" id="setTest" type="button">Test the controller voice</button><p class="note" id="ttsNote"></p></div>
         </div>
       </details>
-    </div>
+    </section>
+  </section>
 
+  <section class="card" id="trainer" data-ai aria-label="Radio trainer">
     <div class="rt-wrap" id="v-pick" hidden>
       <div class="bar2"><button class="lnkb" id="pickBack" type="button">← Back</button><h3 id="pickT"></h3></div>
       <div class="sclist" id="pickL"></div>
@@ -433,15 +429,7 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
     </div>
   </section>
 
-  <section class="card" id="ai" hidden>
-    <div class="eyebrow">Optional · AI</div>
-    <h2>Free talk with an AI controller</h2>
-    <p class="lead">Fly any situation you like. The AI answers like a controller and comments on each call. The trainer above works without it.</p>
-    <div class="aiset"><label>Your situation (optional)<input id="aiSit" placeholder="e.g. VFR from Skarvik to NORDAP, 2500 ft, 12 NM south"></label></div>
-    <div class="radio"><div class="log" id="aiLog" style="height:300px"></div>
-      <div class="inrow"><textarea id="aiSay" placeholder="Type your first call…" aria-label="Your transmission to the AI controller"></textarea></div>
-      <div class="rbtns"><button class="btn pri" id="aiSend" type="button">Transmit</button><button class="btn" id="aiReset" type="button">New session</button><span class="note" id="aiNote"></span></div></div>
-  </section>
+  <nav class="snav" aria-label="Reference"><a href="#ref">Phraseology</a><a href="#norway">Norway</a><a href="#quiz">Test yourself</a><a href="#sources">Sources</a></nav>
 
   <section class="card" id="ref">
     <div class="eyebrow">Reference</div>
@@ -524,7 +512,7 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
 'use strict';
 const {el,quiz,shuffle}=LAB;
 LAB.add({},{
- 'Radio Drills':'Radiodriller','Beginner':'Nybegynner','Intermediate':'Middels','Check-ready':'Klar for sjekk',
+ 'Radio Drills':'Radiodriller','Radio trainer':'Radiotrener','Radio refresher check':'Radio-oppfriskningssjekk','Start here':'Start her','All lessons':'Alle leksjonene','More ways to practise':'Flere måter å øve på','Level and voice':'Nivå og stemme','Open practice with the AI controller':'Åpen trening med AI-flygeleder','Close':'Lukk','Situation':'Situasjon','On frequency':'På frekvensen','Who is it for':'Hvem er det for','Beginner':'Nybegynner','Intermediate':'Middels','Check-ready':'Klar for sjekk',
  'NORDAP · Training':'NORDAP · Trening','Radio drills':'Radiodriller','Radio':'Radio',
  'Everything for the radio in one place: practise your calls with a controller, fly a whole trip, look up the phraseology and test yourself. EASA SERA, by voice or keyboard, free.':'Alt om radio på ett sted: øv på oppkallene dine med en flygeleder, fly en hel tur, slå opp fraseologien og test deg selv. EASA SERA, med stemme eller tastatur, gratis.',
  'Practise calls':'Øv på oppkall','Lessons from the phonetic alphabet to IFR, emergencies and A320 crew, with a live airport.':'Leksjoner fra det fonetiske alfabetet til IFR, nødsituasjoner og A320-besetning, med live flyplass.','Start':'Start',
@@ -605,6 +593,7 @@ el('alpha').innerHTML=AL.map(a=>`<div><b>${a[0]}</b>${a[1]}<small>${a[2]}</small
 LAB.start('radio');
 })();
 </script>
-<script src="radiotrainer.js?v=20"></script>
+<script src="trainhome.js?v=1"></script>
+<script src="radiotrainer.js?v=21"></script>
 </body>
 </html>

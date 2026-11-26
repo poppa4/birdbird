@@ -156,42 +156,167 @@ function setTx(on){ const t=$('#txi'), b=el('ptt'); if(t) t.classList.toggle('on
 
 /* ---------------- views ---------------- */
 const VIEWS=['home','pick','sess','deb'];
-function show(v){ VIEWS.forEach(x=>{ const e=el('v-'+x); if(e) e.hidden=x!==v; }); if(v!=='sess'){ hush(); if(MAPON&&window.NMAP&&v!=='deb') NMAP.stop(); } document.body.classList.toggle('rt-live',v==='sess'); }
+function goHome(){ drawHome(); show('home'); window.scrollTo({top:0,behavior:'auto'}); }
+function show(v){ VIEWS.forEach(x=>{ const e=el('v-'+x); if(e) e.hidden=x!==v; }); if(v!=='sess'){ hush(); if(MAPON&&window.NMAP&&v!=='deb') NMAP.stop(); } document.body.classList.toggle('rt-live',v==='sess'); document.body.classList.toggle('rt-in',v!=='home'); }
 let ses=null, cur=null, group='vfr';
 
-function drawHome(){
-  const db=jget(K.srs,{}); const pool=S.QUICK_POOL(); const due=R.SRS.due(db).filter(id=>pool.includes(id));
-  /* the learning path: basics → VFR → IFR → emergencies → airline; "Start here" on the first one not tried yet */
-  const cnt=k=>{ const l=S.ALL.filter(s=>s.group===k&&(k!=='airline'||s.map)); return [l.filter(s=>best(s.k)>0).length,l.length]; };
-  const tried=k=>{ const [a,b]=cnt(k); return a>=Math.ceil(b/2); };
-  const path=Object.keys(GROUPS).filter(k=>k!=='quick'); const next=path.find(k=>!tried(k));
-  el('goals').innerHTML=path.map((k,i)=>{ const g=GROUPS[k], t=tried(k);
-    return `<button class="goal${k===next?' next':''}" data-g="${k}"><span class="stepn">${i+1}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${g.ic}"/></svg><span><b>${esc(L(g.t))}</b><small>${esc(L(g.d))}</small>${k===next?`<span class="here">${L({en:cnt(k)[0]?'Continue here':'Start here',no:cnt(k)[0]?'Fortsett her':'Start her'})}</span>${(()=>{ const n=lessons().find(x=>x.group===k&&!best(x.k)); return n?`<span class="nextl">${L({en:'Next',no:'Neste'})}: ${esc(L(n.t))}</span>`:''; })()}`:''}${cnt(k)[0]?`<span class="prog">${cnt(k)[0]}/${cnt(k)[1]} ${L({en:'done',no:'tatt'})}</span>`:''}</span></button>`; }).join('');
-  const anyTried=path.some(tried);
-  el('quickRow').innerHTML=`<b>${esc(L(GROUPS.quick.t))}</b><span>${esc(L(anyTried?{en:'Back for two minutes? Six readbacks, your weak ones first.',no:'Tilbake for to minutter? Seks tilbakelesinger, de svake først.'}:{en:'Two minutes, six readbacks from all over the trainer. Good once you have done a few lessons.',no:'To minutter, seks tilbakelesinger fra hele treneren. Fint når du har tatt noen leksjoner.'}))}</span>${due.length?`<em>${due.length} ${L({en:'due for review',no:'til repetisjon'})}</em>`:''}<button class="btn${anyTried?' pri':''}" id="quickGo" type="button">${L({en:'Start quick drill',no:'Start kjapp drill'})}</button>`;
-  el('quickGo').onclick=()=>startScenario('quick');
-  drawGuide();
+/* ---------------- home: the same system as the IFR trainer (trainhome.js, trainhome.css) ----------------
+   head (track switch, three steps, Start · Guide me · All lessons) → refresher check or Start here → all lessons →
+   more ways to practise (quick drill, whole trip, open practice with the AI) → level and voice */
+const PATH=['basic','vfr','ifr','emerg','airline'];
+let MODE=(()=>{ const q=new URLSearchParams(location.search).get('m'); return q==='refresh'||q==='basics'? q : (P.track==='refresh'?'refresh':'basics'); })();
+document.body.classList.toggle('mode-refresh',MODE==='refresh');
+const inGroup=k=>S.ALL.filter(s=>s.group===k&&(k!=='airline'||s.map)).sort((a,b)=>(a.full?1:0)-(b.full?1:0)||a.lvl-b.lvl);
+const cnt=k=>{ const l=inGroup(k); return [l.filter(s=>best(s.k)>0).length,l.length]; };
+const tried=k=>{ const [a,b]=cnt(k); return b>0&&a>=Math.ceil(b/2); };
+const anyDone=()=>S.ALL.some(s=>best(s.k)>0);
+const recGroup=()=>PATH.find(k=>!tried(k))||'vfr';
+const nextIn=k=>{ const l=inGroup(k); return l.find(x=>!best(x.k))||l[0]; };
+const LVN=[null,tr('Easy','Lett'),tr('Medium','Middels'),tr('Hard','Krevende')];
+const difH=d=>`<span class="dif" aria-hidden="true"><i class="on"></i><i class="${d>1?'on':''}"></i><i class="${d>2?'on':''}"></i></span>`;
+function openGroup(k){ if(k==='airline'){ group='airline'; drawPick(); show('pick'); el('pickBack').focus(); return; } startScenario(nextIn(k)); }
+function setMode(m,user){ MODE=m; P.track=m;
+  if(user){ if(m==='refresh'&&P.level==='beginner') P.level='intermediate'; if(m==='basics'&&P.level!=='beginner'&&!anyDone()) P.level='beginner'; }
+  saveP(); const u=new URL(location.href); u.searchParams.set('m',m); history.replaceState(null,'',u.pathname+u.search+u.hash);
+  document.body.classList.toggle('mode-refresh',m==='refresh'); drawHome(); }
+function setLevel(v){ P.level=v; saveP(); if(LVSEG) LVSEG.set(v); el('lvlTip').textContent=L(LEVELS[v].d); }
+let LVSEG=null;
+
+/* small pictures for the five parts, drawn like the IFR exercise diagrams */
+function thumbR(k){ const I='var(--ink)', A='var(--accent)', D='var(--ink-3)', F='font-family="IBM Plex Mono,monospace"';
+  const ac=(x,y,r)=>`<g transform="translate(${x} ${y}) rotate(${r}) scale(.9)"><path d="M0-8 1.4-3.6V-1.4L8 1.8V3.2L1.4 2.2 1 5.4 3.6 6.8V7.9L0 7.2-3.6 7.9V6.8L-1 5.4-1.4 2.2-8 3.2V1.8L-1.4-1.4V-3.6Z" fill="${I}"/></g>`;
+  let b='';
+  if(k==='basic') b=`<text x="20" y="44" ${F} font-size="20" font-weight="600" fill="${I}">ALFA</text><text x="20" y="70" ${F} font-size="20" font-weight="600" fill="${D}">BRAVO</text><path d="M96 56c4-14 8 14 12 0s8 14 12 0 8 14 12 0 8 14 12 0" fill="none" stroke="${A}" stroke-width="2" stroke-linecap="round"/><text x="98" y="86" ${F} font-size="11" fill="${D}">1-1-8·3</text>`;
+  if(k==='vfr') b=`<rect x="40" y="47" width="80" height="7" fill="${D}" opacity=".45"/><text x="44" y="68" ${F} font-size="9" fill="${D}">RWY 36</text><rect x="24" y="26" width="112" height="48" rx="12" fill="none" stroke="${A}" stroke-width="2" stroke-dasharray="1 0"/>${ac(80,26,90)}<text x="80" y="18" ${F} font-size="10" fill="${D}" text-anchor="middle">downwind</text><text x="80" y="90" ${F} font-size="10" fill="${D}" text-anchor="middle">final</text>`;
+  if(k==='ifr') b=`<path d="M18 80 64 46 108 46" fill="none" stroke="${A}" stroke-width="2"/><path d="M108 46H134A10 10 0 0 0 134 26H108A10 10 0 0 0 108 46" fill="none" stroke="${I}" stroke-width="1.6"/><path d="M108 40l6 6-6 6-6-6z" fill="var(--paper,#fff)" stroke="${I}" stroke-width="1.4"/>${ac(46,59,54)}<text x="12" y="92" ${F} font-size="10" fill="${D}">SID</text><text x="148" y="66" ${F} font-size="10" fill="${D}" text-anchor="end">HOLD FL90</text>`;
+  if(k==='emerg') b=`<rect x="22" y="30" width="62" height="34" rx="3" fill="#0F171D"/><text x="53" y="54" ${F} font-size="18" font-weight="600" fill="#F5C94A" text-anchor="middle">7700</text><text x="96" y="42" ${F} font-size="12" font-weight="600" fill="${A}">MAYDAY</text><text x="96" y="58" ${F} font-size="12" font-weight="600" fill="${D}">PAN PAN</text><text x="22" y="84" ${F} font-size="10" fill="${D}">7600 · radio failure</text>`;
+  if(k==='airline') b=`<rect x="18" y="34" width="38" height="28" rx="3" fill="none" stroke="${I}" stroke-width="1.6"/><text x="37" y="53" ${F} font-size="13" font-weight="600" fill="${I}" text-anchor="middle">PF</text><rect x="66" y="34" width="38" height="28" rx="3" fill="${I}"/><text x="85" y="53" ${F} font-size="13" font-weight="600" fill="var(--paper,#fff)" text-anchor="middle">PM</text><path d="M108 48h22" stroke="${A}" stroke-width="2"/><path d="M126 43l6 5-6 5" fill="none" stroke="${A}" stroke-width="2"/><text x="134" y="52" ${F} font-size="11" fill="${D}">ATC</text><text x="18" y="84" ${F} font-size="10" fill="${D}">A320 · who says what</text>`;
+  return `<svg class="thumb" viewBox="0 0 160 100" role="img" aria-label="${esc(L(GROUPS[k].t))}">${b}</svg>`; }
+const PICS=k=>`<svg class="pic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="${(GROUPS[k]||GROUPS.quick).ic}"/></svg>`;
+
+function drawHero(){
+  const last=P.last&&S.byKey(P.last)?S.byKey(P.last):null, rg=recGroup(), rn=PATH.indexOf(rg)+1, rl=rg==='airline'?null:nextIn(rg);
+  TRAINHOME.track(el('modeSw'),MODE,{basics:tr('New to the radio, or still learning','Ny på radio, eller lærer fortsatt'),refresh:tr('You fly, and want to stay sharp','Du flyr og vil holde deg skarp')},m=>setMode(m,true));
+  if(MODE==='refresh'){
+    el('lead').textContent=L({en:'For pilots who want to stay sharp. Fly the readbacks at check pace with the controller text hidden, then a whole flight, and see exactly which items slip.',no:'For piloter som vil holde seg skarpe. Ta tilbakelesingene i sjekktempo med flygelederens tekst skjult, så en hel tur, og se nøyaktig hvilke elementer som glipper.'});
+    el('heroCta').innerHTML=`<button class="btn2 pri lg" type="button" id="hcCheck">${L({en:'Start the refresher check',no:'Start oppfriskningssjekken'})}</button>`+(last?`<button class="btn2 lg" type="button" id="hcCont"><span class="k">${L({en:'Continue',no:'Fortsett'})}</span>${esc(L(last.t))}</button>`:'')+TRAINHOME.guideBtn()+`<a class="btn2 q lg" href="#all" id="hcAll">${L({en:'Practise one lesson',no:'Øv på én leksjon'})}</a>`;
+    el('hcCheck').onclick=startCheck;
+  } else {
+    el('lead').textContent=L({en:'Talk to a controller by voice or keyboard, one call at a time. Start with the phonetic alphabet and work up to a whole IFR flight. Every call is checked item by item against EASA SERA.',no:'Snakk med en flygeleder med stemme eller tastatur, ett oppkall om gangen. Start med det fonetiske alfabetet og jobb deg opp til en hel IFR-tur. Hvert oppkall sjekkes element for element mot EASA SERA.'});
+    TRAINHOME.promise(el('promise'),[[tr('Pick it','Velg'),tr('A short lesson of a few calls, in the order an instructor would teach.','En kort leksjon på noen få oppkall, i den rekkefølgen en instruktør ville lært bort.')],[tr('Say it','Si det'),tr('Hold the talk button and speak, or type. Both are graded the same.','Hold snakkeknappen og snakk, eller skriv. Begge vurderes likt.')],[tr('See it','Se det'),tr('Every item marked right or missing, with the rule behind it.','Hvert element merket riktig eller manglende, med regelen bak.')]]);
+    const first=!anyDone();
+    el('heroCta').innerHTML=(last?`<button class="btn2 pri lg" type="button" id="hcCont"><span class="k">${L({en:'Continue',no:'Fortsett'})}</span>${esc(L(last.t))}</button>`:'')+
+      (!last||!rl||last.k!==rl.k?`<button class="btn2 ${last?'':'pri'} lg" type="button" id="hcNext"><span class="k">${first?L({en:'Start with step 1',no:'Start med steg 1'}):L({en:`Next on the path: step ${rn}`,no:`Neste på veien: steg ${rn}`})}</span>${esc(rl?L(rl.t):L(GROUPS[rg].t))}</button>`:'')+
+      TRAINHOME.guideBtn()+`<a class="btn2 q lg" href="#all" id="hcAll">${L({en:'All lessons',no:'Alle leksjonene'})}</a>`;
+    if(el('hcNext')) el('hcNext').onclick=()=>openGroup(rg);
+  }
+  if(el('hcCont')) el('hcCont').onclick=()=>startScenario(last);
+  el('thGuide').onclick=openGuide;
+  el('hcAll').onclick=e=>{ e.preventDefault(); el('all').scrollIntoView({behavior:'smooth',block:'start'}); };
+  el('figCap').innerHTML=`<b>${L({en:'On frequency',no:'På frekvensen'})}</b><span>${L({en:'The controller answers each call like real ATC, by voice or in text. Read back what must be read back, and the flight moves on.',no:'Flygelederen svarer på hvert oppkall som ekte ATC, med stemme eller tekst. Les tilbake det som skal leses tilbake, så går turen videre.'})}</span>`;
+}
+function drawCheck(){
+  el('chkSub').textContent=L({en:'Six readbacks in a row from all over the VFR and IFR lessons, at Check-ready level: normal pace, more static, the controller text hidden until you answer, strict readbacks. The items you got wrong before come first. About five minutes, then a whole flight if you want more.',no:'Seks tilbakelesinger etter hverandre fra hele VFR- og IFR-delen, på nivået Klar for sjekk: normalt tempo, mer støy, flygelederens tekst skjult til du svarer, strenge tilbakelesinger. Det du har bommet på før, kommer først. Omtrent fem minutter, og så en hel tur hvis du vil ha mer.'});
+  el('chkList').innerHTML=[tr('Taxi and runway','Taksing og bane'),tr('Line-up and take-off','Oppstilling og avgang'),tr('Zone, FIS and AFIS','Sone, FIS og AFIS'),tr('IFR clearance and SID','IFR-klarering og SID'),tr('Levels and headings','Nivåer og kurser'),tr('Holds and approach','Venting og innflyging')].map(t=>`<li>${esc(L(t))}</li>`).join('');
+  el('chkGo').innerHTML=`<button class="btn2 pri lg" type="button" id="chkStart">${L({en:'Start the check',no:'Start sjekken'})}</button><small>${L({en:'You can stop at any time.',no:'Du kan stoppe når som helst.'})}</small>`;
+  el('chkStart').onclick=startCheck;
+  el('fullRow').innerHTML=['vfrfull','ifrfull'].map(k=>{ const sc=S.byKey(k), b=best(k); return `<div class="xcard"><span class="k">${L({en:'Then a whole flight',no:'Så en hel tur'})}</span><h3>${esc(L(sc.t))}</h3><p>${esc(L(sc.d))}</p><button class="btn2" type="button" data-full="${k}">${L({en:'Start',no:'Start'})}${b?` · ${L({en:'best',no:'beste'})} ${b} %`:''}</button></div>`; }).join('');
+  el('fullRow').querySelectorAll('[data-full]').forEach(b=>b.onclick=()=>startScenario(S.byKey(b.dataset.full)));
+}
+function startCheck(){ startScenario('quick',{level:'check',title:tr('Radio refresher check','Radio-oppfriskningssjekk')}); }
+function drawPath(){
+  const rg=recGroup(), done=PATH.filter(tried).length;
+  el('pathSub').textContent=L({en:'Five parts, in the order an instructor would teach them. Each lesson is a short session of a few calls with a real controller.',no:'Fem deler, i den rekkefølgen en instruktør ville lært dem bort. Hver leksjon er en kort økt på noen få oppkall med en ekte flygeleder.'});
+  el('pathProg').innerHTML=done?`<b>${done}</b> ${L({en:'of 5 parts done',no:'av 5 deler tatt'})}`:'';
+  el('path').innerHTML=PATH.map((k,i)=>{ const g=GROUPS[k], r=k===rg, [a,n]=cnt(k), t=tried(k);
+    const lv=Math.round(inGroup(k).reduce((s,x)=>s+(x.lvl||1),0)/Math.max(1,n));
+    return `<li class="pstep${r?' rec':''}${t?' done':''}"><div class="pn"><i>${t?'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':i+1}</i>${r?`<em>${anyDone()?L({en:'Next for you',no:'Neste for deg'}):L({en:'Start here',no:'Start her'})}</em>`:''}</div>
+      <div class="pth">${thumbR(k)}</div><h3>${esc(L(g.t))}</h3><p>${esc(L(g.d))}</p>
+      <div class="pm">${difH(lv)}<span>${esc(L(LVN[lv]))}</span><span class="pg${a?'':' none'}">${k==='airline'?L({en:'Departure or arrival',no:'Avgang eller ankomst'}):a?`${a}/${n} ${L({en:'done',no:'tatt'})}`:`${n} ${L({en:'lessons',no:'leksjoner'})}`}</span></div>
+      <button class="btn2 ${r?'pri':''}" type="button" data-grp="${k}">${k==='airline'?L({en:'Choose',no:'Velg'}):a?L({en:'Continue',no:'Fortsett'}):L({en:'Start',no:'Start'})}<span class="sr">: ${esc(L(g.t))}</span></button></li>`; }).join('');
+  el('path').querySelectorAll('[data-grp]').forEach(b=>b.onclick=()=>openGroup(b.dataset.grp));
+  const due=R.SRS.due(jget(K.srs,{})).filter(id=>S.QUICK_POOL().includes(id)).length;
+  el('warm').innerHTML=`${L(anyDone()?{en:'Back for two minutes? The quick drill gives you six readbacks, your weak ones first.',no:'Tilbake for to minutter? Kjapp drill gir deg seks tilbakelesinger, de svake først.'}:{en:'New to the radio? Start with the phonetic alphabet in Basics, then go in order.',no:'Ny på radio? Start med det fonetiske alfabetet i Grunnleggende, og gå så i rekkefølge.'})}${anyDone()?` <button type="button" class="lk" id="warmQ">${L({en:'Start the quick drill',no:'Start kjapp drill'})}</button>${due?` · ${due} ${L({en:'due for review',no:'til repetisjon'})}`:''}`:''}`;
+  if(el('warmQ')) el('warmQ').onclick=()=>startScenario('quick');
+}
+let OPEN=null;
+function drawAll(){
+  el('allSub').textContent=L({en:'Every lesson, grouped like the path. Open a part to see its lessons.',no:'Alle leksjonene, gruppert som veien. Åpne en del for å se leksjonene.'});
+  const cards=PATH.map(k=>{ const [a,n]=cnt(k), on=OPEN===k;
+    return `<button type="button" class="gcard${on?' on':''}" data-g="${k}" aria-expanded="${on}">${PICS(k)}<b>${esc(L(GROUPS[k].t))}</b><span class="gs">${esc(L(GROUPS[k].d))}</span>
+      <span class="gm"><span>${k==='airline'?L({en:'4 sessions',no:'4 økter'}):`${n} ${L({en:'lessons',no:'leksjoner'})}`}</span><span class="gbar" aria-hidden="true"><i style="width:${n?Math.round(a/n*100):0}%"></i></span><span>${a?`${a} ${L({en:'done',no:'tatt'})}`:L({en:'none done yet',no:'ingen tatt ennå'})}</span></span>
+      <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`; });
+  cards.push(`<a class="gcard build" href="radio.html"><svg class="pic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18M6 17l3-7h6l3 7M9 10V6h6v4"/></svg><b>${L({en:'Fly a whole trip',no:'Fly en hel tur'})}</b><span class="gs">${L({en:'DA42 gate to gate: flows, checklists, briefings and every call in order.',no:'DA42 gate to gate: flows, sjekklister, briefinger og hvert oppkall i rekkefølge.'})}</span><span class="gm"><span class="go">${L({en:'Open gate to gate',no:'Åpne gate to gate'})}</span></span></a>`);
+  const cols=Math.max(1,getComputedStyle(el('groups')).gridTemplateColumns.split(' ').filter(Boolean).length||1), gi=PATH.indexOf(OPEN);
+  if(gi>=0){ const k=OPEN, rg=nextIn(k), at=Math.min(cards.length,(Math.floor(gi/cols)+1)*cols);
+    const rows=k==='airline'? `<p class="note">${L({en:'Choose departure or arrival, your seat (PM or PF) and whether to show the live airport map.',no:'Velg avgang eller ankomst, setet ditt (PM eller PF) og om du vil se det levende flyplasskartet.'})}</p><p><button class="btn2 pri sm" type="button" data-al>${L({en:'Choose the A320 session',no:'Velg A320-økten'})}</button></p>`
+      : `<ol class="rows">${inGroup(k).map(x=>{ const b=best(x.k), r=rg&&x.k===rg.k; return `<li class="row${r?' rec':''}">${PICS(k)}<div class="tx"><b>${esc(L(x.t))}${r?`<em>${L({en:'Next for you',no:'Neste for deg'})}</em>`:''}</b><span>${esc(L(x.d))}</span></div>
+        <div class="st"><span class="dl">${difH(x.lvl||1)}${esc(L(LVN[x.lvl||1]))}</span><span class="pg${b?'':' none'}">${b?`${L({en:'Best',no:'Beste'})} ${b} %`:L({en:'Not flown yet',no:'Ikke tatt ennå'})}</span></div>
+        <div class="acts"><button class="btn2 sm ${r?'pri':''}" type="button" data-k="${x.k}">${b?L({en:'Again',no:'Igjen'}):L({en:'Start',no:'Start'})}<span class="sr">: ${esc(L(x.t))}</span></button></div></li>`; }).join('')}</ol>`;
+    cards.splice(at,0,`<section class="gpanel" id="gpanel" aria-label="${esc(L(GROUPS[k].t))}"><header><h3>${esc(L(GROUPS[k].t))}</h3><p>${esc(L(GROUPS[k].d))}</p><button type="button" class="btn2 sm q" id="gClose">${L({en:'Close',no:'Lukk'})}</button></header>${rows}</section>`); }
+  el('groups').innerHTML=cards.join('');
+  el('groups').querySelectorAll('.gcard[data-g]').forEach(b=>b.onclick=()=>{ const k=b.dataset.g; OPEN=OPEN===k?null:k; drawAll(); const nb=document.querySelector(`.gcard[data-g="${k}"]`); if(nb) nb.focus({preventScroll:true}); });
+  el('groups').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>startScenario(S.byKey(b.dataset.k)));
+  const al=el('groups').querySelector('[data-al]'); if(al) al.onclick=()=>openGroup('airline');
+  if(el('gClose')) el('gClose').onclick=()=>{ const k=OPEN; OPEN=null; drawAll(); const nb=document.querySelector(`.gcard[data-g="${k}"]`); if(nb) nb.focus({preventScroll:true}); };
+}
+/* open practice with the AI controller: a few set situations instead of an empty box */
+const AISIT=[
+  ['vjoin',tr('VFR: join the circuit','VFR: inn i landingsrunden'),'VFR, DA42, 10 NM north of NORDAP at 2000 ft, inbound to land runway 36, information Bravo received.'],
+  ['vafis',tr('VFR: through an AFIS zone','VFR: gjennom en AFIS-sone'),'VFR, DA42, 8 NM west of Skarvik (AFIS, Skarvik Information) at 1500 ft, want to cross the TIZ eastbound to NORDAP.'],
+  ['iarr',tr('IFR: arrival and ILS','IFR: ankomst og ILS'),'IFR, DA42, 30 NM south of NORDAP at flight level 90, first call to NORDAP Approach, expect the ILS runway 36.'],
+  ['epan',tr('Emergency: rough engine','Nød: motoren går ujevnt'),'VFR, DA42, 12 NM south of NORDAP at 2500 ft, the left engine is running rough: decide PAN PAN or MAYDAY and divert to NORDAP.']];
+let AIOK=false;
+function drawMore(){
+  el('moreSub').textContent=L({en:'Short drills when you have two minutes, a whole trip when you have twenty.',no:'Korte driller når du har to minutter, en hel tur når du har tjue.'});
+  const due=R.SRS.due(jget(K.srs,{})).filter(id=>S.QUICK_POOL().includes(id)).length;
+  let h=`<div class="xcard"><span class="k">${L({en:'2 minutes',no:'2 minutter'})}${due?` · ${due} ${L({en:'due for review',no:'til repetisjon'})}`:''}</span><h3>${esc(L(GROUPS.quick.t))}</h3><p>${L({en:'Six readbacks from all over the trainer, the ones you got wrong before first. A good daily warm-up once you have done a few lessons.',no:'Seks tilbakelesinger fra hele treneren, de du har bommet på før først. En god daglig oppvarming når du har tatt noen leksjoner.'})}</p><button class="btn2" type="button" id="xQuick">${L({en:'Start quick drill',no:'Start kjapp drill'})}</button></div>
+    <div class="xcard"><span class="k">${L({en:'5 minutes',no:'5 minutter'})}</span><h3>${L({en:'Test yourself',no:'Test deg selv'})}</h3><p>${L({en:'Ten questions on the rules: what to read back, the words to avoid, numbers and emergencies, with the reason behind each answer.',no:'Ti spørsmål om reglene: hva som skal leses tilbake, ord du bør unngå, tall og nødsituasjoner, med begrunnelsen bak hvert svar.'})}</p><a class="btn2" href="#quiz">${L({en:'Take the test',no:'Ta testen'})}</a></div>`;
+  if(AIOK) h+=`<div class="xcard ai"><span class="k">${L({en:'Optional · AI',no:'Valgfritt · AI'})}</span><h3>${L({en:'Open practice with the AI controller',no:'Åpen trening med AI-flygeleder'})}</h3><p>${L({en:'When the lessons sit, try a situation without a script. Pick one; the AI answers like a controller and comments on each call.',no:'Når leksjonene sitter, prøv en situasjon uten manus. Velg en; AI-en svarer som en flygeleder og kommenterer hvert oppkall.'})}</p>
+    <div class="pre">${AISIT.map(a=>`<button type="button" data-sit="${a[0]}">${esc(L(a[1]))}</button>`).join('')}<button type="button" data-sit="own">${L({en:'Your own situation',no:'Din egen situasjon'})}</button></div></div>`;
+  el('xgrid').innerHTML=h;
+  el('xQuick').onclick=()=>startScenario('quick');
+  el('xgrid').querySelectorAll('[data-sit]').forEach(b=>b.onclick=()=>{ const a=AISIT.find(x=>x[0]===b.dataset.sit); el('aiSit').value=a?a[2]:''; el('ai').hidden=false; el('aiReset').click();
+    el('ai').scrollIntoView({behavior:'smooth',block:'start'}); (a?el('aiSay'):el('aiSit')).focus({preventScroll:true}); });
+  el('aiLead').textContent=L({en:'Make your first call as you would on the frequency. Change the situation at any time. The AI is a practice partner: the lessons above are the reference.',no:'Gjør det første oppkallet slik du ville gjort på frekvensen. Du kan endre situasjonen når som helst. AI-en er en treningspartner: leksjonene over er fasiten.'});
+}
+function drawSet(){
+  el('setSub').textContent=L({en:'The level sets the pace for every lesson. Beginner shows what to include; Check-ready hides the controller text until you answer.',no:'Nivået styrer tempoet i alle leksjoner. Nybegynner viser hva du skal ta med; Klar for sjekk skjuler flygelederens tekst til du har svart.'});
   el('lvlTip').textContent=L(LEVELS[P.level].d);
   const st=jget(K.stats,{}); const weak=Object.entries(st).filter(([k,o])=>o.n>=2&&KIND[k]&&o.ok/o.n<0.9).map(([k,o])=>[k,o.ok/o.n]).sort((a,b)=>a[1]-b[1]).slice(0,3);
   el('homeStats').innerHTML= weak.length? `<b>${L({en:'Your weakest items so far',no:'Dine svakeste elementer så langt'})}:</b> `+weak.map(([k,v])=>`<span class="pill ${v<0.6?'bad':v<0.85?'mid':'good'}">${esc(L(KIND[k]))} ${Math.round(v*100)} %</span>`).join(' ') : '';
 }
+function drawHome(){ drawHero(); drawCheck(); drawPath(); drawAll(); drawMore(); drawSet(); }
+
+/* Guide me: the same short dialog as on the IFR trainer */
+function openGuide(){ TRAINHOME.guide({title:tr('Radio trainer · Guide me','Radiotrener · Guide meg'),
+  steps:[
+   {id:'who',q:tr('Where are you with the radio?','Hvor er du med radio?'),opts:[
+     {v:'new',t:tr('New to it','Ny på det'),d:tr('I have hardly talked on the radio','Jeg har nesten ikke snakket på radio')},
+     {v:'student',t:tr('In training','Under utdanning'),d:tr('PPL, CPL or IR course, learning the calls now','PPL-, CPL- eller IR-kurs, lærer oppkallene nå')},
+     {v:'pilot',t:tr('I fly, and want to stay sharp','Jeg flyr og vil holde meg skarp'),d:tr('Licensed: a refresher or a check is coming','Har sertifikat: oppfriskning eller en sjekk nærmer seg')}]},
+   {id:'what',when:a=>a.who!=='new',q:tr('What do you fly?','Hva flyr du?'),opts:[
+     {v:'vfr',t:tr('VFR','VFR'),d:tr('Zones, FIS, AFIS fields and circuits','Soner, FIS, AFIS-plasser og landingsrunder')},
+     {v:'ifr',t:tr('IFR','IFR'),d:tr('Clearances, SIDs, levels, holds and approaches','Klareringer, SID-er, nivåer, venting og innflyginger')},
+     {v:'airline',t:tr('Airline, two-pilot crew','Flyselskap, to-pilotbesetning'),d:tr('A320: who says what, to whom','A320: hvem sier hva, til hvem')}]}],
+  result(a){
+    const gl=(k,lv)=>({label:{en:'Start: '+L(nextIn(k).t),no:'Start: '+L(nextIn(k).t)},run:()=>{ setLevel(lv); if(MODE!=='basics') setMode('basics',false); startScenario(nextIn(k)); }});
+    if(a.who==='new') return {t:tr('Basics first, then VFR','Grunnleggende først, så VFR'),why:tr('Start with the phonetic alphabet and numbers, with the Beginner level on: a calm controller and the items to include shown on screen.','Start med det fonetiske alfabetet og tall, med nivået Nybegynner: en rolig flygeleder og elementene du skal ta med vist på skjermen.'),
+      plan:[tr('Basics: alphabet, numbers, callsigns','Grunnleggende: alfabet, tall, kallesignaler'),tr('VFR flight: taxi, zones, circuits','VFR-tur: taksing, soner, landingsrunder'),tr('Then IFR and emergencies','Så IFR og nødsituasjoner')],go:gl('basic','beginner')};
+    if(a.what==='airline') return {t:tr('A320 crew','A320-besetning'),why:tr('Choose departure or arrival and start in the PM seat: you talk to ATC, and the live map shows the aircraft move as your calls are accepted.','Velg avgang eller ankomst og start i PM-setet: du snakker med ATC, og det levende kartet viser flyet bevege seg når oppkallene godkjennes.'),
+      go:{label:tr('Choose the A320 session','Velg A320-økten'),run:()=>{ setLevel(a.who==='pilot'?'check':'intermediate'); openGroup('airline'); }}};
+    const k=a.what==='ifr'?'ifr':'vfr', full=S.byKey(k+'full');
+    if(a.who==='student') return {t:{en:L(GROUPS[k].t),no:L(GROUPS[k].t)},why:tr('Go through the lessons in order at Intermediate level: normal pace, a hint only if you ask. Finish with the full flight.','Gå gjennom leksjonene i rekkefølge på nivået Middels: normalt tempo, hint bare om du ber om det. Avslutt med hele turen.'),
+      go:gl(k,'intermediate'),alt:{label:{en:L(full.t),no:L(full.t)},run:()=>{ setLevel('intermediate'); startScenario(full); }}};
+    return {t:tr('The refresher check, then a whole flight','Oppfriskningssjekken, så en hel tur'),why:tr('Six readbacks at check pace with the controller text hidden show what has slipped. Then fly the whole flight in one go.','Seks tilbakelesinger i sjekktempo med flygelederens tekst skjult viser hva som har glippet. Fly så hele turen i ett strekk.'),
+      go:{label:tr('Start the refresher check','Start oppfriskningssjekken'),run:()=>{ if(MODE!=='refresh') setMode('refresh',false); startCheck(); }},
+      alt:{label:{en:L(full.t),no:L(full.t)},run:()=>{ if(MODE!=='refresh') setMode('refresh',false); setLevel('check'); startScenario(full); }}};
+  }}); }
 /* the lessons in path order: basics, VFR, IFR, emergencies, airline; inside a section the easy ones first, full flights last */
 function lessons(){ const order=['basic','vfr','ifr','emerg','airline']; const out=[];
   order.forEach(g=>{ S.ALL.filter(x=>x.group===g&&!(g==='airline'&&!x.map&&false)).sort((a,b)=>(a.full?1:0)-(b.full?1:0)||a.lvl-b.lvl).forEach(x=>out.push(x)); }); return out; }
 function nextLesson(c){ if(!c||!c.k) return null; const L0=lessons().filter(x=>x.group!=='airline'||x.map); const i=L0.findIndex(x=>x.k===c.k); if(i<0) return L0.find(x=>!best(x.k))||null;
   return L0.slice(i+1).find(x=>!best(x.k))||L0[i+1]||null; }
-function drawGuide(force){
-  const g=el('guide'); const seen=jget(K.guide,0); if(!force&&seen){ g.hidden=true; return; }
-  g.hidden=false;
-  g.innerHTML=`<h3>${L({en:'How the radio trainer works',no:'Slik virker radiotreneren'})}</h3><ol>
-    <li><i>1</i><div><b>${L({en:'Pick a lesson',no:'Velg en leksjon'})}</b><span>${L({en:'New to the radio? Start with Basics and go in order. Each lesson is a short session with a real controller.',no:'Ny på radio? Start med Grunnleggende og gå i rekkefølge. Hver leksjon er en kort økt med en ekte flygeleder.'})}</span></div></li>
-    <li><i>2</i><div><b>${L({en:'Talk or type',no:'Snakk eller skriv'})}</b><span>${L({en:'Hold the talk button (or the space bar), say your call, let go. Or type it and press Transmit. Both are graded the same.',no:'Hold snakkeknappen (eller mellomromstasten), si oppkallet, slipp. Eller skriv det og trykk Transmit. Begge vurderes likt.'})}</span></div></li>
-    <li><i>3</i><div><b>${L({en:'Read the feedback',no:'Les tilbakemeldingen'})}</b><span>${L({en:'Every item of your call is checked, with the rule behind it. If something is missing, the controller asks for it and you try again.',no:'Hvert element i oppkallet sjekkes, med regelen bak. Mangler noe, ber flygelederen om det, og du prøver igjen.'})}</span>
-      <div class="keys"><span class="k ok">✓ ${L({en:'right',no:'riktig'})}</span><span class="k mid">! ${L({en:'note',no:'merknad'})}</span><span class="k bad">✕ ${L({en:'missing or wrong',no:'mangler eller feil'})}</span></div></div></li></ol>
-    <div class="gfoot"><button class="btn pri" id="guideGo" type="button">${L({en:'Start with Basics',no:'Start med Grunnleggende'})}</button><button class="btn" id="guideOk" type="button">${L({en:'Got it',no:'Skjønner'})}</button><span>${L({en:'Level sets the pace: Beginner shows what to include, Check-ready hides the controller text until you answer.',no:'Nivået styrer tempoet: Nybegynner viser hva du skal ta med, Klar for sjekk skjuler flygelederens tekst til du har svart.'})}</span></div>`;
-  el('guideOk').onclick=()=>{ jset(K.guide,1); g.hidden=true; el('guideBtn').focus(); };
-  el('guideGo').onclick=()=>{ jset(K.guide,1); g.hidden=true; startScenario(lessons()[0]); };
-}
 /* airline: three plain choices instead of eight cards */
 function drawAirline(){
   const A=Object.assign({ph:'dep',seat:'PM',map:true},P.al||{}); P.al=A;
@@ -219,19 +344,19 @@ function drawPick(){
 }
 
 /* ---------------- session ---------------- */
-function startScenario(sc){ if(natural()&&P.voice) nvPreload();
+function startScenario(sc,o){ o=o||{}; if(natural()&&P.voice) nvPreload(); const lvl0=o.level||P.level;
   AU.init(); hush();
   if(sc==='quick'){ const db=jget(K.srs,{}); const pool=S.QUICK_POOL(); const ids=R.SRS.due(db).concat(R.SRS.weak(db)).filter(id=>pool.includes(id));
     const seed=(Date.now()>>>0)^0x5bd1; const V=S.vars(seed,{callsign:P.callsign});
-    cur={k:'quick',t:GROUPS.quick.t,group:'quick',basis:['SERA.8015(e)','AMC1 SERA.14001']}; ses=new R.Session(cur,{level:P.level,V,steps:S.quick(V,R.rng(seed),ids),callsign:P.callsign}); }
-  else if(sc&&sc.k==='retry'){ cur=sc; ses=new R.Session(cur,{level:P.level,V:sc.V,steps:sc.steps}); }
-  else { cur=sc; ses=new R.Session(sc,{level:P.level,callsign:P.callsign}); }
+    cur={k:'quick',t:o.title||GROUPS.quick.t,group:'quick',basis:['SERA.8015(e)','AMC1 SERA.14001']}; ses=new R.Session(cur,{level:lvl0,V,steps:S.quick(V,R.rng(seed),ids),callsign:P.callsign}); }
+  else if(sc&&sc.k==='retry'){ cur=sc; ses=new R.Session(cur,{level:lvl0,V:sc.V,steps:sc.steps}); }
+  else { cur=sc; ses=new R.Session(sc,{level:lvl0,callsign:P.callsign}); if(sc.k&&sc.group!=='airline'){ P.last=sc.k; saveP(); } }
   el('sessT').textContent=L(cur.t); drawBasis(); el('log').innerHTML=''; el('fbBox').innerHTML=`<p class="muted">${L({en:'Feedback on each call appears here: what was right, what was missing, and why.',no:'Tilbakemelding på hvert oppkall kommer her: hva som var riktig, hva som manglet, og hvorfor.'})}</p>`;
   el('sitBox').innerHTML=''; el('fq').textContent='———.———'; el('stn').textContent='';
   MAPON=!!(cur.map&&window.NMAP); el('amapBox').hidden=!MAPON; el('v-sess').classList.toggle('hasmap',MAPON);
   if(MAPON){ if(!mapInit){ NMAP.init(el('amap')); mapInit=true; } NMAP.reset(cur.map,ses.V.dep,ses.V.arr); } else if(window.NMAP) NMAP.stop();
   show('sess'); run(ses.start());
-  el('say').focus({preventScroll:true}); window.scrollTo({top:el('trainer').offsetTop-70,behavior:'smooth'});
+  el('say').focus({preventScroll:true}); window.scrollTo({top:Math.max(0,el('trainer').offsetTop-70),behavior:'auto'});
 }
 /* "Based on": the rules and documents the scenario's calls and readbacks are checked against (radioscen.js BASIS) */
 function drawBasis(){ const b=el('sessBasis'); if(!b) return; const list=(cur&&cur.basis)||[];
@@ -377,27 +502,26 @@ function drawDeb(sm){
 /* ---------------- AI free talk (optional) ---------------- */
 function aiSetup(){
   if(!window.NAI) return;
-  let wired=false; NAI.onMode(mode=>{ const box=el('ai'); if(!mode){ box.hidden=true; return; } box.hidden=false; if(wired) return; wired=true;
+  let wired=false; NAI.onMode(mode=>{ AIOK=!!mode; drawMore(); if(!mode){ el('ai').hidden=true; return; } if(wired) return; wired=true;
     let turns=[]; const log=el('aiLog');
     const add=(cls,who,h)=>{ const d=document.createElement('div'); d.className='msg '+cls; d.innerHTML=(who?`<span class="who">${esc(who)}</span>`:'')+h; log.appendChild(d); log.scrollTop=log.scrollHeight; return d; };
     const rules=()=>`You are an air traffic controller in a radiotelephony training simulator for pilots training under EASA in Norway. Fictional aerodrome NORDAP, runway 36/18, Tower 118.300, Ground 121.700, Approach 119.250, transition altitude 7000 ft. The pilot is ${P.callsign}, a DA42. Situation: ${el('aiSit').value||'infer it from the first call'}. Reply as ATC with ICAO Doc 4444/9432 and SERA phraseology, then judge only the pilot's last transmission. Reply with JSON only: {"atc":"…","ok":true|false,"notes":["max 3, in ${NAI.langName()}"],"better":"ideal pilot transmission"}`;
     async function send(){ const t=el('aiSay').value.trim(); if(!t) return; el('aiSay').value=''; const me=add('me',P.callsign,esc(t)); turns.push({role:'user',content:'PILOT: '+t}); const w=add('atc','ATC','…');
       try{ const r=await NAI.json([{role:'user',content:rules()},...turns.slice(-20)]); const a=String(r&&r.atc||'Say again.'); w.innerHTML=`<span class="who">ATC</span>${esc(a)}`; turns.push({role:'assistant',content:JSON.stringify({atc:a})});
         const fb=document.createElement('div'); fb.className='fb'; fb.innerHTML=`<ul class="els">${(r.notes||[]).slice(0,3).map(n=>`<li class="${r.ok?'warn':'wrong'}"><span class="sy">${r.ok?'!':'✕'}</span><span>${esc(n)}</span></li>`).join('')}${r.ok&&!(r.notes||[]).length?`<li class="ok"><span class="sy">✓</span><span>${L({en:'Correct and complete',no:'Riktig og fullstendig'})}</span></li>`:''}</ul>${!r.ok&&r.better?`<div class="model"><span class="mono">${esc(r.better)}</span></div>`:''}`; me.appendChild(fb); speak(a); }
-      catch(e){ w.remove(); turns.pop(); el('aiNote').textContent=NAI.errText(e); if(NAI.fatal(e)) el('ai').hidden=true; } }
+      catch(e){ w.remove(); turns.pop(); el('aiNote').textContent=NAI.errText(e); if(NAI.fatal(e)){ el('ai').hidden=true; AIOK=false; drawMore(); } } }
     el('aiSend').onclick=send; el('aiSay').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); } }); el('aiReset').onclick=()=>{ turns=[]; log.innerHTML=''; };
   });
 }
 
 /* ---------------- wiring ---------------- */
 function init(){
-  const lvl=LAB.seg(el('lvlSeg'),[['beginner','Beginner'],['intermediate','Intermediate'],['check','Check-ready']],P.level,v=>{ P.level=v; saveP(); el('lvlTip').textContent=L(LEVELS[v].d); });
-  el('guideBtn').onclick=()=>{ drawGuide(true); el('guide').scrollIntoView({behavior:'smooth',block:'nearest'}); };
-  el('goals').addEventListener('click',e=>{ const b=e.target.closest('.goal'); if(!b) return; const g=b.dataset.g; if(g==='quick'){ startScenario('quick'); return; } group=g; drawPick(); show('pick'); el('pickBack').focus(); });
+  LVSEG=LAB.seg(el('lvlSeg'),[['beginner','Beginner'],['intermediate','Intermediate'],['check','Check-ready']],P.level,v=>{ P.level=v; saveP(); el('lvlTip').textContent=L(LEVELS[v].d); });
+  el('aiClose').onclick=()=>{ el('ai').hidden=true; };
   el('pickL').addEventListener('click',e=>{ const b=e.target.closest('.sc'); if(!b) return; startScenario(S.byKey(b.dataset.k)); });
-  el('pickBack').onclick=()=>{ drawHome(); show('home'); };
-  el('sessBack').onclick=()=>{ if(ses&&ses.results.length&&!ses.done&&!confirm(L({en:'Leave this session? Your answers so far are not saved.',no:'Forlate økten? Svarene så langt lagres ikke.'}))) return; hush(); ses=null; drawHome(); show('home'); };
-  el('debHome').onclick=()=>{ drawHome(); show('home'); };
+  el('pickBack').onclick=()=>{ goHome(); };
+  el('sessBack').onclick=()=>{ if(ses&&ses.results.length&&!ses.done&&!confirm(L({en:'Leave this session? Your answers so far are not saved.',no:'Forlate økten? Svarene så langt lagres ikke.'}))) return; hush(); ses=null; goHome(); };
+  el('debHome').onclick=()=>{ goHome(); };
   el('debAgain').onclick=()=>{ if(cur.k==='quick') startScenario('quick'); else if(cur.k==='retry') startScenario(cur); else startScenario(cur); };
   el('btnWeak').onclick=()=>{ const sm=ses.summary(); const steps=sm.weak.map(w=>ses.steps[w.n]).filter(Boolean).map(s=>Object.assign({},s,{abbrOK:true}));
     if(!steps.length) return; const V=ses.V; startScenario({k:'retry',t:tr('Practise these again','Øv på disse igjen'),basis:cur&&cur.basis,steps:R.prep(steps.map(s=>Object.assign({},s)),V),V}); };
