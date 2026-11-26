@@ -26,9 +26,9 @@ def serve(route):
     route.fulfill(status=200, body=open(f, 'rb').read(), headers={'content-type': mimetypes.guess_type(f)[0] or 'application/octet-stream'})
 
 READ = """() => [...document.querySelectorAll('.kcgrid .kc')].map(c => {
-  const b = c.querySelector('.kgo'), h = c.querySelector('h3'), p = c.querySelector(':scope > p');
+  const b = c.querySelector('.kgo'), h = c.querySelector('h3'), p = c.querySelector(':scope > p'), mo = [...c.querySelectorAll('details.kmore p')].map(x => x.textContent).join(' ');
   const href = b && b.tagName === 'A' ? b.getAttribute('href') : '';
-  return {k: b && b.dataset ? (b.dataset.k || '') : '', href, t: h ? h.textContent.trim() : '', d: p ? p.textContent.replace(/\\s+/g, ' ').trim() : '', deep: !!c.closest('.deep')};
+  return {k: b && b.dataset ? (b.dataset.k || '') : '', href, t: h ? h.textContent.trim() : '', d: p ? p.textContent.replace(/\\s+/g, ' ').trim() : '', m: mo.replace(/\\s+/g, ' ').trim(), deep: !!c.closest('.deep')};
 }).filter(x => x.t)"""
 
 def read(pg, f, lang):
@@ -43,6 +43,11 @@ def first(s):
     m = re.match(r'(.{30,}?[.!?])\s', s + ' ')
     return (m.group(1) if m else s)[:220]
 
+def rest(c):
+    """the card's other sentences and its "More" text: searched, never shown"""
+    s = re.sub(r'\s+', ' ', c['d']).strip(); f = first(s)
+    return (s[len(f):].strip() + ' ' + c.get('m', '')).strip()[:700]
+
 out = []
 with sync_playwright() as p:
     b = p.chromium.launch()
@@ -53,7 +58,7 @@ with sync_playwright() as p:
         cards = []
         for i, c in enumerate(cen):
             o = cno[i] if i < len(cno) else c
-            cards.append({'k': c['k'], 'href': c['href'] or ('' if c['k'] else f + '#understand'), 't': {'en': c['t'], 'no': o['t']}, 'd': {'en': first(c['d']), 'no': first(o['d'])}})
+            cards.append({'k': c['k'], 'href': c['href'] or ('' if c['k'] else f + '#understand'), 't': {'en': c['t'], 'no': o['t']}, 'd': {'en': first(c['d']), 'no': first(o['d'])}, 'm': {'en': rest(c), 'no': rest(o)}})
         secs = [[s[0], s[1], s[2]] for s in TOP.get(f, [])]
         out.append({'f': f, 't': {'en': en, 'no': no}, 's': secs, 'c': cards})
         print(f'{f}: {len(cards)} cards, {len(secs)} sections')

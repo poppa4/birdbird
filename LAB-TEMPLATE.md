@@ -66,7 +66,7 @@ The site is static: plain HTML and vanilla JS with no build step. Every lab page
 
 ## Rules
 
-- **Search:** the search bar finds labs by their Key concepts through `data/labindex.json`. After adding, renaming or removing a lab or a card, run `python3 tools/lab-index.py` (`tests/labindex.test.mjs` fails until you do). A search hit opens `lab.html#kc-<key>`; `concepts.js` (`kcHash`) clicks that card's "Show in the model" on every lab, so a card needs a `.kgo` button with `data-k`.
+- **Search:** the search bar searches pages, every Key concepts card (`data/labindex.json`: title, first sentence and the "More" text), the theory library (`theory.js`) and the glossary (`glossary.js`), forgiving typos and word forms. After adding, renaming or removing a lab or a card, run `python3 tools/lab-index.py` (`tests/labindex.test.mjs` fails until you do). A search hit opens `lab.html#kc-<key>`; `concepts.js` (`kcHash`) clicks that card's "Show in the model" on every lab, so a card needs a `.kgo` button with `data-k`.
 - Do not add progress tracking, done markers or counters to the labs or to `lab.html`.
 - Keep file names and URLs. To regroup labs, edit `PATH` and the counts follow from it.
 - When `lab.js`, `site.js` or `site.css` change, bump their `?v=` on every page that loads them.

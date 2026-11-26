@@ -249,30 +249,64 @@ const STOP=new Set(['kt','nm','ft','m','qnh','elev','elevation','rwy','runway','
 const WORDS=IDX.map(e=>new Set(e.k.split(/[^\p{L}\p{N}]+/u).filter(Boolean)));
 function score(q){ const w=q.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(x=>x.length>1&&!STOP.has(x)&&!/^\d+$/.test(x));
   if(!w.length) return []; return IDX.map((e,i)=>{ let s=0; w.forEach(x=>{ if(WORDS[i].has(x)) s+=3; else if([...WORDS[i]].some(v=>v.startsWith(x))) s+=x.length>=4?2:1; else if(x.length>=4&&e.k.includes(x)) s+=1; }); return {e,s}; }).filter(x=>x.s>=2).sort((a,b)=>b.s-a.s).slice(0,5); }
-/* ---------- Virtual Labs: every Key concepts card (data/labindex.json, built by tools/lab-index.py) ----------
-   Found by its title (English and Norwegian) first, then by its first sentence. A hit opens the lab at the card's place
-   in the model: lab.html#kc-<key> (concepts.js). Abbreviations pilots type are widened to the words the cards use. */
+/* ---------- one search over everything: pages, every Virtual Labs Key concepts card, the theory library, the glossary ----------
+   Sources: IDX above (pages and sections), data/labindex.json (every card's title, first sentence and "More" text, built by
+   tools/lab-index.py), theory.js (the Flight Intelligence theory library, each entry tied to its lab) and glossary.js (terms,
+   each tied to the lab that explains it). The last three arrive with the first focus on the box.
+   Matching is forgiving, so anything close to what you typed is listed: whole words, word starts both ways, the same word
+   stem (stall/stalling, vinge/vingen), one typo in words of five letters or more, and the abbreviations pilots type (SYN).
+   Ranking: the title counts most, then keywords, then the body text; all query words found ranks above some. */
 const SYN={aoa:['angle of attack','angrepsvinkel'],'αi':['induced angle'],alpha:['angle of attack'],cl:['lift coefficient','clmax'],cd:['drag coefficient'],cp:['centre of pressure','trykksenter'],
  cg:['centre of gravity','tyngdepunkt'],mac:['mean aerodynamic chord'],vmd:['minimum drag'],vmp:['minimum power'],vs:['stall speed','stallfart'],mcrit:['critical mach','kritisk machtall'],mdd:['drag divergence'],
  vortex:['vortices','virvel','virvler'],vortices:['vortex','virvler'],airfoil:['aerofoil','profil'],aerofoil:['airfoil','profil'],isa:['standard atmosphere','standardatmosfære'],cb:['cumulonimbus'],
  cat:['clear air turbulence'],ws:['wind shear','vindskjær'],llws:['wind shear'],rvr:['runway visual range'],ins:['inertial'],irs:['inertial'],ap:['autopilot'],ra:['resolution advisory','radio altimeter'],
  tod:['top of descent'],pnr:['point of no return'],pet:['equal time'],sid:['departure'],star:['arrival'],tuc:['useful consciousness'],sd:['spatial disorientation','desorientering'],
- parasitt:['parasite'],parasite:['parasitt'],indusert:['induced'],induced:['indusert'],motstand:['drag'],løft:['lift'],stall:['stalling']};
-const LSTOP=new Set(['the','a','an','is','are','was','what','whats','how','why','does','do','explain','define','meaning','mean','show','me','hva','hvordan','hvorfor','er','betyr','forklar','vis','meg','en','et','ei','og','and','of','to','i','på','in','for','med','with','om','about','av','vs','versus','mellom','between','det','den','that','this','it','on','at','by','or','eller','kt','kts','knots','knop','ft','feet','fot','nm','km','hpa','inhg','kg','lb','lbs','usg','rwy','bane','deg']);
-const lw=s=>s.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
-let LX=null, lxP=null;
-const loadLX=()=>lxP||(lxP=fetch('data/labindex.json').then(r=>r.json()).then(d=>{ const a=[]; (d.labs||[]).forEach(lab=>(lab.c||[]).forEach((c,i)=>{ const tt=(c.t.en+' '+c.t.no).toLowerCase(), dd=(c.d.en+' '+c.d.no).toLowerCase();
-  a.push({u:c.href||(lab.f+(c.k?'#kc-'+c.k:'')),t:c.t,lab:lab.t,f:lab.f,n:i+1,tt,dd,TW:[...new Set(lw(tt))],DW:[...new Set(lw(dd))]}); })); LX=a; }).catch(()=>{ LX=[]; }));
-function labHits(q){ if(!LX||!LX.length) return [];
-  const toks=lw(q).filter(x=>!LSTOP.has(x)&&!/^\d+$/.test(x)&&(x.length>1||/[α-ω]/.test(x))); if(!toks.length) return [];
-  const groups=toks.map(x=>[x].concat(SYN[x]||[])), has=(W,w)=>W.includes(w)||(w.length>=4&&W.some(v=>v.startsWith(w)));
-  const one=(e,a)=>{ if(a.includes(' ')){ const ws=lw(a).filter(w=>!LSTOP.has(w)); return ws.every(w=>has(e.TW,w))?5:ws.every(w=>has(e.TW,w)||has(e.DW,w))?1.5:0; }
-    if(e.TW.includes(a)) return 5; if(a.length>=3&&e.TW.some(v=>v.startsWith(a))) return a.length>=4?3.5:2.5;
-    if(e.DW.includes(a)) return 1.5; if(a.length>=4&&e.DW.some(v=>v.startsWith(a))) return 1; return 0; };
-  const need=groups.length<=2?groups.length:Math.ceil(groups.length*0.6);
-  return LX.map((e,i)=>{ let s=0,m=0; groups.forEach(g=>{ const b=Math.max(...g.map(a=>one(e,a))); if(b>0){ s+=b; m++; } }); if(m<need) return null; if(m===groups.length) s+=1; return {e,s,i}; })
-    .filter(x=>x&&x.s>=2.5).sort((a,b)=>b.s-a.s||a.i-b.i).slice(0,6); }
-const labRow=e=>({u:e.u,t:e.t,d:{en:'Key concept '+String(e.n).padStart(2,'0')+' · '+e.lab.en,no:'Nøkkelbegrep '+String(e.n).padStart(2,'0')+' · '+e.lab.no}});
+ parasitt:['parasite'],parasite:['parasitt'],indusert:['induced'],induced:['indusert'],motstand:['drag'],drag:['motstand'],løft:['lift'],lift:['løft'],stall:['steiling'],
+ vind:['wind'],wind:['vind'],ice:['ising'],icing:['ising'],ising:['icing'],tåke:['fog'],fog:['tåke'],sky:['cloud'],skyer:['clouds'],cloud:['sky'],motor:['engine'],engine:['motor'],
+ fart:['speed'],speed:['fart'],høyde:['altitude','height'],altitude:['høyde'],trykk:['pressure'],pressure:['trykk'],vinge:['wing'],wing:['vinge'],stabilitet:['stability'],stability:['stabilitet'],
+ turbulens:['turbulence'],turbulence:['turbulens'],front:['fronts'],tordenvær:['thunderstorm'],thunderstorm:['tordenvær','cumulonimbus'],hypoksi:['hypoxia'],hypoxia:['hypoksi'],
+ kompass:['compass'],compass:['kompass'],propell:['propeller'],propeller:['propell'],navigasjon:['navigation'],navigation:['navigasjon'],luftrom:['airspace'],airspace:['luftrom'],
+ innflyging:['approach'],approach:['innflyging'],venting:['holding'],holding:['venting'],ytelse:['performance'],performance:['ytelse'],drivstoff:['fuel'],fuel:['drivstoff']};
+const QSTOP=new Set(['the','a','an','is','are','was','what','whats','how','why','does','do','explain','define','meaning','mean','show','me','hva','hvordan','hvorfor','er','betyr','forklar','vis','meg','en','et','ei','og','and','of','to','i','på','in','for','med','with','om','about','av','vs','versus','mellom','between','det','den','dem','de','that','this','it','on','at','by','or','eller','som','når','when','kt','kts','knots','knop','ft','feet','fot','nm','km','hpa','inhg','kg','lb','lbs','usg','rwy','bane','deg','til','fra','from','into','a320','da42']);
+const lw=s=>String(s||'').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+/* a light stem, English and Norwegian, so plurals and inflections meet */
+const stem=w=>{ if(w.length<5) return w; let s=w;
+  for(const [a,b] of [['ies','y'],['sses','ss'],['ing',''],['ene',''],['ane',''],['ers','er'],['ed',''],['es',''],['en',''],['et',''],['er',''],['s',''],['e',''],['a','']]) if(s.length-a.length>=4&&s.endsWith(a)&&!(a==='s'&&s.endsWith('ss'))){ s=s.slice(0,s.length-a.length)+b; break; }
+  return s; };
+/* at most one edit (insert, delete, change, swap of two letters) between a and b */
+function near1(a,b){ const la=a.length, lb=b.length; if(Math.abs(la-lb)>1||a===b) return a===b; let i=0; while(i<la&&i<lb&&a[i]===b[i]) i++;
+  if(la===lb){ if(a.slice(i+1)===b.slice(i+1)) return true; return a[i]===b[i+1]&&a[i+1]===b[i]&&a.slice(i+2)===b.slice(i+2); }
+  return la>lb? a.slice(i+1)===b.slice(i) : a.slice(i)===b.slice(i+1); }
+const DOCS=[], VOCAB=new Set();
+function addDoc(o){ const T=new Set(lw((o.t.en||'')+' '+(o.t.no||''))), K=new Set(lw(o.k||'')), B=new Set(lw(o.b||''));
+  const S=w=>new Set([...w].map(stem)); [T,K,B].forEach(s=>s.forEach(w=>VOCAB.add(w)));
+  DOCS.push(Object.assign(o,{T,K,B,TA:[...T],KA:[...K],BA:[...B],TS:S(T),KS:S(K),BS:S(B),tt:((o.t.en||'')+' '+(o.t.no||'')).toLowerCase()})); }
+IDX.forEach(e=>{ addDoc({u:e.u,t:e.t,d:e.d,k:e.k,b:'',kind:'page',tag:e.u.split(/[?#]/)[0].replace('.html',''),boost:e.u.includes('#')?0.2:0.4}); });
+let LX=false, lxP=null;
+const loadLX=()=>lxP||(lxP=Promise.all([
+  fetch('data/labindex.json').then(r=>r.json()).then(d=>{ (d.labs||[]).forEach(lab=>(lab.c||[]).forEach((c,i)=>{ const n=String(i+1).padStart(2,'0');
+    addDoc({u:c.href||(lab.f+(c.k?'#kc-'+c.k:'')),t:c.t,d:{en:'Key concept '+n+' · '+lab.t.en,no:'Nøkkelbegrep '+n+' · '+lab.t.no},k:c.d.en+' '+c.d.no,b:(c.m?c.m.en+' '+c.m.no:''),kind:'card',tag:lab.f.replace('.html',''),boost:0.5}); })); }).catch(()=>{}),
+  (window.THEORY?Promise.resolve():new Promise(ok=>{ const sc=document.createElement('script'); sc.src='theory.js?v=6'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); })).then(()=>{ const T=window.THEORY; if(!T||!T.items) return;
+    T.items.forEach(x=>{ if(!x.lab) return; const sj=T.subjects&&T.subjects[x.subj]; addDoc({u:x.lab,t:x.title,d:{en:'Theory'+(sj?' · '+sj.en:''),no:'Teori'+(sj?' · '+sj.no:'')},k:x.kw,b:(x.en||'')+' '+(x.no||''),kind:'theory',tag:{en:'theory',no:'teori'},boost:0}); }); }),
+  (window.GLOSS?Promise.resolve():new Promise(ok=>{ const sc=document.createElement('script'); sc.src='glossary.js?v=4'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); })).then(()=>{ const G=window.GLOSS&&window.GLOSS.G; if(!G) return;
+    Object.values(G).forEach(v=>{ if(!v||!v[3]) return; const term=typeof v[0]==='string'?{en:v[0],no:v[0]}:v[0];
+      addDoc({u:v[3],t:{en:term.en+' · '+v[1].en,no:term.no+' · '+v[1].no},d:{en:'Glossary · '+v[2].en,no:'Ordliste · '+v[2].no},k:'',b:v[2].en+' '+v[2].no,kind:'gloss',tag:{en:'glossary',no:'ordliste'},boost:0.1}); }); })
+]).then(()=>{ LX=true; }));
+function hits(q,max){ const toks=lw(q).filter(x=>!QSTOP.has(x)&&!/^\d+$/.test(x)&&(x.length>1||/[α-ω]/.test(x))); if(!toks.length) return {list:[],n:0};
+  /* each query word becomes a group: the word, its synonyms (some are phrases) and the words of the site one typo away */
+  const groups=toks.map(x=>{ const fz=x.length>=5?[...VOCAB].filter(v=>v!==x&&v.length>=4&&near1(x,v)):[]; return {x,st:stem(x),syn:SYN[x]||[],fz}; });
+  const part=(set,arr,sset,w,st)=>set.has(w)?2:sset.has(st)?1.5:(w.length>=4&&arr.some(v=>v.startsWith(w)||(v.length>=4&&w.startsWith(v))))?1.2:0;
+  const one=(d,g)=>{ let b=0; const pt=(w,st)=>{ const t=part(d.T,d.TA,d.TS,w,st), k=part(d.K,d.KA,d.KS,w,st), y=part(d.B,d.BA,d.BS,w,st); return Math.max(t?3*t:0,k?2*k:0,y?y:0); };
+    b=pt(g.x,g.st);
+    g.syn.forEach(a=>{ const ws=lw(a).filter(w=>!QSTOP.has(w)); if(!ws.length) return; const sc=ws.map(w=>pt(w,stem(w))); if(sc.every(v=>v>0)) b=Math.max(b,Math.min(...sc)*0.95); });
+    if(b<2) g.fz.forEach(w=>{ b=Math.max(b,(d.T.has(w)?6:d.K.has(w)?4:d.B.has(w)?2:0)*0.6); }); /* a typo counts only as the whole word, never stemmed or cut again */
+    return b; };
+  const need=groups.length<=2?groups.length:Math.ceil(groups.length*0.6), ql=toks.join(' ');
+  const out=[]; DOCS.forEach((d,i)=>{ let s=0,m=0; groups.forEach(g=>{ const b=one(d,g); if(b>0){ s+=b; m++; } }); if(m<need) return;
+    if(m===groups.length) s+=1.5; if(groups.length>1&&d.tt.includes(ql)) s+=3; s+=d.boost; if(s>=1.1) out.push({d,s,i}); });
+  out.sort((a,b)=>b.s-a.s||a.i-b.i);
+  const seen=new Set(), list=[]; for(const h of out){ const key=h.d.u+'|'+h.d.t.en; if(seen.has(key)) continue; seen.add(key); list.push(h); }
+  return {list:list.slice(0,max||40),n:list.length}; }
 /* ---------- UI ---------- */
 /* the bar itself (.nsearch, .in, input) is styled in site.css, so it is in place before this file loads */
 const css=`.nsearch .res{position:absolute;left:var(--gl);right:var(--gr);max-width:var(--shell);margin:6px auto 0;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);box-shadow:var(--shadow-pop);overflow:hidden}
@@ -284,7 +318,7 @@ const css=`.nsearch .res{position:absolute;left:var(--gl);right:var(--gr);max-wi
 .nsearch .ai{padding:12px 14px;font-size:14.5px;line-height:1.5;color:var(--ink);border-top:1px solid var(--rule-2)}
 .nsearch .ai{max-height:min(70vh,640px);overflow:auto}.nsearch .ai .aq{color:var(--ink-2);font-size:13.5px;margin-bottom:6px}.nsearch .ai .aa p{margin:0 0 8px}.nsearch .ai .aa ul{margin:0 0 8px;padding-left:20px}.nsearch .ai .gk{font-size:11px;color:var(--ink-3);border:1px solid var(--rule);border-radius:3px;padding:0 4px;margin-left:3px;white-space:nowrap}.nsearch .ai .er{color:var(--warning)}.nsearch .ai .ft{font-size:12px;color:var(--ink-3);margin:8px 0 0;background:none;padding:0}
 .nsearch .ai .lk{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}.nsearch .ai .lk a{font-size:13.5px;border:1px solid var(--rule);border-radius:var(--radius);padding:3px 10px;text-decoration:none;color:var(--accent)}
-.nsearch .sm{font-size:12px;color:var(--ink-3)}.nsearch .ai .lk.lab{align-items:center}.nsearch .ai .lk.lab .sm{margin-right:2px}
+.nsearch .sm{font-size:12px;color:var(--ink-3)}.nsearch .res{max-height:min(74vh,720px);overflow:auto;overscroll-behavior:contain}.nsearch .cnt{padding:7px 14px 6px;font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;color:var(--ink-3);border-bottom:1px solid var(--rule-2);background:var(--wash)}.nsearch .it small.tg{flex:none;white-space:nowrap}.nsearch .it small.tg.k-theory,.nsearch .it small.tg.k-gloss{color:var(--accent)}.nsearch .ai .lk.lab{align-items:center}.nsearch .ai .lk.lab .sm{margin-right:2px}
 .nsearch .ol>span{min-width:0}.nsearch .ol .ln{display:block;font-size:13.5px;line-height:1.45;color:var(--ink);margin-top:2px}.nsearch .ol .ln.mu{color:var(--ink-2);font-size:12px}
 .nsearch .olb{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:3px;font:600 11.5px/1.6 var(--f-mono,ui-monospace,monospace);color:#fff;vertical-align:1px}
 .nsearch .olb.vfr{background:#1e8e3e}.nsearch .olb.near{background:#b77800}.nsearch .olb.svfr{background:#c2410c}.nsearch .olb.ifr{background:#d93025}`;
@@ -376,8 +410,7 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
     if(w){ clearTimeout(wxT); wxT=setTimeout(()=>wxGet(w.ids),250); if(!window.ICB) loadIcb().then(()=>{ if(!res.hidden) draw(); }); }
     const ol=olGet(q);
     const c=wr||ol?null:calc(q), quiet=!!(c||wr||ol); if(!LX) loadLX().then(()=>{ if(inp.value.trim()===q&&!res.hidden&&!(turns.length&&turns[turns.length-1].q===q)) draw(); });
-    const hits=[...score(q).filter(x=>!quiet||x.s>=3).map(x=>({r:x.e,s:x.s})),...labHits(q).filter(x=>!quiet||x.s>=5).map(x=>({r:labRow(x.e),s:x.s+0.5}))]
-      .sort((a,b)=>b.s-a.s).filter((x,i,a)=>a.findIndex(y=>y.r.u===x.r.u)===i).slice(0,6); items=[]; let h='';
+    const all=hits(q,40), hl=quiet?all.list.filter(x=>x.s>=7).slice(0,3):all.list; items=[]; let h='';
     if(ol){ items.push(ol.hint?{hint:1}:{u:'outlook.html?icao='+ol.ic+'&t='+new Date(ol.ms).toISOString().slice(0,13)+':00Z',ol:1}); h+=olRow(ol,0); }
     const ic=w&&w.forced?null:icaoOf(q), one=!!(ic&&w&&w.ids.length===1&&w.ids[0]===ic);
     if(wr&&!one){ items.push({u:'weather.html?ids='+w.ids.join(',')+(w.kind==='TAF'?'&k=T':'')}); h+=wr; }
@@ -393,10 +426,11 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
         h+=`<a class="it" data-i="${items.length-1}" href="${su}"><span><b>${L({en:'Sun and twilight today',no:'Sol og tussmørke i dag'})}</b> <small>${tz?L({en:'local time ',no:'lokal tid '})+SUN.offset(D.noon,tz):'UTC'}</small><br><small>${body}</small></span><small>sun</small></a>`; }
     }
     if(c){ items.push({u:c.u}); h+=`<div class="it calc" data-i="0"><span><b>${esc(c.h)}</b><br><span class="v">${esc(c.v)}</span></span>${c.u?`<small>${L({en:'Open the tool',no:'Åpne verktøyet'})} →</small>`:''}</div>`; }
-    hits.forEach(({r:e})=>{ items.push({u:e.u}); h+=`<a class="it" data-i="${items.length-1}" href="${e.u}"><span><b>${esc(L(e.t))}</b><br><small>${esc(L(e.d))}</small></span><small>${e.u.split(/[?#]/)[0].replace('.html','')}</small></a>`; });
-    items.push({ai:1}); h+=`<div class="it" data-i="${items.length-1}"><span><b>${L({en:'Ask the instructor',no:'Spør instruktøren'})}:</b> ${esc(q)}</span><small>Enter${hits.length||c?' ↵':''}</small></div>`;
+    if(hl.length&&!quiet) h+=`<div class="cnt">${all.n} ${L(all.n===1?{en:'match',no:'treff'}:{en:'matches',no:'treff'})}${all.n>hl.length?L({en:` · the ${hl.length} closest`,no:` · de ${hl.length} nærmeste`}):''}${LX?'':' · '+L({en:'loading more…',no:'henter mer …'})}</div>`;
+    hl.forEach(({d:e})=>{ items.push({u:e.u}); const sub=L(e.d), sb=sub.length>120?sub.slice(0,117).replace(/\s+\S*$/,'')+' …':sub; h+=`<a class="it" data-i="${items.length-1}" href="${esc(e.u)}"><span><b>${esc(L(e.t))}</b><br><small>${esc(sb)}</small></span><small class="tg k-${e.kind}">${esc(typeof e.tag==="object"?L(e.tag):e.tag)}</small></a>`; });
+    items.push({ai:1}); h+=`<div class="it" data-i="${items.length-1}"><span><b>${L({en:'Ask the instructor',no:'Spør instruktøren'})}:</b> ${esc(q)}</span><small>Enter${hl.length||c?' ↵':''}</small></div>`;
     res.innerHTML=h+`<div class="aiw"></div>`; res.hidden=false; sel=0; mark(); }
-  function mark(){ res.querySelectorAll('.it').forEach(e=>{ const on=+e.dataset.i===sel; e.classList.toggle('on',on); e.id='nsres-'+e.dataset.i; e.setAttribute('role','option'); e.setAttribute('aria-selected',String(on)); if(on) inp.setAttribute('aria-activedescendant',e.id); }); }
+  function mark(){ res.querySelectorAll('.it').forEach(e=>{ const on=+e.dataset.i===sel; e.classList.toggle('on',on); e.id='nsres-'+e.dataset.i; e.setAttribute('role','option'); e.setAttribute('aria-selected',String(on)); if(on){ inp.setAttribute('aria-activedescendant',e.id); if(res.scrollHeight>res.clientHeight) e.scrollIntoView({block:'nearest'}); } }); }
   function go(i){ const it=items[i]; if(!it) return; if(it.ai) return ask(); if(it.ext){ window.open(it.u,'_blank','noopener'); return; } if(it.u) location.href=it.u; }
   inp.addEventListener('input',draw); inp.addEventListener('focus',()=>{ const t=turns[turns.length-1]; if(t&&t.q===inp.value.trim()) aiPaint(); else if(inp.value.trim()) draw(); });
   inp.addEventListener('keydown',e=>{ if(e.key==='ArrowDown'){ e.preventDefault(); sel=Math.min(items.length-1,sel+1); mark(); } else if(e.key==='ArrowUp'){ e.preventDefault(); sel=Math.max(0,sel-1); mark(); }
@@ -411,7 +445,7 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
   const turns=[]; let aiBusy=false;
   function aiPaint(){ const t=turns[turns.length-1]; if(!t) return; items=[{u:'fi.html?q='+encodeURIComponent(t.q.slice(0,600))}];
     const body=t.err?`<p class="er">${esc(t.err)}</p>`:t.a==null?`<p class="ft">${L({en:'Flight Intelligence is thinking…',no:'Flight Intelligence tenker …'})}</p>`:FIQ.md(t.a,t.list,t.th,L({en:'general knowledge',no:'generell kunnskap'}));
-    res.innerHTML=`<div class="ai" aria-live="polite"><div class="aq"><b>${esc(t.q)}</b></div><div class="aa">${body}</div>${t.a!=null||t.err?`${(()=>{ const lh=labHits(t.q).slice(0,3); return lh.length?`<div class="lk lab"><span class="sm">${L({en:'See it in Virtual Labs:',no:'Se det i Virtual Labs:'})}</span>${lh.map(x=>`<a href="${esc(x.e.u)}">${esc(L(x.e.t))}</a>`).join('')}</div>`:''; })()}<div class="lk"><a href="fi.html?q=${encodeURIComponent(t.q.slice(0,600))}">${L({en:'Continue in Flight Intelligence →',no:'Fortsett i Flight Intelligence →'})}</a><a href="fi.html#docs">${L({en:'Answer from my own AFM and SOP →',no:'Svar fra min egen AFM og SOP →'})}</a></div><p class="ft">${L({en:'Ask a follow-up in the search box. AI can be wrong: check rules in the current EASA texts.',no:'Still oppfølgingsspørsmål i søkefeltet. KI kan ta feil: sjekk regler i gjeldende EASA-tekster.'})}</p>`:''}</div>`;
+    res.innerHTML=`<div class="ai" aria-live="polite"><div class="aq"><b>${esc(t.q)}</b></div><div class="aa">${body}</div>${t.a!=null||t.err?`${(()=>{ const lh=hits(t.q,4).list.filter(x=>x.d.kind==='card'||/Virtual Labs/.test(x.d.d.en)).slice(0,3); return lh.length?`<div class="lk lab"><span class="sm">${L({en:'See it in Virtual Labs:',no:'Se det i Virtual Labs:'})}</span>${lh.map(x=>`<a href="${esc(x.d.u)}">${esc(L(x.d.t))}</a>`).join('')}</div>`:''; })()}<div class="lk"><a href="fi.html?q=${encodeURIComponent(t.q.slice(0,600))}">${L({en:'Continue in Flight Intelligence →',no:'Fortsett i Flight Intelligence →'})}</a><a href="fi.html#docs">${L({en:'Answer from my own AFM and SOP →',no:'Svar fra min egen AFM og SOP →'})}</a></div><p class="ft">${L({en:'Ask a follow-up in the search box. AI can be wrong: check rules in the current EASA texts.',no:'Still oppfølgingsspørsmål i søkefeltet. KI kan ta feil: sjekk regler i gjeldende EASA-tekster.'})}</p>`:''}</div>`;
     res.hidden=false; sel=0; }
   async function ask(){ const q=inp.value.trim(); if(!q) return;
     if(window.FI_ASK&&/fi\.html$/.test(location.pathname)){ res.hidden=true; inp.value=''; window.FI_ASK(q); return; }
@@ -429,5 +463,5 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
   inp.addEventListener('focus',()=>{ loadLX(); if(location.protocol.startsWith('http')) loadFi(); },{once:true});
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
-window.NSEARCH={calc,score,labHits,loadLX};
+window.NSEARCH={calc,score,hits,loadLX};
 })();
