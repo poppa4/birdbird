@@ -111,14 +111,16 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 .site .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);flex:0 0 auto}
 .site .logo svg{width:28px;height:28px;display:block}
 .site .logo img.seal{width:42px;height:42px;display:block;flex:0 0 auto}
-.site .logo .lgx,.sitefoot .fb .logo .lgx{display:flex;flex-direction:column;gap:6px;width:auto;font:inherit;letter-spacing:0}
-.site .logo .lg,.sitefoot .fb .logo .lg{display:block;width:136px;height:20.4px}
+.site .logo .lgx,.sitefoot .fb .logo .lgx{display:flex;flex-direction:row;align-items:center;gap:9px;width:auto;font:inherit;letter-spacing:0}
+.site .logo .lgt,.sitefoot .fb .logo .lgt{display:flex;flex-direction:column;gap:6px}
+.site .logo .lg-seal{display:block;width:38px;height:38px;flex:0 0 auto}.sitefoot .fb .logo .lg-seal{display:block;width:44px;height:44px;flex:0 0 auto}
+.site .logo .lg,.sitefoot .fb .logo .lg{display:block;width:136px;height:15.3px}
 .site .logo .lg-w,.sitefoot .fb .logo .lg-w{display:none}
 .site .logo .lgx small,.sitefoot .fb .logo .lgx small{display:block;margin:0;font-family:var(--f-body);font-stretch:100%;font-weight:600;font-size:8px;letter-spacing:.11em;text-transform:uppercase;line-height:1;color:var(--ink-2);white-space:nowrap}
-.sitefoot .fb .logo .lg{width:150px;height:22.4px}
+.sitefoot .fb .logo .lg{width:150px;height:16.9px}
 .sitefoot .fb .logo .lgx small{font-size:8.8px}
-.site .logo span:not(.lgx){font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:21px;letter-spacing:.07em;line-height:1;width:113.9px;white-space:nowrap}
-.site .logo span:not(.lgx) small{display:block;margin-top:4px;font-family:var(--f-body);font-stretch:100%;font-weight:600;font-size:9.5px;letter-spacing:.02em;line-height:1;color:var(--ink-2)}
+.site .logo span:not(.lgx):not(.lgt){font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:21px;letter-spacing:.07em;line-height:1;width:113.9px;white-space:nowrap}
+.site .logo span:not(.lgx):not(.lgt) small{display:block;margin-top:4px;font-family:var(--f-body);font-stretch:100%;font-weight:600;font-size:9.5px;letter-spacing:.02em;line-height:1;color:var(--ink-2)}
 .site nav{display:flex;gap:4px 20px;flex:1 1 auto;flex-wrap:wrap;align-self:stretch}
 .site nav a{display:flex;flex-direction:column;justify-content:center;font-size:15px;font-weight:500;color:var(--ink-2);text-decoration:none;position:relative;white-space:nowrap}
 /* every link keeps the width of its bold (current) form, so the items never move from page to page */
@@ -205,8 +207,8 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 .sitefoot b{display:block;color:var(--ink);font-size:14px;font-weight:600;margin-bottom:10px}
 .sitefoot .fb .logo{display:flex;align-items:center;gap:8px;color:var(--ink);text-decoration:none;margin-bottom:10px}
 .sitefoot .fb .logo svg{width:22px;height:22px}
-.sitefoot .fb .logo span:not(.lgx){font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:18px;letter-spacing:.07em}
-.sitefoot .fb .logo span:not(.lgx) small{display:block;margin-top:3px;font-family:var(--f-body);font-stretch:100%;font-weight:500;font-size:12px;letter-spacing:.02em;color:var(--ink-2)}
+.sitefoot .fb .logo span:not(.lgx):not(.lgt){font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:18px;letter-spacing:.07em}
+.sitefoot .fb .logo span:not(.lgx):not(.lgt) small{display:block;margin-top:3px;font-family:var(--f-body);font-stretch:100%;font-weight:500;font-size:12px;letter-spacing:.02em;color:var(--ink-2)}
 .sitefoot .fb p{margin:0 0 12px;max-width:34ch}
 .sitefoot a{display:block;color:var(--ink-2);text-decoration:none;padding:3px 0}
 .sitefoot a:hover{color:var(--accent);text-decoration:underline}
@@ -490,8 +492,8 @@ body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
 .note.flowlink a{display:block;padding:11px 14px;border:1px solid var(--rule);border-radius:8px;background:var(--sheet,#fff);text-decoration:none;color:var(--ink);line-height:1.4}.note.flowlink a:hover,.note.flowlink a:focus-visible{border-color:var(--ink);box-shadow:0 2px 0 var(--ink)}
 .sitefoot .fb .logo img.seal{width:64px;height:64px;flex:0 0 auto}
 /* phones: the full name under NORDAP must not push the Menu button onto a second row */
-@media (max-width:429px){.site>.in{gap:0 9px}.site .logo{gap:7px}.site .logo span{width:auto}.site .logo span:not(.lgx) small{font-size:9px;letter-spacing:0}}
-@media (max-width:389px){.site .logo span:not(.lgx) small{display:none}}
+@media (max-width:429px){.site>.in{gap:0 9px}.site .logo{gap:7px}.site .logo span{width:auto}.site .logo span:not(.lgx):not(.lgt) small{font-size:9px;letter-spacing:0}}
+@media (max-width:389px){.site .logo span:not(.lgx):not(.lgt) small{display:none}}
 /* status words: the same few on every page (site.js STAT; models.html explains them) */
 .stt{display:inline-flex;align-items:center;font-family:var(--f-mono);font-size:10.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;line-height:1;padding:4px 7px;border:1px solid var(--rule);border-radius:3px;color:var(--ink-2);background:var(--sheet);white-space:nowrap}
 .stt.beta{color:var(--caution-ink,#8A5A0B);border-color:color-mix(in srgb,var(--caution,#B7791F) 40%,transparent);background:var(--caution-wash,#FBF3E4)}
@@ -499,14 +501,16 @@ body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
 p.mstat{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:12px 0 0;max-width:none}
 p.mstat a{font-size:13.5px;margin-left:4px;color:var(--accent)}
 /* the NORDAP logo on phones: the tagline set to the logo's width so the Menu button keeps its place on the first line */
-@media (max-width:520px){.site .logo .lg{width:124px;height:18.6px}.site .logo .lgx{gap:5px}.site .logo .lgx small{font-size:7.4px;letter-spacing:.1em}}
-@media (max-width:359px){.site .logo .lgx small{display:none}}
+@media (max-width:520px){.site .logo .lg{width:118px;height:13.3px}.site .logo .lg-seal{width:34px;height:34px}.site .logo .lgx{gap:7px}.site .logo .lgt{gap:5px}.site .logo .lgx small{font-size:6.8px;letter-spacing:.06em}}
+@media (max-width:429px){.site .logo .lg-seal{width:30px;height:30px}.site .logo .lg{width:104px;height:11.7px}.site .logo .lgx{gap:6px}.site .logo .lgt{gap:4px}.site .logo .lgx small{font-size:6px;letter-spacing:.05em}}
+@media (max-width:389px){.site .logo .lg-seal{width:28px;height:28px}.site .logo .lg{width:98px;height:11px}.site .logo .lgx small{display:none}}
+@media (max-width:369px){.site .logo .lg-seal{width:26px;height:26px}.site .logo .lg{width:92px;height:10.3px}.site .logo .lgx{gap:5px}}
 /* footer logo: a plain link, whatever a browser or a touch rule gives links (iOS showed a large dark box behind it) */
 .sitefoot .fb a.logo{display:inline-flex!important;min-height:0!important;height:auto!important;width:auto!important;padding:4px 0!important;background:none!important;border:0!important;border-radius:0;box-shadow:none!important;-webkit-tap-highlight-color:transparent;overflow:visible}
 .sitefoot .fb a.logo .lgx{background:none!important;height:auto!important}
-.sitefoot .fb a.logo img.lg{display:block;width:150px!important;height:22.4px!important;max-height:22.4px;object-fit:contain;background:none!important}
+.sitefoot .fb a.logo img.lg{display:block;width:150px!important;height:16.9px!important;max-height:16.9px;object-fit:contain;background:none!important}
 .sitefoot .fb a.logo img.lg-w{display:none!important}
 /* Safari: an image in a flex column keeps its intrinsic height as its minimum unless told otherwise (the logo SVGs once had
    no intrinsic size, so Safari used 150 px): the logo images take only the height they are given */
 .lgx img{min-height:0!important;flex:0 0 auto!important}
-.sitefoot .fb a.logo .lgx{display:block!important}.sitefoot .fb a.logo .lgx small{margin-top:6px}
+.sitefoot .fb a.logo .lgx{display:flex!important}.sitefoot .fb a.logo .lgx small{margin-top:0}
