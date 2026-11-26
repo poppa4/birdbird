@@ -408,7 +408,7 @@ body.rt-in .rt-head,body.rt-in #home,body.rt-in .snav{display:none}
               <div class="inrow"><textarea id="say" placeholder="Type your call, or hold the talk button (space bar) and speak…" aria-label="Your transmission"></textarea></div>
               <div class="txcol"><button class="btn pri" id="btnTx" type="button">Transmit</button><button class="btn" id="btnAgain" type="button" title="Ask the controller to repeat">Say again</button></div>
             </div>
-            <div class="rs-aux"><button class="lnkd" id="btnModel" type="button">Show a good call</button><button class="lnkd" id="btnSkip" type="button">Skip this call</button><button class="lnkd" id="btnUndo" type="button" hidden>Misheard? Undo</button><span class="note" id="micNote"></span></div>
+            <div class="rs-aux"><button class="lnkd" id="btnModel" type="button">Show a good call</button><button class="lnkd" id="btnSkip" type="button">Skip this call</button><button class="lnkd" id="btnUndo" type="button" hidden>Misheard? Undo</button><span class="note" id="micNote"></span><span class="note" id="voiceNote" hidden></span></div>
           </div>
         </div>
         <aside class="rs-strip" aria-label="Flight strip">
@@ -503,7 +503,7 @@ body.rt-in .rt-head,body.rt-in #home,body.rt-in .snav{display:none}
 <script src="ai.js?v=8"></script>
 <script src="radiocore.js?v=12"></script>
 <script src="whisper.js?v=2"></script>
-<script src="neural.js?v=1"></script>
+<script src="neural.js?v=2"></script>
 <script src="radioscen.js?v=6"></script>
 <script src="radioairline.js?v=5"></script>
 <script src="airportmap.js?v=7"></script>
@@ -594,6 +594,6 @@ LAB.start('radio');
 })();
 </script>
 <script src="trainhome.js?v=1"></script>
-<script src="radiotrainer.js?v=21"></script>
+<script src="radiotrainer.js?v=22"></script>
 </body>
 </html>

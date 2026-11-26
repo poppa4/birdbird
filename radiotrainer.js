@@ -61,12 +61,14 @@ function hush(){ speakId++; if(TTS) try{ speechSynthesis.cancel(); }catch(e){} i
 /* natural voice: downloaded once (about 90 MB), the browser voice speaks until it is ready */
 let nvP=null;
 function nvPreload(){ if(nvP) return nvP; nvP=nvLoad().finally(()=>{ if(!NV.ready) nvP=null; }); return nvP; }
+/* while the natural voice downloads, the session says so: otherwise the browser voice is taken for the real one */
+function vnote(t){ const v=el('voiceNote'); if(v){ v.textContent=t||''; v.hidden=!t; } }
 function nvLoad(){
-  const n=el('ttsEngNote'); const ready=()=>{ if(n) n.textContent=L({en:'Natural voice ready. Generated on this device.',no:'Naturlig stemme klar. Lages på denne enheten.'}); };
+  const n=el('ttsEngNote'); const ready=()=>{ vnote(''); if(n) n.textContent=L({en:'Natural voice ready. Generated on this device.',no:'Naturlig stemme klar. Lages på denne enheten.'}); };
   if(NV.ready){ ready(); return Promise.resolve(); }
   if(n) n.textContent=L({en:'Downloading the natural voice (about 90 MB, once). The browser voice speaks meanwhile.',no:'Laster ned den naturlige stemmen (omtrent 90 MB, én gang). Nettleserstemmen snakker så lenge.'});
-  return NV.load(f=>{ if(n) n.textContent=L({en:'Downloading the natural voice',no:'Laster ned den naturlige stemmen'})+` ${Math.round(f*100)} %`; }).then(ready)
-    .catch(()=>{ if(n) n.textContent=L({en:'The natural voice could not be downloaded here. The browser voice is used.',no:'Den naturlige stemmen kunne ikke lastes ned her. Nettleserstemmen brukes.'}); });
+  return NV.load(f=>{ const t=L({en:'Downloading the natural voice',no:'Laster ned den naturlige stemmen'})+` ${Math.round(f*100)} %`; if(n) n.textContent=t; vnote(t+' · '+L({en:'the browser voice speaks until then',no:'nettleserstemmen snakker så lenge'})); }).then(ready)
+    .catch(()=>{ const t=L({en:'The natural voice could not be downloaded here. The browser voice is used.',no:'Den naturlige stemmen kunne ikke lastes ned her. Nettleserstemmen brukes.'}); if(n) n.textContent=t; vnote(t); });
 }
 function speak(text,o){ o=o||{}; const id=++speakId;
   return new Promise(res=>{
@@ -558,6 +560,8 @@ function init(){
   if(!TTS&&!NV.supported){ el('setVoice').disabled=true; el('ttsNote').textContent=L({en:'This browser has no speech synthesis: the controller is shown as text.',no:'Denne nettleseren har ikke talesyntese: flygelederen vises som tekst.'}); }
   el('say').placeholder=PH();
   drawHome(); show('home'); aiSetup();
+  { const c=navigator.connection||{}; const ok=!c.saveData&&!/2g/.test(c.effectiveType||'')&&c.type!=='cellular'&&window.matchMedia&&matchMedia('(pointer:fine)').matches;
+    if(ok&&natural()&&P.voice&&!NV.ready) setTimeout(()=>{ (window.requestIdleCallback||setTimeout)(()=>nvPreload()); },2500); }
   LAB.onLang(()=>{ const y=window.scrollY; requestAnimationFrame(()=>window.scrollTo(0,y)); drawHome(); if(!el('v-pick').hidden) drawPick(); if(ses&&!el('v-sess').hidden){ el('sessT').textContent=L(cur.t); drawBasis(); drawTurn(); } if(!el('v-deb').hidden&&ses) drawDeb(ses.summary()); });
   // test hooks (headless browsers cannot speak): type and transmit
   window.__radio={get ses(){ return ses; },voice:c=>finishVoice(c),micStart,micStop,say(t){ el('say').value=t; return transmit(false); },model(){ return ses&&ses.step?ses.step.model:''; },start:k=>startScenario(k==='quick'?'quick':S.byKey(k)),idle:()=>queue};
