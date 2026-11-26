@@ -6,6 +6,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); sys.path.insert(
 import shellbin, warp, hyb, light
 OUT = sys.argv[1]; OCC = np.load(sys.argv[2])
 h, g, V, Ff, lab, rm, big = hyb.fg_keep(); W, F, ob, t, names = hyb.blender_upper(hyb.fg_tracer(V, Ff, rm)); G = g[0]; N8 = G['N'].astype(np.uint8)
+for nm, P, f in hyb.reading_lights(V, Ff, lab):      # reading-light bezel, dimmer knob and switch on the corner posts
+    names.append(nm); F = np.vstack([F, f + len(W)]); W = np.vstack([W, P]); ob = np.concatenate([ob, np.full(len(f), len(names) - 1)]); t = np.concatenate([t, np.ones(len(P))])
 occV = OCC.reshape(-1, 3); occF = np.arange(len(occV)).reshape(-1, 3)
 def tracer(parts):
     Vs, Fs, k = [], [], 0
@@ -74,15 +76,17 @@ import scipy.sparse as sp
 E = np.vstack([Fn[:, [0, 1]], Fn[:, [1, 2]], Fn[:, [2, 0]]]); Adj = sp.coo_matrix((np.ones(len(E)), (E[:, 0], E[:, 1])), shape=(len(uq),) * 2).tocsr(); Adj = Adj + Adj.T; Adj.data[:] = 1
 deg = np.asarray(Adj.sum(1)).ravel()
 for _ in range(2): Yn = 0.5 * Yn + 0.5 * (Adj @ Yn) / np.maximum(deg, 1)
-PAINT = {'lining': tint, 'dark': tint * np.array([0.24, 0.24, 0.25]), 'plate': tint * 0.94, 'visor': tint * np.array([0.36, 0.38, 0.39])}
+PAINT = {'lining': tint, 'dark': tint * np.array([0.24, 0.24, 0.25]), 'plate': tint * 0.94, 'visor': tint * np.array([0.36, 0.38, 0.39]), 'rlplate': tint * np.array([0.42, 0.43, 0.45])}
 kind = {i: 'lining' for i in set(ob)}
 for i in set(ob):
     n = names[i]
     if n.startswith('Cylinder') or n.startswith('BezierCurve'): kind[i] = 'dark'
     if n.startswith('cockpit light'): kind[i] = 'plate'
+    if n in ('rl_knob', 'rl_switch'): kind[i] = 'dark'
+    if n == 'rl_plate': kind[i] = 'rlplate'
     if n == 'Plane.109': kind[i] = 'visor'      # the stowed sun visor on its arm (smoked plastic)
 kv = np.array([kind[o] for o in vob]); Lv = Yn.copy()
-Lv[kv == 'visor'] = 0.55 + 0.45 * Lv[kv == 'visor']; Lv[kv == 'dark'] = 0.45 + 0.55 * Lv[kv == 'dark']     # dark plastics keep some form
+Lv[kv == 'visor'] = 0.55 + 0.45 * Lv[kv == 'visor']; Lv[kv == 'rlplate'] = 0.5 + 0.5 * Lv[kv == 'rlplate']; Lv[kv == 'dark'] = 0.45 + 0.55 * Lv[kv == 'dark']     # dark plastics keep some form
 Lv[np.array([names[o] == 'closing' for o in vob])] = 0.16      # the closing wall behind the lining: seen only through a joint, as shadow
 col = np.array([PAINT[k] for k in kv]) * Lv[:, None]
 col = np.clip(np.round(col), 2, 255)

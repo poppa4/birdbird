@@ -134,7 +134,37 @@ def fg_keep():
                                                                    # out: seen through a window it showed above the window top
     thin=(hi[:,2]-lo[:,2]<0.012)&(lo[:,2]>1.255)&(hi[:,2]<1.285)&(lo[:,0]>0.08)&(hi[:,0]<1.12)&(lo[:,1]>0.5)&(hi[:,1]<1.37)&(hi[:,1]-lo[:,1]<0.06)
     print('breaker-wall strips removed',int(thin.sum())); rm|=thin[lab]
+    rm|=np.isin(lab,RL_FG[-1]+RL_FG[1])                           # the flat reading-light decals (replaced by reading_lights)
     return h,g,V,F,lab,rm,big
+
+# ---- reading-light controls on the windshield corner posts (the owner's model: Plane.118 bezel, the knurled dimmer knob
+# from Circle.053, the on/off rocker Cube.145). They replace the flat FlightGear decal (a plate with a round and a square
+# hole). Each part is moved rigidly from the owner's post onto the page's post: same size, centred where the decal was.
+RL_FG={-1:(1595,1596,1597),1:(1598,1599,1600)}
+RL_SCALE=1.10
+def _frame(P,eye):
+    c=P.mean(0); U,S,Wt=np.linalg.svd(P-c); up=Wt[0]*(1 if Wt[0][1]>0 else -1); n=Wt[2]*(1 if (eye-c)@Wt[2]>0 else -1)
+    sd=np.cross(n,up); sd/=np.linalg.norm(sd); up=np.cross(sd,n); return c,np.array([sd,up,n])
+def reading_lights(V,Ff,lab):
+    import trimesh
+    d=np.load(os.environ['NEO_NPZ'],allow_pickle=True); BV=d['v'].astype(float).copy(); BV[:,0]*=-1; BF=d['f']; bo=d['ob']
+    Fk=BF[bo==49]; mk=trimesh.Trimesh(BV,Fk,process=False); cc=trimesh.graph.connected_components(mk.face_adjacency,nodes=np.arange(len(Fk)),min_len=1)
+    out=[]
+    for sg in (-1,1):
+        eye=np.array([sg*0.53,0.63,0.31])
+        pl=BF[bo==202]; pl=pl[sg*BV[pl].mean(1)[:,0]>0]
+        sw=BF[bo==76]; sw=sw[sg*BV[sw].mean(1)[:,0]>0]
+        kn=None
+        for c in cc:
+            P=BV[np.unique(Fk[c])]
+            if (P[:,1]>0.65).all() and (sg*P[:,0]>0.7).all(): kn=Fk[c]
+        cb,Rb=_frame(BV[np.unique(pl)],eye)
+        fp=Ff[lab==RL_FG[sg][0]]; cf,Rf=_frame(V[np.unique(fp)],eye)
+        back_b=((BV[np.unique(pl)]-cb)@Rb[2]).min()
+        for nm,ff in (('rl_plate',pl),('rl_knob',kn),('rl_switch',sw)):
+            vi=np.unique(ff); loc=(BV[vi]-cb)@Rb.T; loc[:,2]-=back_b; loc*=RL_SCALE; loc[:,2]-=0.001
+            P=cf+loc@Rf; re=-np.ones(len(BV),int); re[vi]=np.arange(len(vi)); out.append((nm,P,re[ff]))
+    return out
 def fg_tracer(V,Ff,rm):
     import trimesh
     return trimesh.ray.ray_pyembree.RayMeshIntersector(trimesh.Trimesh(V,Ff[~rm],process=False))
