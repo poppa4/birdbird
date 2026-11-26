@@ -249,6 +249,30 @@ const STOP=new Set(['kt','nm','ft','m','qnh','elev','elevation','rwy','runway','
 const WORDS=IDX.map(e=>new Set(e.k.split(/[^\p{L}\p{N}]+/u).filter(Boolean)));
 function score(q){ const w=q.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(x=>x.length>1&&!STOP.has(x)&&!/^\d+$/.test(x));
   if(!w.length) return []; return IDX.map((e,i)=>{ let s=0; w.forEach(x=>{ if(WORDS[i].has(x)) s+=3; else if([...WORDS[i]].some(v=>v.startsWith(x))) s+=x.length>=4?2:1; else if(x.length>=4&&e.k.includes(x)) s+=1; }); return {e,s}; }).filter(x=>x.s>=2).sort((a,b)=>b.s-a.s).slice(0,5); }
+/* ---------- Virtual Labs: every Key concepts card (data/labindex.json, built by tools/lab-index.py) ----------
+   Found by its title (English and Norwegian) first, then by its first sentence. A hit opens the lab at the card's place
+   in the model: lab.html#kc-<key> (concepts.js). Abbreviations pilots type are widened to the words the cards use. */
+const SYN={aoa:['angle of attack','angrepsvinkel'],'αi':['induced angle'],alpha:['angle of attack'],cl:['lift coefficient','clmax'],cd:['drag coefficient'],cp:['centre of pressure','trykksenter'],
+ cg:['centre of gravity','tyngdepunkt'],mac:['mean aerodynamic chord'],vmd:['minimum drag'],vmp:['minimum power'],vs:['stall speed','stallfart'],mcrit:['critical mach','kritisk machtall'],mdd:['drag divergence'],
+ vortex:['vortices','virvel','virvler'],vortices:['vortex','virvler'],airfoil:['aerofoil','profil'],aerofoil:['airfoil','profil'],isa:['standard atmosphere','standardatmosfære'],cb:['cumulonimbus'],
+ cat:['clear air turbulence'],ws:['wind shear','vindskjær'],llws:['wind shear'],rvr:['runway visual range'],ins:['inertial'],irs:['inertial'],ap:['autopilot'],ra:['resolution advisory','radio altimeter'],
+ tod:['top of descent'],pnr:['point of no return'],pet:['equal time'],sid:['departure'],star:['arrival'],tuc:['useful consciousness'],sd:['spatial disorientation','desorientering'],
+ parasitt:['parasite'],parasite:['parasitt'],indusert:['induced'],induced:['indusert'],motstand:['drag'],løft:['lift'],stall:['stalling']};
+const LSTOP=new Set(['the','a','an','is','are','was','what','whats','how','why','does','do','explain','define','meaning','mean','show','me','hva','hvordan','hvorfor','er','betyr','forklar','vis','meg','en','et','ei','og','and','of','to','i','på','in','for','med','with','om','about','av','vs','versus','mellom','between','det','den','that','this','it','on','at','by','or','eller','kt','kts','knots','knop','ft','feet','fot','nm','km','hpa','inhg','kg','lb','lbs','usg','rwy','bane','deg']);
+const lw=s=>s.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+let LX=null, lxP=null;
+const loadLX=()=>lxP||(lxP=fetch('data/labindex.json').then(r=>r.json()).then(d=>{ const a=[]; (d.labs||[]).forEach(lab=>(lab.c||[]).forEach((c,i)=>{ const tt=(c.t.en+' '+c.t.no).toLowerCase(), dd=(c.d.en+' '+c.d.no).toLowerCase();
+  a.push({u:c.href||(lab.f+(c.k?'#kc-'+c.k:'')),t:c.t,lab:lab.t,f:lab.f,n:i+1,tt,dd,TW:[...new Set(lw(tt))],DW:[...new Set(lw(dd))]}); })); LX=a; }).catch(()=>{ LX=[]; }));
+function labHits(q){ if(!LX||!LX.length) return [];
+  const toks=lw(q).filter(x=>!LSTOP.has(x)&&!/^\d+$/.test(x)&&(x.length>1||/[α-ω]/.test(x))); if(!toks.length) return [];
+  const groups=toks.map(x=>[x].concat(SYN[x]||[])), has=(W,w)=>W.includes(w)||(w.length>=4&&W.some(v=>v.startsWith(w)));
+  const one=(e,a)=>{ if(a.includes(' ')){ const ws=lw(a).filter(w=>!LSTOP.has(w)); return ws.every(w=>has(e.TW,w))?5:ws.every(w=>has(e.TW,w)||has(e.DW,w))?1.5:0; }
+    if(e.TW.includes(a)) return 5; if(a.length>=3&&e.TW.some(v=>v.startsWith(a))) return a.length>=4?3.5:2.5;
+    if(e.DW.includes(a)) return 1.5; if(a.length>=4&&e.DW.some(v=>v.startsWith(a))) return 1; return 0; };
+  const need=groups.length<=2?groups.length:Math.ceil(groups.length*0.6);
+  return LX.map((e,i)=>{ let s=0,m=0; groups.forEach(g=>{ const b=Math.max(...g.map(a=>one(e,a))); if(b>0){ s+=b; m++; } }); if(m<need) return null; if(m===groups.length) s+=1; return {e,s,i}; })
+    .filter(x=>x&&x.s>=2.5).sort((a,b)=>b.s-a.s||a.i-b.i).slice(0,6); }
+const labRow=e=>({u:e.u,t:e.t,d:{en:'Key concept '+String(e.n).padStart(2,'0')+' · '+e.lab.en,no:'Nøkkelbegrep '+String(e.n).padStart(2,'0')+' · '+e.lab.no}});
 /* ---------- UI ---------- */
 /* the bar itself (.nsearch, .in, input) is styled in site.css, so it is in place before this file loads */
 const css=`.nsearch .res{position:absolute;left:var(--gl);right:var(--gr);max-width:var(--shell);margin:6px auto 0;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);box-shadow:var(--shadow-pop);overflow:hidden}
@@ -260,7 +284,7 @@ const css=`.nsearch .res{position:absolute;left:var(--gl);right:var(--gr);max-wi
 .nsearch .ai{padding:12px 14px;font-size:14.5px;line-height:1.5;color:var(--ink);border-top:1px solid var(--rule-2)}
 .nsearch .ai{max-height:min(70vh,640px);overflow:auto}.nsearch .ai .aq{color:var(--ink-2);font-size:13.5px;margin-bottom:6px}.nsearch .ai .aa p{margin:0 0 8px}.nsearch .ai .aa ul{margin:0 0 8px;padding-left:20px}.nsearch .ai .gk{font-size:11px;color:var(--ink-3);border:1px solid var(--rule);border-radius:3px;padding:0 4px;margin-left:3px;white-space:nowrap}.nsearch .ai .er{color:var(--warning)}.nsearch .ai .ft{font-size:12px;color:var(--ink-3);margin:8px 0 0;background:none;padding:0}
 .nsearch .ai .lk{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}.nsearch .ai .lk a{font-size:13.5px;border:1px solid var(--rule);border-radius:var(--radius);padding:3px 10px;text-decoration:none;color:var(--accent)}
-.nsearch .sm{font-size:12px;color:var(--ink-3)}
+.nsearch .sm{font-size:12px;color:var(--ink-3)}.nsearch .ai .lk.lab{align-items:center}.nsearch .ai .lk.lab .sm{margin-right:2px}
 .nsearch .ol>span{min-width:0}.nsearch .ol .ln{display:block;font-size:13.5px;line-height:1.45;color:var(--ink);margin-top:2px}.nsearch .ol .ln.mu{color:var(--ink-2);font-size:12px}
 .nsearch .olb{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:3px;font:600 11.5px/1.6 var(--f-mono,ui-monospace,monospace);color:#fff;vertical-align:1px}
 .nsearch .olb.vfr{background:#1e8e3e}.nsearch .olb.near{background:#b77800}.nsearch .olb.svfr{background:#c2410c}.nsearch .olb.ifr{background:#d93025}`;
@@ -351,7 +375,9 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
     const w=/^https?:/.test(location.protocol)?WXQ(q):null, wr=w?wxRow(w):'';
     if(w){ clearTimeout(wxT); wxT=setTimeout(()=>wxGet(w.ids),250); if(!window.ICB) loadIcb().then(()=>{ if(!res.hidden) draw(); }); }
     const ol=olGet(q);
-    const c=wr||ol?null:calc(q), hits=score(q).filter(x=>!c&&!wr&&!ol||x.s>=3); items=[]; let h='';
+    const c=wr||ol?null:calc(q), quiet=!!(c||wr||ol); if(!LX) loadLX().then(()=>{ if(inp.value.trim()===q&&!res.hidden&&!(turns.length&&turns[turns.length-1].q===q)) draw(); });
+    const hits=[...score(q).filter(x=>!quiet||x.s>=3).map(x=>({r:x.e,s:x.s})),...labHits(q).filter(x=>!quiet||x.s>=5).map(x=>({r:labRow(x.e),s:x.s+0.5}))]
+      .sort((a,b)=>b.s-a.s).filter((x,i,a)=>a.findIndex(y=>y.r.u===x.r.u)===i).slice(0,6); items=[]; let h='';
     if(ol){ items.push(ol.hint?{hint:1}:{u:'outlook.html?icao='+ol.ic+'&t='+new Date(ol.ms).toISOString().slice(0,13)+':00Z',ol:1}); h+=olRow(ol,0); }
     const ic=w&&w.forced?null:icaoOf(q), one=!!(ic&&w&&w.ids.length===1&&w.ids[0]===ic);
     if(wr&&!one){ items.push({u:'weather.html?ids='+w.ids.join(',')+(w.kind==='TAF'?'&k=T':'')}); h+=wr; }
@@ -367,7 +393,7 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
         h+=`<a class="it" data-i="${items.length-1}" href="${su}"><span><b>${L({en:'Sun and twilight today',no:'Sol og tussmørke i dag'})}</b> <small>${tz?L({en:'local time ',no:'lokal tid '})+SUN.offset(D.noon,tz):'UTC'}</small><br><small>${body}</small></span><small>sun</small></a>`; }
     }
     if(c){ items.push({u:c.u}); h+=`<div class="it calc" data-i="0"><span><b>${esc(c.h)}</b><br><span class="v">${esc(c.v)}</span></span>${c.u?`<small>${L({en:'Open the tool',no:'Åpne verktøyet'})} →</small>`:''}</div>`; }
-    hits.forEach(({e})=>{ items.push({u:e.u}); h+=`<a class="it" data-i="${items.length-1}" href="${e.u}"><span><b>${esc(L(e.t))}</b><br><small>${esc(L(e.d))}</small></span><small>${e.u.split(/[?#]/)[0].replace('.html','')}</small></a>`; });
+    hits.forEach(({r:e})=>{ items.push({u:e.u}); h+=`<a class="it" data-i="${items.length-1}" href="${e.u}"><span><b>${esc(L(e.t))}</b><br><small>${esc(L(e.d))}</small></span><small>${e.u.split(/[?#]/)[0].replace('.html','')}</small></a>`; });
     items.push({ai:1}); h+=`<div class="it" data-i="${items.length-1}"><span><b>${L({en:'Ask the instructor',no:'Spør instruktøren'})}:</b> ${esc(q)}</span><small>Enter${hits.length||c?' ↵':''}</small></div>`;
     res.innerHTML=h+`<div class="aiw"></div>`; res.hidden=false; sel=0; mark(); }
   function mark(){ res.querySelectorAll('.it').forEach(e=>{ const on=+e.dataset.i===sel; e.classList.toggle('on',on); e.id='nsres-'+e.dataset.i; e.setAttribute('role','option'); e.setAttribute('aria-selected',String(on)); if(on) inp.setAttribute('aria-activedescendant',e.id); }); }
@@ -385,7 +411,7 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
   const turns=[]; let aiBusy=false;
   function aiPaint(){ const t=turns[turns.length-1]; if(!t) return; items=[{u:'fi.html?q='+encodeURIComponent(t.q.slice(0,600))}];
     const body=t.err?`<p class="er">${esc(t.err)}</p>`:t.a==null?`<p class="ft">${L({en:'Flight Intelligence is thinking…',no:'Flight Intelligence tenker …'})}</p>`:FIQ.md(t.a,t.list,t.th,L({en:'general knowledge',no:'generell kunnskap'}));
-    res.innerHTML=`<div class="ai" aria-live="polite"><div class="aq"><b>${esc(t.q)}</b></div><div class="aa">${body}</div>${t.a!=null||t.err?`<div class="lk"><a href="fi.html?q=${encodeURIComponent(t.q.slice(0,600))}">${L({en:'Continue in Flight Intelligence →',no:'Fortsett i Flight Intelligence →'})}</a><a href="fi.html#docs">${L({en:'Answer from my own AFM and SOP →',no:'Svar fra min egen AFM og SOP →'})}</a></div><p class="ft">${L({en:'Ask a follow-up in the search box. AI can be wrong: check rules in the current EASA texts.',no:'Still oppfølgingsspørsmål i søkefeltet. KI kan ta feil: sjekk regler i gjeldende EASA-tekster.'})}</p>`:''}</div>`;
+    res.innerHTML=`<div class="ai" aria-live="polite"><div class="aq"><b>${esc(t.q)}</b></div><div class="aa">${body}</div>${t.a!=null||t.err?`${(()=>{ const lh=labHits(t.q).slice(0,3); return lh.length?`<div class="lk lab"><span class="sm">${L({en:'See it in Virtual Labs:',no:'Se det i Virtual Labs:'})}</span>${lh.map(x=>`<a href="${esc(x.e.u)}">${esc(L(x.e.t))}</a>`).join('')}</div>`:''; })()}<div class="lk"><a href="fi.html?q=${encodeURIComponent(t.q.slice(0,600))}">${L({en:'Continue in Flight Intelligence →',no:'Fortsett i Flight Intelligence →'})}</a><a href="fi.html#docs">${L({en:'Answer from my own AFM and SOP →',no:'Svar fra min egen AFM og SOP →'})}</a></div><p class="ft">${L({en:'Ask a follow-up in the search box. AI can be wrong: check rules in the current EASA texts.',no:'Still oppfølgingsspørsmål i søkefeltet. KI kan ta feil: sjekk regler i gjeldende EASA-tekster.'})}</p>`:''}</div>`;
     res.hidden=false; sel=0; }
   async function ask(){ const q=inp.value.trim(); if(!q) return;
     if(window.FI_ASK&&/fi\.html$/.test(location.pathname)){ res.hidden=true; inp.value=''; window.FI_ASK(q); return; }
@@ -400,8 +426,8 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
         if(!t.a.trim()){ t.a=null; t.err=NAI.errText({code:'other'}); } } }
     catch(e){ t.err=window.NAI?NAI.errText(e):L({en:'Flight Intelligence is not available right now.',no:'Flight Intelligence er ikke tilgjengelig akkurat nå.'}); }
     aiBusy=false; if(turns[turns.length-1]===t&&inp.value.trim()===q) aiPaint(); }
-  inp.addEventListener('focus',()=>{ if(location.protocol.startsWith('http')) loadFi(); },{once:true});
+  inp.addEventListener('focus',()=>{ loadLX(); if(location.protocol.startsWith('http')) loadFi(); },{once:true});
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
-window.NSEARCH={calc,score};
+window.NSEARCH={calc,score,labHits,loadLX};
 })();

@@ -82,8 +82,6 @@ function render(grid,items){
     return `<div class="kc${it.dp?' deep':''}">${it.ill?it.ill():''}<div class="kh"><span class="kn" aria-hidden="true"></span><h3>${L(it.t)}</h3></div><p>${a}</p>${b||it.dd?`<details class="deep kmore"><summary>${L({en:'More',no:'Mer'})}</summary>${b?`<p>${b}</p>`:''}${it.dd?`<p>${L(it.dd)}</p>`:''}</details>`:''}${it.href?`<a class="kgo" href="${it.href}">${L(it.hl)} →</a>`:it.click||it.to?`<button class="kgo" type="button" data-k="${it.k}">${L({en:'Show in the model →',no:'Vis i modellen →'})}</button>`:''}</div>`; }).join(''); };
   grid.classList.add('kcgrid'); draw(); if(window.LAB) LAB.onLang(draw);
   ladder(grid);
-  /* a link like lab.html#kc-<key> (from another lab's card) opens that card's place in this model */
-  const m=/^#kc-([\w-]+)$/.exec(location.hash); if(m){ const go=()=>{ const b=grid.querySelector(`.kgo[data-k="${m[1]}"]`); if(b) b.click(); }; setTimeout(go,400); }
   grid.addEventListener('click',e=>{ const b=e.target.closest('.kgo'); if(!b) return; const it=items.find(x=>x.k===b.dataset.k); if(!it) return;
     if(typeof it.click==='function') it.click(); else if(it.click){ const c=document.querySelector(it.click); if(c) c.click(); }
     const t=it.to?document.querySelector(it.to):null;
@@ -263,5 +261,14 @@ function ladder(grid){ if(!grid||grid.previousElementSibling&&grid.previousEleme
   const p=document.createElement('p'); p.className='kladder'; grid.before(p); const w=()=>{ p.innerHTML=L(LADDER); }; w(); if(window.LAB) LAB.onLang(w); }
 /* KCS.order(items, keys): the same cards in ladder order (keys first, in that order; any others keep their place after). */
 const order=(items,keys)=>{ const by=k=>{ const i=keys.indexOf(k); return i<0?keys.length:i; }; return items.map((it,i)=>[it,i]).sort((a,b)=>by(a[0].k)-by(b[0].k)||a[1]-b[1]).map(x=>x[0]); };
+/* A link like lab.html#kc-<key> (the search bar, or another lab's card) opens that card's place in the model. One handler for
+   every lab, whether the cards come from render() or from the page's own script; also when the hash changes on the same page. */
+function kcHash(){ const m=/^#kc-([\w-]+)$/.exec(location.hash); if(!m) return; let n=0;
+  const go=()=>{ const b=document.querySelector(`.kcgrid .kgo[data-k="${m[1]}"]`); if(!b){ if(++n<40) setTimeout(go,150); return; }
+    const c=b.closest('.kc'); if(c&&c.closest('.deep')&&window.LAB&&LAB.depth!=='deep'){ try{ LAB.setDepth('deep'); }catch(e){} }
+    setTimeout(()=>b.click(),300); };
+  setTimeout(go,250); }
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',kcHash); else kcHash();
+addEventListener('hashchange',kcHash);
 window.KCS={render,sv,tx,ar,ladder,LADDER,order,spot,spotHide,SEE,RING,labels,ring,ringStop,get last(){ return lastSpot; }};
 })();
