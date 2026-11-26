@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """NORDAP logo (26 Nov 2026): the seal (ring, globe and bird) and the NORDAP wordmark, from the owner's logo image.
 
-The seal's circles are exact (radii measured from the image); the bird, the globe lines and the letters were traced
-from the image (potrace) and are stored here as path data: seal_contents.d, word.d, seal_r.json (units: seal radius 100,
-seal centre at 0,0). Everything cut out of the seal is transparent, so the same file works on any background.
+Drawn again as clean geometry, not a trace of the (small, soft) source image:
+  - the seal's circles are exact; the eight globe lines are cubic curves fitted to the image (0.1 unit rms) and drawn
+    as evenly tapered strokes; the bird is a smoothed trace; everything is joined into ONE path (no SVG mask, so
+    Safari draws it sharp at every size); cut-outs are transparent, so one file works on any background
+  - the letters are rebuilt from measurements: straight edges as fitted lines, O and the bowls as superellipses,
+    the same rounded corners as the original
+  path data: seal.d, word.d (units: seal radius 100, centre 0,0). The measuring and fitting scripts are in src/.
 
     python3 tools/logo/seal/build.py          writes img/brand/*.svg, favicon.svg, favicon-32.png, favicon.ico,
                                               apple-touch-icon.png and img/og-nordap.jpg (needs rsvg-convert, Pillow)
@@ -12,14 +16,11 @@ import json, os, subprocess
 from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.join(HERE, '..', '..', '..')
 NAVY, WHITE = '#0B2545', '#FFFFFF'          # NAVY = site.css --navy
-R = json.load(open(os.path.join(HERE, 'seal_r.json'))); SEAL = open(os.path.join(HERE, 'seal_contents.d')).read(); WORD = open(os.path.join(HERE, 'word.d')).read()
-WX0, WX1, WY0, WY1 = 115.4, 695.7, -37.9, 27.3        # the wordmark's box in seal units
-circ = lambda r: f'M{r:.3f} 0A{r:.3f} {r:.3f} 0 1 0 {-r:.3f} 0A{r:.3f} {r:.3f} 0 1 0 {r:.3f} 0Z'
+SEAL = open(os.path.join(HERE, 'seal.d')).read(); WORD = open(os.path.join(HERE, 'word.d')).read()
+WX0, WX1, WY0, WY1 = 120.47, 689.46, -36.47, 26.49     # the wordmark's box in seal units
 
-def seal(fill, mid):
-    return (f'<mask id="{mid}" maskUnits="userSpaceOnUse" x="-101" y="-101" width="202" height="202"><rect x="-101" y="-101" width="202" height="202" fill="#fff"/>'
-            f'<path fill="#000" fill-rule="evenodd" d="{circ(R["r2"])} {circ(R["r1"])}"/><path fill="#000" d="{SEAL}"/></mask>',
-            f'<path fill="{fill}" mask="url(#{mid})" d="{circ(100)}"/>')
+def seal(fill, mid=None):
+    return ('', f'<path fill="{fill}" d="{SEAL}"/>')
 
 def svg(vb, defs, body, w=None):
     x, y, ww, hh = vb
@@ -30,7 +31,7 @@ def files():
     out = {}
     for name, col in [('navy', NAVY), ('white', WHITE)]:
         m, g = seal(col, 's')
-        out[f'img/brand/nordap-logo-{name}.svg'] = svg((-100, -100, WX1 + 100 + 1, 200), m, g + f'<path fill="{col}" d="{WORD}"/>', 796)
+        out[f'img/brand/nordap-logo-{name}.svg'] = svg((-100, -100, WX1 + 100 + 1, 200), m, g + f'<path fill="{col}" d="{WORD}"/>', 791)
         out[f'img/brand/nordap-seal-{name}.svg'] = svg((-100, -100, 200, 200), m, g, 200)
         out[f'img/brand/nordap-word-{name}.svg'] = svg((WX0 - 0.5, WY0 - 0.5, WX1 - WX0 + 1, WY1 - WY0 + 1), '', f'<path fill="{col}" d="{WORD}"/>', 580)
     m, g = seal(NAVY, 's')
