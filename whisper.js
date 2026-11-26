@@ -30,13 +30,16 @@ async function load(onProgress){
   try{ return await loading; }catch(e){ loading=null; throw e; }
 }
 
+/* the microphone stays open for the whole session, so recording starts the instant the button is pressed:
+   reopening it for every call cost a few hundred ms and the first word ("Lima" became "lia"). close() ends it. */
 async function start(){
   if(rec) return;
-  stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  if(!stream||!stream.active) stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
   chunks=[]; rec=new MediaRecorder(stream); rec.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
   rec.start(); startedAt=Date.now();
 }
-function release(){ if(stream) stream.getTracks().forEach(t=>t.stop()); stream=null; rec=null; }
+function close(){ if(stream) stream.getTracks().forEach(t=>t.stop()); stream=null; }
+function release(){ rec=null; }
 function cancel(){ try{ if(rec&&rec.state!=='inactive') rec.stop(); }catch(e){} release(); chunks=[]; }
 
 /* decode whatever the browser recorded (webm/opus, mp4/aac) and resample to 16 kHz mono, which Whisper expects */
@@ -50,14 +53,35 @@ async function toPcm16k(blob){
   } finally { try{ ac.close(); }catch(e){} }
 }
 
-async function stop(){
+/* prompt: words the pilot is likely to use here (callsign spelled out, station names, standard words). Whisper
+   takes it as the text that came before, which steers it to "Lima Alfa Echo" instead of "lia malcom". No numbers go
+   in the prompt, so a wrong number in a readback is still heard as said. */
+async function stop(prompt){
   if(!rec) return '';
   const r=rec, held=Date.now()-startedAt;
+  await new Promise(res=>setTimeout(res,250)); // the last word is often still being spoken as the button is released
   const done=new Promise(res=>{ r.onstop=res; });
   try{ r.stop(); }catch(e){} await done; const type=r.mimeType; release();
   if(held<300||!chunks.length) return '';
   const pcm=await toPcm16k(new Blob(chunks,{type})); chunks=[];
+  return transcribe(pcm,prompt);
+}
+async function transcribe(pcm,prompt){
   const m=await load();
+  if(prompt&&m.model&&m.tokenizer&&m.processor){ try{
+    const tk=m.tokenizer, id=t=>tk.model.tokens_to_ids.get(t);
+    const sop=id('<|startofprev|>'), sot=id('<|startoftranscript|>'), nt=id('<|notimestamps|>');
+    if(sop!=null&&sot!=null&&nt!=null){
+      const p=tk.encode(' '+String(prompt).replace(/\s+/g,' ').trim(),{add_special_tokens:false}).slice(-150);
+      const ids=[sop,...p,sot,nt];
+      const feats=(await m.processor(pcm)).input_features;
+      const out=await m.model.generate({inputs:feats,decoder_input_ids:ids,max_new_tokens:110});
+      const seq=(out.sequences||out)[0].tolist().map(Number);
+      const t=clean(tk.decode(seq.slice(seq.lastIndexOf(nt)+1),{skip_special_tokens:true}));
+      /* a prompted Whisper can repeat the prompt on near-silence: more words than anyone says in that time means it did */
+      const words=t?t.split(' ').length:0, secs=pcm.length/16000;
+      if(t&&words<=secs*4.5+3) return t;
+    } }catch(e){ /* fall through to the plain transcription */ } }
   const out=await m(pcm,{chunk_length_s:30});
   return clean(out&&out.text||'');
 }
@@ -66,5 +90,5 @@ function clean(t){ t=String(t).replace(/\[[^\]]*\]|\([^)]*\)/g,' ').replace(/\s+
   /* what Whisper says for silence or a click of the button */
   return /^(you|thank you|thanks for watching|bye)[.!]?$/i.test(t)? '' : t; }
 
-G.NWHISPER={supported, get ready(){ return !!asr; }, load, start, stop, cancel, clean, toPcm16k, MODEL};
+G.NWHISPER={supported, get ready(){ return !!asr; }, load, start, stop, cancel, close, clean, toPcm16k, transcribe, MODEL};
 })(typeof window!=='undefined'?window:globalThis);

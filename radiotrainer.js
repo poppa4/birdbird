@@ -100,7 +100,16 @@ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 const MIC={rec:null,active:false,base:'',alts:[],heard:null};
 const WH=window.NWHISPER||{supported:false};
 /* which recogniser: the browser's own, or Whisper on the device (more accurate, audio stays on the device) */
-const useWhisper=()=>WH.supported&&(P.engine==='whisper'||(!SR&&P.engine!=='browser'));
+const DESK=!!(window.matchMedia&&matchMedia('(pointer:fine)').matches);
+const useWhisper=()=>WH.supported&&(P.engine==='whisper'||(P.engine!=='browser'&&(!SR||DESK)));
+/* what Whisper is told came before: the callsign spelled out, the station, the controller's last words without
+   numbers, and the standard words. It steers the recogniser to ICAO words without putting numbers in its mouth. */
+function vocabPrompt(){ if(!ses) return '';
+  const c=R.parseCallsign(P.callsign), sp=t=>R.spoken(t).replace(/\bQ N H\b/g,'QNH');
+  const atc=String(ses.lastAtc||'').replace(/[0-9]+([.,][0-9]+)?/g,' ').replace(/\s+/g,' ').trim();
+  const stn=(ses.unit&&ses.unit.n)||(ses.step&&ses.step.unit&&ses.step.unit.n)||'';
+  return [stn, sp(c.full), sp(c.abbr), atc, 'runway, QNH, squawk, information, holding point, wilco, roger, affirm, negative, say again, decimal, niner, thousand, feet, flight level, heading, cleared, ready for departure, Alfa Bravo Charlie Delta Echo Foxtrot Golf Hotel India Juliett Kilo Lima Mike November Oscar Papa Quebec Romeo Sierra Tango Uniform Victor Whiskey X-ray Yankee Zulu.'].filter(Boolean).join('. ');
+}
 /* the candidates (the recogniser's alternatives) are graded against this call; the best one, with a merged
    repeated ICAO word restored (R.voiceFix), is what gets sent. What was actually heard is shown with it. */
 function finishVoice(cands){
@@ -142,7 +151,7 @@ async function whStart(){
 async function whStop(){
   if(!MIC.active) return; MIC.active=false; setTx(false); whBusy=true; const ta=el('say');
   ta.placeholder=L({en:'Listening to what you said…',no:'Hører på det du sa …'});
-  try{ const t=await WH.stop(); finishVoice([t]); }
+  try{ const t=await WH.stop(vocabPrompt()); finishVoice([t]); }
   catch(e){ note(tr('On-device speech recognition could not start here. Type your call, or switch to the browser recogniser in the settings.','Talegjenkjenning på enheten kunne ikke starte her. Skriv oppkallet, eller bytt til nettleserens gjenkjenning i innstillingene.')); }
   finally{ whBusy=false; ta.placeholder=PH(); }
 }
@@ -153,13 +162,13 @@ function whPreload(){
     .then(()=>{ if(n) n.textContent=L({en:'More accurate, and your voice never leaves this device. Ready.',no:'Mer nøyaktig, og stemmen din forlater aldri denne enheten. Klar.'}); })
     .catch(()=>{ if(n) n.textContent=L({en:'The speech model could not be downloaded. Check the connection, or use the browser recogniser.',no:'Talemodellen kunne ikke lastes ned. Sjekk forbindelsen, eller bruk nettleserens gjenkjenning.'}); });
 }
-function micStop(){ if(useWhisper()){ whStop(); return; } if(MIC.rec&&MIC.active){ try{ MIC.rec.stop(); }catch(e){} } }
+function micStop(){ if(useWhisper()){ whStop(); return; } const r=MIC.rec; if(r&&MIC.active){ setTimeout(()=>{ try{ r.stop(); }catch(e){} },350); } }
 function setTx(on){ const t=$('#txi'), b=el('ptt'); if(t) t.classList.toggle('on',on); if(b){ b.classList.toggle('on',on); b.setAttribute('aria-pressed',on?'true':'false'); const s=b.querySelector('.pl'); if(s) s.textContent=on?L({en:'Release to send',no:'Slipp for å sende'}):L({en:'Hold to talk',no:'Hold for å snakke'}); } }
 
 /* ---------------- views ---------------- */
 const VIEWS=['home','pick','sess','deb'];
 function goHome(){ drawHome(); show('home'); window.scrollTo({top:0,behavior:'auto'}); }
-function show(v){ VIEWS.forEach(x=>{ const e=el('v-'+x); if(e) e.hidden=x!==v; }); if(v!=='sess'){ hush(); if(MAPON&&window.NMAP&&v!=='deb') NMAP.stop(); } document.body.classList.toggle('rt-live',v==='sess'); document.body.classList.toggle('rt-in',v!=='home'); }
+function show(v){ VIEWS.forEach(x=>{ const e=el('v-'+x); if(e) e.hidden=x!==v; }); if(v!=='sess'){ hush(); if(WH.close) WH.close(); if(MAPON&&window.NMAP&&v!=='deb') NMAP.stop(); } document.body.classList.toggle('rt-live',v==='sess'); document.body.classList.toggle('rt-in',v!=='home'); }
 let ses=null, cur=null, group='vfr';
 
 /* ---------------- home: the same system as the IFR trainer (trainhome.js, trainhome.css) ----------------
@@ -561,10 +570,10 @@ function init(){
   el('say').placeholder=PH();
   drawHome(); show('home'); aiSetup();
   { const c=navigator.connection||{}; const ok=!c.saveData&&!/2g/.test(c.effectiveType||'')&&c.type!=='cellular'&&window.matchMedia&&matchMedia('(pointer:fine)').matches;
-    if(ok&&natural()&&P.voice&&!NV.ready) setTimeout(()=>{ (window.requestIdleCallback||setTimeout)(()=>nvPreload()); },2500); }
+    if(ok) setTimeout(()=>{ (window.requestIdleCallback||setTimeout)(()=>{ if(natural()&&P.voice&&!NV.ready) nvPreload(); if(useWhisper()&&!WH.ready) whPreload(); }); },2500); }
   LAB.onLang(()=>{ const y=window.scrollY; requestAnimationFrame(()=>window.scrollTo(0,y)); drawHome(); if(!el('v-pick').hidden) drawPick(); if(ses&&!el('v-sess').hidden){ el('sessT').textContent=L(cur.t); drawBasis(); drawTurn(); } if(!el('v-deb').hidden&&ses) drawDeb(ses.summary()); });
   // test hooks (headless browsers cannot speak): type and transmit
-  window.__radio={get ses(){ return ses; },voice:c=>finishVoice(c),micStart,micStop,say(t){ el('say').value=t; return transmit(false); },model(){ return ses&&ses.step?ses.step.model:''; },start:k=>startScenario(k==='quick'?'quick':S.byKey(k)),idle:()=>queue};
+  window.__radio={get ses(){ return ses; },vocab:()=>vocabPrompt(),voice:c=>finishVoice(c),micStart,micStop,say(t){ el('say').value=t; return transmit(false); },model(){ return ses&&ses.step?ses.step.model:''; },start:k=>startScenario(k==='quick'?'quick':S.byKey(k)),idle:()=>queue};
 }
 init();
 })();
