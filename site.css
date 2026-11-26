@@ -114,10 +114,10 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 .site .logo .lgx,.sitefoot .fb .logo .lgx{display:flex;flex-direction:row;align-items:center;gap:9px;width:auto;font:inherit;letter-spacing:0}
 .site .logo .lgt,.sitefoot .fb .logo .lgt{display:flex;flex-direction:column;gap:6px}
 .site .logo .lg-seal{display:block;width:38px;height:38px;flex:0 0 auto}.sitefoot .fb .logo .lg-seal{display:block;width:44px;height:44px;flex:0 0 auto}
-.site .logo .lg,.sitefoot .fb .logo .lg{display:block;width:136px;height:15.3px}
+.site .logo .lg,.sitefoot .fb .logo .lg{display:block;width:136px;height:18.75px}
 .site .logo .lg-w,.sitefoot .fb .logo .lg-w{display:none}
 .site .logo .lgx small,.sitefoot .fb .logo .lgx small{display:block;margin:0;font-family:var(--f-body);font-stretch:100%;font-weight:600;font-size:8px;letter-spacing:.11em;text-transform:uppercase;line-height:1;color:var(--ink-2);white-space:nowrap}
-.sitefoot .fb .logo .lg{width:150px;height:16.9px}
+.sitefoot .fb .logo .lg{width:150px;height:20.68px}
 .sitefoot .fb .logo .lgx small{font-size:8.8px}
 .site .logo span:not(.lgx):not(.lgt){font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:21px;letter-spacing:.07em;line-height:1;width:113.9px;white-space:nowrap}
 .site .logo span:not(.lgx):not(.lgt) small{display:block;margin-top:4px;font-family:var(--f-body);font-stretch:100%;font-weight:600;font-size:9.5px;letter-spacing:.02em;line-height:1;color:var(--ink-2)}
@@ -501,14 +501,14 @@ body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
 p.mstat{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:12px 0 0;max-width:none}
 p.mstat a{font-size:13.5px;margin-left:4px;color:var(--accent)}
 /* the NORDAP logo on phones: the tagline set to the logo's width so the Menu button keeps its place on the first line */
-@media (max-width:520px){.site .logo .lg{width:118px;height:13.3px}.site .logo .lg-seal{width:34px;height:34px}.site .logo .lgx{gap:7px}.site .logo .lgt{gap:5px}.site .logo .lgx small{font-size:6.8px;letter-spacing:.06em}}
-@media (max-width:429px){.site .logo .lg-seal{width:30px;height:30px}.site .logo .lg{width:104px;height:11.7px}.site .logo .lgx{gap:6px}.site .logo .lgt{gap:4px}.site .logo .lgx small{font-size:6px;letter-spacing:.05em}}
-@media (max-width:389px){.site .logo .lg-seal{width:28px;height:28px}.site .logo .lg{width:98px;height:11px}.site .logo .lgx small{display:none}}
-@media (max-width:369px){.site .logo .lg-seal{width:26px;height:26px}.site .logo .lg{width:92px;height:10.3px}.site .logo .lgx{gap:5px}}
+@media (max-width:520px){.site .logo .lg{width:118px;height:16.27px}.site .logo .lg-seal{width:34px;height:34px}.site .logo .lgx{gap:7px}.site .logo .lgt{gap:5px}.site .logo .lgx small{font-size:6.8px;letter-spacing:.06em}}
+@media (max-width:429px){.site .logo .lg-seal{width:30px;height:30px}.site .logo .lg{width:104px;height:14.34px}.site .logo .lgx{gap:6px}.site .logo .lgt{gap:4px}.site .logo .lgx small{font-size:6px;letter-spacing:.05em}}
+@media (max-width:389px){.site .logo .lg-seal{width:28px;height:28px}.site .logo .lg{width:98px;height:13.51px}.site .logo .lgx small{display:none}}
+@media (max-width:369px){.site .logo .lg-seal{width:26px;height:26px}.site .logo .lg{width:92px;height:12.68px}.site .logo .lgx{gap:5px}}
 /* footer logo: a plain link, whatever a browser or a touch rule gives links (iOS showed a large dark box behind it) */
 .sitefoot .fb a.logo{display:inline-flex!important;min-height:0!important;height:auto!important;width:auto!important;padding:4px 0!important;background:none!important;border:0!important;border-radius:0;box-shadow:none!important;-webkit-tap-highlight-color:transparent;overflow:visible}
 .sitefoot .fb a.logo .lgx{background:none!important;height:auto!important}
-.sitefoot .fb a.logo img.lg{display:block;width:150px!important;height:16.9px!important;max-height:16.9px;object-fit:contain;background:none!important}
+.sitefoot .fb a.logo img.lg{display:block;width:150px!important;height:20.68px!important;max-height:20.68px;object-fit:contain;background:none!important}
 .sitefoot .fb a.logo img.lg-w{display:none!important}
 /* Safari: an image in a flex column keeps its intrinsic height as its minimum unless told otherwise (the logo SVGs once had
    no intrinsic size, so Safari used 150 px): the logo images take only the height they are given */
