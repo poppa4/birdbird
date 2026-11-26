@@ -175,9 +175,7 @@ function panelSVG(){
 </defs>
 <!-- canopy frame -->
 <path d="M0 0H${W}V300C1500 120 1250 60 800 56C350 60 100 120 0 300Z" class="frame" opacity=".0"/>
-<path d="M-10 0H34C16 190 6 370 12 560H-10Z" class="frame"/><path d="M${W+10} 0H${W-34}C${W-16} 190 ${W-6} 370 ${W-12} 560H${W+10}Z" class="frame"/>
-<!-- canopy bow over the windshield: seen when the 2D overview shows more canopy (SKY) -->
-<path d="M-10 4C60 -120 330 ${30-SKY} 800 ${30-SKY}S${W-60} -120 ${W+10} 4" class="frame" style="fill:none" stroke="#0c0e10" stroke-width="34"/>
+<!-- (no canopy posts or bow: the outside view runs free above the glareshield) -->
 <!-- padded surround and panel face -->
 <clipPath id="ngFace"><path d="${FACE}"/></clipPath>
 <path d="${RIM}" fill="url(#gGlare)" filter="url(#fShadow)"/>

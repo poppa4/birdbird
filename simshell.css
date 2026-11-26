@@ -200,3 +200,6 @@
 
 /* the sound button in the toolbar: amber when everything is muted, so it is obvious why the cockpit is quiet */
 .ctop #bSound.muted{color:#ffcf3a;border-color:#6b5a1f}
+
+/* beta tag beside NORDAP (simshell.js beta()) */
+.ckp .ctop .cbhome .simbeta{font:700 8.5px/1 var(--f-mono,monospace);letter-spacing:.1em;text-transform:uppercase;background:#ffcf3a;color:#0d1319;border-radius:3px;padding:2px 4px;margin-left:6px;align-self:center}

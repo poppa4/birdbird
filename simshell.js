@@ -248,7 +248,9 @@ function touchOwns(e){ if(!TC||!TC.T.on||!(e.pointerType==='touch'||e.pointerTyp
 const AL=[['.ctop','Cockpit tools','Cockpitverktøy'],['#acSel','Aircraft','Fly'],['.ctop .dseg','View','Visning'],['#bMore','More','Mer'],['#moreMenu','Settings','Innstillinger'],
   ['#zoomSel','Panel area','Panelområde'],['#todSel','Time of day','Tid på døgnet'],['#wxSel','Weather','Vær'],['#otw','View out of the window','Utsikt gjennom frontruta'],['#drawer','Procedures','Prosedyrer'],['#drawer .tabs','Procedures','Prosedyrer']];
 function labels(){ const c=document.getElementById('cockpit'); if(!c) return; for(const [q,en,no] of AL){ const e=c.querySelector(q); if(e) e.setAttribute('aria-label',L(tr(en,no))); } }
-function init(){ menu(); tabs(); settings(); labels(); if(G.LAB&&G.LAB.onLang) G.LAB.onLang(labels); }
+/* every simulator is in beta: a tag beside NORDAP in the top bar, on 2D and 3D pages alike */
+function beta(){ const h=document.querySelector('.ckp .ctop .cbhome'); if(!h||h.querySelector('.simbeta')) return; const b=document.createElement('small'); b.className='simbeta'; b.textContent='Beta'; h.appendChild(b); }
+function init(){ menu(); tabs(); settings(); labels(); beta(); if(G.LAB&&G.LAB.onLang) G.LAB.onLang(labels); }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 
 /* the card's buttons */
