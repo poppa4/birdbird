@@ -173,7 +173,7 @@ body.depth-instructor .og-pill{font-size:15px}body.depth-instructor .og-card>b{f
 <link rel="icon" href="favicon.ico?v=5" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=5"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=5"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=5">
 </head>
 <body data-title="GNSS and RNAV">
-<script src="site.js?v=146"></script>
+<script src="site.js?v=147"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
@@ -305,7 +305,7 @@ body.depth-instructor .og-pill{font-size:15px}body.depth-instructor .og-card>b{f
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Training simulation, not for navigation; the route, waypoints and minima are illustrative, not a published procedure. DOP from least squares on the satellites you place (equal weights). Accuracy: 95 % horizontal = 2 × HDOP × σ, vertical = 1.96 × VDOP × σ, with σ = 4 m for GPS alone and 1 m with SBAS corrections. RAIM: snapshot least-squares slopes with σ = 33.3 m, false alarm 1/15 000 and missed detection 0.001 (the conservative values of the original RTCA availability standard); FDE when every subset without one satellite still meets the alert limit; no baro-aiding. SBAS: HPL = 6.0 × σ × d<sub>major</sub>, VPL = 5.33 × σ × VDOP with σ = 2.5 m; LPV needs HPL ≤ 40 m and VPL ≤ 50 m. Turns in still air: r = GS² / (g · tan bank); fly-by starts r · tan(ΔTrack / 2) early; fly-over turns overhead and rejoins with an intercept of up to 30°. CDI full scale 2 NM en route (beyond 30 NM), 1 NM terminal, ramping to 0.3 NM over the 2 NM before the FAF; LPV angular, 105 m at the threshold and at most 0.3 NM. Vertical deviation ±0.7° full scale for both baro-VNAV and LPV (real baro-VNAV displays are often linear). DME/DME reversion uses Flesland, Vollo and Stord with σ = 0.1 NM. No wind, no magnetic variation; coastline and relief as in the radio navigation simulator (Mapzen/AWS Terrain Tiles). <b>3D globe:</b> circular orbits with the nominal radius, inclination, period and number of planes (GPS 6, GLONASS and Galileo 3); the slots drawn are the design constellations, not today's exact fleet; satellite size is greatly exaggerated; EGNOS positions illustrative; elevation mask 5° at Bergen. Earth images NASA Blue Marble and Black Marble. Geoid: EGM96 (NGA) sampled every 2°, heights exaggerated as set; the WGS-84 ellipsoid is drawn round (its 1/298 flattening is not shown at the same scale).</p>
 </div>
 <script src="lab.js?v=62"></script>
-<script src="concepts.js?v=12"></script>
+<script src="concepts.js?v=13"></script>
 <script src="navcore.js?v=3"></script>
 <script src="navgauges.js?v=5"></script>
 <script src="gnsscore.js?v=2"></script>

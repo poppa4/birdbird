@@ -268,7 +268,15 @@ function kcHash(){ const m=/^#kc-([\w-]+)$/.exec(location.hash); if(!m) return; 
     const c=b.closest('.kc'); if(c&&c.closest('.deep')&&window.LAB&&LAB.depth!=='deep'){ try{ LAB.setDepth('deep'); }catch(e){} }
     setTimeout(()=>b.click(),300); };
   setTimeout(go,250); }
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',kcHash); else kcHash();
-addEventListener('hashchange',kcHash);
+/* A link like lab.html#dd4 (the search bar finds the deep-dive folds too) opens that fold under Key concepts and scrolls to it,
+   showing the deeper level first if the fold sits in it. Only acts when the id is a deep-dive fold (details.dfold). */
+function ddHash(){ const id=decodeURIComponent(location.hash.slice(1)); if(!id||/^kc-/.test(id)) return; let n=0;
+  const go=()=>{ const d=document.getElementById(id); if(!d){ if(++n<40) setTimeout(go,150); return; } if(d.tagName!=='DETAILS'||!d.classList.contains('dfold')) return;
+    if(d.closest('.deep')&&window.LAB&&LAB.depth!=='deep'){ try{ LAB.setDepth('deep'); }catch(e){} }
+    setTimeout(()=>{ const x=document.getElementById(id)||d; x.open=true; x.scrollIntoView({block:'start',behavior:'smooth'}); x.classList.add('kc-flash'); setTimeout(()=>x.classList.remove('kc-flash'),1900); },300); };
+  setTimeout(go,250); }
+const onHash=()=>{ kcHash(); ddHash(); };
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',onHash); else onHash();
+addEventListener('hashchange',onHash);
 window.KCS={render,sv,tx,ar,ladder,LADDER,order,spot,spotHide,SEE,RING,labels,ring,ringStop,get last(){ return lastSpot; }};
 })();

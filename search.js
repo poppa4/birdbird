@@ -254,7 +254,8 @@ function score(q){ const w=q.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(x=>x.
    tools/lab-index.py), theory.js (the Flight Intelligence theory library, each entry tied to its lab) and glossary.js (terms,
    each tied to the lab that explains it). The last three arrive with the first focus on the box.
    Matching is forgiving, so anything close to what you typed is listed: whole words, word starts both ways, the same word
-   stem (stall/stalling, vinge/vingen), one typo in words of five letters or more, and the abbreviations pilots type (SYN).
+   stem (stall/stalling, vinge/vingen), one typo in words of five letters or more (and in four-letter words that are not words
+   of the site, such as "elms" for "elmo"), and the abbreviations pilots type (SYN). The deep-dive folds are searched too.
    Ranking: the title counts most, then keywords, then the body text; all query words found ranks above some. */
 const SYN={aoa:['angle of attack','angrepsvinkel'],'αi':['induced angle'],alpha:['angle of attack'],cl:['lift coefficient','clmax'],cd:['drag coefficient'],cp:['centre of pressure','trykksenter'],
  cg:['centre of gravity','tyngdepunkt'],mac:['mean aerodynamic chord'],vmd:['minimum drag'],vmp:['minimum power'],vs:['stall speed','stallfart'],mcrit:['critical mach','kritisk machtall'],mdd:['drag divergence'],
@@ -284,8 +285,10 @@ function addDoc(o){ const T=new Set(lw((o.t.en||'')+' '+(o.t.no||''))), K=new Se
 IDX.forEach(e=>{ addDoc({u:e.u,t:e.t,d:e.d,k:e.k,b:'',kind:'page',tag:e.u.split(/[?#]/)[0].replace('.html',''),boost:e.u.includes('#')?0.2:0.4}); });
 let LX=false, lxP=null;
 const loadLX=()=>lxP||(lxP=Promise.all([
-  fetch('data/labindex.json').then(r=>r.json()).then(d=>{ (d.labs||[]).forEach(lab=>(lab.c||[]).forEach((c,i)=>{ const n=String(i+1).padStart(2,'0');
-    addDoc({u:c.href||(lab.f+(c.k?'#kc-'+c.k:'')),t:c.t,d:{en:'Key concept '+n+' · '+lab.t.en,no:'Nøkkelbegrep '+n+' · '+lab.t.no},k:c.d.en+' '+c.d.no,b:(c.m?c.m.en+' '+c.m.no:''),kind:'card',tag:lab.f.replace('.html',''),boost:0.5}); })); }).catch(()=>{}),
+  fetch('data/labindex.json').then(r=>r.json()).then(d=>{ (d.labs||[]).forEach(lab=>{ (lab.c||[]).forEach((c,i)=>{ const n=String(i+1).padStart(2,'0');
+    addDoc({u:c.href||(lab.f+(c.k?'#kc-'+c.k:'')),t:c.t,d:{en:'Key concept '+n+' · '+lab.t.en,no:'Nøkkelbegrep '+n+' · '+lab.t.no},k:c.d.en+' '+c.d.no,b:(c.m?c.m.en+' '+c.m.no:''),kind:'card',tag:lab.f.replace('.html',''),boost:0.5}); });
+    /* the deep-dive folds under Key concepts: found by their title and their text, and opened by the link (concepts.js) */
+    (lab.x||[]).forEach(x=>{ addDoc({u:lab.f+(x.id?'#'+x.id:'#understand'),t:x.t,d:{en:'Deep dive · '+lab.t.en,no:'Dypdykk · '+lab.t.no},k:(x.s?x.s.en+' '+x.s.no:''),b:(x.b?x.b.en+' '+x.b.no:''),kind:'card',tag:lab.f.replace('.html',''),boost:0.3}); }); }); }).catch(()=>{}),
   (window.THEORY?Promise.resolve():new Promise(ok=>{ const sc=document.createElement('script'); sc.src='theory.js?v=6'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); })).then(()=>{ const T=window.THEORY; if(!T||!T.items) return;
     T.items.forEach(x=>{ if(!x.lab) return; const sj=T.subjects&&T.subjects[x.subj]; addDoc({u:x.lab,t:x.title,d:{en:'Theory'+(sj?' · '+sj.en:''),no:'Teori'+(sj?' · '+sj.no:'')},k:x.kw,b:(x.en||'')+' '+(x.no||''),kind:'theory',tag:{en:'theory',no:'teori'},boost:0}); }); }),
   (window.GLOSS?Promise.resolve():new Promise(ok=>{ const sc=document.createElement('script'); sc.src='glossary.js?v=4'; sc.onload=ok; sc.onerror=ok; document.head.appendChild(sc); })).then(()=>{ const G=window.GLOSS&&window.GLOSS.G; if(!G) return;
@@ -294,7 +297,7 @@ const loadLX=()=>lxP||(lxP=Promise.all([
 ]).then(()=>{ LX=true; }));
 function hits(q,max){ const toks=lw(q).filter(x=>!QSTOP.has(x)&&!/^\d+$/.test(x)&&(x.length>1||/[α-ω]/.test(x))); if(!toks.length) return {list:[],n:0};
   /* each query word becomes a group: the word, its synonyms (some are phrases) and the words of the site one typo away */
-  const groups=toks.map(x=>{ const fz=x.length>=5?[...VOCAB].filter(v=>v!==x&&v.length>=4&&near1(x,v)):[]; return {x,st:stem(x),syn:SYN[x]||[],fz}; });
+  const groups=toks.map(x=>{ const fz=x.length>=5||(x.length===4&&!VOCAB.has(x))?[...VOCAB].filter(v=>v!==x&&v.length>=4&&near1(x,v)&&(x.length>=5||v[0]===x[0])):[]; return {x,st:stem(x),syn:SYN[x]||[],fz}; });
   const part=(set,arr,sset,w,st)=>set.has(w)?2:sset.has(st)?1.5:(w.length>=4&&arr.some(v=>v.startsWith(w)||(v.length>=4&&w.startsWith(v))))?1.2:0;
   const one=(d,g)=>{ let b=0; const pt=(w,st)=>{ const t=part(d.T,d.TA,d.TS,w,st), k=part(d.K,d.KA,d.KS,w,st), y=part(d.B,d.BA,d.BS,w,st); return Math.max(t?3*t:0,k?2*k:0,y?y:0); };
     b=pt(g.x,g.st);
