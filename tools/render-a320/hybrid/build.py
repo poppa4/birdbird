@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); sys.path.insert(
 import shellbin, warp, hyb, light
 OUT = sys.argv[1]; OCC = np.load(sys.argv[2])
 h, g, V, Ff, lab, rm, big = hyb.fg_keep(); W, F, ob, t, names = hyb.blender_upper(hyb.fg_tracer(V, Ff, rm)); G = g[0]; N8 = G['N'].astype(np.uint8)
-for nm, P, f in hyb.reading_lights(V, Ff, lab):      # reading-light bezel, dimmer knob and switch on the corner posts
+for nm, P, f in hyb.reading_lights(V, Ff, lab) + hyb.knee_outlets(V, Ff, lab):      # reading-light bezel, dimmer knob and switch on the corner posts
     names.append(nm); F = np.vstack([F, f + len(W)]); W = np.vstack([W, P]); ob = np.concatenate([ob, np.full(len(f), len(names) - 1)]); t = np.concatenate([t, np.ones(len(P))])
 occV = OCC.reshape(-1, 3); occF = np.arange(len(occV)).reshape(-1, 3)
 def tracer(parts):
@@ -83,6 +83,7 @@ for i in set(ob):
     if n.startswith('Cylinder') or n.startswith('BezierCurve'): kind[i] = 'dark'
     if n.startswith('cockpit light'): kind[i] = 'plate'
     if n in ('rl_knob', 'rl_switch'): kind[i] = 'dark'
+    if n == 'knee_outlet': kind[i] = 'rlplate'
     if n == 'rl_plate': kind[i] = 'rlplate'
     if n == 'Plane.109': kind[i] = 'visor'      # the stowed sun visor on its arm (smoked plastic)
 kv = np.array([kind[o] for o in vob]); Lv = Yn.copy()

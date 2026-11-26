@@ -129,18 +129,21 @@ def fg_keep():
     # the wall pieces that stand out beyond the rear part of the aft side window (slanted, further out than the window): they
     # showed through the window as fins; the page's own rear frame and wall close that corner
     # (cut out with straight edges in build.py: BOXES)
-    zone=(rho>of-0.12)&(c[:,2]<1.20)&(phi>52)&~rm                 # round the side windows everything is cut off level at the
-    ZONE[:]=[zone, warp.top_F(phi)-0.012]                          # reveal (build.py clips the faces there); also what stands further
+    post=np.isin(lab,POSTS)&(phi>52)&(c[:,2]<1.20)&~rm             # the window posts: cut off whole, a hair above the reveal, so they
+    zone=((rho>of-0.12)&(c[:,2]<1.20)&(phi>52)&~rm)|post          # run straight up into the header ring (their rounded caps stood
+    ZONE[:]=[zone, warp.top_F(phi)-0.012+0.008*post]                          # reveal (build.py clips the faces there); also what stands further
                                                                    # out: seen through a window it showed above the window top
     thin=(hi[:,2]-lo[:,2]<0.012)&(lo[:,2]>1.255)&(hi[:,2]<1.285)&(lo[:,0]>0.08)&(hi[:,0]<1.12)&(lo[:,1]>0.5)&(hi[:,1]<1.37)&(hi[:,1]-lo[:,1]<0.06)
     print('breaker-wall strips removed',int(thin.sum())); rm|=thin[lab]
-    rm|=np.isin(lab,RL_FG[-1]+RL_FG[1])                           # the flat reading-light decals (replaced by reading_lights)
+    rm|=np.isin(lab,list(RL_FG[-1]+RL_FG[1])+CLIPS+list(KNEE_FG[-1]+KNEE_FG[1]))                           # the flat reading-light decals (replaced by reading_lights)
     return h,g,V,F,lab,rm,big
 
 # ---- reading-light controls on the windshield corner posts (the owner's model: Plane.118 bezel, the knurled dimmer knob
 # from Circle.053, the on/off rocker Cube.145). They replace the flat FlightGear decal (a plate with a round and a square
 # hole). Each part is moved rigidly from the owner's post onto the page's post: same size, centred where the decal was.
 RL_FG={-1:(1595,1596,1597),1:(1598,1599,1600)}
+POSTS=[1584,1585,1586,1587,1588]
+CLIPS=[1548,1554,1568,1569]   # the black clip blocks with their pale brackets beside the corner post tops
 RL_SCALE=1.10
 def _frame(P,eye):
     c=P.mean(0); U,S,Wt=np.linalg.svd(P-c); up=Wt[0]*(1 if Wt[0][1]>0 else -1); n=Wt[2]*(1 if (eye-c)@Wt[2]>0 else -1)
@@ -164,6 +167,35 @@ def reading_lights(V,Ff,lab):
         for nm,ff in (('rl_plate',pl),('rl_knob',kn),('rl_switch',sw)):
             vi=np.unique(ff); loc=(BV[vi]-cb)@Rb.T; loc[:,2]-=back_b; loc*=RL_SCALE; loc[:,2]-=0.001
             P=cf+loc@Rf; re=-np.ones(len(BV),int); re[vi]=np.arange(len(vi)); out.append((nm,P,re[ff]))
+    return out
+
+# ---- the round knee outlet left and right of the main panel (the owner's model: Circle.050, a knob in a recessed collar).
+# It replaces the FlightGear cylinder that stood out of the panel (634/635 left, 636/637 right). Placed rigidly: centred on
+# the old cylinder's foot, its back on the page's panel face, its axis along that face's normal.
+KNEE_FG={-1:(634,635),1:(636,637)}
+def _basis(n):
+    n=n/np.linalg.norm(n); up=np.array([0,1.,0])-n*n[1]; up/=np.linalg.norm(up); sd=np.cross(n,up); return np.array([sd,up,n])
+def knee_outlets(V,Ff,lab):
+    import trimesh
+    d=np.load(os.environ['NEO_NPZ'],allow_pickle=True); BV=d['v'].astype(float).copy(); BV[:,0]*=-1; BF=d['f']; bo=d['ob']
+    BM=trimesh.Trimesh(BV,BF,process=False)
+    Fk=BF[bo==47]; mk=trimesh.Trimesh(BV,Fk,process=False); cc=trimesh.graph.connected_components(mk.face_adjacency,nodes=np.arange(len(Fk)),min_len=1)
+    keep=~np.isin(lab,KNEE_FG[-1]+KNEE_FG[1]); M=trimesh.Trimesh(V,Ff[keep],process=False); R=trimesh.ray.ray_pyembree.RayMeshIntersector(M)
+    out=[]
+    for sg in (-1,1):
+        eye=np.array([sg*0.53,0.63,0.31])
+        kn=[Fk[c] for c in cc if sg*BV[Fk[c]].mean()>-9 and sg*BV[np.unique(Fk[c])][:,0].mean()>0][0]
+        vi=np.unique(kn); cb=BV[vi].mean(0)
+        pl=BF[bo==137]; pc=BV[pl].mean(1); near=np.linalg.norm(pc-cb,axis=1)<0.06; nb=BM.face_normals[np.nonzero(bo==137)[0][near]].mean(0)
+        if (eye-cb)@nb<0: nb=-nb
+        Rb=_basis(nb); back=((BV[vi]-cb)@Rb[2]).min()
+        P=V[np.unique(Ff[np.isin(lab,KNEE_FG[sg])])]; c=P.mean(0); dd=(c-eye)/np.linalg.norm(c-eye)
+        loc,ri,ti=R.intersects_location(eye[None],dd[None],multiple_hits=False); nf=M.face_normals[ti[0]]
+        if (eye-loc[0])@nf<0: nf=-nf
+        Rf=_basis(nf); loc_=(BV[vi]-cb)@Rb.T; loc_[:,2]-=back; loc_*=1.35; loc_[:,2]-=0.004      # 1.35x: covers the hole the old cylinder left; sunk 4 mm
+        Pn=loc[0]+loc_@Rf; re=-np.ones(len(BV),int); re[vi]=np.arange(len(vi)); out.append(('knee_outlet',Pn,re[kn]))
+        q=np.array([[-1,-1],[1,-1],[1,1],[-1,1]])*0.07; Q=loc[0]-0.0012*Rf[2]+q[:,:1]*Rf[0]+q[:,1:]*Rf[1]   # backing behind the panel: the slit
+        out.append(('knee_backing',Q,np.array([[0,1,2],[0,2,3]])))                                     # the old cylinder sat in shows panel, not sky
     return out
 def fg_tracer(V,Ff,rm):
     import trimesh
