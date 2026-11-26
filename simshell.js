@@ -131,7 +131,14 @@ function chrome(o){ const $=id=>document.getElementById(id), bP=$('bPause'), bR=
   if(bD&&dr){ bD.setAttribute('aria-controls','drawer'); bD.onclick=()=>setDrawer(!dr.classList.contains('open')); dr.inert=!dr.classList.contains('open');
     // Esc inside the drawer closes it and gives the focus back to its button
     dr.addEventListener('keydown',e=>{ if(e.key==='Escape'){ setDrawer(false); bD.focus(); e.stopPropagation(); e.preventDefault(); } });
-    bD.addEventListener('keydown',e=>{ if(e.key==='Escape'&&dr.classList.contains('open')){ setDrawer(false); e.stopPropagation(); e.preventDefault(); } }); }
+    bD.addEventListener('keydown',e=>{ if(e.key==='Escape'&&dr.classList.contains('open')){ setDrawer(false); e.stopPropagation(); e.preventDefault(); } });
+    // a close button on the panel itself, beside the tabs (the toolbar button brings it back; the page remembers the choice)
+    const tl=dr.querySelector('.tabs'); if(tl&&!dr.querySelector('.dx')){ const top=document.createElement('div'); top.className='dtop'; tl.parentNode.insertBefore(top,tl); top.appendChild(tl);
+      const x=document.createElement('button'); x.type='button'; x.className='dx'; x.textContent='×';
+      const lab=()=>{ const t=L(tr('Close the panel (Procedures in the toolbar opens it again)','Lukk panelet (Prosedyrer i verktøylinjen åpner det igjen)')); x.title=t; x.setAttribute('aria-label',t);
+        bD.title=L(tr('Show or hide the checklist, failures and speeds','Vis eller skjul sjekkliste, feil og farter')); };
+      lab(); if(G.LAB&&G.LAB.onLang) G.LAB.onLang(lab);
+      x.onclick=()=>{ if(dr.classList.contains('open')) bD.click(); bD.focus(); }; top.appendChild(x); } }
   if(G.LAB&&G.LAB.onLang) G.LAB.onLang(sync);
   sync(); CH={o,sync,setDrawer}; return CH; }
 
