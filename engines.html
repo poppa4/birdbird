@@ -153,6 +153,57 @@ body.ap-wide .xapp>*{grid-column:1/-1}
 .aplist .nm{flex:1 1 auto}
 .aplist .sn{flex:0 0 auto;display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:var(--c);color:#0f151b;font-family:var(--f-mono);font-weight:700;font-size:10px}
 @media (max-width:640px){.en-vp.apart .vcvw{display:block}.en-vp.apart #env{aspect-ratio:1/1.42}.apside{border-left:0;border-top:1px solid rgba(255,255,255,.07);max-height:none!important}.aplist{display:grid;grid-template-columns:1fr 1fr;gap:1px 6px}.apbar{flex-wrap:wrap;gap:6px 10px}.apbar input{order:3;flex-basis:100%;max-width:none}body.et-pist .en-vp.apart #env{aspect-ratio:1/1.12}.apcard{min-height:0}}
+
+/* 3D engines (engine3d.js): the model, its tools, labels and the walk-through panel */
+.e3{position:relative;width:100%;aspect-ratio:16/9.4;max-height:760px;overflow:hidden;background:radial-gradient(120% 95% at 50% 30%,#2b3846 0%,#18222c 55%,#0d1318 100%)}
+.e3[hidden]{display:none}
+.en-vp.g3:not(.apart) .vchip{display:none}
+.en-vp.apart .e3{aspect-ratio:16/11.2;max-height:none}
+.e3 .e3cv{display:block;width:100%;height:100%;cursor:grab;touch-action:pan-y;outline:none}
+.e3 .e3cv:active{cursor:grabbing}
+.e3 .e3cv:focus-visible{box-shadow:inset 0 0 0 2px var(--focus-dark)}
+.e3tags{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.e3tag{position:absolute;left:0;top:0;display:inline-flex;align-items:center;gap:6px;margin:-11px 0 0 8px;padding:2px 9px 2px 2px;border-radius:999px;border:1px solid var(--c);background:rgba(10,14,18,.78);color:#E6ECF0;font:600 11.5px/1.2 var(--f-body);white-space:nowrap;pointer-events:auto;cursor:pointer;backdrop-filter:blur(2px);transition:opacity .2s;min-height:0}
+.e3tag b{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 3px;border-radius:999px;background:var(--c);color:#0f151b;font:700 10.5px var(--f-mono)}
+.e3tag::before{content:"";position:absolute;left:-9px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--c);box-shadow:0 0 0 2px rgba(10,14,18,.7)}
+.e3tag.on{background:var(--c);color:#0f151b}.e3tag.on b{background:#0f151b;color:var(--c)}
+.e3tag:hover{background:rgba(24,32,40,.92)}.e3tag.on:hover{background:var(--c)}
+.e3tag.lv{cursor:default;padding:3px 9px;font-family:var(--f-mono);font-size:11px;letter-spacing:.03em;text-transform:uppercase;color:var(--c);border-color:var(--c)}
+.e3tag:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
+.e3tools{position:absolute;right:8px;top:8px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;max-width:62%}
+.e3tools button{font:500 12px/1 var(--f-body);color:#C9D3DB;background:rgba(10,14,18,.66);border:1px solid rgba(255,255,255,.16);border-radius:4px;padding:6px 9px;cursor:pointer;min-height:30px;backdrop-filter:blur(2px)}
+.e3tools button:hover{border-color:rgba(255,255,255,.38);color:#fff}
+.e3tools button.on{border-color:#7EC8F2;color:#fff;background:rgba(126,200,242,.18)}
+.e3tools button:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
+.e3hint{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);background:rgba(10,14,18,.82);color:#E6ECF0;font-size:12.5px;padding:5px 10px;border-radius:4px;opacity:0;transition:opacity .25s;pointer-events:none}
+.e3hint.on{opacity:1}
+.e3walk{border-top:1px solid rgba(255,255,255,.07);padding:10px 14px 12px;color:#C9D3DB;font-size:14px;line-height:1.55;background:rgba(6,9,12,.28)}
+.e3walk[hidden]{display:none}
+.e3w-rail{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.e3w-rail button{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--c);background:transparent;color:var(--c);font:700 11px var(--f-mono);cursor:pointer;padding:0;min-height:0;opacity:.75}
+.e3w-rail button.past{background:color-mix(in srgb,var(--c) 22%,transparent);opacity:.9}
+.e3w-rail button.on{background:var(--c);color:#0f151b;opacity:1;transform:scale(1.08)}
+.e3w-rail button:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
+.e3w-b{max-width:92ch;min-height:6.2em}
+.e3w-h{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin-bottom:3px}
+.e3w-k{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:#7F8D99}
+.e3w-st{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:10.5px;font-weight:600;color:var(--c);border:1px solid var(--c);border-radius:999px;padding:1px 9px 1px 2px}
+.e3w-st b{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--c);color:#0f151b;font-size:10px}
+.e3walk h4{margin:2px 0 3px;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:18px;line-height:1.25;color:#EEF2F5}
+.e3w-t{margin:0;color:#DCE3E9}.e3w-t b{color:#fff}
+.e3w-x{margin:6px 0 0;color:#AEB9C2;font-size:13.5px}
+body.depth-short .e3w-x{display:none}
+.e3w-v{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:8px}
+.e3w-v:empty{display:none}
+.e3w-v span{display:inline-flex;flex-direction:column}
+.e3w-v i{font-style:normal;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#7F8D99}
+.e3w-v b{font-family:var(--f-mono);font-size:14px;color:#EEF2F5;font-weight:600}
+.e3w-n{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.e3w-n .btn{min-height:34px}
+body.depth-instructor .e3walk{font-size:16px}body.depth-instructor .e3walk h4{font-size:21px}
+@media (max-width:640px){.e3tools button[data-k=lab],.e3tools button[data-k=fs]{display:none}.e3{aspect-ratio:1/1.08}.en-vp.apart .e3{aspect-ratio:1/1.05}.e3tools{max-width:100%;left:8px;justify-content:flex-start}.e3tools button{padding:5px 7px;font-size:11.5px}.e3tag{font-size:10.5px}.e3walk{padding:10px 10px 12px}.e3w-rail button{width:26px;height:26px}}
+:fullscreen.en-vp{display:flex;flex-direction:column;overflow:auto}
+:fullscreen.en-vp .e3{aspect-ratio:auto;flex:1 1 auto;max-height:none;min-height:60vh}
 </style>
 <link rel="icon" href="favicon.ico?v=6" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=6"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=6"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=6">
 </head>
@@ -193,6 +244,7 @@ body.ap-wide .xapp>*{grid-column:1/-1}
         <div class="apbar" id="apBar" hidden><span id="apA">Assembled</span><input type="range" id="apEx" min="0" max="100" value="100" aria-label="Assembled to exploded"><span id="apE">Exploded</span><button type="button" class="apbtn" id="apBtn">Assemble</button></div>
         <div class="vcvw">
         <div class="vcv" id="vcv">
+          <div class="e3" id="e3d" hidden></div>
           <canvas id="env" aria-label="Cutaway of the selected engine with the gas path coloured by temperature, its cockpit gauges, and in the other modes comparison and rating charts."></canvas>
           <div class="vchip" id="chip" aria-live="polite"></div>
         </div>
@@ -205,17 +257,17 @@ body.ap-wide .xapp>*{grid-column:1/-1}
       <details class="xpanel" id="xpanel" open aria-label="Controls">
         <summary class="xsum"><span>Controls</span><span class="xsv" id="xsv"></span></summary>
         <details class="xsec" open><summary>Engine</summary><div id="typeSeg" class="typeseg"></div></details>
-        <details class="xsec" open data-pv="how start"><summary>Levers</summary><div id="levCtl"></div>
+        <details class="xsec" open data-pv="how start walk"><summary>Levers</summary><div id="levCtl"></div>
           <div data-for="pist"><div class="btns" style="margin:2px 0 4px"><button type="button" class="btn sm" id="leanBtn">Lean to peak EGT</button></div>
           <label class="xchk"><input type="checkbox" id="heatChk"> <span id="heatL">Carburettor heat</span></label></div>
           <div data-for="tp"><div class="grp" id="condL">Condition lever</div><div id="condSeg"></div></div></details>
-        <details class="xsec lay" open data-pv="how apart"><summary>Layout</summary><div id="laySeg" class="seg wrap"></div><p class="hint" id="layH"></p></details>
+        <details class="xsec lay" open data-pv="how apart walk"><summary>Layout</summary><div id="laySeg" class="seg wrap"></div><p class="hint" id="layH"></p></details>
         <details class="xsec" open data-pv="start"><summary>Start</summary><div class="btns" id="stBtns"></div>
           <div data-for="tp jet fan"><div class="grp" id="faultL">Start fault</div><div id="faultSeg" class="seg wrap"></div></div><p class="hint" id="stH"></p></details>
-        <details class="xsec" open data-pv="how cmp rat"><summary id="wxS">Conditions</summary><div id="wxCtl"></div></details>
+        <details class="xsec" open data-pv="how cmp rat walk"><summary id="wxS">Conditions</summary><div id="wxCtl"></div></details>
         <details class="xsec" open data-pv="rat"><summary>Reduced take-off thrust</summary><div id="ratCtl"></div><p class="hint" id="ratH"></p></details>
-        <details class="xsec" open data-pv="how cmp"><summary>Scenarios</summary><div class="pre" id="pre"></div></details>
-        <details class="xsec deep" data-pv="how cmp"><summary>Advanced</summary>
+        <details class="xsec" open data-pv="how cmp walk"><summary>Scenarios</summary><div class="pre" id="pre"></div></details>
+        <details class="xsec deep" data-pv="how cmp walk"><summary>Advanced</summary>
           <label class="xchk"><input type="checkbox" id="turboChk"> <span id="turboL">Piston: turbo-normalised</span></label>
           <label class="xchk"><input type="checkbox" id="iceChk"> <span id="iceL">Piston: carburettor ice forming</span></label>
           <label class="xchk"><input type="checkbox" id="stnChk"> <span id="stnL">Show temperatures along the gas path</span></label></details>
@@ -246,7 +298,11 @@ body.ap-wide .xapp>*{grid-column:1/-1}
 <script src="concepts.js?v=13"></script>
 <script src="enginecore.js?v=2"></script>
 <script src="engparts.js?v=5"></script>
-<script src="engines.js?v=16"></script>
+<script src="three.min.js?v=128"></script>
+<script src="engine3d-models.js?v=1"></script>
+<script src="engine3d-models2.js?v=1"></script>
+<script src="engine3d.js?v=1"></script>
+<script src="engines.js?v=17"></script>
 <script src="corepic.js?v=14"></script>
 <script src="pic-eng.js?v=2"></script>
 </body>
