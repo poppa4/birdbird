@@ -366,7 +366,7 @@ function startScenario(sc,o){ o=o||{}; unlockTts(); if(natural()&&P.voice) nvPre
   else if(sc&&sc.k==='retry'){ cur=sc; ses=new R.Session(cur,{level:lvl0,V:sc.V,steps:sc.steps}); }
   else { cur=sc; ses=new R.Session(sc,{level:lvl0,callsign:P.callsign}); if(sc.k&&sc.group!=='airline'){ P.last=sc.k; saveP(); } }
   el('sessT').textContent=L(cur.t); drawBasis(); el('log').innerHTML=''; el('fbBox').innerHTML=`<p class="muted">${L({en:'Feedback on each call appears here: what was right, what was missing, and why.',no:'Tilbakemelding på hvert oppkall kommer her: hva som var riktig, hva som manglet, og hvorfor.'})}</p>`;
-  el('sitBox').innerHTML=''; el('fq').textContent='———.———'; el('stn').textContent='';
+  el('sitBox').innerHTML=''; el('fq').textContent='———.———'; el('stn').textContent=''; sitReset();
   MAPON=!!(cur.map&&window.NMAP); el('amapBox').hidden=!MAPON; el('v-sess').classList.toggle('hasmap',MAPON);
   if(MAPON){ if(!mapInit){ NMAP.init(el('amap')); mapInit=true; } NMAP.reset(cur.map,ses.V.dep,ses.V.arr); } else if(window.NMAP) NMAP.stop();
   show('sess'); run(ses.start());
@@ -383,7 +383,7 @@ function busy(on){ BUSY=!!on; const b=el('btnTx'); if(b) b.disabled=!!on; const 
   if(!on&&window.NMAP) NMAP.speed=4; }
 function run(ev){ queue=queue.then(()=>{ if(ev.some(e=>e.t==='say'||e.t==='act'||e.t==='atc')) busy(true); return play(ev); }).then(()=>{ busy(false); drawTurn(); phoneView(); }); return queue; }
 /* phone with the live map: after each exchange, show the map, the transcript and your answer together */
-function phoneView(){ if(!window.matchMedia||!matchMedia('(max-width:640px)').matches) return; const m=el('v-sess').querySelector('.rs-main'); if(!m) return;
+function phoneView(){ if(!window.matchMedia||!matchMedia('(max-width:640px)').matches) return; const m=MAPON? el('v-sess').querySelector('.rs-main') : (!el('sitMapW').hidden? el('v-sess').querySelector('.rs-strip') : el('v-sess').querySelector('.rs-main')); if(!m) return;
   const bar=document.querySelector('.rs-top'); const off=(bar?bar.getBoundingClientRect().height:50)+8;
   const top=m.getBoundingClientRect().top+window.scrollY-off; if(Math.abs(window.scrollY-top)>8) window.scrollTo({top,behavior:'smooth'}); }
 async function play(ev){
@@ -393,7 +393,7 @@ async function play(ev){
     else if(e.t==='say'){ if(e.atc){ await atcMsg(e); continue; }
       addMsg('crew ch-'+(e.ch||'crew'),L(e.label||{en:e.who,no:e.who})+(e.ch==='int'?' · interphone':e.ch==='pa'?' · PA':''),esc(e.text));
       await speak(e.text,{voice:e.voice,crew:e.ch!=='int'&&e.ch!=='pa'}); }
-    else if(e.t==='sit'){ addMsg('sys sit','',esc(L(e.text))); el('sitBox').innerHTML=`<b>${L({en:'Situation',no:'Situasjon'})}</b><p>${esc(L(e.text))}</p>`; el('sitBox').classList.remove('open'); el('sitBox').onclick=()=>el('sitBox').classList.toggle('open'); }
+    else if(e.t==='sit'){ addMsg('sys sit','',esc(L(e.text))); kbTake(e.text&&e.text.en,true); drawSit(); el('sitBox').innerHTML=`<b>${L({en:'What is happening',no:'Hva som skjer'})}</b><p>${esc(L(e.text))}</p>`; el('sitBox').classList.remove('open'); el('sitBox').onclick=()=>el('sitBox').classList.toggle('open'); }
     else if(e.t==='prompt'){ addMsg('sys prompt','',L(e.text)); }
     else if(e.t==='note'){ addMsg('sys','',esc(L(e.text))); }
     else if(e.t==='model'){ if(e.fail&&document.querySelector('#log .fb.full')) addMsg('sys','',L({en:'Moving on to the next call.',no:'Vi går videre til neste oppkall.'})); else addMsg('sys model','',`${e.fail?L({en:'Moving on. A good call:',no:'Vi går videre. Et godt oppkall:'}):L({en:'A good call:',no:'Et godt oppkall:'})} <span class="mono">${esc(e.text)}</span>`); }
@@ -402,7 +402,7 @@ async function play(ev){
   }
 }
 function hideAtc(e){ const lv=ses?ses.level:P.level; return (e.listen||(e.atis&&lv!=='beginner')||(ses&&ses.L.hideAtc&&!e.atis))&&(TTS||NV.supported)&&P.voice; }
-async function atcMsg(e){
+async function atcMsg(e){ kbTake(e.text);
   const who=e.atis?(e.unit?e.unit.n:'ATIS'):(e.unit?e.unit.n:'ATC');
   const hid=hideAtc(e);
   const d=addMsg('atc'+(e.atis?' atis':'')+(e.corr?' corr':''),who,hid?`<span class="hid">${L({en:'Listen…',no:'Lytt…'})}</span><button class="reveal" type="button">${L({en:'Show text',no:'Vis tekst'})}</button><span class="tx" hidden>${esc(e.text)}</span>`:esc(e.text));
@@ -418,10 +418,65 @@ function drawCalls(){ if(!ses) return; const st=ses.steps.map((s,i)=>{ const r=s
   const sym={ok:'✓',part:'✓',bad:'✕',now:'›','':'·'};
   const nm=s=>s.prompt? String(L(s.prompt)).replace(/<[^>]+>/g,'') : String(L(s.task)||'').replace(/^P[FM] → /,'');
   el('calls').innerHTML=ses.steps.map((s,i)=>`<li class="${st[i]}"><i>${sym[st[i]]}</i><span>${esc(nm(s))}</span></li>`).join('');
-  const cur2=el('calls').querySelector('li.now'); if(cur2&&cur2.scrollIntoView&&el('calls').closest('.rs-strip').scrollHeight>el('calls').closest('.rs-strip').clientHeight) cur2.scrollIntoView({block:'nearest'});
+  const ol=el('calls'), cur2=ol.querySelector('li.now'); if(cur2&&ol.scrollHeight>ol.clientHeight) ol.scrollTop=Math.max(0,cur2.offsetTop-ol.offsetTop-ol.clientHeight/2);
   el('stripCs').textContent=ses.V.c||P.callsign; el('stripTy').textContent=(ses.V.type||'')+(cur&&cur.group&&/^(vfr|ifr)$/.test(cur.group)?' · '+cur.group.toUpperCase():''); }
+/* ---------------- the situation panel: map, where you are, the plan, kneeboard, live score ---------------- */
+const RS=window.RSIT||null;
+let SIT={id:null,trk:[],zoom:null}, KB={}, KBnew=new Set(), PACE={}, T0=0;
+function lang(){ return LAB.lang==='no'?'no':'en'; }
+function sitReset(){ SIT={id:null,trk:[],zoom:null,last:null}; KB={}; KBnew=new Set(); PACE={}; T0=0; drawKb(); drawLive(); }
+function isIfr(){ return !!(cur&&(cur.group==='ifr'||cur.k==='efuel')); }
+function drawSit(){
+  const s=ses&&ses.step, a=RS&&s? RS.at(s,ses.V) : null, mw=el('sitMapW'), now=el('sitNow');
+  const useOwn=!!a&&!MAPON; mw.hidden=!useOwn; now.hidden=!s&&!SIT.last;
+  if(a){ SIT.last=a; if(SIT.id!==s.id){ SIT.id=s.id; const t=SIT.trk[SIT.trk.length-1]; if(!t||t.x!==a.pos.x||t.y!==a.pos.y) SIT.trk.push({x:a.pos.x,y:a.pos.y,ground:a.ground}); } }
+  const A=a||SIT.last, u=(s&&s.unit)||ses&&ses.unit;
+  const rows=[];
+  if(A){ rows.push([L({en:'Where',no:'Hvor'}),`<dd class="big">${esc(A.lost?L({en:'Uncertain of position',no:'Usikker på posisjonen'}):RS.where(A.pos,lang(),isIfr()))}</dd>`]);
+    rows.push([L({en:'Height',no:'Høyde'}),`<dd>${esc(RS.altText(A.alt,lang()))}</dd>`]);
+    const F=cur&&cur.group==='ifr'?RS.FL.ifr:A.flight; if(F) rows.push([L({en:'Flight',no:'Tur'}),`<dd>${esc(L(F))}</dd>`]); }
+  if(u&&!/^(CREW|INT|PA)$/.test(u.f)) rows.push([L({en:'Talking to',no:'Snakker med'}),`<dd>${esc(u.n)} <span class="fq">${esc(u.f)}</span></dd>`]);
+  now.innerHTML=rows.map(r=>{ const fl=r[0]===L({en:'Flight',no:'Tur'}); return `<dt${fl?' class="fl"':''}>${r[0]}</dt>${fl?r[1].replace('<dd>','<dd class="fl">'):r[1]}`; }).join(''); now.hidden=!rows.length;
+  if(useOwn) drawMap();
+}
+function drawMap(){ const A=SIT.last; if(!A||!RS) return; const cv=el('sitMap');
+  const groundAuto=A.ground||Math.hypot(A.pos.x,A.pos.y)<1.4, zoom=SIT.zoom==null?groundAuto:SIT.zoom==='ad';
+  const ifr=isIfr();
+  RS.draw(cv,{pos:A.pos,ground:zoom,hdg:A.hdg,lost:A.lost,track:SIT.trk,ifr,lang:lang()});
+  const z=el('sitMapZ'); z.hidden=false; z.textContent=zoom?L({en:'Area map',no:'Områdekart'}):L({en:'Aerodrome',no:'Flyplass'});
+  z.onclick=()=>{ SIT.zoom=zoom?'area':'ad'; drawMap(); }; }
+window.addEventListener('resize',()=>{ if(ses&&!el('sitMapW').hidden) drawMap(); });
+/* kneeboard: what the controller has given you so far, as you would write it down */
+const KBF=[['info',{en:'ATIS',no:'ATIS'}],['rwy',{en:'Runway',no:'Bane'}],['qnh',{en:'QNH',no:'QNH'}],['sq',{en:'Squawk',no:'Squawk'}],['lvl',{en:'Cleared',no:'Klarert'}],['hdg',{en:'Heading',no:'Kurs'}],['wind',{en:'Wind',no:'Vind'}],['next',{en:'Next frequency',no:'Neste frekvens'},1],['clr',{en:'Clearance',no:'Klarering'},1]];
+function kbTake(t,infoOnly){ t=String(t||''); KBnew=new Set(); const set=(k,v)=>{ if(v&&KB[k]!==v){ KB[k]=v; KBnew.add(k); } };
+  let m;
+  if((m=/\binformation ([A-Z][a-z]+)\b/.exec(t))) set('info',m[1]);
+  if(infoOnly){ drawKb(); return; }
+  if((m=/\bQNH (\d{3,4})/i.exec(t))) set('qnh',m[1]);
+  if((m=/\bsquawk (\d{4})/i.exec(t))) set('sq',m[1]);
+  if((m=/(?<!short of |cross |crossing |vacate |vacated )\brunway (\d{2})\b(?! vacated)/i.exec(t))) set('rwy',m[1]);
+  if((m=/\bwind (\d{3}) degrees (\d+) knots/i.exec(t))) set('wind',m[1]+'/'+m[2]);
+  if((m=/\bheading (\d{3})\b/i.exec(t))) set('hdg',m[1]);
+  if((m=/\b(?:climb|descend|cross[^.,]*?|maintain)(?:ing)?(?: to)?,? (flight level \d+|altitude \d+ feet|\d+ feet)/i.exec(t))) set('lvl',m[1].replace(/flight level /i,'FL').replace(/altitude /i,'').replace(/ feet/i,' ft'));
+  if((m=/\bcontact ((?:[A-Z][A-Za-z]+ ?){1,3}) (\d{3}\.\d{1,3})/.exec(t))) set('next',m[1].trim()+' '+m[2]);
+  if((m=/\bcleared to ([A-Z]{3,}[^,]*?via [A-Z0-9 ]+?(?:departure|arrival))/.exec(t))) set('clr',m[1]);
+  drawKb(); }
+function drawKb(){ const box=el('kb'); if(!box) return; const f=KBF.filter(([k])=>KB[k]); box.hidden=!f.length;
+  box.innerHTML=f.length? `<h4>${L({en:'Kneeboard',no:'Kneebrett'})}</h4><div class="g">${f.map(([k,l,w])=>`<div class="c${w?' wide':''}${KBnew.has(k)?' new':''}"><span>${esc(L(l))}</span><b>${esc(KB[k])}</b></div>`).join('')}</div>` : ''; }
+/* the score, as you go: four things a check looks at */
+function scores(){ if(!ses) return null; const rs=ses.results.filter(r=>!r.skipped&&r.cat!=='basic'); const all=ses.results.filter(r=>!r.skipped);
+  if(!all.length) return null;
+  let req=0,ok=0,nr=0,nok=0; const NUMK=['qnh','sq','freq','alt','fl','hdg','rwy','hp','hs','trk','spd','info','letter','wind','num','fix','turn'];
+  all.forEach(r=>(r.res0||r.res).forEach(e=>{ if(e.opt) return; req++; if(e.st==='ok'||e.st==='warn') ok++; if(r.cat==='rb'&&NUMK.includes(e.k)){ nr++; if(e.st==='ok'||e.st==='warn') nok++; } }));
+  const phr=all.filter(r=>!(r.flags||[]).length).length/all.length;
+  const pv=Object.values(PACE); const pace=pv.length? pv.reduce((a,t)=>a+Math.max(.4,Math.min(1,1-(t-6)/32)),0)/pv.length : null;
+  return {comp:req?ok/req:null, rb:nr?nok/nr:null, phr, pace, first:all.filter(r=>r.first).length/all.length}; }
+const SCL=[['comp',{en:'Completeness',no:'Fullstendighet'},{en:'Every required item in the call',no:'Alle påkrevde elementer i oppkallet'}],['rb',{en:'Readback',no:'Tilbakelesing'},{en:'Numbers and clearances read back right',no:'Tall og klareringer riktig lest tilbake'}],['phr',{en:'Phraseology',no:'Fraseologi'},{en:'Standard words, no “repeat”, “yes” or “take-off” for ready',no:'Standardord, ikke «repeat», «yes» eller «take-off» for klar'}],['pace',{en:'Pace',no:'Tempo'},{en:'How quickly you answered',no:'Hvor raskt du svarte'}]];
+const pc=v=>v==null?'–':Math.round(v*100)+'%';
+function drawLive(){ const box=el('liveScore'); if(!box) return; const sc=scores(); box.hidden=!sc;
+  if(!sc) return; box.innerHTML=`<h4>${L({en:'This session',no:'Denne økten'})}</h4>`+SCL.filter(([k])=>sc[k]!=null).map(([k,l])=>{ const v=sc[k]; return `<div class="r"><span>${esc(L(l))}</span><span class="bar"><i class="${v<.6?'bad':v<.85?'mid':''}" style="width:${Math.round(v*100)}%"></i></span><b>${pc(v)}</b></div>`; }).join(''); }
 function drawTurn(){
-  const s=ses&&ses.step; const box=el('turn'); drawCalls();
+  const s=ses&&ses.step; const box=el('turn'); drawCalls(); drawSit(); drawLive(); if(ses&&!ses.done&&SIT.clk!==ses.i){ SIT.clk=ses.i; T0=Date.now(); }
   el('prog').textContent= ses&&!ses.done? `${L({en:'Call',no:'Oppkall'})} ${Math.min(ses.i+1,ses.steps.length)} / ${ses.steps.length}` : '';
   const sm=ses?ses.summary():null; el('score').textContent= sm&&sm.n? sm.score+' %' : '';
   if(!s||ses.done){ box.innerHTML=''; return; }
@@ -459,7 +514,7 @@ let lastVoice=null, need=null;
 async function transmit(byVoice){
   if(!ses||ses.done||BUSY) return; const ta=el('say'); const txt=ta.value.trim(); if(!txt) return; jset(K.coach,1);
   hush(); ta.value=''; revealAll();
-  const s=ses.step; const r=ses.submit(txt);
+  const s=ses.step; if(T0&&PACE[ses.i]==null&&!ses.tries) PACE[ses.i]=(Date.now()-T0)/1000; const r=ses.submit(txt);
   if(!r.g||r.g.empty) return;
   const heard=MIC.heard&&MIC.said===txt? MIC.heard : null; MIC.heard=null;
   const chn=s.unit&&/^(CREW|INT|PA)$/.test(s.unit.f)? (s.unit.f==='INT'?' · interphone':s.unit.f==='PA'?' · PA':' · '+L({en:'to the other pilot',no:'til den andre piloten'})) : '';
@@ -505,6 +560,7 @@ function drawDeb(sm){
   const missed=w=>{ const r=(w.res0||w.res||[]).filter(e=>!e.opt&&e.st!=='ok'&&e.st!=='warn').map(e=>L(KIND[e.k]||{en:e.k,no:e.k})); return [...new Set(r)]; };
   const verdict= sm.score>=90&&!sm.retried? tr('Clean, complete radio work. Try the next level up.','Ren og fullstendig radiobruk. Prøv neste nivå.') : sm.score>=90? tr(`Strong session, but ${sm.retried} call${sm.retried>1?'s':''} needed a second try. Practise ${sm.retried>1?'them':'it'} below.`,`Sterk økt, men ${sm.retried} oppkall måtte tas på nytt. Øv på ${sm.retried>1?'dem':'det'} under.`) : sm.score>=70? tr('Good. Practise the red items below once more.','Bra. Øv på de røde punktene under én gang til.') : tr('Keep going: practise the weak items, then fly it again. New values every time.','Fortsett: øv på de svake punktene, og fly den igjen. Nye verdier hver gang.');
   el('debBody').innerHTML=`<div class="dtop"><div class="big">${sm.score}<small>%</small></div><div><h3>${esc(L(cur.t))}</h3><p>${esc(L(verdict))}</p><p class="muted">${esc(L(LEVELS[ses.level].t))} · ${sm.n} ${L({en:'calls',no:'oppkall'})}</p></div></div>
+    ${(()=>{ const sc=scores(); return sc? `<div class="deb-sc">${SCL.filter(([k])=>sc[k]!=null).map(([k,l,d])=>`<div><span>${esc(L(l))}</span><b>${pc(sc[k])}</b><small>${esc(L(d))}</small></div>`).join('')}</div>` : ''; })()}
     <div class="kpis"${Object.keys(sm.cats).length<2?' hidden':''}>${Object.entries(sm.cats).map(([k,v])=>`<div class="kpi"><span>${esc(L(CAT[k]||tr(k)))}</span><b>${v} %</b></div>`).join('')}</div>
     ${kinds.length?`<h4>${L({en:'Element by element',no:'Element for element'})}</h4><table class="ktab"><tbody>${kinds.map(([k,o])=>{ const p=Math.round(o.ok/o.n*100); return `<tr><td>${esc(L(KIND[k]))}</td><td><span class="bar${p===0?' zero':''}"><i style="width:${Math.max(p,0)}%" class="${p<60?'bad':p<85?'mid':'good'}"></i></span></td><td>${o.ok}/${o.n}</td></tr>`; }).join('')}</tbody></table>`:''}
     ${sm.weak.length?`<h4>${L({en:'Practise these again',no:'Øv på disse igjen'})}</h4><div class="weak">${sm.weak.slice(0,5).map(w=>`<div class="wi"><b>${Math.round(w.score*100)} %</b><div><p>${esc(w.prompt? String(L(w.prompt)).replace(/<[^>]+>/g,'') : L(w.task))}</p>${missed(w).length?`<p class="miss">${L({en:'You missed',no:'Du bommet på'})}: <b>${esc(missed(w).join(', '))}</b></p>`:''}<span class="mono">${esc(w.model)}</span></div></div>`).join('')}</div>`:`<p class="muted">${L({en:'No weak items in this session.',no:'Ingen svake punkter i denne økten.'})}</p>`}`;
