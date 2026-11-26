@@ -94,7 +94,7 @@
       <div class="box"><b class="t">APU and engine start</b><p>APU MASTER SW opens the air intake flap; START spins the APU up to AVAIL in about a minute. With the APU BLEED on and the mode selector at IGN/START, ENG MASTER ON starts an engine automatically (A320-251N, LEAP-1A26): starter valve; if the engine is still warm the FADEC first dry cranks it with COOLING on the E/WD; ignition (A or B, alternating) at about 15 % N2, fuel at about 20 %, light-off, starter cut-out at 50 %, idle at about 59 % N2. The packs close during a start.</p></div>
       <div class="box"><b class="t">Hydraulics</b><p>Green (engine 1 pump), blue (electric pump, on when an engine runs) and yellow (engine 2 pump, electric pump). The PTU joins green and yellow when their pressures differ by more than 500 psi; it is inhibited between the first and the second engine start with the parking brake on.</p></div>
       <div class="box"><b class="t">ECAM</b><p>Warnings (red, MASTER WARN and the continuous chime) and cautions (amber, MASTER CAUT and a single chime) show on the E/WD with their actions in blue; an action disappears when the system senses it done. CLR goes to the next alert, RCL brings them back, STS shows the status page. T.O and LDG memos, the right memo and the SD page follow the flight phase.</p></div>
-      <div class="box"><b class="t">Fly-by-wire and auto flight</b><p>Normal law: load factor demand with automatic trim, roll rate demand with bank hold up to 33°, protections for pitch attitude, bank, high angle of attack (alpha floor) and high speed, and the flare mode below 50 ft. FCU: pull a knob for selected guidance, push it for managed. The FMA shows what the A/THR, the vertical and the lateral modes are doing. APPR with the ILS 36 arms LOC and G/S; with the RNAV 36 or VOR 36 approach in the flight plan (MCDU ARRIVAL) it gives APP NAV and FINAL, then FINAL APP on the final descent path (the AP disengages at MDA − 50 ft, or 400 ft without an MDA).</p></div>
+      <div class="box"><b class="t">Fly-by-wire and auto flight</b><p>Normal law: load factor demand with automatic trim, roll rate demand with bank hold up to 33°, protections for pitch attitude, bank, high angle of attack (alpha floor) and high speed, and the flare mode below 50 ft. FCU: pull a knob for selected guidance, push it for managed. The FMA shows what the A/THR, the vertical and the lateral modes are doing. APPR with the ILS 36 arms LOC and G/S; with the RNAV 36 or VOR 36 approach in the flight plan (MCDU ARRIVAL) it gives APP NAV and FINAL, then FINAL APP on the final descent path (the AP disengages at MDA − 50 ft, or 400 ft without an MDA). The autopilots, A/THR and flight directors follow the systems: what the ECAM STATUS lists as INOP (an AP after a hydraulic, ADR, IR or FMGC failure, the A/THR after two ADRs, CAT 3 DUAL after an engine failure) disconnects and cannot be engaged again; with FMGC 1 lost both FDs come from FMGC 2 (FMA 2FD2) and MCDU 1 shows OPP FMGC IN PROGRESS; with both FMGCs lost there is no AP, A/THR, FD or map.</p></div>
       <div class="box"><b class="t">MCDU</b><p>The pages are laid out line by line as on the aircraft. INIT and INIT FUEL PREDICTION: with ZFW/ZFWCG and BLOCK entered the FMS gives TRIP/TIME, TOW/LW, MIN DEST FOB and EXTRA. F-PLN shows predicted time, speed and altitude at each waypoint (a magenta star on a constraint that will be met, amber if not) and DEST, DIST and EFOB. Revisions make a temporary (yellow) flight plan that you check, then INSERT or ERASE: DIR TO (with RADIAL IN for a runway centreline extension), DEPARTURE (runway and SID), ARRIVAL (approach and STAR), HOLD (computed or database) and ENABLE ALTN. VERT REV, or a right-hand key with an entry such as /+5000 or 250/, sets speed and altitude constraints. PERF TAKE OFF, CLB, CRZ, DES, APPR (QNH, TEMP, MAG WIND, MDA or DH, LDG CONF, VAPP) and GO AROUND, RAD NAV, PROG, FUEL PRED, SEC INDEX and DATA INDEX.</p></div>
       <div class="box"><b class="t">What is simplified</b><p>The flight model is a teaching model tuned to typical A320neo numbers; the FMS knows the practice area only (field, fixes, two SIDs, three STARs and the ILS, RNAV and VOR approaches to runway 36; no airways, no flight plan discontinuities and no wind in the predictions), managed climb and descent use the FCU altitude, the ECAM has the common training failures but not every alert of the aircraft, and the weather radar shows no weather. Our own drawings of the display formats.</p></div>
     </div>
@@ -124,15 +124,15 @@
 <script src="lab.js?v=62"></script>
 <script src="simshell.js?v=11"></script>
 <script src="a320t.js?v=1"></script>
-<script src="a320sys.js?v=6"></script>
-<script src="a320fm.js?v=10"></script>
-<script src="a320disp.js?v=97"></script>
-<script src="a320mcdu.js?v=4"></script>
+<script src="a320sys.js?v=7"></script>
+<script src="a320fm.js?v=11"></script>
+<script src="a320disp.js?v=98"></script>
+<script src="a320mcdu.js?v=5"></script>
 <script src="ownck.js?v=5"></script>
 <script src="a320ck.js?v=6"></script>
 <script src="a320auto.js?v=3"></script>
 <script src="a320gpws.js?v=2"></script>
 <script src="a320-3d.js?v=98"></script>
-<script src="a320-app.js?v=46"></script>
+<script src="a320-app.js?v=47"></script>
 </body>
 </html>

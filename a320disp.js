@@ -204,6 +204,7 @@ function nd(g,cv,D){
     if(t.type==='ra') g.fillRect(x-11,y-11,22,22); else if(t.type==='ta'){ g.beginPath(); g.arc(x,y,12,0,7); g.fill(); } else { g.beginPath(); g.moveTo(x,y-13); g.lineTo(x+11,y); g.lineTo(x,y+13); g.lineTo(x-11,y); g.closePath(); t.type==='prox'?g.fill():g.stroke(); }
     const rel=(t.rel>=0?'+':'-')+String(Math.abs(t.rel)).padStart(2,'0'); T(g,rel,x,t.rel>=0?y-20:y+40,col,26,'center'); }
   g.restore();
+  if(D.mapNA) T(g,'MAP NOT AVAIL',500,rose||plan?560:600,C.r,34,'center'); // no FMGC: no map, no flight plan
   // compass
   g.strokeStyle=C.w; g.lineWidth=3;
   if(rose||plan){ g.beginPath(); g.arc(cx,cy,R0,0,7); g.stroke(); g.setLineDash([10,14]); g.beginPath(); g.arc(cx,cy,R0/2,0,7); g.stroke(); g.setLineDash([]); }

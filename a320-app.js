@@ -61,13 +61,13 @@ function reset(kind){
     Object.assign(A.sw,{park:0,flapLv:1,spArm:0,abrk:0,strobe:2,beacon:1,navLogo:1,landL:2,landR:2,nose:1,seatB:2,noSmk:2,gearLv:0});
     A.phase=6; A.ecam.cabinReady=true;
   }
-  A.alignT=420; A.alignK=UI.fastAlign?20:1; A.env={t:15,elev:0};
+  A.alignT=420; A.alignK=UI.fastAlign?20:1; A.env={t:15,elev:0}; A.noAfs=!!CF; // A320 auto flight availability (FMGC, AP, A/THR); the B737 and ATR keep their own
   const airb=kind==='appr'||kind==='air'||kind==='climb'||kind==='down';
   A.fuel=Object.assign(A.fuel,{lo:690,li:2950,ri:2950,ro:690,c:airb?0:1500}); A.zfw=airb?55000:56500;
   K=MC.create(FIX);
   if(kind!=='cold'){ Object.assign(K.d,{from:'ENRD',to:'ENRD',altn:'ENRA',fltNbr:'NRD320',ci:30,crzFl:100,zfw:A.zfw,zfwcg:28,block:A.fuel.lo+A.fuel.li+A.fuel.ri+A.fuel.ro+A.fuel.c,flaps:1,ths:'UP0.4',v1:131,vr:134,v2:139,flex:null,qnh:1013,temp:15,wind:'360/05',dh:200,ldgConf:'FULL'}); K.fpln=MC.build(K); K.act=kind==='appr'?K.fpln.findIndex(p=>p.id==='FAPSO'):1; }
   if(kind==='air'){ K.act=K.fpln.findIndex(p=>p.id==='RONAX'); }
-  M.lnavFn=m=>MC.lnav(K,m); M.vnavFn=(m,climb,fcu)=>MC.vnav(K,m,climb,fcu);
+  const fmOK=()=>!A.afs||A.afs.fmgc[0]||A.afs.fmgc[1]; M.lnavFn=m=>fmOK()?MC.lnav(K,m):null; M.vnavFn=(m,climb,fcu)=>fmOK()?MC.vnav(K,m,climb,fcu):null; // managed guidance needs an FMGC
   const ap=M.ap; ap.fd1=ap.fd2=kind!=='cold'; UI.fd=[ap.fd1,ap.fd2];
   ap.alt.v=kind==='appr'?3000:5000; ap.hdg.v=kind==='cold'?270:360;
   if(kind!=='cold'){ ap.v1=K.d.v1; ap.vr=K.d.vr; ap.v2=K.d.v2; ap.thrRed=K.d.thrRed; ap.acc=K.d.acc; UI.ls=[kind==='appr',kind==='appr']; }
@@ -778,13 +778,14 @@ function dispData(d){ d=effD(d);
   }
   if(d.k==='nd'){
     const fx=[]; for(const k in FIX){ const f=FIX[k]; if(k==='RW36') continue; fx.push({id:k,N:f.N,E:f.E,vor:k==='ASN'}); }
-    const nav=M.nav&&M.nav.fp; const fp=K.fpln.length?K.fpln.flatMap(p=>p.hold?MC.holdShape(p,p.hold):[{N:p.N,E:p.E}]):null; K.fpln.forEach(p=>{ const f=fx.find(x=>x.id===p.id); if(f) f.fp=true; else if(!p.rwy) fx.push({id:p.id,N:p.N,E:p.E,fp:true}); });
+    const noFM=!CF&&A.afs&&!A.afs.fmgc[0]&&!A.afs.fmgc[1]; // both FMGCs lost: the ND has no map (heading and ILS only)
+    const nav=M.nav&&M.nav.fp; const fp=K.fpln.length&&!noFM?K.fpln.flatMap(p=>p.hold?MC.holdShape(p,p.hold):[{N:p.N,E:p.E}]):null; K.fpln.forEach(p=>{ const f=fx.find(x=>x.id===p.id); if(f) f.fp=true; else if(!p.rwy) fx.push({id:p.id,N:p.N,E:p.E,fp:true}); });
     // temporary flight plan (MCDU TMPY: DIR TO, HOLD, ARRIVAL ... before INSERT): yellow dashed on the ND
-    const tf=K.tmpy&&K.tmpy.fp, tmp=tf?tf.slice(Math.max(0,K.tmpy.act-1)).flatMap(p=>p.hold?MC.holdShape(p,p.hold):[{N:p.N,E:p.E}]):null;
+    const tf=!noFM&&K.tmpy&&K.tmpy.fp, tmp=tf?tf.slice(Math.max(0,K.tmpy.act-1)).flatMap(p=>p.hold?MC.holdShape(p,p.hold):[{N:p.N,E:p.E}]):null;
     if(tf) tf.slice(Math.max(0,K.tmpy.act-1)).forEach(p=>{ const f=fx.find(x=>x.id===p.id); if(f) f.tmpy=true; else if(!p.rwy) fx.push({id:p.id,N:p.N,E:p.E,tmpy:true}); });
     const mode=MODES[E.mode]; const W=M.wind;
     return {tfc:GPW?GPW.traffic():null,pwr,irOK,mode,range:RANGES[E.range],N:M.N,E:M.E,hdg,trk,selHdg:(ap.lat==='HDG'||ap.lat==='TRK'||ap.hdg.preset)?ap.hdg.v:null,gs:M.gs/KT,tas:M.tas/KT,windDir:W.dir,windSpd:W.spd,
-      fixes:fx,fpln:mode==='ROSE ILS'||mode==='ROSE VOR'?null:fp&&fp.slice(K.fpln.slice(0,Math.max(0,K.act-1)).reduce((s,q)=>s+(q.hold?27:1),0)),tmpy:mode==='ROSE ILS'||mode==='ROSE VOR'?null:tmp,toWpt:nav?nav.toWpt:null,toDist:nav?nav.toDist:null,toBrg:nav?nav.toBrg:null,lsOn:UI.ls[side]||ap.appr||ap.loc,loc:M.nav.loc,lsCrs:K.d.ilsCrs,lsFreq:K.d.ilsFreq,lsId:K.d.ilsId,
+      mapNA:noFM&&mode!=='ROSE ILS'&&mode!=='ROSE VOR',fixes:noFM?[]:fx,fpln:mode==='ROSE ILS'||mode==='ROSE VOR'?null:fp&&fp.slice(K.fpln.slice(0,Math.max(0,K.act-1)).reduce((s,q)=>s+(q.hold?27:1),0)),tmpy:mode==='ROSE ILS'||mode==='ROSE VOR'?null:tmp,toWpt:nav?nav.toWpt:null,toDist:nav?nav.toDist:null,toBrg:nav?nav.toBrg:null,lsOn:UI.ls[side]||ap.appr||ap.loc,loc:M.nav.loc,lsCrs:K.d.ilsCrs,lsFreq:K.d.ilsFreq,lsId:K.d.ilsId,
       filt:{wpt:E.filt==='wpt',vord:E.filt==='vord'||E.filt==='ndb'},rwyLen:F.RWY.len,vor1:E.adf1===2?'ASN':null,vor2:E.adf2===2?'ASN':null,ndMsg:M.gnd&&!K.fpln.length&&mode!=='ROSE ILS'?'':''};
   }
   if(d.k==='ewd'){
@@ -804,7 +805,7 @@ function dispData(d){ d=effD(d);
       ail:M.ctl.sx,elev:-M.ctl.sy,rud:M.ctl.rud,elac:A.elac,sec:A.sec,law:A.law,alerts:A.ecam.list,stsLim:A.ecam.stsLim,stsProc:A.ecam.stsProc,stsInop:A.ecam.stsInop,tat,sat,utc,gw:A.gw,gwOK:!!(K.d.zfw),elev:0,gnd:M.gnd};
   }
   if(d.k==='isis') return {pwrIsis:A.bus.dcEss||A.bus.hot1,phi:A.irs[2].st>=0?M.phi*R2D:0,th:M.th*R2D,ias:M.ias,alt:M.h/FT+(UI.efis.std?0:(UI.efis.qnh-1013.25)*27.3),qnh:UI.efis.qnh,mach:M.mach};
-  if(d.k==='mcdu'){ return {pwr:side?A.bus.ac2:(A.bus.acEss||A.bus.ac1),mcdu:MC.render(K,M,A)}; }
+  if(d.k==='mcdu'){ return {pwr:side?A.bus.ac2:(A.bus.acEss||A.bus.ac1),mcdu:MC.render(K,M,A,side)}; }
   return {};
 }
 function fma(){
@@ -813,10 +814,12 @@ function fma(){
   if(a.vert==='ROLL OUT'){ F_.common='ROLL OUT'; F_.vert=F_.lat=''; }
   if(a.vert==='LAND'||a.vert==='FLARE'||a.vert==='FINAL APP'){ F_.common=a.vert; F_.vert=F_.lat=''; }
   /* approach capability (column 4): CAT 3 DUAL with both APs and A/THR, CAT 3 SINGLE with one AP and A/THR, CAT 2 with one AP, else CAT 1 */
-  if(a.appr&&!a.npa){ const ap=(a.ap1?1:0)+(a.ap2?1:0), th=a.athr; if(ap===2&&th){ F_.cat='CAT 3'; F_.cat2='DUAL'; } else if(ap&&th){ F_.cat='CAT 3'; F_.cat2='SINGLE'; } else F_.cat=ap?'CAT 2':'CAT 1'; }
+  if(a.appr&&!a.npa){ const ap=(a.ap1?1:0)+(a.ap2?1:0), th=a.athr; let r=ap===2&&th?3:ap&&th?2:ap?1:0; if(!CF&&A.afs) r=Math.min(r,A.afs.catR); // limited by what the systems allow (STATUS)
+    F_.cat=r>=2?'CAT 3':r===1?'CAT 2':'CAT 1'; F_.cat2=r===3?'DUAL':r===2?'SINGLE':''; }
   const dh=K.d.dh, mda=K.d.mda; if(a.appr) F_.mins=a.npa?(mda?'MDA '+mda:''):dh!=null?(dh==='NO'?'NO DH':'DH '+dh):mda?'MDA '+mda:'';
   F_.ap=a.ap1&&a.ap2?'AP1+2':a.ap1?'AP1':a.ap2?'AP2':'';
-  F_.fd=(a.fd1||a.fd2)&&(a.lat||a.vert||F_.vert)?((a.fd1?'1':'-')+' FD '+(a.fd2?'2':'-')):'';
+  const src=!CF&&A.afs?A.afs.fdSrc:[1,2]; // FD 1 / FD 2 and the FMGC that drives each (2FD2 with FMGC 1 lost)
+  F_.fd=(a.fd1||a.fd2)&&(a.lat||a.vert||F_.vert)?((a.fd1&&src[0]?src[0]:'-')+'FD'+(a.fd2&&src[1]?src[1]:'-')):'';
   F_.athr=a.athr?'A/THR':a.athrArm?'A/THR':''; F_.athrArm=!a.athr&&a.athrArm;
   if(a.lvrMsg&&(a.lvrMsg==='LVR ASYM'||UI.t%1<0.6)) F_.lvr=a.lvrMsg; // LVR CLB / LVR MCT / THR LK flash
   if(a.retard&&M.ra/FT<40) F_.thr='THR IDLE';
@@ -1060,7 +1063,7 @@ function openMcdu(side){
     if(CF) MOV.innerHTML=CF.cduHTML();
     ST.appendChild(MOV);
     const cv=MOV.querySelector('canvas'), g=cv.getContext('2d',{alpha:false});
-    MOV._draw=()=>{ if(CF){ CF.draw.mcdu(g,cv,{pwr:true,mcdu:CF.cdu.render(K,M,A),exec:!!K.exec}); MOV.classList.toggle('xon',!!K.exec); } else DSP.mcdu(g,cv,{pwr:true,mcdu:MC.render(K,M,A)}); };
+    MOV._draw=()=>{ if(CF){ CF.draw.mcdu(g,cv,{pwr:true,mcdu:CF.cdu.render(K,M,A),exec:!!K.exec}); MOV.classList.toggle('xon',!!K.exec); } else DSP.mcdu(g,cv,{pwr:true,mcdu:MC.render(K,M,A,+MOV.dataset.side||0)}); };
     MOV.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
       if(b.classList.contains('mx')){ closeMcdu(); return; }
       if(b.dataset.t){ MOV.querySelectorAll('.mtabs button').forEach(x=>x.classList.toggle('on',x===b)); MOV.querySelectorAll('.mpane').forEach(p=>p.hidden=p.dataset.p!==b.dataset.t);
@@ -1098,7 +1101,7 @@ function setStat(){ const s=$('stat'); if(!s) return; const t=UI.crashed?T('Cras
 function pause(){ UI.paused=!UI.paused; setStat(); if(CH) CH.sync(); }
 let CH=null;
 if(SH){ SH.init(); CH=SH.chrome({paused:()=>UI.paused,pause,restart:()=>reset(UI.start),sound:()=>UI.sound,setSound:v=>{ UI.sound=v; },refit:()=>layout(true)});
-  SH.pane('fl',el=>{ const L_=[['v1cut','Engine 1 failure at V1 (next take-off)'],['hydGY','Green + yellow hydraulics (G+Y SYS LO PR)'],['eng1','Engine 1 failure'],['fire1','Engine 1 fire'],['fire2','Engine 2 fire'],['fire1x','Engine 1 fire that does not go out'],['fire2x','Engine 2 fire that does not go out'],['fireApu','APU fire'],['smokeFwd','Forward cargo smoke'],['smokeAft','Aft cargo smoke'],['gen1','Generator 1'],['idg1','IDG 1 oil pressure'],['acBus1','AC BUS 1'],['bothGen','Both generators'],['hydG','Green hydraulics'],['hydY','Yellow hydraulics'],['gOvht','Green reservoir overheat'],['yOvht','Yellow reservoir overheat'],['bOvht','Blue reservoir overheat'],['gearUpl','Landing gear does not uplock'],['gearDnl','Landing gear does not downlock'],['edp1','Engine 1 pump (green)'],['bscu','Brakes: both BSCU channels (anti-skid and steering)'],['nws','Nose wheel steering'],['ap1f','AP 1'],['ap2f','AP 2'],['locTx','ILS localizer transmitter (ground)'],['gsTx','ILS glideslope transmitter (ground)'],['fuelL1','Left tank pump 1'],['bleed1','Engine 1 bleed'],['pack1','Pack 1'],['elac1','ELAC 1'],['sec1','SEC 1'],['ir1','IR 1'],['adr1','ADR 1'],['adr2','ADR 2'],['adr3','ADR 3'],['decomp','Decompression'],['cabLeak','Slow cabin leak'],['ws','Windshear (next approach or take-off, below 1,000 ft)'],['tcas','TCAS intruder (head-on, about your level)']];
+  SH.pane('fl',el=>{ const L_=[['v1cut','Engine 1 failure at V1 (next take-off)'],['hydGY','Green + yellow hydraulics (G+Y SYS LO PR)'],['eng1','Engine 1 failure'],['fire1','Engine 1 fire'],['fire2','Engine 2 fire'],['fire1x','Engine 1 fire that does not go out'],['fire2x','Engine 2 fire that does not go out'],['fireApu','APU fire'],['smokeFwd','Forward cargo smoke'],['smokeAft','Aft cargo smoke'],['gen1','Generator 1'],['idg1','IDG 1 oil pressure'],['acBus1','AC BUS 1'],['bothGen','Both generators'],['hydG','Green hydraulics'],['hydY','Yellow hydraulics'],['gOvht','Green reservoir overheat'],['yOvht','Yellow reservoir overheat'],['bOvht','Blue reservoir overheat'],['gearUpl','Landing gear does not uplock'],['gearDnl','Landing gear does not downlock'],['edp1','Engine 1 pump (green)'],['bscu','Brakes: both BSCU channels (anti-skid and steering)'],['nws','Nose wheel steering'],['fmgc1','FMGC 1'],['fmgc2','FMGC 2'],['ap1f','AP 1'],['ap2f','AP 2'],['locTx','ILS localizer transmitter (ground)'],['gsTx','ILS glideslope transmitter (ground)'],['fuelL1','Left tank pump 1'],['bleed1','Engine 1 bleed'],['pack1','Pack 1'],['elac1','ELAC 1'],['sec1','SEC 1'],['ir1','IR 1'],['ir2','IR 2'],['adr1','ADR 1'],['adr2','ADR 2'],['adr3','ADR 3'],['decomp','Decompression'],['cabLeak','Slow cabin leak'],['ws','Windshear (next approach or take-off, below 1,000 ft)'],['tcas','TCAS intruder (head-on, about your level)']];
     el.innerHTML='<div class="sgrp">'+T('Failures')+'</div><div class="fbtns">'+L_.map(([k,t])=>`<button type="button" data-f="${k}" class="${A.fail[k]?'on':''}">${t}</button>`).join('')+'<button type="button" class="rs" data-f="__clr">Clear all failures</button></div>';
     el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=b.dataset.f;
       if(k==='v1cut'){ UI.v1cut=!UI.v1cut; A.fail.v1cut=UI.v1cut; say(UI.v1cut?'Engine 1 will fail at V1 on the next take-off':'V1 cut cancelled'); el.querySelectorAll('button[data-f]').forEach(x=>x.classList.toggle('on',!!A.fail[x.dataset.f])); return; }

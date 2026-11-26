@@ -242,4 +242,29 @@ function run(R,sec,each){ const {A,M}=R; for(let i=0;i<sec*50;i++){ const C=M.ct
   M.spdLim={spd:250,alt:10000}; M.spdCst=220; M.ap.lat='NAV'; M.lnavFn=()=>({dtk:360,xtkCorr:0,toWpt:'X',toDist:20,toBrg:360,xtk:0}); run(R,1); ok('speed constraint 220 at the TO waypoint (NAV): managed 220',Math.abs(M.ap.tgtSpd-220)<1,M.ap.tgtSpd);
   M.spdCst=0; M.lnavFn=null; M.ap.lat='HDG'; const ff=()=>A.eng[0].ff; run(R,60); ok('fuel flow at 250 kt, 5,000 ft: about 1,050 kg/h a side (LEAP-1A)',ff()>850&&ff()<1300,Math.round(ff())); }
 
+/* ---------- auto flight linked to the systems: what STATUS lists as INOP is INOP in the cockpit ---------- */
+{ const fly=(o)=>{ const R=rig({sys:{cold:false},fm:{air:true,h:5000*FT,ias:250,hdg:360},gw:62000}); const {A,M}=R; A.sw.park=0; M.ctl.park=0; A.sw.gearLv=0; M.ctl.tla=[25,25];
+    run(R,1); F.fcu(M,'athr'); F.fcu(M,'ap1'); M.ap.vert='ALT'; M.ap.altHold=5000; run(R,2); M.events.length=0; return R; };
+  const inop=A=>A.ecam.stsInop||[];
+  { const R=fly(); const {A,M}=R; ok('healthy: AP 1, A/THR on, CAT 3 DUAL available, no AP item in STATUS',M.ap.ap1&&M.ap.athr&&A.afs.cat==='CAT 3 DUAL'&&!inop(A).some(t=>/^AP|A\/THR|CAT/.test(t)));
+    A.fail.hydG=A.fail.hydY=true; run(R,3);
+    ok('G+Y SYS LO PR: AP 1 disconnects (cavalry charge)',!M.ap.ap1&&M.events.includes('apdisc-forced'));
+    ok('G+Y: AP 1 and AP 2 cannot be engaged again',F.fcu(M,'ap1')!=null&&F.fcu(M,'ap2')!=null&&!M.ap.ap1&&!M.ap.ap2);
+    ok('G+Y: STATUS INOP SYS AP 1+2 and CAT 2 (no separate CAT 3 DUAL)',inop(A).includes('AP 1+2')&&inop(A).includes('CAT 2')&&!inop(A).includes('CAT 3 DUAL'),inop(A).join(',')); ok('G+Y: A/THR still available',M.ap.athr); }
+  { const R=fly(); const {A,M}=R; A.fail.adr1=A.fail.adr2=true; run(R,3);
+    ok('ADR 1+2: alternate law, AP off, A/THR off with the thrust locked (THR LK)',A.law==='ALTN'&&!M.ap.ap1&&!M.ap.athr&&!!M.ap.thrLock&&M.events.includes('athrdisc'),A.law+' '+M.ap.athr);
+    ok('ADR 1+2: A/THR cannot be engaged again',/not available/.test(F.fcu(M,'athr')||'')&&!M.ap.athr&&!M.ap.athrArm);
+    ok('ADR 1+2: STATUS AP 1+2, A/THR, CAT 2',['AP 1+2','A/THR','CAT 2'].every(t=>inop(A).includes(t)),inop(A).join(',')); }
+  { const R=fly(); const {A,M}=R; A.fail.fmgc1=true; run(R,1);
+    ok('FMGC 1 fault: AP 1 off, AP 2 can be engaged',!M.ap.ap1&&(F.fcu(M,'ap2'),M.ap.ap2));
+    ok('FMGC 1 fault: both FDs from FMGC 2 (FMA 2FD2)',A.afs.fdSrc[0]===2&&A.afs.fdSrc[1]===2);
+    ok('FMGC 1 fault: STATUS AP 1 and CAT 3 DUAL; FMA capability at most CAT 3 SINGLE',inop(A).includes('AP 1')&&inop(A).includes('CAT 3 DUAL')&&A.afs.cat==='CAT 3 SINGLE',inop(A).join(','));
+    const K=MC.create({}); ok('FMGC 1 fault: MCDU 1 works through FMGC 2 (OPP FMGC IN PROGRESS), MCDU 2 normal',MC.render(K,M,A,0).scratch==='OPP FMGC IN PROGRESS'&&MC.render(K,M,A,1).scratch!=='OPP FMGC IN PROGRESS');
+    A.fail.fmgc2=true; run(R,1);
+    ok('FMGC 1+2: no AP, no A/THR, no FD',!M.ap.ap1&&!M.ap.ap2&&!M.ap.athr&&!M.ap.fd1&&!M.ap.fd2&&F.fcu(M,'fd1')!=null);
+    MC.key(K,'F-PLN',M,A,{}); ok('FMGC 1+2: the MCDU shows only the MCDU MENU',K.page==='menu'&&MC.render(K,M,A,0).title==='MCDU MENU'); }
+  { const R=fly(); const {A,M}=R; A.fail.eng1=true; run(R,4); ok('engine failure: CAT 3 DUAL lost (CAT 3 SINGLE at most), both APs still available',A.afs.cat==='CAT 3 SINGLE'&&A.afs.ap[0]&&A.afs.ap[1],A.afs.cat); }
+  { const R=fly(); const {A,M}=R; A.fail.ir1=A.fail.ir2=true; run(R,2); ok('IR 1+2: alternate law and no AP',A.law==='ALTN'&&!A.afs.ap[0]&&!A.afs.ap[1]&&!M.ap.ap1,A.law); }
+  { const R=rig({sys:{cold:true,gpu:true}}); R.A.sw.bat1=R.A.sw.bat2=1; R.A.sw.ext=1; run(R,2); ok('cold aircraft on the ground: no AP / A/THR / CAT items in STATUS',!R.A.afs.inop.length,R.A.afs.inop.join(',')); } }
+
 console.log(`a320: ${pass} passed, ${fail} failed`); if(fail){ console.log(fails.map(f=>'  FAIL '+f).join('\n')); process.exit(1); }

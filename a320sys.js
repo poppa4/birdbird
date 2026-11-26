@@ -60,7 +60,7 @@ function create(o){
     gw:o.gw||64000,zfw:o.zfw||58000,
     events:[] // one-off notices for the page (chime, GPU, etc.)
   };
-  if(!cold){ A.eng.forEach(e=>engRun(e)); A.apu.n=0; }
+  if(!cold){ A.eng.forEach(e=>engRun(e)); A.apu.n=0; A.hyd.g=A.hyd.b=A.hyd.y=3000; } // engines running: the three systems at pressure
   return A;
 }
 function engNew(cold,t){ const T=t==null?15:t; return {n1:0,n2:0,egt:T,ff:0,oilP:0,oilT:T,oilQ:17.5,run:false,st:0,stT:0,ignA:false,ignB:false,startV:false,fuelOn:false,fail:false,fire:false,shut:false,hot:false,starter:false,avail:false,rev:0,lit:false,altIgn:false,startFault:''}; }
@@ -71,7 +71,7 @@ function engRun(e){ Object.assign(e,{n1:19.6,n2:58.8,egt:395,ff:290,oilP:42,oilT
    IR i gives attitude and heading: its pushbutton ON and aligned in NAV (or ATT when att is asked for). */
 function adrValid(A,i){ return A.sw['adr'+(i+1)]!==0&&!A.fail['adr'+(i+1)]&&A.irs[i].st!==0; }
 function irValid(A,i,att){ const r=A.irs[i]; return A.sw['ir'+(i+1)]!==0&&(r.st===2||(!!att&&r.st===3)); }
-const FAILS=['eng1','eng2','fire1','fire2','fire1x','fire2x','fireApu','gen1','gen2','idg1','apuGen','acBus1','hydG','hydB','hydY','yOvht','edp1','edp2','fuelL1','fuelL2','bleed1','bleed2','pack1','pack2','elac1','sec1','ir1','ir2','decomp','cabLeak','bothGen',
+const FAILS=['fmgc1','fmgc2','eng1','eng2','fire1','fire2','fire1x','fire2x','fireApu','gen1','gen2','idg1','apuGen','acBus1','hydG','hydB','hydY','yOvht','edp1','edp2','fuelL1','fuelL2','bleed1','bleed2','pack1','pack2','elac1','sec1','ir1','ir2','decomp','cabLeak','bothGen',
   'bscu','nws','ap1f','ap2f','smokeFwd','smokeAft','locTx','gsTx','adr1','adr2','adr3','gOvht','bOvht','gearUpl','gearDnl'];
 /* the brakes and steering the BSCU gives (read by the flight model): normal braking with anti-skid and autobrake, nose wheel
    steering. Both BSCU channels lost, or the A/SKID & N/W STRG switch OFF: alternate braking on yellow without anti-skid (the
@@ -404,9 +404,41 @@ function fctl(A){
   A.fac=[S.fac1&&B.acEss,S.fac2&&B.ac2];
   const adrOK=[0,1,2].filter(i=>adrValid(A,i)).length;
   const irOK=[0,1,2].filter(i=>irValid(A,i,false)).length;
-  A.law=(!A.elac[0]&&!A.elac[1])||(A.hyd.g<1500&&A.hyd.y<1500)||adrOK<2?((A.hyd.g<1500&&A.hyd.y<1500&&A.hyd.b<1500)?'MECH':(irOK<1?'DIRECT':'ALTN')):'NORMAL';
+  // alternate law: both ELACs, G+Y, two ADRs or two IRs lost; direct law with all IRs lost
+  A.law=(!A.elac[0]&&!A.elac[1])||(A.hyd.g<1500&&A.hyd.y<1500)||adrOK<2||irOK<2?((A.hyd.g<1500&&A.hyd.y<1500&&A.hyd.b<1500)?'MECH':(irOK<1?'DIRECT':'ALTN')):'NORMAL';
   if(!A.sec[0]&&!A.sec[1]&&!A.sec[2]&&!A.elac[0]&&!A.elac[1]) A.law='MECH';
 }
+
+/* ---------- AUTO FLIGHT availability: FMGC, AP, A/THR, FD and approach capability, from the systems, so that what the ECAM
+   STATUS lists as inoperative is inoperative in the cockpit too. FMGC 1 on AC ESS, FMGC 2 on AC 2 (each also fails on its own).
+   An AP needs its FMGC, two ADRs, two IRs, normal or alternate law and not G+Y lost; AP 1 also needs green, AP 2 yellow.
+   A/THR needs an FMGC and two ADRs. Each FD takes its own FMGC, else the other one (FMA 1FD2 / 2FD2 / 1FD1).
+   Approach capability: CAT 3 DUAL needs both APs, both engines and generators, G and Y and A/THR; one AP gives CAT 3 SINGLE;
+   no A/THR CAT 2; no AP, alternate / direct law or EMER CONFIG CAT 1. ---------- */
+function autoFlt(A,air){ if(A.noAfs){ A.afs=null; return; }
+  const F=A.fail, B=A.bus, H=A.hyd, fly=!air.gnd;
+  const fmgc=[!F.fmgc1&&!!B.acEss,!F.fmgc2&&!!B.ac2];
+  const adrOK=[0,1,2].filter(i=>adrValid(A,i)).length, irOK=[0,1,2].filter(i=>irValid(A,i,false)).length;
+  const gLo=H.g<1500, yLo=H.y<1500, base=(A.law==='NORMAL'||A.law==='ALTN')&&adrOK>=2&&irOK>=2&&!(gLo&&yLo);
+  const ap=[fmgc[0]&&!F.ap1f&&base&&!gLo,fmgc[1]&&!F.ap2f&&base&&!yLo];
+  const athr=(fmgc[0]||fmgc[1])&&adrOK>=2, anyF=fmgc[0]||fmgc[1];
+  const fdSrc=[fmgc[0]?1:fmgc[1]?2:0,fmgc[1]?2:fmgc[0]?1:0];
+  let cat=3; const lim=c=>{ cat=Math.min(cat,c); };
+  if(!ap[0]&&!ap[1]) lim(0); else if(!ap[0]||!ap[1]) lim(2);
+  if(!athr) lim(1);
+  if(A.law!=='NORMAL') lim(0);
+  if(fly){ if(A.eng.some(e=>!e.run)||!A.genAv[0]||!A.genAv[1]||gLo||yLo) lim(2); if(A.emer&&A.emer.rat&&!B.ac1&&!B.ac2) lim(0); }
+  // STATUS INOP SYS: in flight everything above; on the ground only what has failed (an FMGC or an AP), not a cold aircraft
+  const inop=[], failAp=[!!(F.fmgc1||F.ap1f),!!(F.fmgc2||F.ap2f)], show=i=>fly?!ap[i]:failAp[i];
+  if(show(0)&&show(1)) inop.push('AP 1+2'); else if(show(0)) inop.push('AP 1'); else if(show(1)) inop.push('AP 2');
+  if(fly?!athr:!!(F.fmgc1&&F.fmgc2)) inop.push('A/THR');
+  const catS=fly?cat:(failAp[0]&&failAp[1]?0:failAp[0]||failAp[1]?2:3); if(catS<3) inop.push(['CAT 2','CAT 3','CAT 3 DUAL'][catS]);
+  A.afs={fmgc,ap,athr,fd:[anyF,anyF],fdSrc,catR:cat,cat:['CAT 1','CAT 2','CAT 3 SINGLE','CAT 3 DUAL'][cat],inop}; }
+/* one AP 1+2 line instead of AP 1 and AP 2, and only the lowest approach capability lost (CAT 2 covers CAT 3 and CAT 3 DUAL) */
+function normInop(L){ let o=L.slice();
+  if(o.includes('AP 1+2')||o.includes('AP 1')&&o.includes('AP 2')){ const at=o.findIndex(t=>/^AP 1|^AP 2/.test(t)); o=o.filter(t=>!/^AP (1|2|1\+2)$/.test(t)); o.splice(Math.max(0,Math.min(at,o.length)),0,'AP 1+2'); }
+  const cats=['CAT 2','CAT 3','CAT 3 DUAL'], worst=cats.find(c=>o.includes(c)); if(worst) o=o.filter(t=>!cats.includes(t)||t===worst);
+  return o; }
 
 /* ---------- FLIGHT PHASES (FWC) ----------
    1 elec power · 2 first engine started · 3 T.O power · 4 80 kt · 5 lift off · 6 above 1,500 ft (or 2 min after lift-off)
@@ -685,10 +717,8 @@ const ECX=[
   [/^ir\d$/,{land:'',sec:()=>[],lim:[],proc:[],inop:n=>['IR '+(n+1)]}],
   [/^adr\d$/,{land:'',sec:()=>[],lim:[],proc:[],inop:n=>['ADR '+(n+1)]}]
 ];
-/* STATUS items from failures that give no ECAM alert of their own (an autopilot that cannot be engaged) */
-function standing(A){ const F=A.fail, inop=[];
-  if(F.ap1f&&F.ap2f) inop.push('AP 1+2','CAT 2'); else if(F.ap1f||F.ap2f) inop.push(F.ap1f?'AP 1':'AP 2','CAT 3 DUAL');
-  return inop; }
+/* STATUS items from the auto flight availability (an AP, the A/THR or approach capability lost, also without an alert of its own) */
+function standing(A){ return A.afs?A.afs.inop:[]; }
 function ecamFlow(A){
   const E=A.ecam; let land='', sec=[], lim=[], proc=[], inop=[];
   for(const a of E.list){ const m=ECX.find(x=>x[0].test(a.id)); if(!m) continue; const d=m[1], n=+(/\d/.exec(a.id)||[0])[0]||0;
@@ -698,6 +728,7 @@ function ecamFlow(A){
   if(A.gndNow) land=''; // LAND ASAP is a message for the flight
   E.stsAlert=lim.length+proc.length+inop.length>0; // STATUS that comes up by itself after the alerts
   for(const t of standing(A)) if(!inop.includes(t)) inop.push(t);
+  inop=normInop(inop);
   E.land=land; E.secList=sec.map(([t,p])=>({t,p,clr:!!(E.secClr||{})[t]})); E.stsLim=lim; E.stsProc=proc; E.stsInop=inop;
   E.stsHas=lim.length+proc.length+inop.length>0;
 }
@@ -724,7 +755,7 @@ function autoPage(A,air,fm){
 function step(A,dt,air,fm){
   A.t+=dt; A.dtNow=dt; A.env=A.env||{t:15,elev:0}; A.gndNow=air.gnd;
   if(A.alignT==null) A.alignT=420;
-  elec(A,dt,air); apu(A,dt,air); engines(A,dt,air,fm); air_(A,dt,air); fuel(A,dt,air,fm); hyd(A,dt,air); adirs(A,dt,air); fire(A,dt); fctl(A); phases(A,dt,air,fm);
+  elec(A,dt,air); apu(A,dt,air); engines(A,dt,air,fm); air_(A,dt,air); fuel(A,dt,air,fm); hyd(A,dt,air); adirs(A,dt,air); fire(A,dt); fctl(A); autoFlt(A,air); phases(A,dt,air,fm);
   if(A.cfgTest>0) A.cfgTest=Math.max(0,A.cfgTest-dt);
   if(A.ecam.t2>=0) A.ecam.t2+=dt;
   // ECAM lists

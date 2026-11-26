@@ -119,8 +119,12 @@ function fplnRows(K,fp,act,isTmpy){ const R=[], st=Math.max(0,act-1);
   if(K.d.altn&&dest!==K.d.altn){ R.push({k:'altn'}); R.push({k:'endaltn'}); } else R.push({k:'noaltn'});
   return R; }
 
-function render(K,M,A){
+function render(K,M,A,side){
   const d=K.d, lines=[], P={title:'',lines,scratch:K.msg||K.sp,scratchC:K.msg?C.a:C.w};
+  /* FMGC lost (systems): this MCDU works through the other FMGC (OPP FMGC IN PROGRESS); both lost: MCDU MENU only */
+  const fm=A&&A.afs&&A.afs.fmgc;
+  if(fm&&!fm[0]&&!fm[1]){ P.title='MCDU MENU'; lines.push([2,'<FMGC',C.w,'l'],[4,'<ATSU',C.w,'l'],[6,'<AIDS',C.w,'l'],[8,'<CFDS',C.w,'l'],[12,'SELECT DESIRED SYSTEM',C.w,'c',SM]); if(!K.sp&&!K.msg){ P.scratch='FMGC 1+2 FAULT'; P.scratchC=C.a; } return P; }
+  if(fm&&side!=null&&!fm[side]&&!K.sp&&!K.msg){ P.scratch='OPP FMGC IN PROGRESS'; P.scratchC=C.w; }
   const l=(row,txt,col,al,size)=>{ if(txt!=null&&txt!=='') lines.push([row,String(txt),col||C.w,al==null?'l':al,size]); };
   const seg=(row,parts,al)=>{ const n=parts.reduce((s,p)=>s+String(p[0]).length,0); let x=al==='r'?24-n:al==='c'?Math.floor((24-n)/2):(typeof al==='number'?al:0);
     for(const p of parts){ const s=String(p[0]); if(s) lines.push([row,s,p[1]||C.w,x,p[2]]); x+=s.length; } };
@@ -325,6 +329,7 @@ function parseCst(s){ const x=/^(\d{3})?(?:\/(?:([+-])?(FL)?(\d{2,5}))?)?$/.exec
 /* key press: returns true when the screen changed */
 function key(K,k,M,A,api){
   const d=K.d; K.changed++;
+  const fm=A&&A.afs&&A.afs.fmgc; if(fm&&!fm[0]&&!fm[1]&&!/^[A-Z0-9./+-]$|^(CLR|SP|OVFY|\+\/-)$/.test(k)){ K.page='menu'; return true; } // no FMGC to talk to
   if(K.msg){ K.msg=''; if(k==='CLR') return true; }
   const err=m=>{ K.msg=m||'FORMAT ERROR'; };
   const pages={DIR:'dir',PROG:'prog',PERF:'perf',INIT:'init',DATA:'data','F-PLN':'fpln','RAD NAV':'radnav','FUEL PRED':'fuel','MCDU MENU':'menu','SEC F-PLN':'sec','ATC COMM':'menu',AIRPORT:'fpln'};
