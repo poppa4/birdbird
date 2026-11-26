@@ -24,7 +24,7 @@ const P={
   beacon:X=>sw(X).beacon===1,
   rudTrim0:X=>Math.abs(sw(X).rudTrim||0)<0.05,
   flapsTO:X=>sw(X).flapLv>=1&&sw(X).flapLv<=3,
-  toMemo:X=>{ const S=sw(X), E=X.A.ecam; return S.abrk===3&&signsOn(X)&&!!E.cabinReady&&!!S.spArm&&S.flapLv>=1&&S.flapLv<=3&&E.cfgOK!==false; },
+  toMemo:X=>{ const S=sw(X), E=X.A.ecam; return S.abrk===3&&signsOn(X)&&!!E.cabinReady&&!!S.spArm&&S.flapLv>=1&&S.flapLv<=3&&E.cfgOK!==false&&!!E.cfgDone; }, // T.O CONFIG NORMAL needs the T.O CONFIG test
   tcasTARA:X=>sw(X).tcas===2,
   baroQnh:X=>!X.UI.efis.std,
   mins:X=>!!(X.K&&X.K.d&&(X.K.d.dh||X.K.d.mda)),

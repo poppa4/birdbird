@@ -9,6 +9,9 @@ const clamp=(x,a,b)=>x<a?a:x>b?b:x, w360=a=>{ a%=360; return a<0?a+360:a; }, w18
 const FONT='Archivo,"Archivo fb",Arial,sans-serif';
 function F(g,px,w){ g.font=(w||600)+' '+px+'px '+FONT; }
 function T(g,s,x,y,col,px,al,w){ F(g,px||30,w); g.fillStyle=col||C.w; g.textAlign=al||'left'; g.fillText(s,x,y); }
+/* the ECAM procedure lines use a fixed-width face, so the dotted lines line up as on the aircraft */
+const MONO='"DejaVu Sans Mono",Menlo,Consolas,"Roboto Mono",ui-monospace,monospace';
+function TM(g,s,x,y,col,px,w){ g.font=(w||600)+' '+px+'px '+MONO; g.fillStyle=col; g.textAlign='left'; g.fillText(s,x,y); }
 function L(g,x1,y1,x2,y2,col,lw){ g.strokeStyle=col; g.lineWidth=lw||3; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke(); }
 function R(g,x,y,w,h,col,lw){ g.strokeStyle=col; g.lineWidth=lw||3; g.strokeRect(x,y,w,h); }
 function FR(g,x,y,w,h,col){ g.fillStyle=col; g.fillRect(x,y,w,h); }
@@ -269,18 +272,18 @@ function ewd(g,cv,D){
   let y=620;
   const list=(D.alerts||[]).filter(a=>!a.clr);
   if(list.length){
-    for(const a of list.slice(0,4)){ const col=a.lvl===3?C.r:C.a; T(g,a.title,25,y,col,32,'left',700); const tw=g.measureText(a.title).width; g.fillStyle=col; T(g,a.text,25+tw+14,y,col,32,'left',700); y+=40;
-      for(const s of a.steps.slice(0,6)){ if(y>975) break; T(g,s[0],45,y,C.c,30); y+=36; } if(y>975) break; }
+    for(const a of list.slice(0,4)){ const col=a.lvl===3?C.r:C.a; TM(g,a.title,25,y,col,30,700); const tw=g.measureText(a.title).width; L(g,25,y+6,25+tw,y+6,col,2); if(a.text) TM(g,a.text,25+tw+18,y,col,30,700); y+=40;
+      for(const s of a.steps.slice(0,7)){ if(y>975) break; const lc=s[3]==='r'?C.r:s[3]==='a'?C.a:/^\s*\.|:\s*$/.test(s[0])?C.w:C.c; TM(g,s[0],25,y,lc,28); y+=36; } if(y>975) break; }
   } else if(D.memo&&D.memo.length){
-    for(const [k,items] of D.memo){ T(g,k,25,y,C.w,32,'left',700); const ty=y; items.forEach((it,i)=>{ const yy=ty+i*40, parts=it.t.split(' '), lab=parts.slice(0,-1).join(' ')||it.t, val=parts.length>1?parts[parts.length-1]:'';
-      if(it.ok) T(g,it.t,120,yy,C.g,30); else { T(g,lab,120,yy,C.c,30); if(val){ const w=g.measureText(lab).width; T(g,' '+'.'.repeat(Math.max(2,18-lab.length))+val,120+w,yy,C.c,30); } } }); }
+    for(const [k,items] of D.memo){ TM(g,k,25,y,C.w,30,700); const ty=y; items.forEach((it,i)=>{ const yy=ty+i*40, parts=it.t.split(' '), lab=parts.slice(0,-1).join(' ')||it.t, val=parts.length>1?parts[parts.length-1]:'';
+      if(it.ok) TM(g,it.t,110,yy,C.g,28); else TM(g,it.p||(lab+(val?'.'.repeat(Math.max(2,17-lab.length-val.length))+val:'')),110,yy,C.c,28); }); }
   }
   // right memo
   let yr=620; const sl=(D.secList||[]).filter(x=>!x.clr);
   if(list.length||sl.length||(D.land&&!(D.memoR||[]).some(r=>r.t==='LAND ASAP'))){ // Box 2: LAND ASAP and the secondary failures
-    if(D.land) { T(g,'LAND ASAP',630,yr,D.land==='r'?C.r:C.a,30,'left',700); yr+=44; }
-    for(const x of sl.slice(0,8)){ T(g,x.t,630,yr,C.a,30); yr+=40; } }
-  else for(const r of (D.memoR||[]).slice(0,9)){ T(g,r.t,630,yr,r.c==='a'?C.a:r.c==='r'?C.r:r.c==='w'?C.w:C.g,30); yr+=40; }
+    if(D.land) { TM(g,'LAND ASAP',625,yr,D.land==='r'?C.r:C.a,28,700); yr+=44; }
+    for(const x of sl.slice(0,8)){ TM(g,x.t,625,yr,C.a,28); yr+=40; } }
+  else for(const r of (D.memoR||[]).slice(0,9)){ TM(g,r.t,625,yr,r.c==='a'?C.a:r.c==='r'?C.r:r.c==='w'?C.w:C.g,28); yr+=40; }
   if(list.length>4||D.stsRem) T(g,'↓',600,985,C.g,28,'center');
 }
 function slatFlap(g,D,x,y){

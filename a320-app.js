@@ -91,8 +91,12 @@ const X={get A(){ return A; },get M(){ return M; },get K(){ return K; },UI,F,Y,D
 /* ================= simulation ================= */
 function airOf(){ return {gnd:M.gnd,ias:M.ias,gs:M.gs/KT,alt:M.h/FT,ra:M.ra/FT,vs:M.vs/FPM,sig:F.isa(M.h).sig,mach:M.mach}; }
 const fmView={n1Cmd:[19.6,19.6],tla:[0,0],slat:0,flapLv:0,ths:0,gearDown:true,gearUp:false,toPower:false,sideAny:0};
+/* V1, VR, V2 from the MCDU PERF TAKE OFF page for the FWC: none entered, or not in the order V1 ≤ VR ≤ V2 */
+function toSpdState(){ const d=K&&K.d; if(!d||CF) return ''; if(!d.v1||!d.vr||!d.v2) return 'none'; return d.v1<=d.vr&&d.vr<=d.v2?'':'disagree'; }
 function sysStep(dt){
-  Object.assign(fmView,{n1Cmd:M.n1Cmd,tla:M.tla,slat:M.slat,flapLv:A.sw.flapLv,ths:M.ths||0,gearDown:M.gearDown,gearUp:M.gearUp,toPower:M.toPower,sideAny:M.sideAny||0,apOffWarn:UI.apOffT>0,athrOffCaut:UI.athrOffT>0,overspeed:M.overspeed,tcasStby:!A.sw.tcas});
+  Object.assign(fmView,{n1Cmd:M.n1Cmd,tla:M.tla,slat:M.slat,flapLv:A.sw.flapLv,ths:M.ths||0,gearDown:M.gearDown,gearUp:M.gearUp,toPower:M.toPower,sideAny:M.sideAny||0,apOffWarn:UI.apOffT>0,athrOffCaut:UI.athrOffT>0,overspeed:M.overspeed,tcasStby:!A.sw.tcas,
+    conf:M.conf,vmo:M.spds&&M.spds.vmo,athr:M.ap.athr,tlaRaw:M.ctl.tla,flex:K&&K.d&&K.d.flex,toSpd:toSpdState(),baroDiff:!!UI.efis.std!==!!UI.efis2.std,xpdrStby:!A.sw.xpdrMd,
+    gearNotUplocked:!!M.gearNotUplocked,gearNotDownlocked:!!M.gearNotDownlocked,gearGrav:!!M.gearGrav});
   Y.step(A,dt,airOf(),fmView); if(CF&&CF.postSys) CF.postSys(dt,X);
   if(UI.apOffT>0) UI.apOffT-=dt; if(UI.athrOffT>0) UI.athrOffT-=dt;
 }
@@ -249,10 +253,10 @@ function defs(){
   mom('FIRE|APU AGENT','agA',['SQUIB','w',()=>S_('fireA')&&!S_('agA')],['DISCH','a',()=>!!S_('agA')],{latch:true});
   mom('FIRE|APU FIRE TEST','fireTA',null,null);
   // ---- HYD ----
-  pb('HYD|ENG 1 PUMP','hyE1',['FAULT','a',()=>S_('hyE1')&&A.eng[0].run&&!A.hyd.edp[0]],['OFF','w',()=>!S_('hyE1')]);
+  pb('HYD|ENG 1 PUMP','hyE1',['FAULT','a',()=>(S_('hyE1')&&A.eng[0].run&&!A.hyd.edp[0])||!!A.hyd.gOvht],['OFF','w',()=>!S_('hyE1')]);
   pb('HYD|ENG 2 PUMP','hyE2',['FAULT','a',()=>(S_('hyE2')&&A.eng[1].run&&!A.hyd.edp[1])||!!A.hyd.yOvht],['OFF','w',()=>!S_('hyE2')]);
-  pb('HYD|BLUE ELEC PUMP','hyB',['FAULT','a',()=>S_('hyB')&&(A.eng[0].run||A.eng[1].run)&&!A.hyd.bluePump],['OFF','w',()=>!S_('hyB')]);
-  pb('HYD|PTU','ptu',['FAULT','a',()=>!!A.hyd.yOvht],['OFF','w',()=>!S_('ptu')]);
+  pb('HYD|BLUE ELEC PUMP','hyB',['FAULT','a',()=>(S_('hyB')&&(A.eng[0].run||A.eng[1].run)&&!A.hyd.bluePump)||!!A.hyd.bOvht],['OFF','w',()=>!S_('hyB')]);
+  pb('HYD|PTU','ptu',['FAULT','a',()=>!!A.hyd.yOvht||!!A.hyd.gOvht],['OFF','w',()=>!S_('ptu')]);
   pb('HYD|YELLOW ELEC PUMP','hyY',['FAULT','a',()=>(S_('hyY')&&!A.hyd.yPump)||!!A.hyd.yOvht],['ON','b',()=>!!S_('hyY')]);
   mom('HYD|RAT MAN ON','ratMan',null,null,{down:()=>{ if(!A.hyd.rat){ A.hyd.rat=true; A.emer.rat=true; A.emer.t=0; say('RAT deployed'); } },guard:true});
   // ---- FUEL ----
@@ -1087,7 +1091,7 @@ function setStat(){ const s=$('stat'); if(!s) return; const t=UI.crashed?T('Cras
 function pause(){ UI.paused=!UI.paused; setStat(); if(CH) CH.sync(); }
 let CH=null;
 if(SH){ SH.init(); CH=SH.chrome({paused:()=>UI.paused,pause,restart:()=>reset(UI.start),sound:()=>UI.sound,setSound:v=>{ UI.sound=v; },refit:()=>layout(true)});
-  SH.pane('fl',el=>{ const L_=[['v1cut','Engine 1 failure at V1 (next take-off)'],['hydGY','Green + yellow hydraulics (G+Y SYS LO PR)'],['eng1','Engine 1 failure'],['fire1','Engine 1 fire'],['fire2','Engine 2 fire'],['fire1x','Engine 1 fire that does not go out'],['fire2x','Engine 2 fire that does not go out'],['fireApu','APU fire'],['smokeFwd','Forward cargo smoke'],['smokeAft','Aft cargo smoke'],['gen1','Generator 1'],['idg1','IDG 1 oil pressure'],['acBus1','AC BUS 1'],['bothGen','Both generators'],['hydG','Green hydraulics'],['hydY','Yellow hydraulics'],['yOvht','Yellow reservoir overheat'],['edp1','Engine 1 pump (green)'],['bscu','Brakes: both BSCU channels (anti-skid and steering)'],['nws','Nose wheel steering'],['ap1f','AP 1'],['ap2f','AP 2'],['locTx','ILS localizer transmitter (ground)'],['gsTx','ILS glideslope transmitter (ground)'],['fuelL1','Left tank pump 1'],['bleed1','Engine 1 bleed'],['pack1','Pack 1'],['elac1','ELAC 1'],['sec1','SEC 1'],['ir1','IR 1'],['adr1','ADR 1'],['adr2','ADR 2'],['adr3','ADR 3'],['decomp','Decompression'],['cabLeak','Slow cabin leak'],['ws','Windshear (next approach or take-off, below 1,000 ft)'],['tcas','TCAS intruder (head-on, about your level)']];
+  SH.pane('fl',el=>{ const L_=[['v1cut','Engine 1 failure at V1 (next take-off)'],['hydGY','Green + yellow hydraulics (G+Y SYS LO PR)'],['eng1','Engine 1 failure'],['fire1','Engine 1 fire'],['fire2','Engine 2 fire'],['fire1x','Engine 1 fire that does not go out'],['fire2x','Engine 2 fire that does not go out'],['fireApu','APU fire'],['smokeFwd','Forward cargo smoke'],['smokeAft','Aft cargo smoke'],['gen1','Generator 1'],['idg1','IDG 1 oil pressure'],['acBus1','AC BUS 1'],['bothGen','Both generators'],['hydG','Green hydraulics'],['hydY','Yellow hydraulics'],['gOvht','Green reservoir overheat'],['yOvht','Yellow reservoir overheat'],['bOvht','Blue reservoir overheat'],['gearUpl','Landing gear does not uplock'],['gearDnl','Landing gear does not downlock'],['edp1','Engine 1 pump (green)'],['bscu','Brakes: both BSCU channels (anti-skid and steering)'],['nws','Nose wheel steering'],['ap1f','AP 1'],['ap2f','AP 2'],['locTx','ILS localizer transmitter (ground)'],['gsTx','ILS glideslope transmitter (ground)'],['fuelL1','Left tank pump 1'],['bleed1','Engine 1 bleed'],['pack1','Pack 1'],['elac1','ELAC 1'],['sec1','SEC 1'],['ir1','IR 1'],['adr1','ADR 1'],['adr2','ADR 2'],['adr3','ADR 3'],['decomp','Decompression'],['cabLeak','Slow cabin leak'],['ws','Windshear (next approach or take-off, below 1,000 ft)'],['tcas','TCAS intruder (head-on, about your level)']];
     el.innerHTML='<div class="sgrp">'+T('Failures')+'</div><div class="fbtns">'+L_.map(([k,t])=>`<button type="button" data-f="${k}" class="${A.fail[k]?'on':''}">${t}</button>`).join('')+'<button type="button" class="rs" data-f="__clr">Clear all failures</button></div>';
     el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=b.dataset.f;
       if(k==='v1cut'){ UI.v1cut=!UI.v1cut; A.fail.v1cut=UI.v1cut; say(UI.v1cut?'Engine 1 will fail at V1 on the next take-off':'V1 cut cancelled'); el.querySelectorAll('button[data-f]').forEach(x=>x.classList.toggle('on',!!A.fail[x.dataset.f])); return; }

@@ -296,8 +296,14 @@ function step(M,dt,sys){
   M.conf=confIndex(M); M.flapLv=C.flapLv;
   // gear: 10 s cycle on green hydraulics
   const gUp=C.gearLv===0;
-  if(!M.gnd&&(C.gearGrav||!sys||sys.hyd.g>1500)) M.gear=toward(M.gear,gUp&&!C.gearGrav?0:1,0.1,dt); // gravity extension needs no hydraulics
+  /* gear failures (systems page): one gear does not uplock on retraction, or does not downlock on a normal extension (the
+     gravity extension locks it down). The FWC flags them 30 s after the lever is moved. */
+  const GF=sys&&sys.fail||{}; let gT=gUp&&!C.gearGrav?0:1;
+  if(gT===0&&GF.gearUpl) gT=0.08; if(gT===1&&GF.gearDnl&&!C.gearGrav) gT=0.92;
+  if(!M.gnd&&(C.gearGrav||!sys||sys.hyd.g>1500)) M.gear=toward(M.gear,gT,0.1,dt); // gravity extension needs no hydraulics
   M.gearUp=M.gear<0.01; M.gearDown=M.gear>0.99;
+  if(C.gearLv!==M.gearLvPrev){ M.gearLvT=0; M.gearLvPrev=C.gearLv; } M.gearLvT=(M.gearLvT||0)+dt;
+  M.gearNotUplocked=gUp&&!M.gnd&&!M.gearUp&&M.gearLvT>30; M.gearNotDownlocked=!gUp&&!M.gnd&&!M.gearDown&&M.gearLvT>30; M.gearGrav=!!C.gearGrav;
   // speed brake / ground spoilers
   const both=[0,1].map(i=>M.tla[i]<=0.5);
   let spT=C.spd;

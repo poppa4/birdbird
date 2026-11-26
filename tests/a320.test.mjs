@@ -10,7 +10,8 @@ function ok(name,c,info){ if(c) pass++; else { fail++; fails.push(name+(info!==u
 const KT=F.KT, FT=F.FT, FPM=F.FPM, NM=F.NM, D2R=F.D2R;
 function rig(o){ const A=Y.create(o.sys||{cold:true,gpu:true}); const M=F.create(o.fm||{}); if(o.gw) M.gw=o.gw; A.env={t:15,elev:0}; A.alignT=420; return {A,M}; }
 function air(M){ return {gnd:M.gnd,ias:M.ias,gs:M.gs/KT,alt:M.h/FT,ra:M.ra/FT,vs:M.vs/FPM,sig:F.isa(M.h).sig}; }
-function fmv(A,M){ return {n1Cmd:M.n1Cmd,tla:M.tla,slat:M.slat,flapLv:A.sw.flapLv,ths:M.ths||0,gearDown:M.gearDown,gearUp:M.gearUp,toPower:M.toPower}; }
+function fmv(A,M){ return {n1Cmd:M.n1Cmd,tla:M.tla,slat:M.slat,flapLv:A.sw.flapLv,ths:M.ths||0,gearDown:M.gearDown,gearUp:M.gearUp,toPower:M.toPower,overspeed:M.overspeed,conf:M.conf,tlaRaw:M.ctl.tla,
+  gearNotUplocked:!!M.gearNotUplocked,gearNotDownlocked:!!M.gearNotDownlocked,gearGrav:!!M.gearGrav,toSpd:''}; } // as the page gives them
 function run(R,sec,each){ const {A,M}=R; for(let i=0;i<sec*50;i++){ const C=M.ctl; C.park=A.sw.park; C.flapLv=A.sw.flapLv; C.gearLv=A.sw.gearLv; C.spArm=A.sw.spArm; C.abrk=A.sw.abrk; M.gw=A.gw; Y.step(A,0.02,air(M),fmv(A,M)); F.step(M,0.02,A); if(each) each(i*0.02); if(M.crash) return M.crash; } return null; }
 
 /* ---------- electrical ---------- */
@@ -46,12 +47,12 @@ function run(R,sec,each){ const {A,M}=R; for(let i=0;i<sec*50;i++){ const C=M.ct
   A.fail.edp2=true; run(R,3); ok('ENG 2 pump lost: PTU keeps yellow up',A.hyd.ptu&&A.hyd.y>2500);
   A.sw.fL1=0; run(R,1); ok('L TK PUMP 1 OFF advisory',A.ecam.list.some(a=>a.text==='L TK PUMP 1 OFF')); }
 { const R=rig({sys:{cold:false}}); const A=R.A; run(R,1); A.fail.fire1=true; run(R,1);
-  const w=A.ecam.list.find(a=>a.title==='ENG 1'&&a.text==='FIRE'); ok('ENG 1 FIRE warning with MASTER WARN and the chime',w&&A.ecam.mw&&A.ecam.crc);
-  ok('ENG 1 FIRE: first action THR LEVER 1 IDLE (already idle on the ground: removed)',w&&!w.steps.some(s=>s[0].startsWith('THR LEVER')));
-  A.sw.mst1=0; A.sw.fireP1=1; run(R,0.5); const w2=A.ecam.list.find(a=>a.id==='eng1fire'); ok('actions disappear when done',w2&&!w2.steps.some(s=>s[0].startsWith('ENG MASTER')||s[0].startsWith('ENG 1 FIRE')));
+  const w=A.ecam.list.find(a=>a.title==='ENG 1 FIRE'); ok('ENG 1 FIRE warning with MASTER WARN and the chime',w&&A.ecam.mw&&A.ecam.crc);
+  ok('ENG 1 FIRE on ground: THR LEVERS IDLE (already idle: removed), PARKING BRK ON (already set: removed with its condition)',w&&!w.steps.some(s=>/THR LEVER|PARKING BRK|WHEN A\/C/.test(s[0])));
+  A.sw.mst1=0; A.sw.fireP1=1; run(R,0.5); const w2=A.ecam.list.find(a=>a.id==='eng1fire'); ok('actions disappear when done',w2&&!w2.steps.some(s=>/ENG MASTER|ENG 1 FIRE P/.test(s[0])));
   A.sw.ag11=1; run(R,8); ok('agent 1 puts the fire out',!A.ecam.list.some(a=>a.id==='eng1fire')); }
 { const R=rig({sys:{cold:false},fm:{N:25}}); const A=R.A; A.sw.park=1; A.sw.flapLv=0; run(R,1); R.M.ctl.tla=[45,45]; run(R,1);
-  ok('T.O CONFIG: flaps not in T.O config and park brake ON at T.O power',A.ecam.list.some(a=>a.text==='FLAPS NOT IN T.O CONFIG')&&A.ecam.list.some(a=>a.text==='PARK BRK ON')); }
+  const has=t=>A.ecam.list.some(a=>a.text===t||a.steps.some(l=>l[0].trim()===t)); ok('T.O CONFIG: SLATS / FLAPS NOT IN T.O CONFIG and PARK BRK ON at T.O power',has('SLATS NOT IN T.O CONFIG')&&has('FLAPS NOT IN T.O CONFIG')&&has('PARK BRK ON')); }
 { const R=rig({sys:{cold:true,gpu:true}}); const A=R.A; A.sw.bat1=A.sw.bat2=1; A.sw.ext=1; A.sw.irM1=A.sw.irM2=A.sw.irM3=1; run(R,5);
   ok('ADIRS: IR IN ALIGN memo with the minutes left',A.ecam.memoR.some(m=>/^IR IN ALIGN 7 MN/.test(m.t)),A.ecam.memoR.map(m=>m.t).join());
   A.alignK=50; run(R,10); ok('ADIRS aligned after 7 min (accelerated)',A.irs.every(r=>r.st===2)); }
@@ -113,13 +114,13 @@ function run(R,sec,each){ const {A,M}=R; for(let i=0;i<sec*50;i++){ const C=M.ct
   ok('ENG 1 FIRE on ground: no LAND ASAP',!A.ecam.land); }
 { const R=rig({sys:{cold:false},fm:{air:true,h:5000*FT,ias:250,hdg:360}}); const A=R.A, M=R.M; A.sw.park=0; M.ctl.park=0; A.sw.gearLv=0; A.phase=6; M.ctl.tla=[25,25];
   A.fail.fire2=true; run(R,1); const w=A.ecam.list.find(a=>a.id==='eng2fire'), t=w?w.steps.map(s=>s[0]).join('|'):'';
-  ok('ENG 2 FIRE in flight: the in-flight procedure (AGENT 1 AFTER 10 S, IF FIRE AFTER 30 S)',/AGENT 1 AFTER 10 S/.test(t)&&/IF FIRE AFTER 30 S/.test(t),t); ok('ENG FIRE in flight: LAND ASAP red',A.ecam.land==='r'); }
+  ok('ENG 2 FIRE in flight: the in-flight procedure (AGENT1 AFTER 10S, IF FIRE AFTER 30S)',/AGENT1 AFTER 10S/.test(t)&&/IF FIRE AFTER 30S/.test(t)&&!/CABIN CREW/.test(t),t); ok('ENG FIRE in flight: LAND ASAP red',A.ecam.land==='r'); }
 { const R=rig({sys:{cold:false}}); const A=R.A; A.fail.fire1x=true; run(R,1); A.sw.mst1=0; A.sw.fireP1=1; A.sw.ag11=1; A.sw.ag12=1; run(R,15);
   ok('inextinguishable fire: still burning after both agents',A.fire.e[0]&&A.ecam.list.some(a=>a.id==='eng1fire')); }
 { // BSCU 1+2: alternate braking without anti-skid (about 1,000 psi), no autobrake, no nose wheel steering; differential braking steers
   const mk=f=>{ const R=rig({sys:{cold:false}}); R.A.sw.park=0; R.M.ctl.park=0; if(f) R.A.fail[f]=true; R.M.tas=60*KT; R.M.ctl.tla=[0,0]; return R; };
   const a=mk(null), b=mk('bscu'); a.M.ctl.brkL=a.M.ctl.brkR=1; b.M.ctl.brkL=b.M.ctl.brkR=1; run(a,3); run(b,3);
-  ok('A/SKID N/WS FAULT caution with MAX BRK PR 1000 PSI',b.A.ecam.list.some(x=>x.text==='A/SKID N/WS FAULT'&&x.steps.some(s=>/1000 PSI/.test(s[0]))));
+  ok('A/SKID N/WS FAULT caution with MAX BRK PR 1000 PSI',b.A.ecam.list.some(x=>x.text==='A/SKID N/WS FAULT'&&x.steps.some(s=>/1000 ?PSI/.test(s[0]))));
   ok('alternate braking without anti-skid: pressure limited to about 1,000 psi, less deceleration',b.M.brkPsi[0]<=1050&&b.M.gs>a.M.gs+5,b.M.brkPsi[0]+' psi, '+(b.M.gs/KT).toFixed(1)+' vs '+(a.M.gs/KT).toFixed(1)+' kt');
   const c=mk('bscu'); c.M.tas=8*KT; c.M.ctl.tiller=1; const p0=c.M.psi; run(c,4); ok('no nose wheel steering: the tiller does not turn the aircraft',Math.abs(c.M.psi-p0)<0.02,(c.M.psi-p0).toFixed(3));
   const d=mk('nws'); d.M.tas=8*KT; d.M.ctl.tla=[8,8]; d.M.ctl.brkR=0.3; const q0=d.M.psi; run(d,4); ok('N/W STRG FAULT: differential braking turns the aircraft',d.M.psi-q0>0.05,(d.M.psi-q0).toFixed(3));
@@ -130,8 +131,8 @@ function run(R,sec,each){ const {A,M}=R; for(let i=0;i<sec*50;i++){ const C=M.ct
   run(R,200); ok('overheat out about 3 min after the pumps are off; STATUS: IF OVHT OUT, pump ON',!A.hyd.yOvht&&!A.ecam.list.some(a=>a.id==='yovht'));
   A.sw.hyE2=1; A.sw.ptu=1; run(R,3); ok('yellow restored after the overheat is out',A.hyd.y>2500); }
 { const R=rig({sys:{cold:false},fm:{air:true,h:8000*FT,ias:250,hdg:360}}); const A=R.A, M=R.M; A.sw.park=0; M.ctl.park=0; A.sw.gearLv=0; A.phase=6; M.ctl.tla=[25,25];
-  A.fail.smokeFwd=true; run(R,1); const w=A.ecam.list.find(a=>a.id==='smkfwd'); ok('SMOKE FWD CARGO SMOKE: red warning with the chime, AGENT DISCH',w&&w.lvl===3&&A.ecam.crc&&w.steps.length===1);
-  A.sw.cgoDF=1; run(R,1); const w2=A.ecam.list.find(a=>a.id==='smkfwd'); ok('after DISCH: action done, the warning can stay (detectors see the agent), LAND ASAP red',w2&&!w2.steps.length&&A.ecam.land==='r'); }
+  A.fail.smokeFwd=true; run(R,1); const w=A.ecam.list.find(a=>a.id==='smkfwd'); ok('SMOKE FWD CARGO SMOKE: red warning with the chime, CAB FANS OFF, AGENT DISCH',w&&w.lvl===3&&A.ecam.crc&&w.steps.some(l=>/CAB FANS/.test(l[0]))&&w.steps.some(l=>/AGENT/.test(l[0])));
+  A.sw.cgoDF=1; A.sw.cabFans=0; run(R,1); const w2=A.ecam.list.find(a=>a.id==='smkfwd'); ok('after CAB FANS OFF and DISCH: actions done, the warning stays (detectors see the agent), LAND ASAP red',w2&&!w2.steps.some(l=>/^-(CAB FANS|AGENT)/.test(l[0]))&&A.ecam.land==='r',w2&&w2.steps.map(l=>l[0]).join('|')); }
 
 /* ---------- autopilot failures, ILS transmitter failure, managed non-precision approach (FINAL APP) ---------- */
 { const R=rig({sys:{cold:false},fm:{air:true,h:5000*FT,ias:250,hdg:360}}); const A=R.A, M=R.M; A.sw.park=0; M.ctl.park=0; A.sw.gearLv=0; A.phase=6; M.ctl.tla=[25,25];
@@ -159,7 +160,7 @@ function run(R,sec,each){ const {A,M}=R; for(let i=0;i<sec*50;i++){ const C=M.ct
 { const R=rig({sys:{cold:false},fm:{air:true,h:8000*FT,ias:250,hdg:360}}); const A=R.A, M=R.M; A.sw.park=0; M.ctl.park=0; A.sw.gearLv=0; A.phase=6; M.ctl.tla=[25,25]; A.misc={attHdg:1,airData:1,eisDmc:1,ecamNd:1,audio:1};
   A.sw.ir1=0; run(R,1); ok('IR 1 pushbutton OFF: IR 1 output lost (captain attitude and heading)',!Y.irValid(A,0,true)&&Y.irValid(A,1,false));
   A.sw.ir1=1; A.fail.adr2=true; run(R,1); const a2=A.ecam.list.find(x=>x.text==='ADR 2 FAULT');
-  ok('ADR 2 failure: NAV ADR 2 FAULT, AIR DATA SWTG F/O ON 3',a2&&/AIR DATA SWTG .* F\/O ON 3/.test(a2.steps[0]&&a2.steps[0][0]),a2&&a2.steps.map(s=>s[0]).join('|'));
+  ok('ADR 2 failure: NAV ADR 2 FAULT, AIR DATA SWTG F/O ON 3',a2&&/AIR DATA SWTG.*F\/O ON 3/.test(a2.steps[0]&&a2.steps[0][0]),a2&&a2.steps.map(s=>s[0]).join('|'));
   A.misc.airData=2; run(R,1); ok('AIR DATA switched F/O ON 3: the action is done',!A.ecam.list.find(x=>x.text==='ADR 2 FAULT').steps.length); A.fail.adr2=false; A.misc.airData=1;
   A.sw.irM1=0; run(R,1); ok('ADIRS 1 mode selector OFF in flight: NAV IR 1 FAULT and NAV ADR 1 FAULT (ATT HDG / AIR DATA CAPT ON 3)',A.ecam.list.some(x=>x.text==='IR 1 FAULT'&&/CAPT ON 3/.test(x.steps[0][0]))&&A.ecam.list.some(x=>x.text==='ADR 1 FAULT'));
   A.sw.irM1=1; A.sw.gpwsT=0; run(R,1); ok('GPWS TERR OFF: NAV GPWS TERR DET FAULT',A.ecam.list.some(x=>x.text==='GPWS TERR DET FAULT')); A.sw.gpwsT=1;
@@ -172,11 +173,30 @@ function run(R,sec,each){ const {A,M}=R; for(let i=0;i<sec*50;i++){ const C=M.ct
 { // brakes: heating, BRAKES HOT, brake fans
   const R=rig({sys:{cold:false},gw:70000}); const A=R.A, M=R.M; A.sw.park=0; M.ctl.park=0; M.tas=140*KT; M.ctl.tla=[0,0]; M.ctl.brkL=M.ctl.brkR=1; run(R,40);
   const T=Math.max(...A.brk.temp); ok('rejected take-off at 140 kt, 70 t: brakes above 300 °C',T>300,Math.round(T));
-  const w=A.ecam.list.find(x=>x.title==='BRAKES'&&x.text==='HOT'); ok('BRAKES HOT caution on the ground: PARK BRK PREFER CHOCKS, DELAY T.O, BRK FAN ON',w&&w.steps.some(s=>/PREFER CHOCKS/.test(s[0]))&&w.steps.some(s=>/BRK FAN/.test(s[0])));
+  ok('no BRAKES HOT right after the stop (only at the T.O CONFIG test or take-off)',!A.ecam.list.some(x=>x.id==='brkhot')); A.cfgTest=3; run(R,0.5);
+  const w=A.ecam.list.find(x=>x.title==='BRAKES'&&x.text==='HOT'); ok('BRAKES HOT at the T.O CONFIG test: DELAY T.O FOR COOL, BRK FAN ON',w&&w.steps.some(s=>/DELAY T.O/.test(s[0]))&&w.steps.some(s=>/BRK FAN/.test(s[0])),w&&w.steps.map(l=>l[0]).join('|'));
   const R2=rig({sys:{cold:false},gw:62000}); R2.A.sw.park=0; R2.M.ctl.park=0; R2.M.tas=130*KT; R2.M.ctl.tla=[-1,-1]; R2.M.gsplr=true; R2.A.sw.abrk=1; R2.M.ctl.abrk=1; R2.M.abLatch=true; run(R2,60,()=>{ R2.M.ctl.abrk=1; });
   const T2=Math.max(...R2.A.brk.temp); ok('landing roll with autobrake LO and idle reverse from 130 kt: brakes about 100 to 280 °C',T2>100&&T2<280,Math.round(T2));
   M.ctl.brkL=M.ctl.brkR=0; A.sw.park=1; M.ctl.park=1; const t0=Math.max(...A.brk.temp); run(R,300); const noFan=t0-Math.max(...A.brk.temp);
   const R3=rig({sys:{cold:false}}); R3.A.brk.temp=[t0,t0,t0,t0]; R3.A.sw.brkFan=1; run(R3,300); const fan=t0-Math.max(...R3.A.brk.temp);
   ok('brake fans cool the brakes faster',fan>noFan*2,Math.round(noFan)+' vs '+Math.round(fan)); }
+
+
+/* ---------- more FWC alerts ---------- */
+{ const airR=()=>{ const R=rig({sys:{cold:false},fm:{air:true,h:8000*FT,ias:250,hdg:360}}); R.A.sw.park=0; R.M.ctl.park=0; R.A.sw.gearLv=0; R.M.ctl.gearLv=0; R.A.phase=6; R.M.ctl.tla=[25,25]; return R; };
+  const has=(A,id)=>A.ecam.list.some(a=>a.id===id);
+  let R=airR(); R.A.fail.gearDnl=true; R.A.sw.gearLv=1; run(R,40,()=>{ R.M.ctl.gearLv=1; }); ok('gear does not downlock: L/G GEAR NOT DOWNLOCKED after 30 s (RECYCLE, L/G GRVTY PROC)',has(R.A,'lgndl')&&!R.M.gearDown);
+  R.A.misc={grav:3}; R.M.ctl.gearGrav=true; run(R,15,()=>{ R.M.ctl.gearGrav=true; R.M.ctl.gearLv=1; }); ok('gravity extension locks the gear down: alert gone',R.M.gearDown&&!has(R.A,'lgndl'));
+  R=airR(); R.A.sw.gearLv=1; R.M.ctl.gearLv=1; R.M.gear=1; R.A.fail.gearUpl=true; run(R,1,()=>{ R.M.ctl.gearLv=1; }); R.A.sw.gearLv=0; run(R,40,()=>{ R.M.ctl.gearLv=0; }); ok('gear does not uplock: L/G GEAR NOT UPLOCKED (MAX SPEED 220/.54)',has(R.A,'lgnul')&&R.A.ecam.list.find(a=>a.id==='lgnul').steps.some(l=>/220\/\.54/.test(l[0])));
+  R=airR(); R.A.sw.park=1; run(R,4); ok('parking brake set in flight: BRAKES PARK BRK ON',has(R.A,'parkfl'));
+  R=airR(); R.M.h=23000*FT; R.A.sw.flapLv=1; run(R,1,()=>{ R.M.ctl.flapLv=1; }); ok('flap lever not at 0 above FL 220: F/CTL FLAP LVR NOT ZERO',has(R.A,'flapnz'));
+  R=airR(); R.A.sw.flapLv=3; R.M.ias=230; R.M.tas=F.tasFromCas(230*KT,R.M.h); run(R,25,()=>{ R.M.ctl.flapLv=3; R.M.tas=F.tasFromCas(230*KT,R.M.h); }); const ov=R.A.ecam.list.find(a=>a.id==='ovsp');
+  ok('flaps 3 at 230 kt: OVER SPEED with VFE 185',ov&&ov.steps.some(l=>/VFE\.+185/.test(l[0])),ov&&ov.steps.map(l=>l[0]).join('|'));
+  R=airR(); R.A.fail.gOvht=true; run(R,1); ok('G RSVR OVHT: PTU OFF, GREEN ENG 1 PUMP OFF',R.A.ecam.list.some(a=>a.text==='G RSVR OVHT'&&a.steps.length===2));
+  R=airR(); R.A.sw.askid=0; run(R,1); ok('A/SKID & N/W STRG OFF: BRAKES A/SKID N/WS OFF, MAX BRK PR 1000PSI',R.A.ecam.list.some(a=>a.text==='A/SKID N/WS OFF'));
+  R=airR(); run(R,1,()=>{ R.M.ctl.tla=[-5,-5]; }); ok('reverse selected in flight: ENG REV SET',has(R.A,'revset'));
+  const G=rig({sys:{cold:false},fm:{N:25}}); G.A.sw.park=0; G.M.ctl.park=0; G.A.sw.flapLv=1; run(G,1,()=>{ G.M.ctl.flapLv=1; G.M.ctl.tla=[30,30]; });
+  const fv=fmv(G.A,G.M); fv.flex=0; fv.tla=[30,30]; Y.step(G.A,0.02,air(G.M),fv); ok('thrust levers between CL and MCT at take-off: ENG THR LEVERS NOT SET (TOGA)',has(G.A,'thrnset')&&G.A.ecam.list.find(a=>a.id==='thrnset').steps.some(l=>/TOGA/.test(l[0])));
+  G.A.cfgTest=3; const f2=fmv(G.A,G.M); f2.toSpd='none'; Y.step(G.A,0.02,air(G.M),f2); ok('T.O CONFIG test without V1/VR/V2: T.O SPEEDS NOT INSERTED',G.A.ecam.list.some(a=>a.text==='SPEEDS NOT INSERTED')); }
 
 console.log(`a320: ${pass} passed, ${fail} failed`); if(fail){ console.log(fails.map(f=>'  FAIL '+f).join('\n')); process.exit(1); }
