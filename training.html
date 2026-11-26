@@ -356,18 +356,17 @@
 @media (prefers-reduced-motion:reduce){.th-t img{transition:none}.th-t:hover img{transform:none}}
 
 .th-flow{display:block!important;background:#0E1319!important}
-.th-flow .ft-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-.th-flow::after{display:block!important;content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(9,16,26,0) 45%,rgba(9,16,26,.88) 100%)}
-.th-flow .th-tx{position:absolute!important;left:0;right:0;bottom:0;z-index:2;background:none!important;border:0!important;padding:16px 20px 18px!important}
+.th-flow img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;flex:none!important;object-fit:cover;object-position:50% 30%;z-index:0!important;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.th-grid .th-flow:hover img{transform:scale(1.03)}
+.th-flow::after{display:block!important;content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(6,14,26,.35) 0%,rgba(6,14,26,0) 22%)}
+.th-flow .th-tx{position:absolute!important;left:0;right:0;bottom:0;z-index:2;background:linear-gradient(180deg,rgba(6,14,26,0) 0%,rgba(6,14,26,.82) 38%,rgba(6,14,26,.97) 72%)!important;border:0!important;padding:46px 20px 18px!important}
+.th-flow .th-tx span{color:#D3DEE9!important;font-size:14px!important}
 .th-flow .ft-now{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:14px;color:#fff}
-.th-flow .ft-now i{flex:0 0 auto;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#F2C230;color:#13202A;font-style:normal;font-weight:700;font-size:13px}
-.th-flow .ft-now span{margin:0!important;color:#fff!important;font-size:14px!important;transition:opacity .25s}
+.th-flow .ft-now i{flex:0 0 auto;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#3CCB7F;color:#0B0F12;font-style:normal;font-weight:800;font-size:12.5px}
+.th-flow .ft-now span{margin:0!important;color:#fff!important;font-size:14px!important}
 .th-flow .ft-tag{position:absolute;top:14px;left:16px;z-index:2;padding:3px 10px;border-radius:999px;background:rgba(9,16,26,.7);font-size:12.5px;font-weight:600;color:#fff}
-.ft-lines line{stroke:#F2C230;stroke-width:2.6;stroke-linecap:round}
-.ft-dots circle{fill:#F2C230;stroke:#0E1319;stroke-width:2}
-.ft-dots text{font:700 15px var(--f-body,system-ui);fill:#13202A;text-anchor:middle;dominant-baseline:central}
-.ft-dots g{transform-box:fill-box;transform-origin:center;animation:ftIn .35s ease-out both}
-@keyframes ftIn{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@media (max-width:1100px) and (min-width:601px){.th-grid>.th-feat{grid-column:1/2;min-height:340px}.th-grid>.th-flow{grid-column:2/3;min-height:340px}.th-feat .th-tx{padding:24px 22px}}
+@media (prefers-reduced-motion:reduce){.th-flow img{transition:none}.th-grid .th-flow:hover img{transform:none}}
 @media (max-width:600px){.th-grid>.th-flow{height:300px!important;flex-direction:column!important}.th-flow .ft-tag{display:none}}
 
 /* overview polish: the small tiles show their screenshot as a screen on a navy stage (light and dark screenshots then sit
@@ -446,17 +445,16 @@
         <div class="th-tx"><span class="k" data-tx="fK">Cockpit trainer</span><b data-tx="fH">Fly the A320</b><span data-tx="fP">The systems behind every switch and your checklist beside the panel. It starts in the air.</span>
           <div class="th-go"><a class="th-btn" href="a320-3d.html" data-tx="fGo">Start</a><a class="th-lk" href="#simulators" data-tx="fAlt">Other aircraft</a></div></div>
       </div>
-      <a class="th-t th-flow" href="flows.html" id="ftDemo" aria-label="Flow trainer: the A320 before-takeoff flow, played step by step." data-aria-no="Flow-trener: flowen før avgang for A320, spilt av steg for steg.">
-        <svg class="ft-svg" viewBox="145 1200 680 478" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><image href="img/cockpits/a320-deck-1500.webp" x="0" y="0" width="1000" height="1678"/><g class="ft-lines"></g><g class="ft-dots"></g></svg>
-        <span class="ft-tag" data-tx="ftTag">A320 · Before takeoff</span>
-        <div class="th-tx"><b data-tx="tFl">Flow trainer</b><div class="ft-now" aria-hidden="true"><i>1</i><span>PM Brake temperature – CHECK</span></div><small data-tx="tFlM">13 aircraft</small></div>
+      <a class="th-t th-flow" href="flows.html"><img src="img/training/hub4-flows-1400.webp" srcset="img/training/hub4-flows-700.webp 700w, img/training/hub4-flows-1400.webp 1400w" sizes="(max-width:600px) 100vw, (max-width:1100px) 50vw, 460px" width="1400" height="1036" alt="The flow trainer: the A320 cockpit preparation flow drawn step by step on the overhead panel, at step 18." data-alt-no="Flow-treneren: klargjøringsflowen for A320 tegnet steg for steg på takpanelet, ved steg 18." fetchpriority="high" decoding="async">
+        <span class="ft-tag" data-tx="ftTag">A320 · Cockpit preparation</span>
+        <div class="th-tx"><b data-tx="tFl">Flow trainer</b><span data-tx="tFlL">Every step on the panel, in order.</span><small data-tx="tFlM">13 aircraft</small></div>
       </a>
-      <a class="th-t th-s1" href="ifr.html"><img src="img/training/hub3-ifr-640.webp" srcset="img/training/hub3-ifr-640.webp 640w, img/training/hub3-ifr-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The navigation display with the route to HOLAN and OSVIK." data-alt-no="Navigasjonsskjermen med ruten til HOLAN og OSVIK." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tIf">IFR trainer</b><span data-tx="tIfL">One procedure at a time.</span><small data-tx="tIfM">46 exercises</small></div></a>
-      <a class="th-t th-s2" href="radio-drills.html"><img src="img/training/hub3-radio-640.webp?v=2" srcset="img/training/hub3-radio-640.webp?v=2 640w, img/training/hub3-radio-1200.webp?v=2 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="A control tower at sunset, controllers in the cab." data-alt-no="Et kontrolltårn i solnedgang, med flygeledere i tårnkabinen." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tRa">Radio</b><span data-tx="tRaL">Out loud, gate to gate.</span><small data-tx="tRaM">Gate to gate · drills</small></div></a>
+      <a class="th-t th-s1" href="ifr.html"><img src="img/training/hub4-ifr-640.webp" srcset="img/training/hub4-ifr-640.webp 640w, img/training/hub4-ifr-1200.webp 1200w" sizes="(max-width:600px) 100vw, (max-width:1100px) 50vw, 300px" alt="The IFR trainer's HSI, established on the ILS." data-alt-no="HSI-en i IFR-treneren, etablert på ILS-en." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tIf">IFR trainer</b><span data-tx="tIfL">One procedure at a time.</span><small data-tx="tIfM">46 exercises</small></div></a>
+      <a class="th-t th-s2" href="radio-drills.html"><img src="img/training/hub4-radio-640.webp" srcset="img/training/hub4-radio-640.webp 640w, img/training/hub4-radio-1200.webp 1200w" sizes="(max-width:600px) 100vw, (max-width:1100px) 50vw, 300px" alt="The radio trainer's COM radio: Tower on 118.300, cleared to land." data-alt-no="COM-radioen i radiotreneren: Tower på 118.300, klarert for landing." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tRa">Radio</b><span data-tx="tRaL">Out loud, gate to gate.</span><small data-tx="tRaM">Gate to gate · drills</small></div></a>
       <a class="th-t th-s3" href="mcdu.html"><img src="img/training/hub3-avionics-640.webp" srcset="img/training/hub3-avionics-640.webp 640w, img/training/hub3-avionics-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="The A320 MCDU with the flight plan page." data-alt-no="A320-MCDU-en med flight plan-siden." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tAv">Avionics trainers</b><span data-tx="tAvL">Starting with the A320 MCDU.</span><small data-tx="tAvM">A320 · 737 · GNS 530</small></div></a>
       <a class="th-t th-s4" href="briefing.html"><img src="img/training/hub3-brief-640.webp" srcset="img/training/hub3-brief-640.webp 640w, img/training/hub3-brief-1200.webp 1200w" sizes="(max-width:1100px) 50vw, 300px" alt="A NORDAP training approach chart, ILS runway 36." data-alt-no="Et NORDAP-treningskart, ILS bane 36." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tBr">Briefing</b><span data-tx="tBrL">Brief out loud, get it scored.</span><small data-tx="tBrM">Departures and approaches</small></div></a>
       <aside class="th-rail" aria-label="Your hub" data-aria-no="Din hub">
-        <section class="th-cont"><h2 data-tx="rC">Continue</h2><div id="thCont"><a href="ifr.html"><img src="img/training/hub2-ifr-640.webp" alt=""><div><b data-tx="rCn">IFR trainer</b><span data-tx="rCs">New here? Start with exercise 1.</span></div><em data-tx="rGo">Start →</em></a></div></section>
+        <section class="th-cont"><h2 data-tx="rC">Continue</h2><div id="thCont"><a href="ifr.html"><img src="img/training/hub4-ifr-640.webp" alt=""><div><b data-tx="rCn">IFR trainer</b><span data-tx="rCs">New here? Start with exercise 1.</span></div><em data-tx="rGo">Start →</em></a></div></section>
         <section><h2 data-tx="rQ">Quick start</h2><ul class="th-qs">
           <li><a href="a320.html"><span class="tg t1">A320</span><b data-tx="q1">A320 approach checklist</b></a></li>
           <li><a href="ifr.html"><span class="tg t2">IFR</span><b data-tx="q2">Track to the station</b></a></li>
@@ -694,7 +692,7 @@ LAB.add({},{'Training':'Trening'});
 LAB.tx({
  h1:'Treningshub', lede:'Cockpiter, flows, IFR, radio og briefing på ett sted. Alt kjører i nettleseren.',
  fK:'Cockpittrener', fH:'Fly A320', fP:'Systemene bak hver bryter og sjekklisten ved siden av panelet. Starter i luften.', fGo:'Start', fAlt:'Andre fly',
- tFl:'Flow-trener', ftTag:'A320 · Før avgang', tFlL:'Hver flow tegnet i den ekte cockpiten.', tFlM:'13 flytyper',
+ tFl:'Flow-trener', ftTag:'A320 · Klargjøring av cockpit', tFlL:'Hvert steg på panelet, i rekkefølge.', tFlM:'13 flytyper',
  tIf:'IFR-trener', tIfL:'Én prosedyre om gangen.', tIfM:'46 øvelser',
  tRa:'Radio', tRaL:'Høyt, fra gate til gate.', tRaM:'Gate to gate · driller',
  tAv:'Avionikktrenere', tAvL:'Først ut: A320-MCDU-en.', tAvM:'A320 · 737 · GNS 530',
@@ -705,10 +703,8 @@ LAB.tx({
  m1:'Typerating', m2:'A320 simulatortest', m3:'Kontrollforberedelse', m4:'Radiodriller', m5:'737 FMC',
  a1:'Enmotors stempel', a2:'Tomotors stempel, glass', a3:'Tomotors turboprop', a4:'Jetfly', aAll:'Alle moduler i detalj ↓',
  eb:'NORDAP · Trening',
- h1:'Cockpittrenere, IFR-prosedyrer, briefing og radio',
- lede:'Alt NORDAP tilbyr for trening, samlet på ett sted: fungerende cockpiter for fire flytyper, en IFR-trener som lærer deg én prosedyre om gangen, briefinger som instruktøren vurderer, og radiotrening fra enkeltkall til en hel flyging. Typeratingstudier og kontrollforberedelse finner du også her.',
- fA:'Flytyper', fP:'Plattform', fPv:'I nettleseren, uten installasjon', fL:'Språk', fLv:'Engelsk og norsk; typerating på engelsk',
- x1:'Simulatorer', x1s:'6 flytyper, 2D og 3D', x2:'IFR-trener', x2s:'46 øvelser', x3:'Briefing', x3s:'Avganger og innflyginger, med poeng', x4:'Radio', x4s:'Radiodriller og gate to gate', x5:'MCDU-trener', x5s:'A320, 13 oppgaver', x6:'FMC-trener', x6s:'737, 17 oppgaver', fK:'Boeing-CDU fra IDENT til APPROACH REF, med MOD og EXEC og en ND i MAP og PLAN', fT:'Preflight fra IDENT til TAKEOFF REF, kryssjekken som PM, rullebanebytte og våt rullebane, direct to og intercept course, holding på et fix eller nåværende posisjon, ny marsjhøyde, navaid inhibit, FIX-ringer, nedstigningsprognoser og DES NOW, arrival og innflyging, diskontinuiteter, restriksjoner, diversjon og APPROACH REF. Med ND i MAP og PLAN. Steg for steg, eller bare fra papirene.',
+   fA:'Flytyper', fPv:'I nettleseren, uten installasjon', fL:'Språk', fLv:'Engelsk og norsk; typerating på engelsk',
+ x1:'Simulatorer', x1s:'6 flytyper, 2D og 3D', x2:'IFR-trener', x2s:'46 øvelser', x3:'Briefing', x3s:'Avganger og innflyginger, med poeng', x4:'Radio', x4s:'Radiodriller og gate to gate', x5:'MCDU-trener', x5s:'A320, 13 oppgaver', x6:'FMC-trener', x6s:'737, 17 oppgaver', fT:'Preflight fra IDENT til TAKEOFF REF, kryssjekken som PM, rullebanebytte og våt rullebane, direct to og intercept course, holding på et fix eller nåværende posisjon, ny marsjhøyde, navaid inhibit, FIX-ringer, nedstigningsprognoser og DES NOW, arrival og innflyging, diskontinuiteter, restriksjoner, diversjon og APPROACH REF. Med ND i MAP og PLAN. Steg for steg, eller bare fra papirene.',
  simH:'Simulatorer',
  simP:'Fungerende cockpiter for tre flytyper, fra DA42 til King Air og A320, og en trener for A320-MCDU-en. Alle cockpitene kjører som 2D-panel; 3D-cockpitene er i beta.',
  gK:'GPS/NAV/COM-navigator, knott for knott, med en CDI og en enkel autopilot', gT:'Sider og cursor, COM og NAV med 8,33 kHz, flyplanen, direct to, holding med OBS, avganger, arrivals og innflyginger, vectors to final, ILS på VLOC, RNAV med LPV, nærmeste flyplass, SUSP og bomflyging.', x7:'GNS 530-trener', x7s:'GPS/NAV/COM, 14 oppgaver',
@@ -776,39 +772,14 @@ LAB.tx({
 });
 function attrs(){ const no=LAB.lang==='no';
   document.querySelectorAll('[data-alt-no]').forEach(e=>{ if(e._en===undefined) e._en=e.alt; e.alt=no?e.dataset.altNo:e._en; });
+  document.querySelectorAll('[data-ph-no]').forEach(e=>{ if(e._ph===undefined) e._ph=e.placeholder; e.placeholder=no?e.dataset.phNo:e._ph; });
+  document.querySelectorAll('[data-aria-no]').forEach(e=>{ if(e._al===undefined) e._al=e.getAttribute('aria-label')||''; e.setAttribute('aria-label',no?e.dataset.ariaNo:e._al); });
   const x=document.querySelector('.tv-idx'); if(x) x.setAttribute('aria-label',no?'På denne siden':'On this page'); }
 LAB.start('training');
-(function flowDemo(){ const box=document.getElementById('ftDemo'); if(!box) return;
-  const P=[[508, 1065, "Brake temperature – CHECK", "PM", 1], [630, 1434, "TCAS – TA/RA", "PM", 2], [421, 736, "Exterior lights – SET, STROBE ON", "PF", 1], [417, 662, "Packs 1 and 2 – AS RQRD", "PM", 3], [474, 766, "Cleared for take-off: NOSE light – T.O", "PF", 2], [439, 766, "Landing lights – ON", "PF", 3]];
-  const svg=box.querySelector('svg'), gl=box.querySelector('.ft-lines'), gd=box.querySelector('.ft-dots'), capN=box.querySelector('.ft-now i'), capT=box.querySelector('.ft-now span');
-  const NS='http://www.w3.org/2000/svg', W=1000, H=1678, VW=680, VH=510;
-  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const vb=(x,y,w,h)=>svg.setAttribute('viewBox',`${x.toFixed(1)} ${y.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`);
-  const view=i=>{ const [x,y]=P[i]; return [Math.min(W-VW,Math.max(0,x-VW/2)),Math.min(H-VH,Math.max(0,y-VH*0.42)),VW,VH]; };
-  const full=[0,0,W,H*1.0];
-  const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-  function dot(i){ const [x,y]=P[i]; const g=document.createElementNS(NS,'g'); g.innerHTML=`<circle cx="${x}" cy="${y}" r="13" style="fill:${P[i][3]==='PF'?'#3CCB7F':'#F2C230'}"/><text x="${x}" y="${y+.5}">${P[i][4]}</text>`; gd.appendChild(g); }
-  /* each role is its own path: a step joins the previous step of the same pilot (PF to PF, PM to PM), never the other pilot's */
-  function line(i){ let j=i-1; while(j>=0&&P[j][3]!==P[i][3]) j--; if(j<0) return [null,0]; const [a,b]=P[j],[c,d]=P[i]; const l=document.createElementNS(NS,'line'); l.setAttribute('x1',a);l.setAttribute('y1',b);l.setAttribute('x2',c);l.setAttribute('y2',d);
-    const len=Math.hypot(c-a,d-b); l.style.strokeDasharray=len; l.style.stroke=P[i][3]==='PF'?'#3CCB7F':'#F2C230'; l.style.strokeDashoffset=len; gl.appendChild(l); return [l,len]; }
-  function cap(i){ capT.style.opacity=0; setTimeout(()=>{ capN.textContent=P[i][4]; capN.style.background=P[i][3]==='PF'?'#3CCB7F':'#F2C230'; capT.textContent=P[i][3]+' '+P[i][2]; capT.style.opacity=1; },180); }
-  if(reduce){ vb(...full); P.forEach((_,i)=>{ const l=i&&line(i)[0]; if(l) l.style.strokeDashoffset=0; dot(i); }); capN.textContent='✓'; capT.textContent='Before takeoff · 6 steps'; return; }
-  let cur=view(0), i=0, visible=true, timer=0;
-  new IntersectionObserver(e=>{ visible=e[0].isIntersecting; if(visible&&!timer) step(); },{threshold:.15}).observe(box);
-  function move(to,ms,onT,done){ const from=cur.slice(), t0=performance.now();
-    (function f(now){ const t=Math.min(1,(now-t0)/ms), k=ease(t); cur=from.map((v,j)=>v+(to[j]-v)*k); vb(...cur); onT&&onT(k); if(t<1) requestAnimationFrame(f); else done&&done(); })(t0); }
-  function reset(){ gl.innerHTML=''; gd.innerHTML=''; i=0; }
-  function step(){ timer=0; if(!visible) return;
-    if(i>=P.length){ move(full,1400,null,()=>{ timer=setTimeout(()=>{ reset(); move(view(0),1400,null,()=>{ dot(0); cap(0); i=1; timer=setTimeout(step,1100); }); },2600); }); return; }
-    if(i===0){ vb(...cur); dot(0); cap(0); i=1; timer=setTimeout(step,1100); return; }
-    const [l,len]=line(i), k0=i; cap(k0);
-    move(view(k0),1300,k=>{ if(l) l.style.strokeDashoffset=len*(1-k); },()=>{ dot(k0); i++; timer=setTimeout(step,1100); });
-  }
-})();
 (function cont(){ let v=null; try{ v=JSON.parse(localStorage.getItem('bb-last-trn')||'null'); }catch(e){}
   const box=document.getElementById('thCont'); if(!box||!v||!v.h) return;
   const TH={'c172.html':'sim-c172-thumb','cockpit.html':'sim-da42-thumb','b200.html':'sim-b200-thumb','a320.html':'sim-a320-thumb','c172-3d.html':'sim-c172-thumb','da42-3d.html':'sim-da42-thumb','b200-3d.html':'sim-b200-thumb','a320-3d.html':'sim-a320-thumb'};
-  const img=TH[v.h]?'img/front/'+TH[v.h]+'.webp':({'ifr.html':'img/training/hub2-ifr-640.webp','mcdu.html':'img/training/hub-mcdu-640.webp','radio.html':'img/training/hub2-radio-640.webp?v=2','briefing.html':'img/training/hub2-brief-640.webp'})[v.h]||'img/training/hub-flows-640.webp';
+  const img=TH[v.h]?'img/front/'+TH[v.h]+'.webp':({'ifr.html':'img/training/hub4-ifr-640.webp','mcdu.html':'img/training/hub-mcdu-640.webp','radio.html':'img/training/hub4-radio-640.webp','radio-drills.html':'img/training/hub4-radio-640.webp','briefing.html':'img/training/hub2-brief-640.webp'})[v.h]||'img/training/hub4-flows-700.webp';
   const no=LAB.lang==='no'; const ago=Math.max(0,Math.round((Date.now()-(v.at||Date.now()))/864e5));
   const when=ago===0?(no?'I dag':'Today'):ago===1?(no?'I går':'Yesterday'):(no?`For ${ago} dager siden`:`${ago} days ago`);
   const NO={'IFR trainer':'IFR-trener','MCDU trainer':'MCDU-trener','737 FMC trainer':'737 FMC-trener','GNS 530 trainer':'GNS 530-trener','Radio drills':'Radiodriller','Type rating':'Typerating','A320 sim assessment':'A320 simulatortest','Check preparation':'Kontrollforberedelse'}; const base=(v.l||'').replace(/ 3D$/,''); const lbl=(no&&NO[base]?NO[base]:base)+(/ 3D$/.test(v.l||'')?' 3D':'');
