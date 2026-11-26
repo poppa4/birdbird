@@ -251,7 +251,7 @@ function ewd(g,cv,D){
     if(avail){ dial(g,x,120,95,e.n1,0,110,104.5,null,e.n1.toFixed(1),e.n1>104?C.r:C.g,D.n1Cmd?D.n1Cmd[i]:null);
       dial(g,x,325,72,e.egt,0,1100,1060,null,String(Math.round(e.egt)),e.egt>1060?C.r:e.egt>950?C.a:C.g);
       T(g,e.n2.toFixed(1),x+50,470,e.n2>2?C.g:C.a,38,'right',700); T(g,String(Math.round(e.ff/10)*10),x+50,520,C.g,38,'right',700);
-      if(e.st>0&&e.st<4) T(g,'AVAIL'===''?'':'',x,250,C.g,28,'center');
+      if(e.cooling) T(g,'COOLING',x,250,C.g,28,'center');
       if(e.avail&&e.availT<10) R(g,x-70,200,140,40,C.g,2),T(g,'AVAIL',x,232,C.g,30,'center');
     } else { T(g,'XX',x+40,150,C.a,44,'right',700); T(g,'XX',x+30,350,C.a,44,'right',700); T(g,'XX',x+50,470,C.a,38,'right',700); T(g,'XX',x+50,520,C.a,38,'right',700); }
     if(e.rev>0.05) T(g,'REV',x,180,e.rev>0.9?C.g:C.a,34,'center',700); }
@@ -378,7 +378,8 @@ const PAGES={
     const H=D.hyd, cols=[['GREEN',200,H.g,H.qg,14.5],['BLUE',500,H.b,H.qb,6.5],['YELLOW',800,H.y,H.qy,12.5]];
     for(const [n,x,p,q,qm] of cols){ const ok=p>1450; R(g,x-80,90,160,50,C.w,2); T(g,n,x,128,ok?C.w:C.a,30,'center',700); T(g,String(Math.round(p/50)*50),x,190,ok?C.g:C.a,38,'center',700); L(g,x,200,x,560,ok?C.g:C.a,4); tri(g,x,210,14,'u',ok?C.g:C.a,true);
       // reservoir
-      L(g,x,620,x,800,C.w,3); FR(g,x-6,800-q/qm*180,12,q/qm*180,C.g); T(g,'RSVR',x+40,830,C.w,22,'center'); }
+      L(g,x,620,x,800,C.w,3); FR(g,x-6,800-q/qm*180,12,q/qm*180,C.g); T(g,'RSVR',x+40,830,C.w,22,'center');
+      if(n==='YELLOW'&&H.yOvht) T(g,'OVHT',x+20,740,C.a,28,'left',700); }
     // pumps
     const pump=(x,y,on,lbl,sel)=>{ R(g,x-40,y-40,80,80,on?C.g:C.a,3); if(on) L(g,x,y-40,x,y+40,C.g,4); else if(sel) L(g,x-30,y,x+30,y,C.a,4); else T(g,'OFF',x,y+10,C.a,24,'center'); if(lbl) T(g,lbl,x,y+70,C.w,26,'center'); };
     pump(200,420,H.edp[0],'1',D.sw.hyE1); pump(800,420,H.edp[1],'2',D.sw.hyE2);
@@ -438,7 +439,8 @@ const PAGES={
     if(D.gearLv===1&&!dn||D.gearLv===0&&!up) T(g,'UNLK',500,240,C.r,26,'center');
     T(g,'BRAKES',500,520,C.w,30,'center'); if(D.autoBrk) T(g,'AUTO BRK',500,580,C.g,28,'center'),T(g,['','LO','MED','MAX'][D.autoBrk],500,615,C.g,28,'center');
     for(let i=0;i<4;i++){ const x=[120,320,680,880][i]; T(g,String(Math.round(D.brkT[i]/5)*5),x,560,D.brkT[i]>300?C.a:C.g,32,'center',700); T(g,'°C',x,600,C.c,22,'center'); T(g,'REL',x,660,C.w,22,'center'); T(g,String(i+1),x,700,C.w,26,'center'); }
-    T(g,'NORM BRK',500,700,D.hyd.g>1450?C.g:C.a,26,'center');
+    T(g,'NORM BRK',500,700,D.hyd.g>1450&&!D.brkAltn?C.g:C.a,26,'center');
+    if(D.brkAltn) T(g,'ANTI SKID',500,750,C.a,26,'center'); if(D.nwsLost) T(g,'N/W STEERING',500,300,C.a,26,'center');
     // spoilers
     for(let i=0;i<5;i++){ const xl=420-i*60, xr=580+i*60; for(const x of [xl,xr]){ tri(g,x,80,12,D.sp>0.1?'u':'u',C.g,D.sp>0.1); } }
   },

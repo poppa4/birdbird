@@ -97,7 +97,7 @@ function render(K,M,A){
       else { P.title='APPR'; P.titleC=C.w;
         l(1,'QNH',C.w); l(2,d.qnh?String(d.qnh):'[    ]',d.qnh?C.c:C.a); l(3,'TEMP',C.w); l(4,d.temp!=null?d.temp+'°':'[ ]°',C.c); l(5,'MAG WIND',C.w); l(6,d.wind||'[ ]°/[ ]',C.c);
         l(7,'TRANS FL',C.w); l(8,'FL070',C.c); l(9,'VAPP',C.w); l(10,M?String(Math.round(M.ap.vapp)):'---',C.c);
-        l(1,'FINAL',C.w,'r'); l(2,'ILS36',C.g,'r'); l(3,'BARO',C.w,'r'); l(4,d.mda?String(d.mda):'[    ]',C.c,'r'); l(5,'RADIO',C.w,'r'); l(6,d.dh!=null?String(d.dh):'[    ]',C.c,'r');
+        l(1,'FINAL',C.w,'r'); l(2,d.appr||'ILS36',C.g,'r'); l(3,'BARO',C.w,'r'); l(4,d.mda?String(d.mda):'[    ]',C.c,'r'); l(5,'RADIO',C.w,'r'); l(6,d.dh!=null?String(d.dh):'[    ]',C.c,'r');
         l(7,'LDG CONF',C.w,'r'); l(8,d.ldgConf==='3'?'CONF3*':'FULL',C.c,'r'); l(9,'',C.w,'r'); l(10,d.ldgConf==='3'?'FULL*':'CONF3*',C.c,'r');
         if(M){ const s=M.spds||{}; l(5,'',C.w,'c'); l(1,'FLP RETR',C.w,'c'); l(2,'F='+(s.F?Math.round(s.F):'---'),C.g,'c'); l(3,'SLT RETR',C.w,'c'); l(4,'S='+(s.S?Math.round(s.S):'---'),C.g,'c'); l(5,'CLEAN',C.w,'c'); l(6,'O='+(s.gd?Math.round(s.gd):'---'),C.g,'c'); l(9,'VLS',C.w,'c'); l(10,String(s.vs1g?Math.round(s.vs1g*1.23):'---'),C.g,'c'); }
         l(1,'',C.w); l(2,'',C.w); if(M&&M.ap.apprPh) P.titleC=C.g; l(12,'<PREV',C.w); l(12,'NEXT PHASE>',C.w,'r'); }
@@ -110,7 +110,7 @@ function render(K,M,A){
       l(9,'  PREDICTIVE',C.w); l(10,'<GPS        GPS PRIMARY',C.g); l(11,'REQUIRED ACCUR ESTIMATED',C.w); l(12,'1.0NM   HIGH      0.06NM',C.g); break; }
     case 'fuel': P.title='FUEL PRED'; l(1,'AT',C.w); l(2,(d.to||'----')+' ----',C.g); l(5,'GW/CG',C.w); l(6,A?(A.gw/1000).toFixed(1)+'/28.0':'---',C.g); l(5,'FOB',C.w,'r'); l(6,A?(A.fuel.fob/1000).toFixed(1):'--.-',C.g,'r'); break;
     case 'data': P.title='DATA INDEX'; l(2,'<POSITION MONITOR',C.w); l(4,'<IRS MONITOR',C.w); l(6,'<GPS MONITOR',C.w); l(8,'<A/C STATUS',C.w); l(2,'WAYPOINTS>',C.w,'r'); l(4,'NAVAIDS>',C.w,'r'); l(6,'RUNWAYS>',C.w,'r'); break;
-    case 'status': P.title='A320-271N'; l(1,' ENG',C.w); l(2,'LEAP-1A26',C.g); l(3,' ACTIVE NAV DATA BASE',C.w); l(4,' NORDAP PRACTICE AREA',C.c); l(5,' SECOND NAV DATA BASE',C.w); l(6,' NONE',C.c); l(9,'CHG CODE',C.w); l(10,'[  ]',C.c); l(11,'IDLE/PERF',C.w); l(12,'+0.0/+0.0',C.g); break;
+    case 'status': P.title='A320-251N'; l(1,' ENG',C.w); l(2,'LEAP-1A26',C.g); l(3,' ACTIVE NAV DATA BASE',C.w); l(4,' NORDAP PRACTICE AREA',C.c); l(5,' SECOND NAV DATA BASE',C.w); l(6,' NONE',C.c); l(9,'CHG CODE',C.w); l(10,'[  ]',C.c); l(11,'IDLE/PERF',C.w); l(12,'+0.0/+0.0',C.g); break;
     case 'atc': P.title='ATC MENU'; l(6,'NO ATSU IN THIS AIRCRAFT',C.w,'c',34); break;
     default: P.title=K.page.toUpperCase(); l(6,'NOT AVAILABLE IN THIS VERSION',C.w,'c',34);
   }

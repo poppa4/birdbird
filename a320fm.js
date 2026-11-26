@@ -20,6 +20,12 @@ const AC={S:122.6,b:35.8,wheelbase:12.6,T0:120600 /* N per engine, SL static */,
   CONF:[['0',0,0,0,1.52,0,350],['1',18,0,0.17,1.90,0.006,230],['1+F',18,10,0.32,2.06,0.012,215],['2',22,15,0.47,2.30,0.024,200],['3',22,20,0.58,2.45,0.036,185],['FULL',27,35,0.80,2.80,0.065,177]],
   CL0:0.20,gearCD:0.016,spCD:0.040,spLoss:0.30,VMO:350,MMO:0.82,VLE:280,VLO:250,alphaMax:15.5*D2R};
 const TLA={REVMAX:-20,IDLE:0,CL:25,MCT:35,TOGA:45};
+/* lateral modes that follow the FMS flight plan */
+const isNav=l=>l==='NAV'||l==='APP NAV'||l==='FINAL APP';
+/* managed non-precision approach (FINAL APP): the final descent path of the practice RNAV / VOR approach to runway 36,
+   3.0° to 50 ft over the threshold (N=0, E=0); through FAPSO at 5 NM and about 1,650 ft as published on the practice chart */
+const FINAL={gp:3.0,tch:50};
+function finalPath(M){ const d=Math.hypot(M.N,M.E); if(M.N>0) return null; const alt=FINAL.tch+d/FT*Math.tan(FINAL.gp*D2R); return {dist:d/NM,alt,dev:M.h/FT-alt}; }
 
 function isa(h,dev){ const T=288.15-0.0065*Math.min(h,11000)+(dev||0), p=101325*(h<11000?Math.pow(1-0.0065*h/288.15,5.2559):0.22336*Math.exp(-(h-11000)/6341.6)); return {T,p,rho:p/(287.05*T),sig:p/(287.05*T)/1.225,a:Math.sqrt(1.4*287.05*T)}; }
 function casFromTas(tas,h,dev){ const at=isa(h,dev), q=at.p*(Math.pow(1+0.2*Math.pow(tas/at.a,2),3.5)-1); return Math.sqrt(7*101325/1.225*(Math.pow(q/101325+1,1/3.5)-1)); }
@@ -104,7 +110,7 @@ function apLogic(M,dt,sys,sp,nav){
   if(onG&&!toga&&!flxmct&&A.vert==='SRS'&&M.gs<1) { A.vert=''; A.lat=''; A.vertArm=''; A.athrArm=false; }
   // go-around: TOGA in flight with flaps out
   const togaEdge=toga&&!A.togaPrev; A.togaPrev=toga;
-  if(!onG&&togaEdge&&M.conf>0&&!A.gaMode&&A.vert!=='SRS'){ A.gaMode=true; A.vert='SRS'; A.lat='GA TRK'; A.chiGa=M.chi; A.vertArm='CLB'; A.athrArm=true; A.athr=false; A.appr=false; A.loc=false; A.landStage=''; A.latArm=nav.fp?'NAV':''; }
+  if(!onG&&togaEdge&&M.conf>0&&!A.gaMode&&A.vert!=='SRS'){ A.gaMode=true; A.vert='SRS'; A.lat='GA TRK'; A.chiGa=M.chi; A.vertArm='CLB'; A.athrArm=true; A.athr=false; A.appr=false; A.npa=false; A.loc=false; A.landStage=''; A.latArm=nav.fp?'NAV':''; }
   // ----- thrust reduction: at THR RED altitude "LVR CLB" flashes until the levers are in CL; then A/THR becomes active
   const red=A.athrArm&&!onG&&ra>A.thrRed;
   A.lvrClb=red&&(tla[0]>TLA.CL+0.5||tla[1]>TLA.CL+0.5);
@@ -113,12 +119,12 @@ function apLogic(M,dt,sys,sp,nav){
   if(A.vert==='SRS'&&!onG&&ra>A.acc){ A.vert=A.lat==='NAV'&&M.vnavFn?'CLB':'OP CLB'; A.vertArm='ALT'; if(A.gaMode){ A.gaMode=false; } A.toga=false; }
   if(A.vert==='SRS'&&!onG&&A.lat==='RWY'&&ra>30){ A.lat='RWY TRK'; A.srsHdg=M.chi; }
   if(A.latArm==='NAV'&&nav.fp&&!onG&&ra>(A.gaMode?100:30)){ A.lat='NAV'; A.latArm=''; }
-  if(A.lat==='NAV'&&!nav.fp) A.lat='HDG';
+  if(isNav(A.lat)&&!nav.fp) A.lat='HDG';
   // ----- managed vertical (CLB / DES): constraints from the flight plan limit the altitude target
   const managedV=A.vert==='CLB'||A.vert==='DES'||A.vert.startsWith('ALT CST');
   const climbingM=A.vert==='CLB'||(A.vert.startsWith('ALT CST')&&A.cstClimb);
   const vn=managedV&&M.vnavFn?M.vnavFn(M,climbingM,A.alt.v):null; A.vn=vn;
-  if(managedV&&A.lat!=='NAV'&&!onG){ A.vert=A.vert==='DES'||(!A.cstClimb&&A.vert.startsWith('ALT CST'))?'V/S':(A.vert==='CLB'?'OP CLB':'V/S'); if(A.vert==='V/S'){ A.vs.v=Math.round(vs/100)*100; A.vs.dash=false; } }
+  if(managedV&&!isNav(A.lat)&&!onG){ A.vert=A.vert==='DES'||(!A.cstClimb&&A.vert.startsWith('ALT CST'))?'V/S':(A.vert==='CLB'?'OP CLB':'V/S'); if(A.vert==='V/S'){ A.vs.v=Math.round(vs/100)*100; A.vs.dash=false; } }
   if(A.vert==='ALT CST'&&vn&&Math.abs(vn.alt-(A.altHold||vn.alt))>60){ A.vert=A.cstClimb?'CLB':'DES'; A.vertArm=A.vertArm.replace(/^(CLB|DES)/,'ALT'); } // constraint passed: climb / descend on
   if(A.vert==='ALT CST'&&!vn&&Math.abs(A.alt.v-h)>250){ A.vert=A.cstClimb?'CLB':'DES'; A.vertArm=A.vertArm.replace(/^(CLB|DES)/,'ALT'); }
   // ----- altitude capture logic
@@ -143,6 +149,24 @@ function apLogic(M,dt,sys,sp,nav){
   if(A.appr&&A.vert==='G/S'&&A.lat==='LOC'&&ra<400&&ra>0) { A.vert='LAND'; A.lat='LAND'; }
   if(A.vert==='LAND'&&ra<40) { A.vert='FLARE'; A.lat='FLARE'; }
   if(A.vert==='FLARE'&&onG){ A.vert='ROLL OUT'; A.lat='ROLL OUT'; }
+  /* ILS signal lost (ground transmitter failure): the deviation index goes from the PFD. Above 200 ft RA, after 7 s without
+     the signal in LOC / G/S, the APs disengage and the FDs revert to HDG V/S (TRK FPA). In LAND mode lower down the AUTO LAND
+     light warns instead (the page shows it). */
+  const locLost=['LOC*','LOC','LAND'].includes(A.lat)&&!L.valid, gsLost=['G/S*','G/S','LAND'].includes(A.vert)&&!Gs.valid;
+  A.ilsLostT=(locLost||gsLost)&&!onG?(A.ilsLostT||0)+dt:0;
+  if(A.ilsLostT>7&&ra>200){ if(A.ap1||A.ap2){ A.ap1=A.ap2=false; M.events.push('apdisc-forced'); }
+    A.lat=A.hdg.trk?'TRK':'HDG'; A.hdg.v=Math.round(A.hdg.trk?w360(M.chi*R2D):w360(M.psi*R2D))||360; A.vert=A.vs.fpa?'FPA':'V/S'; A.vs.v=Math.round(vs/100)*100; A.vs.fpaV=Math.round(M.gam*R2D*10)/10; A.vs.dash=false;
+    A.appr=false; A.loc=false; A.latArm=''; A.vertArm=''; A.ilsLostT=0; M.events.push('revert'); }
+  /* managed non-precision approach (APPR with an RNAV or VOR approach in the flight plan): APP NAV follows the flight plan, FINAL
+     is armed and FINAL APP engages on the final descent path. With FINAL APP the AP disengages by itself at MDA − 50 ft, or at
+     400 ft AGL when no MDA is entered, or at the missed approach point (here the threshold). */
+  if(A.latArm==='APP NAV'&&nav.fp&&!onG){ A.lat='APP NAV'; A.latArm=''; }
+  const fpth=A.appr&&A.npa?finalPath(M):null; A.fpath=fpth;
+  if(fpth&&A.vertArm.includes('FINAL')&&A.lat==='APP NAV'&&fpth.dist<12&&Math.abs(M.E)<2*NM&&Math.abs(fpth.dev)<50){ A.vert='FINAL APP'; A.lat='FINAL APP'; A.vertArm=''; }
+  if(A.vert==='FINAL APP'){
+    const lim=M.mda>0?M.mda-50:400, hNow=M.mda>0?h:ra;
+    if((A.ap1||A.ap2)&&(hNow<=lim||M.N>=0)){ A.ap1=A.ap2=false; M.events.push('apdisc-forced'); }
+    if(onG){ A.vert=''; A.lat=''; A.appr=false; A.npa=false; } }
   // ----- vertical command (flight path angle, rad) ----
   let gamC=null, phiC=null;
   const Vtas=Math.max(M.tas,30);
@@ -165,6 +189,7 @@ function apLogic(M,dt,sys,sp,nav){
     case 'ALT*': { const vsC=clamp(dAlt*4.2,-Math.abs(A.capVs||2000),Math.abs(A.capVs||2000)); gamC=gamFromVs(vsC); break; }
     case 'ALT': { const vsC=clamp(((A.altHold!=null?A.altHold:altT)-h)*2.5,-900,900); gamC=gamFromVs(vsC); break; }
     case 'G/S*': case 'G/S': case 'LAND': { const dev=Gs.valid?Gs.dev:0; gamC=-ILS.gp*D2R+clamp(dev*0.35*2.6,-1.6,1.6)*D2R; break; }
+    case 'FINAL APP': { const p=fpth||finalPath(M), e=p?Math.atan2(p.dev,Math.max(300,p.dist*NM/FT))*R2D:0; gamC=(-FINAL.gp-clamp(e*2.6,-1.6,1.6))*D2R; break; }
     case 'FLARE': { const vsT=clamp(-ra*9-60,-800,-120); gamC=gamFromVs(vsT); break; }
     case 'ROLL OUT': gamC=0; break;
   }
@@ -177,7 +202,7 @@ function apLogic(M,dt,sys,sp,nav){
     case 'HDG': case 'TRK': { const err=w180(A.hdg.v-(A.hdg.trk?trk:hdg)); phiC=toward_(err); break; }
     case 'GA TRK': { const err=w180((A.chiGa||M.chi)*R2D-trk); phiC=toward_(err); break; }
     case 'RWY': case 'RWY TRK': { const err=w180((A.srsHdg||M.psi)*R2D-trk); phiC=toward_(err); break; }
-    case 'NAV': { const err=w180(nav.dtk-trk); phiC=toward_(err+nav.xtkCorr); break; }
+    case 'NAV': case 'APP NAV': case 'FINAL APP': { const err=w180(nav.dtk-trk); phiC=toward_(err+nav.xtkCorr); break; }
     case 'LOC*': case 'LOC': case 'LAND': case 'FLARE': case 'ROLL OUT': {
       const dev=L.valid?L.dev:0, xtkDeg=clamp(dev*(A.lat==='LOC*'?14:9)*clamp(L.distNm/8,0.5,1.6),-35,35);
       const err=w180(ILS.crs+xtkDeg-trk); phiC=toward_(err); if(A.lat==='FLARE'||A.lat==='ROLL OUT') phiC=clamp(phiC,-3*D2R,3*D2R); break; }
@@ -295,6 +320,11 @@ function step(M,dt,sys){
   const qd=0.5*at.rho*M.tas*M.tas;
   const sp=speeds(M); M.spds=sp;
   const navR=navCalc(M); M.nav=navR;
+  /* failures from the systems page: ILS ground transmitters (LOC, G/S) and the autopilots */
+  const SF=sys&&sys.fail;
+  if(SF){ if(SF.locTx) navR.loc.valid=false; if(SF.gsTx) navR.gs.valid=false;
+    M.apInop=[!!SF.ap1f,!!SF.ap2f];
+    if((A.ap1&&M.apInop[0])||(A.ap2&&M.apInop[1])){ if(M.apInop[0]) A.ap1=false; if(M.apInop[1]) A.ap2=false; if(!A.ap1&&!A.ap2) M.events.push('apdisc-forced'); } }
   if(M.lnavFn){ const r=M.lnavFn(M); if(r){ navR.dtk=r.dtk; navR.xtkCorr=r.xtkCorr; navR.fp=r; } }
   // thrust
   apLogic(M,dt,sys,sp,navR);
@@ -332,11 +362,18 @@ function step(M,dt,sys){
     // longitudinal forces on the ground
     const CD=AC.CD0+c.dCD+AC.k*CL*CL*0.6+gearCD+spCD;
     const D=qd*AC.S*CD, N=Math.max(0,W-L);
-    let brk=Math.max(C.brkL,C.brkR,AU?AU.brk||0:0);
-    if(C.park) brk=1;
+    /* brakes: pedals left and right (differential braking steers when the nose wheel steering is lost). Without the BSCU
+       (A/SKID N/WS FAULT, or the A/SKID & N/W STRG switch OFF): alternate braking without anti-skid, the ABCU limits the
+       pressure to about 1,000 psi of the normal 3,000, no autobrake, no nose wheel steering. */
+    const WH=sys&&sys.sw&&sys.fail&&G.A320SYS&&G.A320SYS.wheels?G.A320SYS.wheels(sys):null;
+    let bL=Math.max(C.brkL,AU?AU.brk||0:0), bR=Math.max(C.brkR,AU?AU.brk||0:0);
+    if(C.park){ bL=bR=1; }
+    else if(WH&&WH.altn){ bL=Math.min(bL,0.34); bR=Math.min(bR,0.34); }
+    M.brkPsi=[Math.round(bL*3000/50)*50,Math.round(bR*3000/50)*50]; M.brkAltn=!!(WH&&WH.altn);
+    let brk=(bL+bR)/2;
     // autobrake: LO 1.7, MED 3.0 m/s² from touchdown (with ground spoilers); MAX on an RTO above 72 kt
-    if(M.gsplr&&C.abrk>0) M.abLatch=true;
-    if(M.abLatch&&(C.abrk===0||C.brkL>0.6||M.tla.some(x=>x>TLA.CL*0.5))) M.abLatch=false;
+    if(M.gsplr&&C.abrk>0&&!(WH&&!WH.autoBrk)) M.abLatch=true;
+    if(M.abLatch&&(C.abrk===0||C.brkL>0.6||M.tla.some(x=>x>TLA.CL*0.5)||(WH&&!WH.autoBrk))) M.abLatch=false;
     if(M.abLatch&&C.abrk>0&&M.tas>0.05){ const dec=[0,1.7,3.0,6][C.abrk]; M.abActive=true; brk=Math.max(brk,clamp((dec*M.gw-(D-T))/(0.55*N+1),0,1)); } else M.abActive=false;
     const brkF=brk*0.55*N*(M.tas>0.3?1:0), roll=0.011*N;
     let ax=(T-D-roll*(M.tas>0.05?1:0)-brkF)/M.gw;
@@ -345,8 +382,8 @@ function step(M,dt,sys){
     if(M.tas<0.05&&brk>0.3) M.tas=0;
     // steering: tiller up to 75° (below 20 kt, fading to 0 at 70 kt), pedals ±6°; yaw rate = V·tan(δ)/wheelbase
     const tilA=75*clamp(1-(M.gs/KT-20)/50,0,1), tilC=C.tiller+(AU?AU.til||0:0), rudC=C.rud+(AU?AU.rud||0:0), steer=(clamp(tilC,-1,1)*tilA+clamp(rudC,-1,1)*6*clamp(1-(M.gs/KT-100)/40,0,1))*D2R;
-    const sysNWS=!sys||(sys.hyd.y>1500);
-    const r=sysNWS?M.tas*Math.tan(steer)/AC.wheelbase:0;
+    const sysNWS=WH?WH.nws:(!sys||(sys.hyd.y>1500)); M.nws=sysNWS;
+    const r=(sysNWS?M.tas*Math.tan(steer)/AC.wheelbase:0)+(bR-bL)*0.35*clamp(M.tas/2,0,1)*clamp(1-M.gs/KT/80,0.15,1);
     const rudYaw=C.rud*0.02*clamp((M.ias-40)/80,0,1)+(M.asym/(AC.T0*2))*-0.015*clamp(M.ias/80,0,1);
     M.psi+=(r+rudYaw)*dt; M.chi=M.psi; M.phi=lag(M.phi,0,0.3,dt);
     M.p=0;
@@ -470,20 +507,24 @@ function fcu(M,k,v){
     case 'spdTurn': if(!A.spd.man){ A.spd.man=true; A.spd.v=Math.round(A.tgtSpd||M.ias); } A.spd.v=A.spd.mach?clamp(Math.round((A.spd.v+v*0.01)*100)/100,0.10,0.82):clamp(A.spd.v+v,100,399); break;
     case 'spdMach': A.spd.mach=!A.spd.mach; A.spd.v=A.spd.mach?Math.round(M.mach*100)/100:Math.round(M.ias); break;
     case 'hdgTurn': A.hdg.v=w360(Math.round(A.hdg.v+v)); A.hdg.sel=true; if(A.hdg.v===0) A.hdg.v=360; A.hdg.preset=true; break;
-    case 'hdgPull': A.lat=A.hdg.trk?'TRK':'HDG'; A.latArm=A.latArm==='NAV'?'':A.latArm; if(A.loc||A.appr){ A.loc=false; A.appr=false; if(A.vert.startsWith('G/S')) A.vert='V/S'; A.vertArm=A.vertArm.replace('G/S','').trim(); A.latArm=''; } break;
+    case 'hdgPull': A.lat=A.hdg.trk?'TRK':'HDG'; A.latArm=A.latArm==='NAV'?'':A.latArm; if(A.loc||A.appr){ A.loc=false; A.appr=false; A.npa=false; if(A.vert.startsWith('G/S')||A.vert==='FINAL APP'){ A.vert='V/S'; A.vs.v=Math.round(M.vs/FPM/100)*100; A.vs.dash=false; } A.vertArm=A.vertArm.replace(/G\/S|FINAL/,'').trim(); A.latArm=''; } break;
     case 'hdgPush': A.latArm='NAV'; A.navArm=true; break;
     case 'trkFpa': A.hdg.trk=!A.hdg.trk; A.vs.fpa=!A.vs.fpa; if(A.lat==='HDG'||A.lat==='TRK') A.lat=A.hdg.trk?'TRK':'HDG'; break;
     case 'altTurn': A.alt.v=clamp(Math.round((A.alt.v+v*A.alt.step)/A.alt.step)*A.alt.step,100,39000); break;
     case 'altStep': A.alt.step=A.alt.step===100?1000:100; break;
     case 'altPull': if(Math.abs(A.alt.v-h)>250){ A.vert=A.alt.v>h?'OP CLB':'OP DES'; A.exped=false; A.vertArm=''; } break;
-    case 'altPush': if(Math.abs(A.alt.v-h)>250||A.vert==='ALT CST'){ const nav=A.lat==='NAV'&&M.vnavFn; A.vert=A.alt.v>h?(nav?'CLB':'OP CLB'):(nav?'DES':'OP DES'); A.cstClimb=A.alt.v>h; } break; // managed CLB / DES with NAV, else open
+    case 'altPush': if(Math.abs(A.alt.v-h)>250||A.vert==='ALT CST'){ const nav=isNav(A.lat)&&M.vnavFn; A.vert=A.alt.v>h?(nav?'CLB':'OP CLB'):(nav?'DES':'OP DES'); A.cstClimb=A.alt.v>h; } break; // managed CLB / DES with NAV, else open
     case 'vsTurn': A.vs.dash=false; if(A.vert!=='V/S'&&A.vert!=='FPA'&&!M.gnd){ A.vs.v=Math.round(M.vs/FPM/100)*100; A.vert=A.vs.fpa?'FPA':'V/S'; A.vs.fpaV=Math.round(M.gam*R2D*10)/10; } if(A.vs.fpa) A.vs.fpaV=clamp(Math.round((A.vs.fpaV+v*0.1)*10)/10,-9.9,9.9); else A.vs.v=clamp(A.vs.v+v*100,-6000,6000); break;
     case 'vsPull': if(!M.gnd){ A.vert=A.vs.fpa?'FPA':'V/S'; A.vs.dash=false; if(A.vs.v==null) A.vs.v=0; } break;
     case 'vsPush': if(!M.gnd){ A.vert='V/S'; A.vs.v=0; A.vs.dash=false; } break; // level off
     case 'loc': if(A.loc){ A.loc=false; A.latArm=''; if(A.lat.startsWith('LOC')) A.lat='HDG'; } else { A.loc=true; A.appr=false; A.latArm='LOC'; A.vertArm=A.vertArm.replace('G/S','').trim(); } break;
-    case 'appr': if(A.appr){ A.appr=false; A.loc=false; A.latArm=''; A.vertArm=A.vertArm.replace('G/S','').trim(); } else { A.appr=true; A.loc=false; if(!A.lat.startsWith('LOC')) A.latArm='LOC'; A.vertArm=(A.vertArm.replace('G/S','').trim()+' G/S').trim(); } break;
+    case 'appr': if(A.appr){ A.appr=false; A.loc=false; A.npa=false; A.latArm=''; A.vertArm=A.vertArm.replace(/G\/S|FINAL/,'').trim();
+        if(A.lat==='APP NAV') A.lat='NAV'; if(A.vert==='FINAL APP'){ A.vert='V/S'; A.vs.v=Math.round(M.vs/FPM/100)*100; A.vs.dash=false; A.lat='NAV'; } }
+      else if(M.npa){ /* RNAV or VOR approach in the flight plan: APP NAV (engaged at once from NAV) and FINAL armed */
+        A.appr=true; A.npa=true; A.loc=false; if(isNav(A.lat)) A.lat='APP NAV'; else A.latArm='APP NAV'; A.vertArm=(A.vertArm.replace(/G\/S|FINAL/,'').trim()+' FINAL').trim(); }
+      else { A.appr=true; A.npa=false; A.loc=false; if(!A.lat.startsWith('LOC')) A.latArm='LOC'; A.vertArm=(A.vertArm.replace(/G\/S|FINAL/,'').trim()+' G/S').trim(); } break;
     case 'exped': if(!M.gnd&&Math.abs(A.alt.v-h)>250){ A.vert=A.alt.v>h?'EXPED CLB':'EXPED DES'; A.spd.man=false; } break;
-    case 'ap1': case 'ap2': { const on=!A[k]; if(on&&(M.gnd&&!(M.liftT>0))) return 'AP: not on the ground'; if(on&&!M.gnd&&M.ra/FT<100&&!A.appr) {} A[k]=on; if(on){ if(!A.appr) A[k==='ap1'?'ap2':'ap1']=false; if(!A.lat) A.lat='HDG'; if(!A.vert) { A.vert='V/S'; A.vs.v=Math.round(M.vs/FPM/100)*100; } } else { M.events.push('apdisc'); } break; }
+    case 'ap1': case 'ap2': { const on=!A[k]; if(on&&M.apInop&&M.apInop[k==='ap1'?0:1]) return 'AP '+(k==='ap1'?1:2)+' does not engage (failed)'; if(on&&(M.gnd&&!(M.liftT>0))) return 'AP: not on the ground'; if(on&&!M.gnd&&M.ra/FT<100&&!A.appr) {} A[k]=on; if(on){ if(!A.appr) A[k==='ap1'?'ap2':'ap1']=false; if(!A.lat) A.lat='HDG'; if(!A.vert) { A.vert='V/S'; A.vs.v=Math.round(M.vs/FPM/100)*100; } } else { M.events.push('apdisc'); } break; }
     case 'athr': if(A.athr||A.athrArm){ if(A.athr&&!M.gnd&&M.tla.every(x=>Math.abs(x-TLA.CL)<=0.5)) A.thrLock=M.n1Cmd.slice(); A.athr=false; A.athrArm=false; A.alphaFloor=false; A.thrLk=false; M.events.push('athrdisc'); } else { if(M.gnd) A.athrArm=true; else if(M.tla.every(x=>x>0.5&&x<=TLA.CL+0.5)) A.athr=true; else A.athrArm=true; } break;
     case 'fd1': A.fd1=!A.fd1; if(!A.fd1&&!A.fd2&&!A.ap1&&!A.ap2){ A.lat=''; A.vert=''; } break;
     case 'fd2': A.fd2=!A.fd2; if(!A.fd1&&!A.fd2&&!A.ap1&&!A.ap2){ A.lat=''; A.vert=''; } break;

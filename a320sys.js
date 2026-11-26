@@ -67,7 +67,13 @@ function engNew(cold,t){ const T=t==null?15:t; return {n1:0,n2:0,egt:T,ff:0,oilP
 function engRun(e){ Object.assign(e,{n1:19.6,n2:58.8,egt:395,ff:290,oilP:42,oilT:78,run:true,st:4,avail:true,fuelOn:true,lit:true}); }
 
 /* ---------- failures the page can set ---------- */
-const FAILS=['eng1','eng2','fire1','fire2','fireApu','gen1','gen2','idg1','apuGen','acBus1','hydG','hydB','hydY','edp1','edp2','fuelL1','fuelL2','bleed1','bleed2','pack1','pack2','elac1','sec1','ir1','ir2','decomp','cabLeak','bothGen'];
+const FAILS=['eng1','eng2','fire1','fire2','fire1x','fire2x','fireApu','gen1','gen2','idg1','apuGen','acBus1','hydG','hydB','hydY','yOvht','edp1','edp2','fuelL1','fuelL2','bleed1','bleed2','pack1','pack2','elac1','sec1','ir1','ir2','decomp','cabLeak','bothGen',
+  'bscu','nws','ap1f','ap2f','smokeFwd','smokeAft','locTx','gsTx'];
+/* the brakes and steering the BSCU gives (read by the flight model): normal braking with anti-skid and autobrake, nose wheel
+   steering. Both BSCU channels lost, or the A/SKID & N/W STRG switch OFF: alternate braking on yellow without anti-skid (the
+   ABCU limits the pressure to about 1,000 psi), no autobrake, no nose wheel steering. */
+function wheels(A){ const S=A.sw, bscu=!A.fail.bscu&&S.askid!==0;
+  return {antiSkid:bscu,autoBrk:bscu,nws:bscu&&!A.fail.nws&&A.hyd.y>1500,altn:!bscu}; }
 
 /* ---------- ELECTRICAL ---------- */
 function elec(A,dt,air){
@@ -171,30 +177,39 @@ function apu(A,dt,air){
   P.bleedOn=P.avail&&S.apuBl===1&&(air.alt<20000);
 }
 
-/* ---------- ENGINES (CFM-type FADEC automatic start; LEAP/CFM56-like numbers) ---------- */
+/* ---------- ENGINES (A320-251N, CFM LEAP-1A26: FADEC automatic start) ----------
+   Start as the A320neo LEAP FCOM describes it: when the engine is still warm the FADEC first dry cranks it (pre-start motoring
+   against a bowed rotor: N2 held below about 30 %, COOLING on the E/WD, up to about 60 s), then ignition at about 15 % N2 and
+   fuel at about 20 % N2; the FADEC alternates igniter A and B from one start to the next. Idle and EGT numbers are typical
+   values for learning, not an operator's figures. */
 const IDLE={n1:19.6,n2:58.8,egt:395,ff:290};
+/* thermal state for the pre-start motoring: here the time since this engine last stopped (a teaching approximation; the
+   FADEC itself decides from the measured core temperature) */
+function coolNeed(A,e){ if(e.offT==null) return 0; const s=A.t-e.offT; if(s<20||s>7200) return 0; return Math.round(60*clamp(s/900,0.25,1)); }
 function engines(A,dt,air,fm){
   const S=A.sw;
   for(let i=0;i<2;i++){
     const e=A.eng[i], n=i+1, mst=S['mst'+n]===1, ign=S.engMode===2, crank=S.engMode===0;
     const bleedP=A.air.duct[i]; // psi at the starter valve
     const fuelP=fuelPress(A,i);
-    if(A.fail['fire'+n]&&e.n2>5) e.fire=true;
+    if((A.fail['fire'+n]||A.fail['fire'+n+'x'])&&e.n2>5) e.fire=true;
     if(A.fail['eng'+n]&&e.run){ e.fail=true; }
     const fireShut=S['fireP'+n]===1;
     // automatic start: master ON with the mode selector at IGN/START
-    if(mst&&!e.run&&e.st===0&&ign&&A.bus.dcEss){ e.st=1; e.stT=0; e.startFault=''; }
-    if(!mst&&e.st>0){ e.st=0; e.fuelOn=false; e.run=false; e.startV=false; e.ignA=e.ignB=false; }
-    if(mst&&e.st===0&&!ign&&!e.run&&S['manSt'+n]&&A.bus.dcEss){ e.st=1; e.stT=0; }
+    const begin=()=>{ e.st=1; e.stT=0; e.startFault=''; e.coolT=air.gnd?coolNeed(A,e):0; e.igB=e.igB==null?i===1:!e.igB; };
+    if(mst&&!e.run&&e.st===0&&ign&&A.bus.dcEss) begin();
+    if(!mst&&e.st>0){ if(e.run) e.offT=A.t; e.st=0; e.fuelOn=false; e.run=false; e.startV=false; e.ignA=e.ignB=false; e.coolT=0; }
+    if(mst&&e.st===0&&!ign&&!e.run&&S['manSt'+n]&&A.bus.dcEss) begin();
     let n2t=0, egtT=A.env.t, ffT=0;
     e.startV=false; e.ignA=e.ignB=false;
     if(e.st>=1&&e.st<4){ // starting
       e.stT+=dt;
       e.startV=e.n2<50&&bleedP>20;
       const spool=e.startV?Math.min(24,bleedP*0.6):0;
-      if(e.st===1){ n2t=spool; if(e.n2>=16){ e.st=2; } if(e.stT>60&&e.n2<16){ e.startFault='STARTER'; e.st=0; } }
-      if(e.st===2){ e.ignA=i===0; e.ignB=i===1; n2t=spool+2; if(e.n2>=22&&fuelP){ e.st=3; e.fuelOn=true; e.lightT=0; } }
-      if(e.st===3){ e.ignA=i===0; e.ignB=i===1; e.lightT+=dt;
+      if(e.st===1){ if(e.coolT>0&&e.startV){ e.cooling=true; e.coolT-=dt; e.stT=0; n2t=Math.min(spool,25); } /* dry crank: no ignition, no fuel */
+        else { e.cooling=false; n2t=spool; if(e.n2>=15){ e.st=2; } if(e.stT>60&&e.n2<15){ e.startFault='STARTER'; e.st=0; } } }
+      if(e.st===2){ e.ignA=!e.igB; e.ignB=!!e.igB; n2t=spool+2; if(e.n2>=20&&fuelP){ e.st=3; e.fuelOn=true; e.lightT=0; } }
+      if(e.st===3){ e.ignA=!e.igB; e.ignB=!!e.igB; e.lightT+=dt;
         n2t=IDLE.n2;
         const lit=e.lightT>3; e.lit=lit;
         egtT=lit?Math.min(690,A.env.t+(e.n2<45?120+e.n2*12:IDLE.egt+(60-e.n2)*18)):A.env.t;
@@ -203,8 +218,9 @@ function engines(A,dt,air,fm){
       ffT=e.fuelOn?(150+e.n2*2.5):0;
     }
     if(e.run){
-      if(!mst||fireShut||e.fail||!fuelP&&!gravity(A,i,air)) { e.run=false; e.st=0; e.fuelOn=false; e.shut=!e.fail; }
+      if(!mst||fireShut||e.fail||!fuelP&&!gravity(A,i,air)) { e.run=false; e.st=0; e.fuelOn=false; e.shut=!e.fail; e.offT=A.t; }
     }
+    if(e.st!==1) e.cooling=false;
     if(e.run){
       // thrust lever -> N1 command (A/THR replaces the lever between idle and the active detent; fm.js computes nTgt)
       const t=fm?fm.n1Cmd[i]:IDLE.n1;
@@ -286,6 +302,10 @@ function hyd(A,dt,air){
     else if(y>=2500&&g<2500&&!A.fail.hydG&&H.qg>3){ g=2800; H.ptu=true; }
   }
   H.ptuT=H.ptu?H.ptuT+dt:0;
+  /* yellow reservoir overheat (failure): OVHT on the HYD page, FAULT in ENG 2 PUMP, YELLOW ELEC PUMP and PTU. With the yellow
+     pumps and the PTU off the fluid cools; here the overheat goes out about 3 min later and the system can be restored. */
+  if(A.fail.yOvht){ if(!H.yOvhtOut) H.yOvht=true; } else { H.yOvht=false; H.yOvhtOut=false; H.yOvhtT=0; }
+  if(H.yOvht){ const off=!S.hyE2&&!S.hyY&&!S.ptu; H.yOvhtT=off?(H.yOvhtT||0)+dt:0; if(H.yOvhtT>180){ H.yOvht=false; H.yOvhtOut=true; } }
   H.g=lag(H.g,g,0.8,dt); H.y=lag(H.y,y,0.8,dt); H.b=lag(H.b,b,0.8,dt);
   H.bluePump=bluePump; H.yPump=yPump; H.edp=[edp1,edp2];
   // brakes: green (normal, with anti-skid) or yellow + accumulator (alternate, park brake)
@@ -351,8 +371,9 @@ function adirs(A,dt,air){
 function fire(A,dt){
   const S=A.sw, Fi=A.fire;
   Fi.e=[A.eng[0].fire||S.fireT1===1,A.eng[1].fire||S.fireT2===1]; Fi.a=A.apu.fire||S.fireTA===1;
-  // agent discharge puts the fire out (once at least one agent of that engine has been discharged and fuel is shut)
-  for(let i=0;i<2;i++){ const n=i+1; if(S['fireP'+n]&&(S['ag'+n+'1']||S['ag'+n+'2'])){ Fi.disch['e'+n]=(Fi.disch['e'+n]||0)+dt; if(Fi.disch['e'+n]>(S['ag'+n+'1']&&S['ag'+n+'2']?3:6)&&A.sw['mst'+n]===0){ A.eng[i].fire=false; A.fail['fire'+n]=false; } } }
+  // agent discharge puts the fire out (once at least one agent of that engine has been discharged and fuel is shut);
+  // the "inextinguishable" failure (fire1x / fire2x) keeps burning after both agents
+  for(let i=0;i<2;i++){ const n=i+1; if(A.fail['fire'+n+'x']) continue; if(S['fireP'+n]&&(S['ag'+n+'1']||S['ag'+n+'2'])){ Fi.disch['e'+n]=(Fi.disch['e'+n]||0)+dt; if(Fi.disch['e'+n]>(S['ag'+n+'1']&&S['ag'+n+'2']?3:6)&&A.sw['mst'+n]===0){ A.eng[i].fire=false; A.fail['fire'+n]=false; } } }
   if(S.fireA&&S.agA){ A.apu.fire=false; A.fail.fireApu=false; }
   // APU auto extinguishing on ground
   if(A.apu.fire&&A.gndNow){ Fi.apuAuto=(Fi.apuAuto||0)+dt; if(Fi.apuAuto>3){ A.sw.agA=1; A.apu.st=4; } if(Fi.apuAuto>6) A.apu.fire=false; }
@@ -401,8 +422,13 @@ function alerts(A,air,fm){
   const S=A.sw, B=A.bus, H=A.hyd, F=A.fuel, e=A.eng, X=A.air, out=[], ph=A.phase;
   const add=(id,lvl,title,text,steps,o)=>{ o=o||{}; if(o.inh&&o.inh.includes(ph)) return; const st=(steps||[]).filter(s=>!s[1]||!s[1]()); while(st.length&&/^IF |:$/.test(st[st.length-1][0])) st.pop(); /* a condition line goes with the actions under it */ out.push({id,lvl,title,text,steps:st,page:o.page||null,crc:!!o.crc,sts:o.sts||null}); };
   const tl=i=>fm?fm.tla[i]:0;
-  // FIRE
-  for(let i=0;i<2;i++){ const n=i+1; if(A.fire.e[i]) add('eng'+n+'fire',3,'ENG '+n,'FIRE',[
+  // FIRE: the FCOM has two procedures, ENG FIRE in flight and ENG FIRE on ground (which ends in the EMER EVAC procedure)
+  for(let i=0;i<2;i++){ const n=i+1; if(!A.fire.e[i]) continue;
+    if(air.gnd) add('eng'+n+'fire',3,'ENG '+n,'FIRE',[
+      ['THR LEVERS ............ IDLE',()=>tl(0)<=0.5&&tl(1)<=0.5],['WHEN A/C IS STOPPED:',()=>!!S.park],['PARKING BRK ............ ON',()=>!!S.park],
+      ['ATC (VHF 1) ......... NOTIFY',null],['CABIN CREW (PA) ...... ALERT',null],['ENG MASTER '+n+' ........ OFF',()=>!S['mst'+n]],['ENG '+n+' FIRE P/B ...... PUSH',()=>!!S['fireP'+n]],
+      ['AGENT 1 .............. DISCH',()=>!!S['ag'+n+'1']],['AGENT 2 .............. DISCH',()=>!!S['ag'+n+'2']],['EMER EVAC PROC ....... APPLY',null]],{crc:true,page:'eng',inh:[4,5]});
+    else add('eng'+n+'fire',3,'ENG '+n,'FIRE',[
       ['THR LEVER '+n+' ......... IDLE',()=>tl(i)<=0.5],['ENG MASTER '+n+' ........ OFF',()=>!S['mst'+n]],['ENG '+n+' FIRE P/B ...... PUSH',()=>!!S['fireP'+n]],
       ['AGENT 1 AFTER 10 S ..... DISCH',()=>!!S['ag'+n+'1']],['ATC ................. NOTIFY',null],['IF FIRE AFTER 30 S:',null],['AGENT 2 ........... DISCH',()=>!!S['ag'+n+'2']]],{crc:true,page:'eng',inh:[4,5]}); }
   if(A.fire.a) add('apufire',3,'APU','FIRE',[['APU FIRE P/B ........ PUSH',()=>!!S.fireA],['AGENT AFTER 10 S ..... DISCH',()=>!!S.agA],['MASTER SW ............ OFF',()=>!S.apuM]],{crc:true,page:'apu',inh:[4,5]});
@@ -436,12 +462,13 @@ function alerts(A,air,fm){
     if(gLo&&yLo) add('hydgy',3,'HYD','G + Y SYS LO PR',[['PTU .................... OFF',()=>!S.ptu],['GREEN ENG 1 PUMP ...... OFF',()=>!S.hyE1],['YELLOW ENG 2 PUMP ..... OFF',()=>!S.hyE2],['FUEL ........ USE MAN MODE',null],['MAX SPEED ...... 320/.77',null]],{crc:true,page:'hyd'});
     else { if(gLo) add('hydg',2,'HYD','G SYS LO PR',[['PTU .................... OFF',()=>!S.ptu],['GREEN ENG 1 PUMP ...... OFF',()=>!S.hyE1]],{page:'hyd',inh:[4,5]});
       else if(e[0].run&&!H.edp[0]&&!S.hyE1===false) add('edp1',2,'HYD','G ENG 1 PUMP LO PR',[['GREEN ENG 1 PUMP ...... OFF',()=>!S.hyE1]],{page:'hyd',inh:[4,5]});
-      if(yLo) add('hydy',2,'HYD','Y SYS LO PR',[['PTU .................... OFF',()=>!S.ptu],['YELLOW ENG 2 PUMP ..... OFF',()=>!S.hyE2]],{page:'hyd',inh:[4,5]});
+      if(yLo&&!(A.fail.yOvht&&!S.hyE2)) add('hydy',2,'HYD','Y SYS LO PR',[['PTU .................... OFF',()=>!S.ptu],['YELLOW ENG 2 PUMP ..... OFF',()=>!S.hyE2]],{page:'hyd',inh:[4,5]});
       else if(e[1].run&&!H.edp[1]&&S.hyE2) add('edp2',2,'HYD','Y ENG 2 PUMP LO PR',[['YELLOW ENG 2 PUMP ..... OFF',()=>!S.hyE2]],{page:'hyd',inh:[4,5]}); }
     if(bLo&&!H.rat) add('hydb',2,'HYD','B SYS LO PR',[['BLUE ELEC PUMP ......... OFF',()=>!S.hyB]],{page:'hyd',inh:[4,5]});
     if(!S.hyB&&(e[0].run||e[1].run)) add('bpoff',1,'HYD','B ELEC PUMP OFF',[],{page:'hyd'});
   }
-  if(ph>=2&&!S.ptu&&!(gLo||yLo)) add('ptuoff',1,'HYD','PTU OFF',[]);
+  if(H.yOvht) add('yovht',2,'HYD','Y RSVR OVHT',[['PTU .................... OFF',()=>!S.ptu],['YELLOW ENG 2 PUMP ...... OFF',()=>!S.hyE2],['YELLOW ELEC PUMP ....... OFF',()=>!S.hyY]],{page:'hyd',inh:[4,5]});
+  if(ph>=2&&!S.ptu&&!(gLo||yLo)&&!A.fail.yOvht) add('ptuoff',1,'HYD','PTU OFF',[]);
   // FUEL
   if(ph>=2){
     [['fL1','L TK PUMP 1',B.ac1&&!A.fail.fuelL1],['fL2','L TK PUMP 2',B.ac2&&!A.fail.fuelL2],['fR1','R TK PUMP 1',B.ac1],['fR2','R TK PUMP 2',B.ac2]].forEach(([k,t,ok])=>{
@@ -471,6 +498,12 @@ function alerts(A,air,fm){
   if(A.law==='DIRECT'&&!air.gnd) add('direct',2,'F/CTL','DIRECT LAW',[['MAX SPEED ......... 320/.77',null],['MAN PITCH TRIM ..... USE',null]],{page:'fctl'});
   // NAV
   for(let i=0;i<3;i++) if(A.irs[i].st===4) add('ir'+i,2,'NAV','IR '+(i+1)+' FAULT',[['ATT HDG SWTG ...... CAPT ON 3',null]],{inh:[3,4,5,7,8]});
+  // BRAKES / WHEEL: both BSCU channels lost; nose wheel steering lost (no crew action on the ECAM for that one)
+  if(A.fail.bscu) add('bscu',2,'BRAKES','A/SKID N/WS FAULT',[['MAX BRK PR ....... 1000 PSI',null]],{page:'wheel',inh:[3,4,5,7,8]});
+  if(A.fail.nws&&!A.fail.bscu) add('nws',2,'WHEEL','N/W STRG FAULT',[],{page:'wheel',inh:[3,4,5,7,8]});
+  // SMOKE (cargo): the smoke detectors also react to the agent, so the warning can stay after the discharge
+  if(A.fail.smokeFwd) add('smkfwd',3,'SMOKE','FWD CARGO SMOKE',[['AGENT ................ DISCH',()=>!!S.cgoDF]],{crc:true,inh:[4,5]});
+  if(A.fail.smokeAft) add('smkaft',3,'SMOKE','AFT CARGO SMOKE',[['AGENT ................ DISCH',()=>!!S.cgoDA]],{crc:true,inh:[4,5]});
   // L/G
   if(!air.gnd&&fm&&!fm.gearDown&&air.ra<750&&(fm.flapLv>=3||(tl(0)<=0.5&&tl(1)<=0.5&&air.ra<750))&&ph>=6) add('lgnd',3,'L/G','GEAR NOT DOWN',[],{crc:true,page:'wheel'});
   // AUTO FLT
@@ -522,7 +555,7 @@ function memos(A,air,fm){
   if(A.gpu&&!S.ext&&air.gnd) R('EXT PWR AVAIL','g');
   if(S.abrk&&!E.tomemo&&!E.ldgmemo) R('AUTO BRK '+['','LO','MED','MAX'][S.abrk]);
   if(fm&&fm.tcasStby) R('TCAS STBY');
-  if(E.land&&E.stsDone) R('LAND ASAP',E.land==='r'?'r':'a'); if(E.stsHas&&E.stsDone) R('STS','w');
+  if(E.land&&E.stsDone) R('LAND ASAP',E.land==='r'?'r':'a'); if(E.stsHas&&(E.stsDone||!E.stsAlert)) R('STS','w');
   E.memo=m; E.memoR=r;
 }
 
@@ -547,14 +580,25 @@ const ECX=[
   [/^elac\d$/,{land:'',sec:()=>[],lim:[],proc:[],inop:n=>['ELAC '+n]}],
   [/^sec\d$/,{land:'',sec:()=>[],lim:[],proc:[],inop:n=>['SEC '+n]}],
   [/^altn$/,{land:'',sec:()=>[],lim:['MAX SPD.............320 KT'],proc:['ALTN LAW: PROT LOST','WHEN L/G DN: DIRECT LAW'],inop:()=>['F/CTL PROT','CAT 2']}],
-  [/^direct$/,{land:'',sec:()=>[],lim:['MAX SPD..........320/.77','MANEUVER WITH CARE','USE MAN PITCH TRIM'],proc:[],inop:()=>['F/CTL PROT','AP 1+2','CAT 2']}]
+  [/^direct$/,{land:'',sec:()=>[],lim:['MAX SPD..........320/.77','MANEUVER WITH CARE','USE MAN PITCH TRIM'],proc:[],inop:()=>['F/CTL PROT','AP 1+2','CAT 2']}],
+  [/^bscu$/,{land:'',sec:()=>[],lim:[],proc:['LDG DIST PROC.......APPLY'],inop:()=>['ANTI SKID','N/W STRG','AUTO BRK']}],
+  [/^nws$/,{land:'',sec:()=>[],lim:[],proc:[],inop:()=>['N/W STRG']}],
+  [/^yovht$/,{land:'',sec:()=>[],lim:[],proc:['IF OVHT OUT:','YELLOW ENG 2 PUMP.....ON','PTU..................AUTO'],inop:()=>['Y HYD','N/W STRG']}],
+  [/^smk(fwd|aft)$/,{land:'r',sec:()=>[],lim:[],proc:[],inop:()=>[]}]
 ];
+/* STATUS items from failures that give no ECAM alert of their own (an autopilot that cannot be engaged) */
+function standing(A){ const F=A.fail, inop=[];
+  if(F.ap1f&&F.ap2f) inop.push('AP 1+2','CAT 2'); else if(F.ap1f||F.ap2f) inop.push(F.ap1f?'AP 1':'AP 2','CAT 3 DUAL');
+  return inop; }
 function ecamFlow(A){
   const E=A.ecam; let land='', sec=[], lim=[], proc=[], inop=[];
   for(const a of E.list){ const m=ECX.find(x=>x[0].test(a.id)); if(!m) continue; const d=m[1], n=+(/\d/.exec(a.id)||[0])[0]||0;
     if(d.land==='r'||(d.land==='a'&&land!=='r')) land=d.land;
     for(const sc of d.sec(n)) if(!sec.some(z=>z[0]===sc[0])) sec.push(sc);
     lim.push(...d.lim.filter(t=>!lim.includes(t))); proc.push(...d.proc.filter(t=>!proc.includes(t))); inop.push(...d.inop(n).filter(t=>t&&!inop.includes(t))); }
+  if(A.gndNow) land=''; // LAND ASAP is a message for the flight
+  E.stsAlert=lim.length+proc.length+inop.length>0; // STATUS that comes up by itself after the alerts
+  for(const t of standing(A)) if(!inop.includes(t)) inop.push(t);
   E.land=land; E.secList=sec.map(([t,p])=>({t,p,clr:!!(E.secClr||{})[t]})); E.stsLim=lim; E.stsProc=proc; E.stsInop=inop;
   E.stsHas=lim.length+proc.length+inop.length>0;
 }
@@ -565,7 +609,7 @@ function autoPage(A,air,fm){
   if(top) return top.page;
   if(E.list.some(a=>!E.clr[a.id])) return 'eng';
   const sc=(E.secList||[]).find(x=>!x.clr); if(sc) return sc.p;
-  if(E.stsHas&&!E.stsDone) return 'sts';
+  if(E.stsAlert&&!E.stsDone) return 'sts';
   if(A.eng.some(e=>e.st>0&&e.st<4)||S.engMode===2&&!(A.eng[0].run&&A.eng[1].run)) return 'eng';
   if(A.apu.st===1||A.apu.st===2||(A.apu.avail&&A.apu.availT<10)) return 'apu';
   const ph=A.phase;
@@ -607,7 +651,7 @@ function ecamBtn(A,k){
   const E=A.ecam;
   if(k==='clr'){ const a=E.list.find(x=>!E.clr[x.id]); if(a){ E.clr[a.id]=1; E.man=null; return; }
     const sc=(E.secList||[]).find(x=>!x.clr); if(sc){ E.secClr=E.secClr||{}; E.secClr[sc.t]=1; ecamFlow(A); E.man=null; return; }
-    if(E.stsHas&&!E.stsDone){ E.stsDone=true; E.man=null; return; }
+    if(E.stsAlert&&!E.stsDone){ E.stsDone=true; E.man=null; return; }
     E.man=null; E.rcl=false; return; }
   if(k==='rcl'){ E.clr={}; E.secClr={}; E.stsDone=false; ecamFlow(A); E.rcl=true; return; }
   if(k==='emer'){ E.list.forEach(a=>{ E.mwAck[a.id]=true; E.mcAck[a.id]=true; }); return; }
@@ -618,5 +662,5 @@ function ecamBtn(A,k){
 }
 function master(A,lvl){ const E=A.ecam; E.list.forEach(a=>{ if(lvl===3&&a.lvl===3) E.mwAck[a.id]=true; if(lvl===2&&a.lvl===2) E.mcAck[a.id]=true; }); }
 
-G.A320SYS={create,step,defaults,ecamBtn,master,FAILS,IDLE};
+G.A320SYS={create,step,defaults,ecamBtn,master,FAILS,IDLE,wheels};
 })(typeof window!=='undefined'?window:globalThis);
