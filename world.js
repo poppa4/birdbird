@@ -156,7 +156,7 @@ const TOD={
   dusk: {sun:[-0.80,0.07,-0.58],sunCol:[1.0,0.58,0.30], sunI:2.0, sky:[0.20,0.30,0.52], hor:[0.88,0.62,0.44], amb:0.40, fog:1/45000, lights:0.65, exp:1.15},
   night:{sun:[0.30,0.55,0.70], sunCol:[0.40,0.48,0.70], sunI:0.035,sky:[0.006,0.010,0.024],hor:[0.018,0.024,0.042],amb:0.03, fog:1/26000, lights:1.0, exp:1.2},
   // sunset: the sun just above the horizon, red-orange horizon under a deep blue sky; dawn: lower contrast, pink
-  sunset:{sun:[-0.80,0.07,-0.58],sunCol:[1.0,0.46,0.18], sunI:2.4, sky:[0.05,0.09,0.27], hor:[1.0,0.40,0.14], amb:0.32, fog:1/42000, lights:0.75, exp:1.0},
+  sunset:{sun:[-0.80,0.022,-0.58],sunCol:[1.0,0.36,0.12], sunI:2.0, sky:[0.13,0.08,0.24], hor:[1.0,0.30,0.09], amb:0.30, fog:1/42000, lights:0.75, exp:1.0},
   dawn: {sun:[0.80,0.06,0.58], sunCol:[1.0,0.66,0.46], sunI:1.9, sky:[0.18,0.27,0.52], hor:[0.94,0.66,0.60], amb:0.36, fog:1/38000, lights:0.6, exp:1.12}
 };
 let todK='day', sunH=null, WX={sunI:1,grey:0,fog:1};
@@ -164,7 +164,7 @@ W.tod=function(k){ if(!TOD[k]) return todK; todK=k; if(tmat) applyTod(); return 
 /* where the sun stands (horizontal direction [x,z] in the world frame); null = the time of day's own direction */
 W.sunToward=function(h){ sunH=h?[h[0],h[1]]:null; if(tmat) applyTod(); };
 /* weather: 'clear' | 'few' | 'scattered' | 'overcast' (overcast: no direct sun, greyer sky, thicker haze) */
-const WXP={clear:{sunI:1,grey:0,fog:0.85},few:{sunI:1,grey:0,fog:1},scattered:{sunI:0.85,grey:0.12,fog:1.15},overcast:{sunI:0.28,grey:0.55,fog:1.9}};
+const WXP={clear:{sunI:1,grey:0,fog:0.85},few:{sunI:1,grey:0,fog:1},scattered:{sunI:0.9,grey:0.06,fog:1.1},broken:{sunI:0.8,grey:0.12,fog:1.2},overcast:{sunI:0.28,grey:0.55,fog:1.9}};
 W.wx=function(k){ if(!WXP[k]) return; WX=WXP[k]; if(tmat) applyTod(); };
 function drawShadows(sun){
   // sun shadows of buildings, parked aircraft and masts (red) and soft contact shading (green), drawn once per
@@ -213,7 +213,7 @@ vec3 skyAt(vec3 d){
   vec3 c=mix(horCol,skyCol,pow(y,0.45));
   float s=max(dot(d,sunDir),0.0);
   c+=sunCol*0.045*pow(s,6.0)+sunCol*0.10*pow(s,64.0);
-  c+=sunCol*(0.10*pow(s,3.0)+0.6*pow(s,900.0))*smoothstep(0.30,0.02,sunDir.y)*step(-0.02,d.y);   // low sun: wide glow and the disc
+  c+=sunCol*(0.12*pow(s,3.0)+0.28*pow(s,900.0))*smoothstep(0.30,0.02,sunDir.y)*step(-0.02,d.y);   // low sun: wide glow and the disc
   if(d.y<0.0) c=mix(horCol,horCol*0.82,clamp(-d.y*6.0,0.0,1.0));
   return c;
 }

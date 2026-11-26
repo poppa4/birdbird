@@ -23,7 +23,7 @@ const NOTE_EN="Training aid, not a certified simulator or a substitute for the a
 if(G.LAB&&G.LAB.add) G.LAB.add({},{
   '✈︎ Start':'✈︎ Start','Auto-fly':'Autofly','Procedures':'Prosedyrer','Pause':'Pause','Resume':'Fortsett','Debrief':'Debrief','More':'Mer',
   'Checklist':'Sjekkliste','Failures':'Feil','Speeds':'Farter',
-  'Restart':'Start på nytt','Outside view':'Utsikt','Time':'Tid','Day':'Dag','Dawn':'Morgengry','Sunset':'Solnedgang','Night':'Natt','Weather':'Vær','Clear':'Klart','Few clouds':'Lett skyet','Scattered':'Spredt skydekke','Overcast':'Overskyet','Look ahead':'Se fremover','Panel area':'Panelområde',
+  'Restart':'Start på nytt','Outside view':'Utsikt','Time':'Tid','Day':'Dag','Dawn':'Morgengry','Sunset':'Solnedgang','Night':'Natt','Weather':'Vær','Clear':'Klart','Few clouds':'Lett skyet','Scattered':'Spredt skydekke','Broken':'Mye skyer','Overcast':'Overskyet','Look ahead':'Se fremover','Panel area':'Panelområde',
   'Sound':'Lyd','Sound on':'Lyd på','Sound off':'Lyd av','Full screen':'Fullskjerm','Debrief now':'Debrief nå','Open debrief after landing':'Åpne debrief etter landing',
   'Controls':'Kontroller','Touch controls':'Berøringskontroller','Performance meter':'Ytelsesmåler','← Back':'← Tilbake',
   'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.','← Back to NORDAP':'← Tilbake til NORDAP',

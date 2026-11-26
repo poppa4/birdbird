@@ -134,8 +134,11 @@ function init(canvas){
     const t=new THREE.DataTexture(d,w,h,THREE.RGBAFormat); t.flipY=true; t.generateMipmaps=true; t.minFilter=THREE.LinearMipmapLinearFilter; t.magFilter=THREE.LinearFilter; t.needsUpdate=true; return t; })();
   /* all 70 cloud billboards in one draw call (they were 70 sprites): view-aligned quads exactly like THREE.Sprite, fog per
      vertex, texels with no alpha discarded, and the quads re-sorted back to front through the index buffer before each frame */
-  cloudN=70; const cP=new Float32Array(cloudN*12), cC=new Float32Array(cloudN*8), cU=new Float32Array(cloudN*8); cloudIdx=new Uint16Array(cloudN*6); cloudPos=[];
-  for(let i=0;i<cloudN;i++){ const s=1500+Math.random()*2500; const x=(Math.random()-0.5)*90000, y=760+Math.random()*120, z=(Math.random()-0.5)*90000; cloudPos.push([x,y,z]);
+  /* the first 70 are the layer every page always had (about 800 m); the rest only show when a page asks for more weather
+     (wx): a broken layer round 1,000-1,400 m and towering tops and a higher layer from 1,800 to 2,800 m */
+  cloudN=300; const cP=new Float32Array(cloudN*12), cC=new Float32Array(cloudN*8), cU=new Float32Array(cloudN*8); cloudIdx=new Uint16Array(cloudN*6); cloudPos=[];
+  for(let i=0;i<cloudN;i++){ const ex=i>=70, s=ex?2200+Math.random()*4200:1500+Math.random()*2500, R_=ex?70000:90000;
+    const x=(Math.random()-0.5)*R_, y=ex?(i%3===2?1800+Math.random()*1000:1000+Math.random()*400):760+Math.random()*120, z=(Math.random()-0.5)*R_; cloudPos.push([x,y,z]);
     [[-0.5,-0.5],[0.5,-0.5],[0.5,0.5],[-0.5,0.5]].forEach(([a,b],q)=>{ cP.set([x,y,z],(i*4+q)*3); cC.set([a*s,b*s*0.45],(i*4+q)*2); cU.set([a+0.5,b+0.5],(i*4+q)*2); }); }
   const cg=new THREE.BufferGeometry(); cg.setAttribute('position',new THREE.BufferAttribute(cP,3)); cg.setAttribute('crn',new THREE.BufferAttribute(cC,2)); cg.setAttribute('uv',new THREE.BufferAttribute(cU,2));
   cg.setIndex(new THREE.BufferAttribute(cloudIdx,1)); cg.index.setUsage(THREE.DynamicDrawUsage);
@@ -148,10 +151,12 @@ function init(canvas){
 }
 /* back-to-front order of the cloud quads for the current camera (what three.js did for the separate sprites); the lowest quality level draws every 2nd cloud */
 let _cd=null;
-function sortClouds(){ if(!cloudMesh) return; _cd=_cd||cloudPos.map((p,i)=>({i,d:0})); const c=cam.position; cam.getWorldDirection(_f);
+function sortClouds(){ if(!cloudMesh) return;
+  if(!scene.fog){ const m=cloudMesh.material, u=m.uniforms; if(m.fog){ m.fog=false; m.needsUpdate=true; }   /* a page without scene fog (the detailed world): */
+    const t=TOD[todK]; u.fogNear.value=9000; u.fogFar.value=95000; u.fogColor.value.setRGB(...t.fog); }   /* the clouds fade into the time of day's haze */ _cd=_cd||cloudPos.map((p,i)=>({i,d:0})); const c=cam.position; cam.getWorldDirection(_f);
   for(const o of _cd){ const p=cloudPos[o.i]; o.d=(p[0]-c.x)*_f.x+(p[1]-c.y)*_f.y+(p[2]-c.z)*_f.z; }
   _cd.sort((a,b)=>b.d-a.d); let n=0; const lv=G.OTW.lvl||0;
-  for(const o of _cd){ if(lv===2&&o.i%2) continue; if(o.i%10>=WXC*10) continue; const b=o.i*4; cloudIdx.set([b,b+1,b+2,b,b+2,b+3],n); n+=6; }
+  for(const o of _cd){ if(lv===2&&o.i%2) continue; if(o.i>=WXC) continue; const b=o.i*4; cloudIdx.set([b,b+1,b+2,b,b+2,b+3],n); n+=6; }
   cloudMesh.geometry.setDrawRange(0,n); cloudMesh.geometry.index.needsUpdate=true; }
 
 /* ---------- 2D pages: render-at-budget + sharpened upscale ----------
@@ -400,17 +405,17 @@ if(/[?&]perf=1(&|$)/.test(location.search)) hud(); else { try{ if(localStorage.g
    Pages that never call it keep the daylight they always had. */
 const TOD={day:{top:[0.20,0.42,0.78],hor:[0.76,0.84,0.92],gnd:[0.55,0.62,0.66],fog:[0.749,0.827,0.902],hemi:0.85,hs:0xe6f0ff,hg:0x4a5a3a,sun:0.75,sc:0xfff4e0,sp:[0.4,1,0.35],cl:[1,1,1],star:0,ls:1.1,lo:0.85,ps:2.4},
   dusk:{top:[0.10,0.16,0.36],hor:[0.93,0.52,0.30],gnd:[0.30,0.24,0.26],fog:[0.62,0.42,0.36],hemi:0.42,hs:0xb8a6c8,hg:0x3a2e2a,sun:0.42,sc:0xff9a55,sp:[-0.9,0.16,-0.4],cl:[0.95,0.62,0.50],star:0.25,ls:1.9,lo:1,ps:3.2},
-  sunset:{top:[0.08,0.14,0.36],hor:[0.97,0.48,0.24],gnd:[0.28,0.20,0.20],fog:[0.70,0.40,0.30],hemi:0.36,hs:0xb898b8,hg:0x3a2a24,sun:0.40,sc:0xff7a3a,sp:[-0.9,0.08,-0.4],cl:[1.0,0.55,0.42],star:0.15,ls:2.0,lo:1,ps:3.3},
+  sunset:{top:[0.14,0.09,0.26],hor:[1.0,0.32,0.10],gnd:[0.28,0.20,0.20],fog:[0.70,0.40,0.30],hemi:0.36,hs:0xb898b8,hg:0x3a2a24,sun:0.40,sc:0xff6a2a,sp:[-0.9,0.03,-0.4],cl:[1.0,0.50,0.36],star:0.15,ls:2.0,lo:1,ps:3.3},
   dawn:{top:[0.16,0.24,0.50],hor:[0.94,0.66,0.60],gnd:[0.32,0.28,0.30],fog:[0.70,0.58,0.58],hemi:0.42,hs:0xc0b0d0,hg:0x3a3230,sun:0.40,sc:0xffa070,sp:[0.9,0.1,0.4],cl:[0.98,0.74,0.70],star:0.1,ls:1.8,lo:1,ps:3.0},
   night:{top:[0.008,0.012,0.035],hor:[0.035,0.05,0.10],gnd:[0.012,0.016,0.03],fog:[0.025,0.035,0.07],hemi:0.10,hs:0x7088c0,hg:0x0a0c12,sun:0.05,sc:0x9fb4e0,sp:[0.3,1,0.2],cl:[0.10,0.12,0.18],star:1,ls:2.6,lo:1,ps:3.8}};
-let todK='day', WXC=1;
+let todK='day', WXC=70;
 /* weather for the outside view: how many of the clouds show and how grey they are ('clear'|'few'|'scattered'|'overcast') */
-const WXO={clear:[0,1],few:[0.4,1],scattered:[1,0.92],overcast:[1,0.62]}; let wxK='scattered';
-function wx(k){ if(k===undefined) return wxK; const w=WXO[k]; if(!w) return wxK; wxK=k; WXC=w[0]; if(cloudMesh){ const t=TOD[todK].cl; cloudMesh.material.uniforms.tint.value.setRGB(t[0]*w[1],t[1]*w[1],t[2]*w[1]); sortClouds(); } if(G.OTW.onWx) G.OTW.onWx(k); return wxK; }
+const WXO={clear:[0,1],few:[45,1],scattered:[150,0.95],broken:[300,0.9],overcast:[300,0.6]}; let wxK=null;   // null: the 70 clouds every page always had
+function wx(k){ if(k===undefined) return wxK; const w=WXO[k]; if(!w) return wxK; wxK=k; WXC=w[0]; if(cloudMesh){ cloudMesh.visible=true;   /* a page that sets the weather shows the clouds, also over the detailed world */ const t=TOD[todK].cl; cloudMesh.material.uniforms.tint.value.setRGB(t[0]*w[1],t[1]*w[1],t[2]*w[1]); sortClouds(); } if(G.OTW.onWx) G.OTW.onWx(k); return wxK; }
 function tod(k){ if(k===undefined) return todK; const t=TOD[k]; if(!t||!scene) return todK; todK=k; const L=scene.userData.lit, u=L.skyMat.uniforms;
   u.top.value.setRGB(...t.top); u.hor.value.setRGB(...t.hor); u.gnd.value.setRGB(...t.gnd); u.star.value=t.star; if(scene.fog) scene.fog.color.setRGB(...t.fog);
   L.hemi.intensity=t.hemi; L.hemi.color.setHex(t.hs); L.hemi.groundColor.setHex(t.hg); L.sun.intensity=t.sun; L.sun.color.setHex(t.sc); L.sun.position.set(...t.sp);
-  if(cloudMesh&&cloudMesh.material.uniforms.tint){ const f=WXO[wxK][1]; cloudMesh.material.uniforms.tint.value.setRGB(t.cl[0]*f,t.cl[1]*f,t.cl[2]*f); }
+  if(cloudMesh&&cloudMesh.material.uniforms.tint){ const f=wxK?WXO[wxK][1]:1; cloudMesh.material.uniforms.tint.value.setRGB(t.cl[0]*f,t.cl[1]*f,t.cl[2]*f); }
   if(rwyLights){ rwyLights.material.size=t.ls; rwyLights.material.opacity=t.lo; } if(papi) papi.material.size=t.ps;
   if(G.OTW.onTod) G.OTW.onTod(k);
   return todK; }
