@@ -225,7 +225,8 @@ function drawHero(){
   if(el('hcCont')) el('hcCont').onclick=()=>startScenario(last);
   el('thGuide').onclick=openGuide;
   el('hcAll').onclick=e=>{ e.preventDefault(); el('all').scrollIntoView({behavior:'smooth',block:'start'}); };
-  el('figCap').innerHTML=`<b>${L({en:'On frequency',no:'På frekvensen'})}</b><span>${L({en:'The controller answers each call like real ATC, by voice or in text. Read back what must be read back, and the flight moves on.',no:'Flygelederen svarer på hvert oppkall som ekte ATC, med stemme eller tekst. Les tilbake det som skal leses tilbake, så går turen videre.'})}</span>`;
+  el('figCap').innerHTML=`<b>${L({en:'Cleared to land',no:'Klarert for landing'})}</b><span>${L({en:'Short final at dusk, Tower on the radio. Every call from the apron to here is one you can practise.',no:'Kort finale i skumringen, Tower på radioen. Hvert oppkall fra apron og hit kan du øve på.'})}</span>`;
+  { const im=document.querySelector('.rt-head .hero-img'); if(im) im.alt=L({en:'View from the cockpit on short final at dusk: the approach and runway lights ahead, the tower beacon to the right, and the radio panel tuned to NORDAP Tower 118.300.',no:'Utsikt fra cockpit på kort finale i skumringen: innflygings- og banelysene foran, tårnets fyr til høyre og radioen stilt inn på NORDAP Tower 118.300.'}); }
 }
 function drawCheck(){
   el('chkSub').textContent=L({en:'Six readbacks in a row from all over the VFR and IFR lessons, at Check-ready level: normal pace, more static, the controller text hidden until you answer, strict readbacks. The items you got wrong before come first. About five minutes, then a whole flight if you want more.',no:'Seks tilbakelesinger etter hverandre fra hele VFR- og IFR-delen, på nivået Klar for sjekk: normalt tempo, mer støy, flygelederens tekst skjult til du svarer, strenge tilbakelesinger. Det du har bommet på før, kommer først. Omtrent fem minutter, og så en hel tur hvis du vil ha mer.'});
