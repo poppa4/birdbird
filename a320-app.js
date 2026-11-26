@@ -1323,7 +1323,7 @@ let CK=null;
    at sunset with a few clouds and the panel lighting up. ---- */
 const SCN={tod:'sunset',wx:'broken'}; try{ SCN.tod=localStorage.getItem('bb-a320-tod')||SCN.tod; SCN.wx=localStorage.getItem('bb-a320-wx')||SCN.wx; }catch(e){}
 if(qp.get('tod')) SCN.tod=qp.get('tod'); if(qp.get('wx')) SCN.wx=qp.get('wx');
-const CKL={day:[1,0,[1,1,1]],dawn:[0.62,0.55,[1,0.92,0.90]],sunset:[0.50,0.85,[1,0.87,0.74]],night:[0.28,1,[0.82,0.88,1]]};
+const CKL={day:[1,0,[1,1,1]],dawn:[0.62,0.55,[1,0.92,0.90]],sunset:[0.40,0.9,[1,0.82,0.70]],night:[0.28,1,[0.82,0.88,1]]};
 function scene3d(){ if(!window.OTW||!OTW.tod) return; const t=CKL[SCN.tod]?SCN.tod:'sunset';
   try{ const c=OTW.camera&&OTW.camera(); if(c&&window.THREE){ const f=new THREE.Vector3(); c.getWorldDirection(f); const h=Math.hypot(f.x,f.z)||1, fx=f.x/h, fz=f.z/h, a=t==='dawn'?-0.6:0.30;
       OTW.sunH=[fx*Math.cos(a)+fz*Math.sin(a), fz*Math.cos(a)-fx*Math.sin(a)]; } }catch(e){}   /* the low sun ahead, a little to the left (dawn: to the right) */

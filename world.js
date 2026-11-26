@@ -156,7 +156,7 @@ const TOD={
   dusk: {sun:[-0.80,0.07,-0.58],sunCol:[1.0,0.58,0.30], sunI:2.0, sky:[0.20,0.30,0.52], hor:[0.88,0.62,0.44], amb:0.40, fog:1/45000, lights:0.65, exp:1.15},
   night:{sun:[0.30,0.55,0.70], sunCol:[0.40,0.48,0.70], sunI:0.035,sky:[0.006,0.010,0.024],hor:[0.018,0.024,0.042],amb:0.03, fog:1/26000, lights:1.0, exp:1.2},
   // sunset: the sun just above the horizon, red-orange horizon under a deep blue sky; dawn: lower contrast, pink
-  sunset:{sun:[-0.80,0.022,-0.58],sunCol:[1.0,0.36,0.12], sunI:2.0, sky:[0.13,0.08,0.24], hor:[1.0,0.30,0.09], amb:0.30, fog:1/42000, lights:0.75, exp:1.0},
+  sunset:{sun:[-0.80,0.022,-0.58],sunCol:[1.0,0.30,0.08], sunI:1.7, sky:[0.06,0.03,0.11], hor:[0.80,0.17,0.05], amb:0.24, fog:1/42000, lights:0.85, exp:0.95},
   dawn: {sun:[0.80,0.06,0.58], sunCol:[1.0,0.66,0.46], sunI:1.9, sky:[0.18,0.27,0.52], hor:[0.94,0.66,0.60], amb:0.36, fog:1/38000, lights:0.6, exp:1.12}
 };
 let todK='day', sunH=null, WX={sunI:1,grey:0,fog:1};
