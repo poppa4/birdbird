@@ -56,7 +56,7 @@
         <div class="otwsky" id="otwSky" aria-hidden="true"></div><canvas id="otw" role="img" aria-label="View out of the window"></canvas>
         <div class="otwmsg" id="otwMsg" hidden>3D needs WebGL, which this browser does not offer. <a href="a320.html">Open the 2D cockpit</a></div><div class="vp" id="vp"><div class="world" id="world"><img id="deck" src="img/cockpits/a320-deck-1500.webp?v=4" alt="" width="1000" height="1678" decoding="async" draggable="false"><div class="ovl" id="ovl"></div></div></div>
         <button class="zback" id="zBack" type="button">← Back</button>
-        <div class="more" id="moreMenu" hidden role="group" aria-label="Settings"><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bAlign" type="button" aria-pressed="false">Fast ADIRS alignment</button><button class="cb" id="bHelp" type="button">Controls</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
+        <div class="more" id="moreMenu" hidden role="group" aria-label="Settings"><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Time<select id="todSel" aria-label="Time of day"><option value="day">Day</option><option value="dawn">Dawn</option><option value="sunset">Sunset</option><option value="night">Night</option></select></label><label>Weather<select id="wxSel" aria-label="Weather"><option value="clear">Clear</option><option value="few">Few clouds</option><option value="scattered">Scattered</option><option value="overcast">Overcast</option></select></label><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bAlign" type="button" aria-pressed="false">Fast ADIRS alignment</button><button class="cb" id="bHelp" type="button">Controls</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
         <div class="tip" id="tip" hidden></div>
         <div class="perfm" id="perfm" hidden></div>
         <div class="pill" id="pill" aria-live="polite"></div>
@@ -117,12 +117,12 @@
 <script>window.OTW_RWY=3000; window.CK3D=window.CK3D||{a320:1};</script>
 <script src="three.min.js?v=128"></script>
 <script src="simterrain.js?v=5"></script>
-<script src="otw.js?v=19"></script>
+<script src="otw.js?v=20"></script>
 <script src="fleet.js?v=4"></script>
-<script src="world.js?v=38"></script>
-<script src="simworld.js?v=10"></script>
+<script src="world.js?v=39"></script>
+<script src="simworld.js?v=11"></script>
 <script src="lab.js?v=62"></script>
-<script src="simshell.js?v=11"></script>
+<script src="simshell.js?v=12"></script>
 <script src="a320t.js?v=1"></script>
 <script src="a320sys.js?v=7"></script>
 <script src="a320fm.js?v=11"></script>
@@ -132,7 +132,7 @@
 <script src="a320ck.js?v=6"></script>
 <script src="a320auto.js?v=3"></script>
 <script src="a320gpws.js?v=2"></script>
-<script src="a320-3d.js?v=98"></script>
-<script src="a320-app.js?v=47"></script>
+<script src="a320-3d.js?v=99"></script>
+<script src="a320-app.js?v=48"></script>
 </body>
 </html>

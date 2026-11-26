@@ -151,7 +151,7 @@ let _cd=null;
 function sortClouds(){ if(!cloudMesh) return; _cd=_cd||cloudPos.map((p,i)=>({i,d:0})); const c=cam.position; cam.getWorldDirection(_f);
   for(const o of _cd){ const p=cloudPos[o.i]; o.d=(p[0]-c.x)*_f.x+(p[1]-c.y)*_f.y+(p[2]-c.z)*_f.z; }
   _cd.sort((a,b)=>b.d-a.d); let n=0; const lv=G.OTW.lvl||0;
-  for(const o of _cd){ if(lv===2&&o.i%2) continue; const b=o.i*4; cloudIdx.set([b,b+1,b+2,b,b+2,b+3],n); n+=6; }
+  for(const o of _cd){ if(lv===2&&o.i%2) continue; if(o.i%10>=WXC*10) continue; const b=o.i*4; cloudIdx.set([b,b+1,b+2,b,b+2,b+3],n); n+=6; }
   cloudMesh.geometry.setDrawRange(0,n); cloudMesh.geometry.index.needsUpdate=true; }
 
 /* ---------- 2D pages: render-at-budget + sharpened upscale ----------
@@ -396,18 +396,23 @@ function hud(on){ if(on===false){ if(hudEl){ hudEl.remove(); hudEl=null; } try{ 
   requestAnimationFrame(f); }
 /* ?perf=1 (or the … menu's Performance meter, remembered in this browser) */
 if(/[?&]perf=1(&|$)/.test(location.search)) hud(); else { try{ if(localStorage.getItem('bb-perfhud')==='1') hud(); }catch(e){} }
-/* time of day ('day' | 'dusk' | 'night'): sky, haze, sun and sky light, cloud tint, stars, and how strongly the runway lights stand out.
+/* time of day ('day' | 'dawn' | 'dusk' | 'sunset' | 'night'): sky, haze, sun and sky light, cloud tint, stars, and how strongly the runway lights stand out.
    Pages that never call it keep the daylight they always had. */
 const TOD={day:{top:[0.20,0.42,0.78],hor:[0.76,0.84,0.92],gnd:[0.55,0.62,0.66],fog:[0.749,0.827,0.902],hemi:0.85,hs:0xe6f0ff,hg:0x4a5a3a,sun:0.75,sc:0xfff4e0,sp:[0.4,1,0.35],cl:[1,1,1],star:0,ls:1.1,lo:0.85,ps:2.4},
   dusk:{top:[0.10,0.16,0.36],hor:[0.93,0.52,0.30],gnd:[0.30,0.24,0.26],fog:[0.62,0.42,0.36],hemi:0.42,hs:0xb8a6c8,hg:0x3a2e2a,sun:0.42,sc:0xff9a55,sp:[-0.9,0.16,-0.4],cl:[0.95,0.62,0.50],star:0.25,ls:1.9,lo:1,ps:3.2},
+  sunset:{top:[0.08,0.14,0.36],hor:[0.97,0.48,0.24],gnd:[0.28,0.20,0.20],fog:[0.70,0.40,0.30],hemi:0.36,hs:0xb898b8,hg:0x3a2a24,sun:0.40,sc:0xff7a3a,sp:[-0.9,0.08,-0.4],cl:[1.0,0.55,0.42],star:0.15,ls:2.0,lo:1,ps:3.3},
+  dawn:{top:[0.16,0.24,0.50],hor:[0.94,0.66,0.60],gnd:[0.32,0.28,0.30],fog:[0.70,0.58,0.58],hemi:0.42,hs:0xc0b0d0,hg:0x3a3230,sun:0.40,sc:0xffa070,sp:[0.9,0.1,0.4],cl:[0.98,0.74,0.70],star:0.1,ls:1.8,lo:1,ps:3.0},
   night:{top:[0.008,0.012,0.035],hor:[0.035,0.05,0.10],gnd:[0.012,0.016,0.03],fog:[0.025,0.035,0.07],hemi:0.10,hs:0x7088c0,hg:0x0a0c12,sun:0.05,sc:0x9fb4e0,sp:[0.3,1,0.2],cl:[0.10,0.12,0.18],star:1,ls:2.6,lo:1,ps:3.8}};
-let todK='day';
+let todK='day', WXC=1;
+/* weather for the outside view: how many of the clouds show and how grey they are ('clear'|'few'|'scattered'|'overcast') */
+const WXO={clear:[0,1],few:[0.4,1],scattered:[1,0.92],overcast:[1,0.62]}; let wxK='scattered';
+function wx(k){ if(k===undefined) return wxK; const w=WXO[k]; if(!w) return wxK; wxK=k; WXC=w[0]; if(cloudMesh){ const t=TOD[todK].cl; cloudMesh.material.uniforms.tint.value.setRGB(t[0]*w[1],t[1]*w[1],t[2]*w[1]); sortClouds(); } if(G.OTW.onWx) G.OTW.onWx(k); return wxK; }
 function tod(k){ if(k===undefined) return todK; const t=TOD[k]; if(!t||!scene) return todK; todK=k; const L=scene.userData.lit, u=L.skyMat.uniforms;
-  u.top.value.setRGB(...t.top); u.hor.value.setRGB(...t.hor); u.gnd.value.setRGB(...t.gnd); u.star.value=t.star; scene.fog.color.setRGB(...t.fog);
+  u.top.value.setRGB(...t.top); u.hor.value.setRGB(...t.hor); u.gnd.value.setRGB(...t.gnd); u.star.value=t.star; if(scene.fog) scene.fog.color.setRGB(...t.fog);
   L.hemi.intensity=t.hemi; L.hemi.color.setHex(t.hs); L.hemi.groundColor.setHex(t.hg); L.sun.intensity=t.sun; L.sun.color.setHex(t.sc); L.sun.position.set(...t.sp);
-  if(cloudMesh&&cloudMesh.material.uniforms.tint) cloudMesh.material.uniforms.tint.value.setRGB(...t.cl);
+  if(cloudMesh&&cloudMesh.material.uniforms.tint){ const f=WXO[wxK][1]; cloudMesh.material.uniforms.tint.value.setRGB(t.cl[0]*f,t.cl[1]*f,t.cl[2]*f); }
   if(rwyLights){ rwyLights.material.size=t.ls; rwyLights.material.opacity=t.lo; } if(papi) papi.material.size=t.ps;
   if(G.OTW.onTod) G.OTW.onTod(k);
   return todK; }
-G.OTW={init,render,render3d,quality,frame,hud,tod,hudOn:()=>!!hudEl,scene:()=>scene,camera:()=>cam,get fov(){ return cam?{h:2*HF,v:cam.fov,w:W,h_:H}:null; },low:false,lvl:0,renderer:()=>R};
+G.OTW={init,render,render3d,quality,frame,hud,tod,wx,hudOn:()=>!!hudEl,scene:()=>scene,camera:()=>cam,get fov(){ return cam?{h:2*HF,v:cam.fov,w:W,h_:H}:null; },low:false,lvl:0,renderer:()=>R};
 })(window);

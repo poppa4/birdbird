@@ -334,7 +334,24 @@ function init(o){
         const ax=V(...d.a).normalize(), sh=d.s?V(...d.s).normalize():null; L[g.name]={grp,ax,sh,piv,deg:null,mv:null}; } });
     const qq=new THREE.Quaternion();
     return { ready, set(name,deg,mv){ const l=L[name]; if(!l) return; l.grp.visible=!!(P.ped&&P.ped.hi); /* the sheet picture still has the levers drawn in */ if(l.deg===deg&&l.mv===(mv||0)) return; l.deg=deg; l.mv=mv||0; qq.setFromAxisAngle(l.ax,-deg*D2R); l.grp.quaternion.copy(qq); l.grp.position.copy(l.piv); if(l.sh&&mv) l.grp.position.addScaledVector(l.sh,mv); } }; }
-  function draw(R){ R.render(scene,cam); }
+  /* ---- cockpit light (scenario): the flight deck dims with the light outside, the screens and lit legends keep their
+     own brightness, and the panel lighting (integral lights) makes the printed legends glow. light(amb, integ, tint):
+     amb 1 = daylight as always; integ 0..1 = panel lighting; tint = colour of the light in the room. ---- */
+  const GLOW=[]; let LT={amb:1,integ:0,tint:[1,1,1]};
+  const GV='varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }';
+  const GF='uniform sampler2D map; uniform float k; uniform vec3 col; varying vec2 vU; void main(){ vec3 c=texture2D(map,vU).rgb; float l=dot(c,vec3(0.30,0.55,0.15)); float m=max(c.r,max(c.g,c.b))-min(c.r,min(c.g,c.b)); float g=smoothstep(0.60,0.82,l)*(1.0-smoothstep(0.10,0.22,m)); gl_FragColor=vec4(col*g*k,1.0); }';
+  function light(amb,integ,tint){ LT={amb,integ,tint:tint||[1,1,1]}; const skip=new Set(), dm=new Set(disp.map(d=>d.m.material));
+    for(const k in P){ if(P[k].ov) skip.add(P[k].ov.material); }
+    scene.traverse(o=>{ const m=o.material; if(!m||!m.isMeshBasicMaterial||dm.has(m)||skip.has(m)||o.userData.glow) return;
+      if(!m.userData.c0) m.userData.c0=m.color.clone(); m.color.copy(m.userData.c0).multiply(new THREE.Color(amb*LT.tint[0],amb*LT.tint[1],amb*LT.tint[2])); });
+    for(const k in P){ const p=P[k]; if(!p.mesh) continue; let g=GLOW.find(x=>x.k===k);
+      if(!g&&integ>0){ const mt=new THREE.ShaderMaterial({uniforms:{map:{value:p.mesh.material.map},k:{value:0},col:{value:new THREE.Color(1.0,0.86,0.62)}},vertexShader:GV,fragmentShader:GF,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-6});
+        const gm=new THREE.Mesh(p.mesh.geometry,mt); gm.matrixAutoUpdate=false; gm.matrix.copy(p.mesh.matrix); gm.renderOrder=2; gm.userData.glow=true; scene.add(gm); g={k,gm,p}; GLOW.push(g); }
+      if(g){ g.gm.material.uniforms.k.value=integ*0.85; g.gm.visible=integ>0&&p.mesh.visible; } } }
+  let ltN=0;
+  let ltC=-1;
+  function draw(R){ if((LT.amb!==1||LT.integ>0)&&(scene.children.length!==ltC||++ltN%120===0)){ light(LT.amb,LT.integ,LT.tint); ltC=scene.children.length; }   /* parts that arrived later (shell, sharp panels) */
+    for(const g of GLOW){ const u=g.gm.material.uniforms; if(u.map.value!==g.p.mesh.material.map) u.map.value=g.p.mesh.material.map; g.gm.visible=LT.integ>0&&g.p.mesh.visible; } R.render(scene,cam); }
   const pv3=new THREE.Vector3();
   function proj(wx,wy){ const p=toP(wx,wy,0.002); if(!p) return null; pv3.copy(p).applyMatrix4(cam.matrixWorldInverse); if(pv3.z>-0.02) return null; pv3.applyMatrix4(cam.projectionMatrix); return [pv3.x,pv3.y]; }
   /* Show me: look at a box on the panel (sheet units), close enough to read it: the box and a hand's width around it fill the
@@ -345,7 +362,7 @@ function init(o){
     lookAt(p,Math.max(18,Math.min(56,2*Math.atan(ext/2/d)/D2R)),lean); return true; }
   /* look closer at a point (double click / double tap), and back */
   function focus(wx,wy){ const p=toP(wx,wy); if(!p) return; const fov=head.tFov>40?Math.max(22,head.tFov*0.45):null; if(fov){ lookAt(p,null); head.tFov=fov; } else head.tFov=Math.min(66,head.tFov/0.45); }
-  return {scene,cam,head,updCam,draw,pick,proj,focus,show,place,P,addLevers,relief:RELIEF,LOOK,setSeat:s=>{ SEAT=s<0?-1:1; },get seat(){ return SEAT; },visible,pxSize,setImage,repaint,K,disp,mobile,
+  return {scene,cam,head,updCam,draw,light,get lightState(){ return LT; },pick,proj,focus,show,place,P,addLevers,relief:RELIEF,LOOK,setSeat:s=>{ SEAT=s<0?-1:1; },get seat(){ return SEAT; },visible,pxSize,setImage,repaint,K,disp,mobile,
     drag(dx,dy){ const s=head.fov/62*0.0042; head.tYaw+=dx*s; head.tPitch=Math.max(-80*D2R,Math.min(85*D2R,head.tPitch+dy*s)); head.yaw=head.tYaw; head.pitch=head.tPitch; },
     zoom(f){ head.tFov=Math.max(8,Math.min(80,head.tFov*f)); },
     qHead(){ return q; }, fov(){ return cam.fov; }};

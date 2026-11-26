@@ -1314,9 +1314,22 @@ let CK=null;
       /* the page opens in the seat last used (left the first time); the Cockpit view shows the whole flight deck from between the seats */
       if(CK.setSeat){ let st=1; try{ st=localStorage.getItem('bb-a320-seat')==='R'?-1:1; }catch(e){} CK.setSeat(st);
         document.querySelectorAll('.sseg .cb').forEach(b=>{ b.classList.toggle('on',(b.dataset.seat==='R'?-1:1)===st); b.onclick=()=>{ const v=b.dataset.seat==='R'?-1:1; CK.setSeat(v); try{ localStorage.setItem('bb-a320-seat',v<0?'R':'L'); }catch(e){} document.querySelectorAll('.sseg .cb').forEach(x=>x.classList.toggle('on',x===b)); view(Z.reg==='all'?'main':Z.reg); }; }); }
-      if(CK.LOOK[Z.reg]) CK.LOOK[Z.reg](); }catch(err){ console.warn('A320 3D',err); CK=null; } }
+      if(CK.LOOK[Z.reg]) CK.LOOK[Z.reg]();
+      if(CK.light&&!CF) setTimeout(scene3d,1200); }catch(err){ console.warn('A320 3D',err); CK=null; } }
     if(!CK){ $('otwMsg')&&($('otwMsg').hidden=false); } }
   layout(true); },{timeout:500});
+/* ---- scenario (3D page): time of day and weather outside, and the light in the flight deck to match. The first visit opens
+   at sunset with a few clouds and the panel lighting up. ---- */
+const SCN={tod:'sunset',wx:'few'}; try{ SCN.tod=localStorage.getItem('bb-a320-tod')||SCN.tod; SCN.wx=localStorage.getItem('bb-a320-wx')||SCN.wx; }catch(e){}
+if(qp.get('tod')) SCN.tod=qp.get('tod'); if(qp.get('wx')) SCN.wx=qp.get('wx');
+const CKL={day:[1,0,[1,1,1]],dawn:[0.62,0.55,[1,0.92,0.90]],sunset:[0.50,0.85,[1,0.87,0.74]],night:[0.28,1,[0.82,0.88,1]]};
+function scene3d(){ if(!window.OTW||!OTW.tod) return; const t=CKL[SCN.tod]?SCN.tod:'sunset';
+  try{ const c=OTW.camera&&OTW.camera(); if(c&&window.THREE){ const f=new THREE.Vector3(); c.getWorldDirection(f); const h=Math.hypot(f.x,f.z)||1, fx=f.x/h, fz=f.z/h, a=t==='dawn'?-0.6:0.30;
+      OTW.sunH=[fx*Math.cos(a)+fz*Math.sin(a), fz*Math.cos(a)-fx*Math.sin(a)]; } }catch(e){}   /* the low sun ahead, a little to the left (dawn: to the right) */
+  OTW.tod(t); if(OTW.wx) OTW.wx(SCN.wx); if(CK&&CK.light){ const l=CKL[t], ov=SCN.wx==='overcast'; CK.light(l[0]*(ov&&t!=='night'?0.85:1),l[1],l[2]); } }
+{ const ts=$('todSel'), ws=$('wxSel');
+  if(ts){ ts.value=SCN.tod; ts.onchange=()=>{ SCN.tod=ts.value; try{ localStorage.setItem('bb-a320-tod',SCN.tod); }catch(e){} scene3d(); }; }
+  if(ws){ ws.value=SCN.wx; ws.onchange=()=>{ SCN.wx=ws.value; try{ localStorage.setItem('bb-a320-wx',SCN.wx); }catch(e){} scene3d(); }; } }
 const otwS={N:0,E:0,h:0,th:0,phi:0,psi:0};
 let otwSkip=0;
 let d3Last=0;

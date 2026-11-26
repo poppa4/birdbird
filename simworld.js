@@ -36,7 +36,7 @@ function start(){
     qY=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),-bear); _v=new THREE.Vector3();
     W.attach(scene);
     scene.fog=null; cam.far=250000; cam.updateProjectionMatrix();
-    W.tod(OTW.tod()==='dusk'?'dusk':OTW.tod()==='night'?'night':'day');
+    W.tod(OTW.tod()); if(W.wx&&OTW.wx) W.wx(OTW.wx()); if(W.sunToward) W.sunToward(OTW.sunH||null);
     // the flight model sees the real terrain, over the runway datum
     if(G.TERRAIN){ const orig=G.TERRAIN.height; G.TERRAIN.height=(N,E)=>{ const p=toEnto(N,E), h=W.height(p[0],p[1]); return isFinite(h)?h-datum(p[0],p[1]):orig(N,E); }; }
     W.quality(W.lowmem||(OTW.lvl||0)===2?'low':(OTW.lvl||0)?'med':'high');   // phones and tablets: fewer trees and cars (memory)
@@ -70,7 +70,8 @@ OTW.xf=function(cam,S,eye){
   const now=performance.now(), dt=tPrev?Math.min(0.25,(now-tPrev)/1000):0.016; tPrev=now;
   W.update(cam,dt);
 };
-OTW.onTod=function(k){ if(ready) W.tod(k==='dusk'?'dusk':k==='night'?'night':'day'); };
+OTW.onTod=function(k){ if(ready){ W.tod(k); if(W.sunToward) W.sunToward(OTW.sunH||null); } };
+OTW.onWx=function(k){ if(ready&&W.wx) W.wx(k); };
 /* ---------- the moving map's terrain (glass.js, G.TERRAIN.mapImages): drawn from the real heights, a few rows per idle slice ---------- */
 const MAPS=[{R:25000,PX:600},{R:90000,PX:600}]; let mapsDone=null;
 function mapStart(){ if(!G.TERRAIN||!G.document) return; const T=G.TERRAIN, col=T.color, mi0=T.mapImages;

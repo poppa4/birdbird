@@ -23,7 +23,7 @@ const NOTE_EN="Training aid, not a certified simulator or a substitute for the a
 if(G.LAB&&G.LAB.add) G.LAB.add({},{
   '✈︎ Start':'✈︎ Start','Auto-fly':'Autofly','Procedures':'Prosedyrer','Pause':'Pause','Resume':'Fortsett','Debrief':'Debrief','More':'Mer',
   'Checklist':'Sjekkliste','Failures':'Feil','Speeds':'Farter',
-  'Restart':'Start på nytt','Outside view':'Utsikt','Look ahead':'Se fremover','Panel area':'Panelområde',
+  'Restart':'Start på nytt','Outside view':'Utsikt','Time':'Tid','Day':'Dag','Dawn':'Morgengry','Sunset':'Solnedgang','Night':'Natt','Weather':'Vær','Clear':'Klart','Few clouds':'Lett skyet','Scattered':'Spredt skydekke','Overcast':'Overskyet','Look ahead':'Se fremover','Panel area':'Panelområde',
   'Sound':'Lyd','Sound on':'Lyd på','Sound off':'Lyd av','Full screen':'Fullskjerm','Debrief now':'Debrief nå','Open debrief after landing':'Åpne debrief etter landing',
   'Controls':'Kontroller','Touch controls':'Berøringskontroller','Performance meter':'Ytelsesmåler','← Back':'← Tilbake',
   'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.','← Back to NORDAP':'← Tilbake til NORDAP',
@@ -239,7 +239,7 @@ function touchOwns(e){ if(!TC||!TC.T.on||!(e.pointerType==='touch'||e.pointerTyp
 
 /* names of the shell's own controls for screen readers, in the page language (lab.js translates text, not labels) */
 const AL=[['.ctop','Cockpit tools','Cockpitverktøy'],['#acSel','Aircraft','Fly'],['.ctop .dseg','View','Visning'],['#bMore','More','Mer'],['#moreMenu','Settings','Innstillinger'],
-  ['#zoomSel','Panel area','Panelområde'],['#otw','View out of the window','Utsikt gjennom frontruta'],['#drawer','Procedures','Prosedyrer'],['#drawer .tabs','Procedures','Prosedyrer']];
+  ['#zoomSel','Panel area','Panelområde'],['#todSel','Time of day','Tid på døgnet'],['#wxSel','Weather','Vær'],['#otw','View out of the window','Utsikt gjennom frontruta'],['#drawer','Procedures','Prosedyrer'],['#drawer .tabs','Procedures','Prosedyrer']];
 function labels(){ const c=document.getElementById('cockpit'); if(!c) return; for(const [q,en,no] of AL){ const e=c.querySelector(q); if(e) e.setAttribute('aria-label',L(tr(en,no))); } }
 function init(){ menu(); tabs(); settings(); labels(); if(G.LAB&&G.LAB.onLang) G.LAB.onLang(labels); }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();

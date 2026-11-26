@@ -154,10 +154,18 @@ function makeStandDigits(){
 const TOD={
   day:  {sun:[0.42,0.62,-0.66], sunCol:[1.0,0.95,0.86], sunI:3.5, sky:[0.28,0.50,0.86], hor:[0.66,0.77,0.89], amb:0.47, fog:1/70000, lights:0.0, exp:1.0},
   dusk: {sun:[-0.80,0.07,-0.58],sunCol:[1.0,0.58,0.30], sunI:2.0, sky:[0.20,0.30,0.52], hor:[0.88,0.62,0.44], amb:0.40, fog:1/45000, lights:0.65, exp:1.15},
-  night:{sun:[0.30,0.55,0.70], sunCol:[0.40,0.48,0.70], sunI:0.035,sky:[0.006,0.010,0.024],hor:[0.018,0.024,0.042],amb:0.03, fog:1/26000, lights:1.0, exp:1.2}
+  night:{sun:[0.30,0.55,0.70], sunCol:[0.40,0.48,0.70], sunI:0.035,sky:[0.006,0.010,0.024],hor:[0.018,0.024,0.042],amb:0.03, fog:1/26000, lights:1.0, exp:1.2},
+  // sunset: the sun just above the horizon, red-orange horizon under a deep blue sky; dawn: lower contrast, pink
+  sunset:{sun:[-0.80,0.07,-0.58],sunCol:[1.0,0.46,0.18], sunI:2.4, sky:[0.05,0.09,0.27], hor:[1.0,0.40,0.14], amb:0.32, fog:1/42000, lights:0.75, exp:1.0},
+  dawn: {sun:[0.80,0.06,0.58], sunCol:[1.0,0.66,0.46], sunI:1.9, sky:[0.18,0.27,0.52], hor:[0.94,0.66,0.60], amb:0.36, fog:1/38000, lights:0.6, exp:1.12}
 };
-let todK='day';
+let todK='day', sunH=null, WX={sunI:1,grey:0,fog:1};
 W.tod=function(k){ if(!TOD[k]) return todK; todK=k; if(tmat) applyTod(); return k; };
+/* where the sun stands (horizontal direction [x,z] in the world frame); null = the time of day's own direction */
+W.sunToward=function(h){ sunH=h?[h[0],h[1]]:null; if(tmat) applyTod(); };
+/* weather: 'clear' | 'few' | 'scattered' | 'overcast' (overcast: no direct sun, greyer sky, thicker haze) */
+const WXP={clear:{sunI:1,grey:0,fog:0.85},few:{sunI:1,grey:0,fog:1},scattered:{sunI:0.85,grey:0.12,fog:1.15},overcast:{sunI:0.28,grey:0.55,fog:1.9}};
+W.wx=function(k){ if(!WXP[k]) return; WX=WXP[k]; if(tmat) applyTod(); };
 function drawShadows(sun){
   // sun shadows of buildings, parked aircraft and masts (red) and soft contact shading (green), drawn once per
   // time of day at 1.5 m per pixel; one blur pass at the end, no per-shape filters (those are slow on phones)
@@ -185,7 +193,11 @@ function drawShadows(sun){
   if(tmat){ tmat.uniforms.tShd.value=shdTex; }
 }
 function applyTod(){
-  const p=TOD[todK], v=new (T().Vector3)(...p.sun).normalize();
+  const p0=TOD[todK], p=Object.assign({},p0), v=new (T().Vector3)(...p.sun);
+  if(sunH&&p.sun[1]<0.3){ const hl=Math.hypot(sunH[0],sunH[1])||1, r=Math.hypot(p.sun[0],p.sun[2]); v.set(sunH[0]/hl*r,p.sun[1],sunH[1]/hl*r); }
+  v.normalize();
+  const gr=(c,a)=>{ const m=(c[0]+c[1]+c[2])/3; return c.map(x=>x+(m*0.95-x)*a); };
+  p.sunI*=WX.sunI; p.fog*=WX.fog; p.sky=gr(p.sky,WX.grey); p.hor=gr(p.hor,WX.grey*0.8);
   if(apt&&casters.length) drawShadows(v);
   for(const m of [tmat,sky&&sky.material,bldg&&bldg.material,lights&&lights.material,trees&&trees.material,...fleetMats]){ if(!m) continue; const u=m.uniforms;
     if(u.sunDir) u.sunDir.value.copy(v); if(u.sunCol) u.sunCol.value.setRGB(p.sunCol[0]*p.sunI,p.sunCol[1]*p.sunI,p.sunCol[2]*p.sunI);
@@ -201,6 +213,7 @@ vec3 skyAt(vec3 d){
   vec3 c=mix(horCol,skyCol,pow(y,0.45));
   float s=max(dot(d,sunDir),0.0);
   c+=sunCol*0.045*pow(s,6.0)+sunCol*0.10*pow(s,64.0);
+  c+=sunCol*(0.10*pow(s,3.0)+0.6*pow(s,900.0))*smoothstep(0.30,0.02,sunDir.y)*step(-0.02,d.y);   // low sun: wide glow and the disc
   if(d.y<0.0) c=mix(horCol,horCol*0.82,clamp(-d.y*6.0,0.0,1.0));
   return c;
 }
