@@ -196,8 +196,9 @@ function nd(g,cv,D){
   if(D.lsOn||mode==='ROSE ILS'){ const p1=toXY(0,0), p2=toXY(-18*1852,0); g.setLineDash([16,12]); L(g,p1[0],p1[1],p2[0],p2[1],C.m,3); g.setLineDash([]); }
   if(D.fixes){ for(const f of D.fixes){ const [x,y]=toXY(f.N,f.E); if(x<-50||x>1050||y<-50||y>1050) continue; const act=f.id===D.toWpt;
     if(f.vor){ g.strokeStyle=C.m; g.lineWidth=3; g.beginPath(); g.moveTo(x-12,y); g.lineTo(x+12,y); g.moveTo(x,y-12); g.lineTo(x,y+12); g.stroke(); if(D.filt.vord) T(g,f.id,x+16,y+26,C.m,26); continue; }
-    if(!D.filt.wpt&&!f.fp) continue; g.save(); g.translate(x,y); g.rotate(Math.PI/4); R(g,-8,-8,16,16,f.fp?(act?C.w:C.g):C.m,3); g.restore(); T(g,f.id,x+16,y+26,f.fp?(act?C.w:C.g):C.m,26); } }
+    if(!D.filt.wpt&&!f.fp&&!f.tmpy) continue; const fc=f.fp?(act?C.w:C.g):f.tmpy?C.y:C.m; g.save(); g.translate(x,y); g.rotate(Math.PI/4); R(g,-8,-8,16,16,fc,3); g.restore(); T(g,f.id,x+16,y+26,fc,26); } }
   if(D.fpln&&D.fpln.length>1){ g.strokeStyle=C.g; g.lineWidth=3; g.beginPath(); D.fpln.forEach((p,i)=>{ const [x,y]=toXY(p.N,p.E); i?g.lineTo(x,y):g.moveTo(x,y); }); g.stroke(); }
+  if(D.tmpy&&D.tmpy.length>1){ g.strokeStyle=C.y; g.lineWidth=3; g.setLineDash([18,12]); g.beginPath(); D.tmpy.forEach((p,i)=>{ const [x,y]=toXY(p.N,p.E); i?g.lineTo(x,y):g.moveTo(x,y); }); g.stroke(); g.setLineDash([]); }
   // TCAS traffic: open diamond (other), filled (proximate), amber circle (TA), red square (RA), relative altitude in hundreds of feet
   if(D.tfc) for(const t of D.tfc){ const [x,y]=toXY(t.N,t.E); const col=t.type==='ra'?C.r:t.type==='ta'?C.a:C.w; g.fillStyle=col; g.strokeStyle=col; g.lineWidth=3;
     if(t.type==='ra') g.fillRect(x-11,y-11,22,22); else if(t.type==='ta'){ g.beginPath(); g.arc(x,y,12,0,7); g.fill(); } else { g.beginPath(); g.moveTo(x,y-13); g.lineTo(x+11,y); g.lineTo(x,y+13); g.lineTo(x-11,y); g.closePath(); t.type==='prox'?g.fill():g.stroke(); }
@@ -504,13 +505,16 @@ function mcdu(g,cv,D){
   const P=D.mcdu; if(!P) return;
   // 14 lines × 24 characters: title, 6 pairs of label/data lines, scratchpad
   const cw=1000/24.5, x0=12, lh=[70,128,186,244,302,360,418,476,534,592,650,708,766,850];
+  // al: 'l', 'r', 'c' or a column number (0-23), so a line can be built from parts in several colours and two font sizes
   const put=(row,txt,col,al,size)=>{ if(!txt) return; F(g,size||(row%2&&row<13?40:52),600); g.fillStyle=col||C.w; g.textAlign='left';
-    const s=String(txt); let x=al==='r'?1000-x0-s.length*cw:al==='c'?(1000-s.length*cw)/2:x0; for(let i=0;i<s.length;i++){ g.fillText(s[i],x+i*cw,lh[row]); } };
-  put(0,P.title,P.titleC||C.w,'c');
-  if(P.page) T(g,P.page,980,lh[0],C.w,40,'right');
+    const s=String(txt); let x=typeof al==='number'?x0+al*cw:al==='r'?1000-x0-s.length*cw:al==='c'?(1000-s.length*cw)/2:x0; for(let i=0;i<s.length;i++){ g.fillText(s[i],x+i*cw,lh[row]); } };
+  if(P.titleSeg){ const n=P.titleSeg.reduce((a,p)=>a+String(p[0]).length,0); let c=typeof P.titleAl==='number'?P.titleAl:P.titleAl==='l'?0:Math.floor((24-n)/2); for(const p of P.titleSeg){ put(0,p[0],p[1]||P.titleC||C.w,c,p[2]); c+=String(p[0]).length; } }
+  else put(0,P.title,P.titleC||C.w,typeof P.titleAl==='number'?P.titleAl:'c');
+  if(P.page) T(g,P.page,P.arrows?900:980,lh[0],C.w,40,'right');
   (P.lines||[]).forEach(l=>{ if(!l) return; put(l[0],l[1],l[2],l[3],l[4]); });
   put(13,P.scratch||'',P.scratchC||C.w,'l');
-  if(P.arrows) T(g,'←→',980,lh[13],C.w,40,'right');
+  if(P.arrows) T(g,'←→',988,lh[0]-4,C.w,38,'right');
+  if(P.vert) T(g,'↑↓',988,lh[13],C.w,38,'right');
 }
 
 G.A320DISP={pfd,nd,ewd,sd,isis,mcdu,C,PAGES:Object.keys(PAGES)};

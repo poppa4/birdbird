@@ -104,7 +104,7 @@ function run(R,sec,each){ const {A,M}=R; for(let i=0;i<sec*50;i++){ const C=M.ct
   MC.key(K,'INIT'); type('ENRD/ENRD'); MC.key(K,'R1'); ok('MCDU INIT: FROM/TO accepted, flight plan built',K.d.from==='ENRD'&&K.fpln.length>5);
   type('ABC'); MC.key(K,'L5'); ok('MCDU: wrong format gives FORMAT ERROR',K.msg==='FORMAT ERROR');
   for(let i=0;i<5;i++) MC.key(K,'CLR'); K.sp=''; MC.key(K,'PERF'); type('131'); MC.key(K,'L1'); type('99'); MC.key(K,'L2'); ok('MCDU PERF: V1 accepted, 2-digit VR rejected',K.d.v1===131&&K.d.vr==null);
-  const P=MC.render(K,null,null); ok('MCDU renders a TAKE OFF page',P.title==='TAKE OFF'); }
+  const P=MC.render(K,null,null); ok('MCDU renders the TAKE OFF page (TAKE OFF RWY 36)',P.title==='TAKE OFF RWY 36'); }
 
 
 /* ---------- non-normal: on-ground fire, inextinguishable fire, brakes / steering, Y reservoir overheat, cargo smoke ---------- */
@@ -198,5 +198,48 @@ function run(R,sec,each){ const {A,M}=R; for(let i=0;i<sec*50;i++){ const C=M.ct
   const G=rig({sys:{cold:false},fm:{N:25}}); G.A.sw.park=0; G.M.ctl.park=0; G.A.sw.flapLv=1; run(G,1,()=>{ G.M.ctl.flapLv=1; G.M.ctl.tla=[30,30]; });
   const fv=fmv(G.A,G.M); fv.flex=0; fv.tla=[30,30]; Y.step(G.A,0.02,air(G.M),fv); ok('thrust levers between CL and MCT at take-off: ENG THR LEVERS NOT SET (TOGA)',has(G.A,'thrnset')&&G.A.ecam.list.find(a=>a.id==='thrnset').steps.some(l=>/TOGA/.test(l[0])));
   G.A.cfgTest=3; const f2=fmv(G.A,G.M); f2.toSpd='none'; Y.step(G.A,0.02,air(G.M),f2); ok('T.O CONFIG test without V1/VR/V2: T.O SPEEDS NOT INSERTED',G.A.ecam.list.some(a=>a.text==='SPEEDS NOT INSERTED')); }
+
+/* ---------- MCDU pages as on the aircraft (layout and logic) ---------- */
+{ const FX={HOLAN:{N:9*NM,E:0},OSVIK:{N:18*NM,E:-14*NM},TUSKA:{N:-22*NM,E:-8*NM},ALPOR:{N:-10*NM,E:-5*NM},RONAX:{N:-10*NM,E:0},FAPSO:{N:-5*NM,E:0}};
+  const R=rig({sys:{cold:false},fm:{}}); run(R,0.2); const {A,M}=R; const K=MC.create(FX); K.now=()=>Date.UTC(2026,10,26,14,0);
+  const key=k=>MC.key(K,k,M,A,{}), type=s=>s.split('').forEach(c=>key(c===' '?'SP':c)), P=()=>MC.render(K,M,A), txt=(Q,row)=>Q.lines.filter(l=>l[0]===row).map(l=>l[1]).join('|');
+  key('INIT'); type('ENRD/ENRD'); key('R1'); type('ENRA'); key('L2'); type('NRD320'); key('L3'); type('30'); key('L5'); type('100'); key('L6');
+  let Q=P(); ok('INIT A: IRS INIT> and WIND> prompts (no LAT/LONG lines)',txt(Q,6).includes('IRS INIT>')&&txt(Q,10).includes('WIND>')&&!txt(Q,7).includes('LAT'));
+  key('F-PLN'); Q=P(); ok('F-PLN before INIT B: no predictions (dashes)',/----/.test(txt(Q,12)));
+  key('INIT'); key('NEXT'); Q=P(); ok('INIT B title INIT FUEL PREDICTION',Q.title==='INIT FUEL PREDICTION');
+  type('56.5/28'); key('R1'); type('8.0'); key('R2'); Q=P();
+  ok('INIT B: TOW = ZFW + BLOCK − TAXI (64.3)',txt(Q,8).includes('64.3'),txt(Q,8)); const fpl=MC.fuelPlan(K,M,A);
+  ok('INIT B: trip fuel and time for the practice circuit (0.6–1.6 t, 15–40 min)',fpl&&fpl.trip>0.6&&fpl.trip<1.6&&fpl.tripT>15&&fpl.tripT<40,fpl&&fpl.trip.toFixed(2)+' '+fpl.tripT.toFixed(0));
+  ok('INIT B: MIN DEST FOB = ALTN + FINAL; EXTRA = BLOCK − TAXI − TRIP − RSV − ALTN − FINAL',Math.abs(fpl.mdf-fpl.altn.f-fpl.fin)<1e-9&&Math.abs(fpl.extra-(7.8-fpl.trip-fpl.rsv-fpl.altn.f-fpl.fin))<1e-6);
+  key('F-PLN'); Q=P(); ok('F-PLN: FROM, flight number, TIME and SPD/ALT headers',Q.lines.some(l=>l[0]===0&&l[1]===' FROM')&&Q.lines.some(l=>l[0]===0&&/NRD320/.test(l[1]))&&txt(Q,1).includes('TIME')&&txt(Q,1).includes('SPD/ALT'));
+  ok('F-PLN: predicted time and the magenta star on a constraint met (HOLAN +4000)',/^\d{4}$/.test(Q.lines.find(l=>l[0]===4&&l[3]===8)[1])&&Q.lines.some(l=>l[0]===4&&l[1]==='*'&&l[2]==='#ff58ff'));
+  ok('F-PLN: DEST line with DIST and EFOB',/ENRD36/.test(txt(Q,12))&&/\d+\.\d/.test(txt(Q,12)),txt(Q,12));
+  // DIR TO: temporary until INSERT
+  key('DIR'); key('L3'); ok('DIR TO: selecting a waypoint makes a temporary flight plan (yellow), active plan unchanged',K.tmpy&&K.tmpy.dir&&K.act===1&&P().titleC==='#ffff32');
+  key('L6'); ok('DIR TO ERASE: temporary plan gone',!K.tmpy);
+  key('L3'); const tgt=K.dirSel; key('R6'); ok('DIR TO INSERT: T-P then the waypoint become the active leg',!K.tmpy&&K.fpln[K.act].id===tgt&&K.fpln[K.act-1].id==='T-P',K.fpln.map(p=>p.id).join(' '));
+  // constraints: F-PLN right key and VERT REV
+  K.fpln=MC.build(K); K.act=1; key('F-PLN'); type('/'); key('+/-'); key('+/-'); type('7000'); key('R3'); ok('F-PLN: /+7000 on the right key sets an at-or-above constraint',K.fpln[2].cst&&K.fpln[2].cst.alt===7000&&K.fpln[2].cst.t==='A');
+  key('R3'); ok('VERT REV from the right key',K.page==='vrev'&&P().title==='VERT REV AT OSVIK'); type('220'); key('L3'); ok('VERT REV: SPD CSTR 220',K.fpln[2].spd===220);
+  type('5000'); key('R3'); ok('VERT REV: ALT CSTR 5000 (AT)',K.fpln[2].cst.alt===5000&&K.fpln[2].cst.t==='AT'); key('L6');
+  // DEPARTURE and ARRIVAL
+  K.fpln=MC.build(K); K.act=1; key('F-PLN'); key('L1'); key('L1'); ok('LAT REV origin → DEPARTURES FROM ENRD',K.page==='dep'&&/DEPARTURES FROM ENRD/.test(P().title));
+  K.depTab='sid'; key('L3'); key('L6'); key('R6'); ok('SID OSVI1N: D005 then OSVIK, HOLAN dropped',K.fpln[1].id==='D005'&&K.fpln[2].id==='OSVIK'&&!K.fpln.some(p=>p.id==='HOLAN'),K.fpln.map(p=>p.id).join(' '));
+  key('F-PLN'); key('L6'); key('R1'); key('L3'); key('L3'); key('L6'); key('R6'); ok('STAR TUSK1A: joins the route at TUSKA, OSVIK kept, ILS 36 legs after RONAX',K.fpln.map(p=>p.id).join(' ')==='ENRD36 D005 OSVIK TUSKA ALPOR RONAX FAPSO RW36'&&K.d.star==='TUSK1A',K.fpln.map(p=>p.id).join(' '));
+  // HOLD: database hold at RONAX, computed elsewhere
+  key('F-PLN'); const ri=K.fpln.findIndex(p=>p.id==='RONAX'); K.lr=ri; K.page='latrev'; key('L3'); ok('HOLD at RONAX: DATABASE hold (inbound 360, R)',K.hold&&K.hold.db&&K.hold.crs===360&&/DATABASE HOLD AT RONAX/.test(P().title));
+  key('R1'); ok('HOLD: COMPUTED> reverts to a computed hold',!K.hold.db); key('L6'); key('R6'); ok('hold inserted from the F-PLN (INSERT)',K.fpln[ri].hold&&!K.tmpy);
+  // PERF
+  key('PERF'); Q=P(); ok('PERF TAKE OFF: F / S / O speeds shown with weights entered',/F=\d{3}/.test(txt(Q,2).replace(/\|/g,''))&&/O=\d{3}/.test(txt(Q,6).replace(/\|/g,'')),txt(Q,2));
+  type('140'); key('L1'); type('135'); key('L2'); ok('V1 above VR: V1/VR/V2 DISAGREE',K.msg==='V1/VR/V2 DISAGREE'); key('CLR');
+  K.perfPh='appr'; key('R4'); ok('PERF APPR: R4 selects CONF3, R5 FULL',K.d.ldgConf==='3'&&(key('R5'),K.d.ldgConf==='FULL'));
+  Q=P(); ok('PERF APPR: VAPP = VLS + 5 with no wind',(()=>{ const v=Q.lines.filter(l=>l[0]===10); return v.length>=2&&+v[0][1]-+v[1][1]===5; })(),txt(Q,10));
+  key('ATC COMM'); ok('ATC COMM without ATSU shows the MCDU MENU',K.page==='menu');
+  key('DATA'); Q=P(); ok('DATA INDEX 1/2: POSITION / IRS / GPS MONITOR, A/C STATUS, CLOSEST AIRPORTS',Q.page==='1/2'&&txt(Q,8)==='<A/C STATUS'&&txt(Q,10)==='<AIRPORTS'); }
+{ // speed limit and constraint feed the managed speed
+  const R=rig({sys:{cold:false},fm:{air:true,h:5000*FT,ias:250,hdg:360},gw:62000}); const {A,M}=R; A.sw.park=0; M.ctl.park=0; A.sw.gearLv=0; M.ctl.tla=[25,25]; F.fcu(M,'athr'); F.fcu(M,'ap1'); M.ap.vert='ALT'; M.ap.altHold=5000;
+  run(R,30); ok('managed speed 250 kt below FL100 (CLB/DES SPD LIM)',Math.abs(M.ap.tgtSpd-250)<1,M.ap.tgtSpd); M.spdLim=null; run(R,1); ok('SPD LIM deleted: managed 300 kt',Math.abs(M.ap.tgtSpd-300)<1,M.ap.tgtSpd);
+  M.spdLim={spd:250,alt:10000}; M.spdCst=220; M.ap.lat='NAV'; M.lnavFn=()=>({dtk:360,xtkCorr:0,toWpt:'X',toDist:20,toBrg:360,xtk:0}); run(R,1); ok('speed constraint 220 at the TO waypoint (NAV): managed 220',Math.abs(M.ap.tgtSpd-220)<1,M.ap.tgtSpd);
+  M.spdCst=0; M.lnavFn=null; M.ap.lat='HDG'; const ff=()=>A.eng[0].ff; run(R,60); ok('fuel flow at 250 kt, 5,000 ft: about 1,050 kg/h a side (LEAP-1A)',ff()>850&&ff()<1300,Math.round(ff())); }
 
 console.log(`a320: ${pass} passed, ${fail} failed`); if(fail){ console.log(fails.map(f=>'  FAIL '+f).join('\n')); process.exit(1); }

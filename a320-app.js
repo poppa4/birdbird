@@ -65,7 +65,7 @@ function reset(kind){
   const airb=kind==='appr'||kind==='air'||kind==='climb'||kind==='down';
   A.fuel=Object.assign(A.fuel,{lo:690,li:2950,ri:2950,ro:690,c:airb?0:1500}); A.zfw=airb?55000:56500;
   K=MC.create(FIX);
-  if(kind!=='cold'){ Object.assign(K.d,{from:'ENRD',to:'ENRD',fltNbr:'NRD320',ci:30,crzFl:100,zfw:A.zfw,zfwcg:28,block:A.fuel.lo+A.fuel.li+A.fuel.ri+A.fuel.ro+A.fuel.c,flaps:1,ths:'UP0.4',v1:131,vr:134,v2:139,flex:null,qnh:1013,temp:15,wind:'360/05',dh:200,ldgConf:'FULL'}); K.fpln=MC.build(K); K.act=kind==='appr'?K.fpln.findIndex(p=>p.id==='FAPSO'):1; }
+  if(kind!=='cold'){ Object.assign(K.d,{from:'ENRD',to:'ENRD',altn:'ENRA',fltNbr:'NRD320',ci:30,crzFl:100,zfw:A.zfw,zfwcg:28,block:A.fuel.lo+A.fuel.li+A.fuel.ri+A.fuel.ro+A.fuel.c,flaps:1,ths:'UP0.4',v1:131,vr:134,v2:139,flex:null,qnh:1013,temp:15,wind:'360/05',dh:200,ldgConf:'FULL'}); K.fpln=MC.build(K); K.act=kind==='appr'?K.fpln.findIndex(p=>p.id==='FAPSO'):1; }
   if(kind==='air'){ K.act=K.fpln.findIndex(p=>p.id==='RONAX'); }
   M.lnavFn=m=>MC.lnav(K,m); M.vnavFn=(m,climb,fcu)=>MC.vnav(K,m,climb,fcu);
   const ap=M.ap; ap.fd1=ap.fd2=kind!=='cold'; UI.fd=[ap.fd1,ap.fd2];
@@ -100,7 +100,9 @@ function sysStep(dt){
   Y.step(A,dt,airOf(),fmView); if(CF&&CF.postSys) CF.postSys(dt,X);
   if(UI.apOffT>0) UI.apOffT-=dt; if(UI.athrOffT>0) UI.athrOffT-=dt;
 }
-function apprType(){ if(!CF&&K&&K.d){ M.npa=!!K.d.appr&&!/^ILS/.test(K.d.appr); M.mda=+K.d.mda||0; } }
+function apprType(){ if(!CF&&K&&K.d){ M.npa=!!K.d.appr&&!/^ILS/.test(K.d.appr); M.mda=+K.d.mda||0;
+  /* MCDU: CLB / DES SPD LIM, speed constraint at the TO waypoint, VAPP from PERF APPR (VLS of the landing configuration + wind) */
+  M.spdLim=K.d.spdLim; M.spdCst=MC.spdCst(K,M); if(MC.vappOf) M.ap.vapp=MC.vappOf(K,M,A); } }
 function syncCtl(){
   const S=A.sw, C=M.ctl, I=UI.inp;
   C.park=S.park; C.flapLv=S.flapLv; C.gearLv=S.gearLv; C.gearGrav=!!(A.misc&&A.misc.grav>=3); C.spd=S.spdBrk; C.spArm=S.spArm; C.abrk=S.abrk;
@@ -777,9 +779,12 @@ function dispData(d){ d=effD(d);
   if(d.k==='nd'){
     const fx=[]; for(const k in FIX){ const f=FIX[k]; if(k==='RW36') continue; fx.push({id:k,N:f.N,E:f.E,vor:k==='ASN'}); }
     const nav=M.nav&&M.nav.fp; const fp=K.fpln.length?K.fpln.flatMap(p=>p.hold?MC.holdShape(p,p.hold):[{N:p.N,E:p.E}]):null; K.fpln.forEach(p=>{ const f=fx.find(x=>x.id===p.id); if(f) f.fp=true; else if(!p.rwy) fx.push({id:p.id,N:p.N,E:p.E,fp:true}); });
+    // temporary flight plan (MCDU TMPY: DIR TO, HOLD, ARRIVAL ... before INSERT): yellow dashed on the ND
+    const tf=K.tmpy&&K.tmpy.fp, tmp=tf?tf.slice(Math.max(0,K.tmpy.act-1)).flatMap(p=>p.hold?MC.holdShape(p,p.hold):[{N:p.N,E:p.E}]):null;
+    if(tf) tf.slice(Math.max(0,K.tmpy.act-1)).forEach(p=>{ const f=fx.find(x=>x.id===p.id); if(f) f.tmpy=true; else if(!p.rwy) fx.push({id:p.id,N:p.N,E:p.E,tmpy:true}); });
     const mode=MODES[E.mode]; const W=M.wind;
     return {tfc:GPW?GPW.traffic():null,pwr,irOK,mode,range:RANGES[E.range],N:M.N,E:M.E,hdg,trk,selHdg:(ap.lat==='HDG'||ap.lat==='TRK'||ap.hdg.preset)?ap.hdg.v:null,gs:M.gs/KT,tas:M.tas/KT,windDir:W.dir,windSpd:W.spd,
-      fixes:fx,fpln:mode==='ROSE ILS'||mode==='ROSE VOR'?null:fp&&fp.slice(K.fpln.slice(0,Math.max(0,K.act-1)).reduce((s,q)=>s+(q.hold?26:1),0)),toWpt:nav?nav.toWpt:null,toDist:nav?nav.toDist:null,toBrg:nav?nav.toBrg:null,lsOn:UI.ls[side]||ap.appr||ap.loc,loc:M.nav.loc,lsCrs:K.d.ilsCrs,lsFreq:K.d.ilsFreq,lsId:K.d.ilsId,
+      fixes:fx,fpln:mode==='ROSE ILS'||mode==='ROSE VOR'?null:fp&&fp.slice(K.fpln.slice(0,Math.max(0,K.act-1)).reduce((s,q)=>s+(q.hold?27:1),0)),tmpy:mode==='ROSE ILS'||mode==='ROSE VOR'?null:tmp,toWpt:nav?nav.toWpt:null,toDist:nav?nav.toDist:null,toBrg:nav?nav.toBrg:null,lsOn:UI.ls[side]||ap.appr||ap.loc,loc:M.nav.loc,lsCrs:K.d.ilsCrs,lsFreq:K.d.ilsFreq,lsId:K.d.ilsId,
       filt:{wpt:E.filt==='wpt',vord:E.filt==='vord'||E.filt==='ndb'},rwyLen:F.RWY.len,vor1:E.adf1===2?'ASN':null,vor2:E.adf2===2?'ASN':null,ndMsg:M.gnd&&!K.fpln.length&&mode!=='ROSE ILS'?'':''};
   }
   if(d.k==='ewd'){
@@ -834,7 +839,7 @@ function displayTick(dt){
     for(const d of DISP){ if(!d.cv||!d.tex) continue; if(!CK.visible(d)){ d.hidden=true; continue; } d.t+=dt;
       // canvas size follows how big the screen is on the display (zoomed in: up to 1024 px, sharp; far away: small, cheap)
       const want=Math.max(192,Math.min(CK.mobile?768:1024,Math.round(CK.pxSize(d,vh)*1.1/64)*64)); if(Math.abs(want-d.px)>Math.max(64,d.px*0.25)){ d.cv.width=want; d.cv.height=Math.round(want*(d.asp||1)); d.px=want; d.sig=''; d.t=99; d.tex.needsUpdate=true; }
-      if(d.k==='mcdu'){ const sig=K.changed+'|'+side_pw(d)+'|'+(K.page==='fpln'||K.page==='prog'?Math.round(UI.t):0)+'|'+d.hidden; if(sig===d.sig) continue; d.sig=sig; }
+      if(d.k==='mcdu'){ const sig=K.changed+'|'+side_pw(d)+'|'+Math.round(UI.t)+'|'+d.hidden; if(sig===d.sig) continue; d.sig=sig; }
       else { const capt=(d.k==='pfd'||d.k==='nd')&&!d.side, hz=Math.min(d.hz||30,[capt?20:8,capt?12:5,capt?8:3][GOV.lvl]); if(d.t<1/hz&&!d.hidden) continue; } /* each upload of a screen texture costs GPU time: only the captain's PFD and ND fast */
       d.hidden=false; d.t=0; drawD(d,dispData(d)); d.tex.needsUpdate=true; }
     return; }
@@ -846,7 +851,7 @@ function displayTick(dt){
     const px=Math.round(clamp(sw*Math.min(devicePixelRatio||1,2),96,1100));
     if(px!==d.px){ d.px=px; d.cv.width=px; d.cv.height=Math.round(px*(d.asp||1)); d.t=99; d.sig=''; }
     d.t+=dt;
-    if(d.k==='mcdu'){ const sig=K.changed+'|'+(side_pw(d))+'|'+(K.page==='fpln'||K.page==='prog'||K.page==='legs'?Math.round(UI.t):0)+'|'+(K.exec?1:0)+'|'+d.px+'|'+d.hidden; if(sig===d.sig) continue; d.sig=sig; }
+    if(d.k==='mcdu'){ const sig=K.changed+'|'+(side_pw(d))+'|'+Math.round(UI.t)+'|'+(K.exec?1:0)+'|'+d.px+'|'+d.hidden; if(sig===d.sig) continue; d.sig=sig; }
     else { const capt=d.k==='pfd'||d.k==='nd'?!d.side:false, hz=Math.min(d.hz,[capt?30:12,capt?20:8,capt?12:5][GOV.lvl]); if(d.t<1/hz&&!d.hidden) continue; } // the frame governor steps the screens down with the outside view
     d.hidden=false; d.t=0;
     const D=dispData(d);
@@ -1065,7 +1070,7 @@ function openMcdu(side){
     MOV.addEventListener('keydown',e=>e.stopPropagation());
     window.addEventListener('keydown',e=>{ if(!MOV||MOV.hidden||typing(e)) return; let k=null;
       if(e.key==='Escape'){ closeMcdu(); e.preventDefault(); e.stopImmediatePropagation(); return; }
-      if(/^[a-zA-Z0-9]$/.test(e.key)) k=e.key.toUpperCase(); else if(e.key==='/'||e.key==='.') k=e.key; else if(e.key===' ') k='SP'; else if(e.key==='Backspace'||e.key==='Delete') k='CLR'; else if(e.key==='-') k='+/-';
+      if(/^[a-zA-Z0-9]$/.test(e.key)) k=e.key.toUpperCase(); else if(e.key==='/'||e.key==='.') k=e.key; else if(e.key===' ') k='SP'; else if(e.key==='Backspace'||e.key==='Delete') k='CLR'; else if(e.key==='-'||e.key==='+') k=e.key;
       if(k){ e.preventDefault(); e.stopImmediatePropagation(); (CF?CF.cdu:MC).key(K,k,M,A,mcApi); MOV._draw(); } },true);
   }
   MOV.hidden=false; MOV.dataset.side=side; MOV._draw(); MOV._t=setInterval(()=>{ if(!MOV.hidden) MOV._draw(); },1000);

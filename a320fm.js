@@ -73,7 +73,8 @@ function speeds(M){
   const vmoC=Math.min(AC.VMO,casFromTas(AC.MMO*at.a,M.h,M.oatDev)/KT);
   let vmax=Math.min(vmoC,i>0?vfe:999,M.gear>0.01?AC.VLE:999);
   const vapr=vs1g*1.06, vamax=vs1g*1.0, vfloor=vs1g*1.03;
-  return {vs1g,vls,gd,F,S:Ssp,vfe,vfeN,vmax,vmo:vmoC,vaprot:vapr,vamax,vfloor,vapp:Math.max(vs(2.8)*1.23+5,vls+5)};
+  return {vs1g,vls,gd,F,S:Ssp,vfe,vfeN,vmax,vmo:vmoC,vaprot:vapr,vamax,vfloor,vapp:Math.max(vs(2.8)*1.23+5,vls+5),
+    vlsF:vs(2.8)*1.23,vls3:vs(1.52+0.40*22/27+0.88*20/35)*1.23}; // VLS in CONF FULL / CONF 3 at this weight (MCDU PERF APPR)
 }
 
 /* ---------- thrust: lever angle -> N1 (rating) -> thrust ---------- */
@@ -265,8 +266,9 @@ function targetSpeed(M,sp){ const A=M.ap, h=M.h/FT;
   if(A.vert==='SRS') v=A.v2+10;
   else if(A.clbPh&&M.conf>=1) v=Math.min(250,sp.vmax-5);
   else if(A.appr||A.apprPh||A.vert.startsWith('G/S')||A.vert==='LAND'||A.vert==='FLARE'||M.conf>=1&&!A.gaMode) v=M.conf>=4?Math.max(sp.vls+5,A.vapp):M.conf===3?sp.F+0:M.conf>=2?sp.F:M.conf===1?sp.S:sp.gd;
-  else if(h<10000) v=Math.max(250,sp.gd);
-  else v=Math.min(300,casFromTas(0.78*isa(M.h,M.oatDev).a,M.h,M.oatDev)/KT);
+  else { const L=M.spdLim===undefined?{spd:250,alt:10000}:M.spdLim; // CLB / DES SPD LIM from the MCDU (250 kt below FL100 by default)
+    if(L&&h<L.alt) v=Math.max(L.spd,sp.gd); else v=Math.min(300,casFromTas(0.78*isa(M.h,M.oatDev).a,M.h,M.oatDev)/KT);
+    if(M.spdCst&&isNav(A.lat)) v=Math.max(sp.gd,Math.min(v,M.spdCst)); } // speed constraint at the TO waypoint (NAV)
   if(M.conf>=1&&!A.gaMode&&A.vert!=='SRS') v=Math.min(v,sp.vmax-5);
   A.managedSpd=v; return v; }
 

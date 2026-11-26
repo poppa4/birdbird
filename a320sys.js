@@ -233,7 +233,7 @@ function engines(A,dt,air,fm){
       n2t=IDLE.n2+(e.n1-IDLE.n1)*0.55;
       egtT=IDLE.egt+(e.n1-IDLE.n1)*7.2+(A.env.t-15)*0.9-(air.alt/1e4)*12;
       const thrF=Math.max(0,(e.n1-IDLE.n1)/(100-IDLE.n1));
-      ffT=IDLE.ff+thrF*thrF*3600*Math.max(0.35,air.sig||1)+(e.n1>IDLE.n1?0:0);
+      ffT=IDLE.ff+Math.pow(thrF,1.4)*3600*Math.max(0.35,air.sig||1); // fuel flow about in step with thrust (LEAP-1A: ~1,050 kg/h a side at 250 kt low level, ~3,900 at TOGA)
       e.oilP=lag(e.oilP,40+thrF*55,2,dt); e.oilT=lag(e.oilT,80+thrF*45,40,dt);
       e.ignA=e.ignB=false;
       if(ign&&(!air.gnd||A.phase===2||A.phase===3)){ e.ignA=e.ignB=true; }
