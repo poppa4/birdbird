@@ -337,9 +337,15 @@ function init(o){
   function draw(R){ R.render(scene,cam); }
   const pv3=new THREE.Vector3();
   function proj(wx,wy){ const p=toP(wx,wy,0.002); if(!p) return null; pv3.copy(p).applyMatrix4(cam.matrixWorldInverse); if(pv3.z>-0.02) return null; pv3.applyMatrix4(cam.projectionMatrix); return [pv3.x,pv3.y]; }
+  /* Show me: look at a box on the panel (sheet units), close enough to read it: the box and a hand's width around it fill the
+     view. For the overhead and the pedestal the pilot leans in to the centre line, as the views there do. false: not on a panel. */
+  function show(wx,wy,ww,wh){ const p=toP(wx,wy); if(!p) return false; const pl=place(wx,wy), s=pl?pl.s:0.002, mid=wx>290&&wx<710;
+    const lean=mid&&wy<790?-0.02:mid&&wy>1130?0:null, eye=EYE.clone(); eye.x*=SEAT; if(lean!=null) eye.x=lean*SEAT;
+    const d=Math.max(0.2,p.distanceTo(eye)), asp=Math.max(0.6,o.aspect()), ext=Math.max(wh*s,ww*s/asp)*1.9+0.07;
+    lookAt(p,Math.max(18,Math.min(56,2*Math.atan(ext/2/d)/D2R)),lean); return true; }
   /* look closer at a point (double click / double tap), and back */
   function focus(wx,wy){ const p=toP(wx,wy); if(!p) return; const fov=head.tFov>40?Math.max(22,head.tFov*0.45):null; if(fov){ lookAt(p,null); head.tFov=fov; } else head.tFov=Math.min(66,head.tFov/0.45); }
-  return {scene,cam,head,updCam,draw,pick,proj,focus,place,P,addLevers,relief:RELIEF,LOOK,setSeat:s=>{ SEAT=s<0?-1:1; },get seat(){ return SEAT; },visible,pxSize,setImage,repaint,K,disp,mobile,
+  return {scene,cam,head,updCam,draw,pick,proj,focus,show,place,P,addLevers,relief:RELIEF,LOOK,setSeat:s=>{ SEAT=s<0?-1:1; },get seat(){ return SEAT; },visible,pxSize,setImage,repaint,K,disp,mobile,
     drag(dx,dy){ const s=head.fov/62*0.0042; head.tYaw+=dx*s; head.tPitch=Math.max(-80*D2R,Math.min(85*D2R,head.tPitch+dy*s)); head.yaw=head.tYaw; head.pitch=head.tPitch; },
     zoom(f){ head.tFov=Math.max(8,Math.min(80,head.tFov*f)); },
     qHead(){ return q; }, fov(){ return cam.fov; }};

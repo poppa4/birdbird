@@ -904,12 +904,14 @@ function pickW(e){ if(!D3) return toWorld(e.clientX,e.clientY); if(!CK) return [
 /* 3D: the control under the pointer is outlined, and a press flashes it, so every click visibly lands on something */
 const HL=D3?(()=>{ const sv=document.createElementNS('http://www.w3.org/2000/svg','svg'); sv.setAttribute('class','hl3d'); sv.setAttribute('aria-hidden','true');
   Object.assign(sv.style,{position:'absolute',inset:'0',width:'100%',height:'100%',pointerEvents:'none',zIndex:8,overflow:'visible'});
-  sv.innerHTML='<polygon class="hv" fill="rgba(120,200,255,.10)" stroke="rgba(150,215,255,.95)" stroke-width="1.6" stroke-linejoin="round" style="display:none"/><polygon class="fl" fill="rgba(255,255,255,.55)" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" style="display:none"/>'; ST.appendChild(sv);
-  const hv=sv.querySelector('.hv'), fl=sv.querySelector('.fl'); let hc=null, ft=0, fc=null;
+  sv.innerHTML='<polygon class="hv" fill="rgba(120,200,255,.10)" stroke="rgba(150,215,255,.95)" stroke-width="1.6" stroke-linejoin="round" style="display:none"/><polygon class="fl" fill="rgba(255,255,255,.55)" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" style="display:none"/><g class="mk"></g>'; ST.appendChild(sv);
+  const hv=sv.querySelector('.hv'), fl=sv.querySelector('.fl'), mkG=sv.querySelector('.mk'); let hc=null, ft=0, fc=null, mk=null, mkT=0;
   const poly=(c,pad)=>{ if(!CK||!c||!c.r) return null; const r=c.r, b=ST.getBoundingClientRect(), pts=[];
     for(const [x,y] of [[r[0]-pad,r[1]-pad],[r[0]+r[2]+pad,r[1]-pad],[r[0]+r[2]+pad,r[1]+r[3]+pad],[r[0]-pad,r[1]+r[3]+pad]]){ const q=CK.proj(x,y); if(!q) return null; pts.push(((q[0]+1)/2*b.width).toFixed(1)+','+((1-q[1])/2*b.height).toFixed(1)); } return pts.join(' '); };
-  return { hover(c){ hc=c; }, flash(c){ fc=c; ft=performance.now(); },
-    tick(){ const p=hc&&poly(hc,0.8); if(p){ hv.setAttribute('points',p); hv.style.display=''; } else hv.style.display='none';
+  return { hover(c){ hc=c; }, flash(c){ fc=c; ft=performance.now(); }, mark(cs,ms){ mk=cs&&cs.length?cs:null; mkT=performance.now()+(ms||5000); if(!mk) mkG.innerHTML=''; },
+    tick(){ if(mk){ const now=performance.now(), left=mkT-now; if(left<=0){ mk=null; mkG.innerHTML=''; } else { const a=Math.min(1,left/600), pu=0.6+0.4*Math.sin(now/170);
+        mkG.innerHTML=mk.map(c=>{ const q=poly(c,2.4); return q?`<polygon points="${q}" fill="rgba(255,206,64,${(0.13*a).toFixed(3)})" stroke="rgba(255,206,64,${(a*pu).toFixed(3)})" stroke-width="3.2" stroke-linejoin="round"/>`:''; }).join(''); } }
+      const p=hc&&poly(hc,0.8); if(p){ hv.setAttribute('points',p); hv.style.display=''; } else hv.style.display='none';
       const a=fc?1-(performance.now()-ft)/260:0; if(a>0){ const q=poly(fc,0.4); if(q){ fl.setAttribute('points',q); fl.style.display=''; fl.style.opacity=a.toFixed(2); } } else { fl.style.display='none'; fc=null; } } }; })():null;
 if(D3){ const PT=ST;
   PT.addEventListener('pointerdown',e=>{ if(e.target.closest('button,select,a,input,.more,.pill,.tpad,.tring')) return; ctx(); if(AC&&AC.state==='suspended') AC.resume();
@@ -1008,7 +1010,7 @@ function lever(c,fy){
   if(c.kind==='park'){ A.sw.park=A.sw.park?0:1; say('Parking brake '+(A.sw.park?'ON':'OFF')); }
 }
 /* tooltips: what a control is and what it is set to */
-const TIP=$('tip'); let tipT=0;
+const TIP=$('tip'); let tipT=0, shT=0;
 function tipText(c){ const n=c.id.split('|')[1];
   if(c.say){ const t=c.say; c.say=null; return t; }
   if(c.info) return c.info();
@@ -1019,7 +1021,7 @@ function tipText(c){ const n=c.id.split('|')[1];
   if(c.t==='cont') return n+': '+Math.round(18+12*A.sw[c.k])+' °C';
   if(c.t==='pb'&&c.k) return n+': '+(A.sw[c.k]?(c.dn&&c.dn[0]==='ON'?'ON':'ON / AUTO'):'OFF');
   return n; }
-function tip(c,txt){ if(!c.r) return; if(D3){ TIP.textContent=txt||tipText(c); TIP.hidden=false; TIP.style.left='50%'; TIP.style.top='12px'; TIP.style.transform='translateX(-50%)'; clearTimeout(tipT); tipT=setTimeout(()=>TIP.hidden=true,1800); return; } TIP.textContent=txt||tipText(c); TIP.hidden=false; const b=VP.getBoundingClientRect(), sb=ST.getBoundingClientRect();
+function tip(c,txt){ if(!c.r) return; if(TIP.classList.contains('shw')){ TIP.classList.remove('shw'); clearTimeout(shT); } if(D3){ TIP.textContent=txt||tipText(c); TIP.hidden=false; TIP.style.left='50%'; TIP.style.top='12px'; TIP.style.transform='translateX(-50%)'; clearTimeout(tipT); tipT=setTimeout(()=>TIP.hidden=true,1800); return; } TIP.textContent=txt||tipText(c); TIP.hidden=false; const b=VP.getBoundingClientRect(), sb=ST.getBoundingClientRect();
   const x=c.r[0]*Z.s+Z.tx+b.left-sb.left, y=c.r[1]*Z.s+Z.ty+b.top-sb.top; TIP.style.left=Math.round(clamp(x,4,sb.width-200))+'px'; TIP.style.top=Math.round(Math.max(4,y-26))+'px'; clearTimeout(tipT); tipT=setTimeout(()=>TIP.hidden=true,1800); }
 let hovC=null; function hover(e){ if(e.pointerType!=='mouse') return; const [wx,wy]=toWorld(e.clientX,e.clientY); const c=hit(wx,wy); VP.style.cursor=c?(c.t==='thr'?'ns-resize':c.t==='knob'||c.t==='sel'||c.t==='selF'?'ew-resize':'pointer'):(Z.free?'grab':'default'); if(c!==hovC){ hovC=c; if(c&&c.t!=='mkey') tip(c); } }
 const mcApi={say:m=>say(m),perf:d=>{ const a=M.ap; if(d.v1) a.v1=d.v1; if(d.vr) a.vr=d.vr; if(d.v2) a.v2=d.v2; a.thrRed=d.thrRed; a.acc=d.acc; M.flx=d.flex||0; if(d.ldgConf) A.sw.ldgF3=d.ldgConf==='3'?1:0; },weights:d=>{ if(d.zfw) A.zfw=d.zfw; },dirTo:()=>{ if(!M.gnd){ M.ap.lat='NAV'; M.ap.latArm=''; M.ap.hdg.preset=false; } }};
@@ -1128,15 +1130,23 @@ function afBan(now){ const bn=$('a3af'); if(!bn||!AFY) return; if(!now&&(afT+=0.
   if(!s){ if(!bn.hidden) bn.hidden=true; afH=''; return; }
   const h=`<b>${T('Auto-fly')}</b><span>${s.t}</span>${s.btn?`<button type="button" data-af="${s.btn[0]}">${s.btn[1]}</button>`:''}<span class="q">${s.req||''}</span><span class="n">${s.ap||''}</span>`;
   if(h!==afH){ afH=h; bn.innerHTML=h; } bn.hidden=false; }
-/* Show me: turn the view to a control and ring it */
-function showCtl(id,txt){ const c=CT.find(q=>q.id===id&&q.r)||(RECT[id]?{id,r:RECT[id].slice(1,5)}:null); if(!c||!c.r) return;
-  const cx=c.r[0]+c.r[2]/2, cy=c.r[1]+c.r[3]/2;
-  if(D3){ if(CK&&CK.focus) CK.focus(cx,cy); if(HL) HL.flash(c); setTimeout(()=>tip(c,txt),400); return; }
-  let best=null, ba=1e12; for(const k in REG){ const r=REG[k]; if(cx>=r[0]&&cx<=r[0]+r[2]&&cy>=r[1]&&cy<=r[1]+r[3]&&r[2]*r[3]<ba){ ba=r[2]*r[3]; best=k; } }
+/* Show me: turn the view to the item's controls (one id or several), frame the first and those beside it, and mark every one
+   of them until you have found it (about 5 s); the item is named at the top of the cockpit meanwhile */
+function showCtl(ids,txt){ ids=[].concat(ids||[]); let cs=ids.map(id=>CT.find(q=>q.id===id&&q.r)||(RECT[id]?{id,r:RECT[id].slice(1,5)}:null)).filter(c=>c&&c.r); if(!cs.length) return;
+  if(D3&&CK&&CK.seat<0) cs=cs.slice().sort((a,b)=>(/F\/O/.test(b.id)?1:0)-(/F\/O/.test(a.id)?1:0)); // right seat: the first officer's own knob first
+  const ctr=c=>[c.r[0]+c.r[2]/2,c.r[1]+c.r[3]/2], c0=ctr(cs[0]), near=cs.filter(c=>{ const p=ctr(c); return Math.abs(p[0]-c0[0])<270&&Math.abs(p[1]-c0[1])<230; });
+  const x0=Math.min(...near.map(c=>c.r[0])), y0=Math.min(...near.map(c=>c.r[1])), x1=Math.max(...near.map(c=>c.r[0]+c.r[2])), y1=Math.max(...near.map(c=>c.r[1]+c.r[3]));
+  TIP.textContent=txt||tipText(cs[0]); TIP.classList.add('shw'); TIP.hidden=false; Object.assign(TIP.style,{left:'50%',top:'12px',transform:'translateX(-50%)'}); clearTimeout(tipT); clearTimeout(shT);
+  shT=setTimeout(()=>{ TIP.hidden=true; TIP.classList.remove('shw'); },5200);
+  if(D3){ const ok=CK&&CK.show&&(CK.show((x0+x1)/2,(y0+y1)/2,x1-x0,y1-y0)||CK.show(c0[0],c0[1],cs[0].r[2],cs[0].r[3])); if(!ok&&CK&&CK.focus) CK.focus(c0[0],c0[1]); if(HL&&HL.mark) HL.mark(cs,5200); return; }
+  const fits=(r,a,b,c,d)=>a>=r[0]&&c<=r[0]+r[2]&&b>=r[1]&&d<=r[1]+r[3];
+  let best=null, ba=1e12; for(const k in REG){ const r=REG[k]; if(fits(r,x0,y0,x1,y1)&&r[2]*r[3]<ba){ ba=r[2]*r[3]; best=k; } }
+  if(!best) for(const k in REG){ const r=REG[k]; if(fits(r,c0[0],c0[1],c0[0],c0[1])&&r[2]*r[3]<ba){ ba=r[2]*r[3]; best=k; } }
   if(best) view(best);
-  setTimeout(()=>{ const b=VP.getBoundingClientRect(), sb=ST.getBoundingClientRect(), p=4, el=document.createElement('div'); el.className='a3ring';
-    Object.assign(el.style,{left:(c.r[0]*Z.s+Z.tx+b.left-sb.left-p)+'px',top:(c.r[1]*Z.s+Z.ty+b.top-sb.top-p)+'px',width:(c.r[2]*Z.s+2*p)+'px',height:(c.r[3]*Z.s+2*p)+'px'});
-    ST.appendChild(el); setTimeout(()=>el.remove(),3600); tip(c,txt); },420); }
+  setTimeout(()=>{ const b=VP.getBoundingClientRect(), sb=ST.getBoundingClientRect(), p=4;
+    cs.forEach(c=>{ const el=document.createElement('div'); el.className='a3ring';
+      Object.assign(el.style,{left:(c.r[0]*Z.s+Z.tx+b.left-sb.left-p)+'px',top:(c.r[1]*Z.s+Z.ty+b.top-sb.top-p)+'px',width:(c.r[2]*Z.s+2*p)+'px',height:(c.r[3]*Z.s+2*p)+'px'});
+      ST.appendChild(el); setTimeout(()=>el.remove(),5000); }); },420); }
 $('apSel').value=UI.start; $('apSel').onchange=()=>reset($('apSel').value);
 /* live outside view: on by default, off on phones (the King Air rule: a small strip of sky is not worth half the GPU there; they
    get the static sky until the … menu turns it on). Off keeps the window, painted. */

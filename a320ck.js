@@ -45,6 +45,21 @@ const CTL={seatB:'SIGNS|SEAT BELTS',adirsNav:'ADIRS|IR MODE 1',park:'PARKING BRK
   pumpsOff:'FUEL|L TK PUMP 1',yElecOff:'HYD|YELLOW ELEC PUMP',oxyOff:'OXYGEN|CREW SUPPLY',emerExitOff:'SIGNS|EMER EXIT LT',batsOff:'ELEC|BAT 1',
   mins:'MCDU 1',baroQnh:null,doors:'ECAM CONTROL|DOOR'};
 
+/* what "Show me" points at, per item (by its challenge): the real controls or displays you look at for it, all of them
+   (both QNH knobs, all six fuel pumps). The camera frames the first one and the ones beside it; null = nothing in the cockpit. */
+const SHOW={'Gear pins and covers':null,'Take-off clearance':null,'Fuel quantity':['E/WD (upper ECAM)'],'Baro reference':['EFIS CPT|QNH CPT','EFIS F/O|QNH F/O'],
+  'Seat belts':['SIGNS|SEAT BELTS'],'ADIRS':['ADIRS|IR MODE 1','ADIRS|IR MODE 3','ADIRS|IR MODE 2'],'Parking brake':['PARKING BRK|PARKING BRAKE'],'Park brake or chocks':['PARKING BRK|PARKING BRAKE'],
+  'T.O speeds and thrust':['MCDU 1'],'Windows / doors':['SD (lower ECAM)','ECAM CONTROL|DOOR'],'Beacon':['EXT LT|BEACON'],
+  'Anti-ice':['ANTI ICE|WING A-ICE','ANTI ICE|ENG 1 A-ICE','ANTI ICE|ENG 2 A-ICE'],'ECAM status':['ECAM CONTROL|STS','SD (lower ECAM)'],'Pitch trim':['THRUST LEVERS|PITCH TRIM WHEEL L'],
+  'Rudder trim':['RUD TRIM|RUD TRIM IND','RUD TRIM|RUD TRIM RESET'],'Flight controls':['SD (lower ECAM)','ECAM CONTROL|F/CTL'],'Flaps setting':['FLAPS|FLAPS LEVER'],'Flaps':['FLAPS|FLAPS LEVER'],
+  'Radar and PWS':['WX RADAR|WX SYS','WX RADAR|PWS'],'Engine mode selector':['ENGINE|ENG MODE SEL'],'ECAM T.O memo':['E/WD (upper ECAM)'],'ECAM LDG memo':['E/WD (upper ECAM)'],
+  'T.O runway':['ND CPT','MCDU 1'],'TCAS':['ATC / TCAS|TCAS MODE'],'Runway and SID':['MCDU 1','ND CPT'],'FCU altitude':['FCU|ALT'],'Minimum':['MCDU 1','PFD CPT'],
+  'Auto brake':['LDG GEAR / BRAKES|AUTO BRK LO','LDG GEAR / BRAKES|AUTO BRK MED','LDG GEAR / BRAKES|AUTO BRK MAX'],'Engines':['ENGINE|ENG MASTER 1','ENGINE|ENG MASTER 2'],
+  'Exterior lights':['EXT LT|STROBE','EXT LT|BEACON','EXT LT|WING LT','EXT LT|NAV & LOGO','EXT LT|RWY TURN OFF','EXT LT|LAND L','EXT LT|LAND R','EXT LT|NOSE LT'],
+  'Fuel pumps':['FUEL|L TK PUMP 1','FUEL|L TK PUMP 2','FUEL|CTR TK PUMP 1','FUEL|CTR TK PUMP 2','FUEL|R TK PUMP 1','FUEL|R TK PUMP 2'],'Yellow electric pump':['HYD|YELLOW ELEC PUMP'],
+  'Oxygen':['OXYGEN|CREW SUPPLY'],'Emergency exit light':['SIGNS|EMER EXIT LT'],'Batteries':['ELEC|BAT 1','ELEC|BAT 2']};
+const ctlOf=x=>{ if(Object.prototype.hasOwnProperty.call(SHOW,x[0])) return SHOW[x[0]]; const c=x[3]&&CTL[x[3]]; return c?[c]:null; };
+
 /* ---------- the standard checklist: [challenge, response, who, key|null] ---------- */
 const CK=[
  {id:'prep',t:'COCKPIT PREPARATION',ph:[1],when:T('After the cockpit preparation flows and the FMGS check, with the departure briefing done.','Etter flowene for cockpitforberedelse og FMGS-sjekken, når avgangsbriefingen er gjort.'),it:[
@@ -117,13 +132,16 @@ const CSS=`
 .a3ck li .w{flex:0 0 auto;font:700 9px var(--f-body);letter-spacing:.04em;color:#6f7c87;min-width:30px;text-align:right}.a3ck li .w.a{color:#7fcbe8}
 .a3ck li.ok>i{background:#3cdc6e;border-color:#3cdc6e}.a3ck li.ok .c,.a3ck li.ok .r{color:#7d8a95}.a3ck li.ok .dt{border-color:#2a3139}
 .a3ck li.now{border-color:#7fcbe8;background:#162531}
+.a3ck li .loc,.a3ck li .loc0{flex:0 0 22px;height:22px;align-self:center;margin:-3px -2px -3px 0}.a3ck li .loc{display:grid;place-items:center;padding:0;border:1px solid #333a42;border-radius:6px;background:#1b2026;color:#9fd8ee;cursor:pointer}
+.a3ck li .loc svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}.a3ck li .loc:hover,.a3ck li .loc:focus-visible{background:#ffce40;border-color:#ffce40;color:#0d1319}
+.ckp .tip.shw{top:12px!important;left:50%!important;transform:translateX(-50%)!important;font:700 13px/1.3 var(--f-body)!important;padding:7px 14px!important;border-radius:8px!important;background:rgba(10,13,16,.92)!important;border:1px solid #ffce40!important;color:#fff!important;z-index:12}
 .a3ck .acts{display:flex;gap:6px;margin-top:8px;align-items:center}.a3ck .acts button{font:600 12px var(--f-body);padding:6px 10px;border-radius:7px;border:1px solid #333a42;background:#1b2026;color:#dfe5ea;cursor:pointer}
 .a3ck .acts button.pri{background:#2fd17b;color:#05170c;border-color:#2fd17b;font-weight:700}.a3ck .acts .sp{flex:1}.a3ck .acts .cnt{font:700 11px var(--f-body);color:#8e9aa5}.a3ck .card.dn .cnt{color:#3cdc6e}
 .a3ck .ownw[hidden]{display:none}
 /* full screen: the checklist slides over the cockpit instead of narrowing it */
 #cockpit.a320:fullscreen .cbody>.drawer{position:absolute;right:0;top:0;bottom:0;z-index:12;background:rgba(17,21,26,.94);box-shadow:-10px 0 28px rgba(0,0,0,.4)}
 @media (max-height:500px){.a3ck li{padding:4px 5px;font-size:12px}.a3ck .when{margin-bottom:4px;font-size:11px}.a3ck .seg button{padding:5px 4px}}
-.ckp .a3ring{position:absolute;pointer-events:none;border:2.5px solid #7fcbe8;border-radius:8px;box-shadow:0 0 0 3px rgba(127,203,232,.25),0 0 18px rgba(127,203,232,.6);z-index:9;animation:a3ring 1.1s ease-in-out 3}
+.ckp .a3ring{position:absolute;pointer-events:none;border:3px solid #ffce40;border-radius:8px;box-shadow:0 0 0 3px rgba(255,206,64,.25),0 0 18px rgba(255,206,64,.6);z-index:9;animation:a3ring 1.1s ease-in-out 4}
 @keyframes a3ring{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.ckp .a3ring{animation:none}}
 `;
@@ -141,7 +159,7 @@ function mount(o){
   function ensureOwn(){ if(OCK||!G.OWNCK) return; OCK=G.OWNCK.mount({type:'A320',box:ownW.querySelector('#ownck'),L,pred:k=>P[k]?!!P[k](X):false,ctl:k=>CTL[k]||null,hl:()=>{},clock:()=>X.UI.t}); }
   const kk=(s,i)=>s+':'+i;
   const cur=()=>{ const s=CK[st.sec]; return s?s.it.findIndex((x,i)=>!st.ticks[kk(st.sec,i)]):-1; };
-  const showIdx=()=>{ const s=CK[st.sec]; return s?s.it.findIndex((x,i)=>!st.ticks[kk(st.sec,i)]&&x[3]&&CTL[x[3]]):-1; };
+  const showIdx=()=>{ const s=CK[st.sec]; if(!s) return -1; const c=cur(); if(c>=0&&ctlOf(s.it[c])) return c; return s.it.findIndex((x,i)=>!st.ticks[kk(st.sec,i)]&&ctlOf(x)); };
   const secDone=si=>CK[si].it.every((x,i)=>st.ticks[kk(si,i)]);
   function draw(){
     root.querySelectorAll('.seg button').forEach(b=>{ b.textContent=L(TX[b.dataset.src]); b.classList.toggle('on',b.dataset.src===pref.src); b.setAttribute('aria-pressed',b.dataset.src===pref.src); });
@@ -153,15 +171,16 @@ function mount(o){
 <button type="button" class="ar" data-mv="1" aria-label="${esc(L(TX.next))}"${nx?'':' disabled'}>›</button><button type="button" class="inf" data-inf aria-expanded="${!!st.inf}" aria-label="${esc(L(TX.about))}">i</button></div>
 ${st.inf?`<p class="src">${esc(L(TX.src))} ${esc(L(TX.hint))}</p>`:''}
 <div class="card${dn?' dn':''}"><p class="when"><b>${esc(L(TX.when))}</b> ${esc(L(s.when))}</p>
-<ul>${s.it.map((x,i)=>{ const d=st.ticks[kk(st.sec,i)]; return `<li data-i="${i}" class="${d?'ok':''}${i===ci?' now':''}"><i>${d?'✓':''}</i><span class="c">${esc(x[0])}</span><span class="dt"></span><span class="r">${esc(x[1])}</span><span class="w${x[3]?' a':''}" title="${x[3]?esc(L(TX.autoT)):''}">${x[2]==='BOTH'?'PF/PM':x[2]}${x[3]?' ●':''}</span></li>`; }).join('')}</ul>
+<ul>${s.it.map((x,i)=>{ const d=st.ticks[kk(st.sec,i)]; return `<li data-i="${i}" class="${d?'ok':''}${i===ci?' now':''}"><i>${d?'✓':''}</i><span class="c">${esc(x[0])}</span><span class="dt"></span><span class="r">${esc(x[1])}</span><span class="w${x[3]?' a':''}" title="${x[3]?esc(L(TX.autoT)):''}">${x[2]==='BOTH'?'PF/PM':x[2]}${x[3]?' ●':''}</span>${ctlOf(x)?`<button type="button" class="loc" data-showi="${i}" title="${esc(L(TX.show))}: ${esc(x[0])}" aria-label="${esc(L(TX.show))}: ${esc(x[0])}"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="4.6"/><path d="M8 1v3M8 12v3M1 8h3M12 8h3"/></svg></button>`:'<span class="loc0"></span>'}</li>`; }).join('')}</ul>
 <div class="acts"><span class="cnt">${dn?'✓ '+esc(s.t)+' '+esc(L(TX.done)):nOk+' / '+s.it.length}</span><span class="sp"></span>${canShow?`<button type="button" data-show>${esc(L(TX.show))}</button>`:''}${dn&&nx?`<button type="button" class="pri" data-next>${esc(nx.t)} ›</button>`:`<button type="button" data-clr aria-label="${esc(L(TX.clear))}" title="${esc(L(TX.clear))}">↺</button>`}</div></div>`;
   }
   root.addEventListener('click',e=>{ const t=e.target;
     const sb=t.closest('[data-src]'); if(sb){ pref.src=sb.dataset.src; try{ localStorage.setItem(KEY,JSON.stringify(pref)); }catch(x){} draw(); return; }
     const mv=t.closest('[data-mv]'); if(mv){ const n=st.sec+(+mv.dataset.mv); if(CK[n]){ st.sec=n; draw(); } return; }
     if(t.closest('[data-inf]')){ st.inf=!st.inf; draw(); return; }
+    const si=t.closest('[data-showi]'); if(si){ const x=CK[st.sec].it[+si.dataset.showi], c=x&&ctlOf(x); if(c) o.show(c,x[0]+' — '+x[1]); return; }
     const li=t.closest('li[data-i]'); if(li&&stdW.contains(li)){ const k=kk(st.sec,+li.dataset.i); if(st.ticks[k]) delete st.ticks[k]; else st.ticks[k]=1; draw(); return; }
-    if(t.closest('[data-show]')){ const x=CK[st.sec].it[showIdx()]; if(x&&CTL[x[3]]) o.show(CTL[x[3]],x[0]+' — '+x[1]); return; }
+    if(t.closest('[data-show]')){ const x=CK[st.sec].it[showIdx()], c=x&&ctlOf(x); if(c) o.show(c,x[0]+' — '+x[1]); return; }
     if(t.closest('[data-clr]')){ CK[st.sec].it.forEach((x,i)=>delete st.ticks[kk(st.sec,i)]); draw(); return; }
     if(t.closest('[data-next]')){ if(st.sec<CK.length-1){ st.sec++; draw(); } } });
   root.addEventListener('change',e=>{ if(e.target.matches('[data-secsel]')){ st.sec=+e.target.value; draw(); } });
