@@ -234,8 +234,25 @@ a.gcard{text-decoration:none;color:inherit}
 @media (max-width:560px){.thg{width:100vw;margin:auto 0 0}.thg .in{border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}.thg .acts .btn2{flex:1 1 100%}}
 
 /* ---- two tracks on one page: the basics (anyone) and the refresher (pilots) ---- */
-body.mode-refresh #pathSec,body.mode-refresh #heroFig,body.mode-refresh #promise{display:none}
+body.mode-refresh #pathSec,body.mode-refresh #promise{display:none}
 body:not(.mode-refresh) #chkSec{display:none}
 body.mode-refresh #chkSec{border-top:0;margin-top:12px;padding-top:0}
-body.mode-refresh .th-head{grid-template-columns:minmax(0,1fr)}
-body.mode-refresh .th-head .lead2{max-width:66ch}
+
+/* phones and narrow tablets: the picture first, as a banner, so the page never opens as a wall of text */
+@media (max-width:900px){
+  .th-head .hero-fig{order:-1;margin-top:-6px}
+  .th-head .hero-img{aspect-ratio:16/8;max-height:300px;object-position:50% 62%}
+  .th-head .hero-fig figcaption{display:none}
+}
+
+/* picture cards (a whole flight on the Radio page) */
+.fcard{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:block;border-radius:var(--radius-lg);overflow:hidden;min-height:190px;background:#0B1217;color:#fff}
+.fcard img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%;transition:transform .4s}
+.fcard::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,10,14,0) 25%,rgba(7,10,14,.86) 100%)}
+.fcard .in{position:absolute;left:0;right:0;bottom:0;z-index:1;display:flex;flex-direction:column;gap:3px;padding:16px 18px}
+.fcard .k{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#C9D6DF}
+.fcard b{font-family:var(--f-display);font-stretch:92%;font-weight:680;font-size:21px;line-height:1.15}
+.fcard .d{font-size:13.5px;line-height:1.4;color:#DCE4EA;max-width:52ch}
+.fcard:hover img{transform:scale(1.03)}
+.fcard:focus-visible{outline:2px solid var(--focus,var(--info));outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.fcard img{transition:none}}
