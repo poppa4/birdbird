@@ -101,7 +101,8 @@ const MIC={rec:null,active:false,base:'',alts:[],heard:null};
 const WH=window.NWHISPER||{supported:false};
 /* which recogniser: the browser's own, or Whisper on the device (more accurate, audio stays on the device) */
 const DESK=!!(window.matchMedia&&matchMedia('(pointer:fine)').matches);
-const useWhisper=()=>WH.supported&&(P.engine==='whisper'||(P.engine!=='browser'&&(!SR||DESK)));
+const wantWhisper=()=>WH.supported&&(P.engine==='whisper'||(P.engine!=='browser'&&(!SR||DESK)));
+const useWhisper=()=>wantWhisper()&&(WH.ready||!SR);
 /* what Whisper is told came before: the callsign spelled out, the station, the controller's last words without
    numbers, and the standard words. It steers the recogniser to ICAO words without putting numbers in its mouth. */
 function vocabPrompt(){ if(!ses) return '';
@@ -123,7 +124,7 @@ function finishVoice(cands){
 }
 function micStart(){
   if(MIC.active||!ses||ses.done) return;
-  if(useWhisper()) return whStart();
+  MIC.wh=useWhisper(); if(MIC.wh) return whStart();
   if(!SR) return; hush(); AU.click();
   const ta=el('say'); MIC.active=true; MIC.alts=[]; MIC.base=''; MIC.heard=null; ta.value='';
   const rec=new SR(); MIC.rec=rec; rec.lang=P.mic||'en-GB'; rec.interimResults=true; rec.continuous=true; rec.maxAlternatives=3;
@@ -162,7 +163,7 @@ function whPreload(){
     .then(()=>{ if(n) n.textContent=L({en:'More accurate, and your voice never leaves this device. Ready.',no:'Mer nøyaktig, og stemmen din forlater aldri denne enheten. Klar.'}); })
     .catch(()=>{ if(n) n.textContent=L({en:'The speech model could not be downloaded. Check the connection, or use the browser recogniser.',no:'Talemodellen kunne ikke lastes ned. Sjekk forbindelsen, eller bruk nettleserens gjenkjenning.'}); });
 }
-function micStop(){ if(useWhisper()){ whStop(); return; } const r=MIC.rec; if(r&&MIC.active){ setTimeout(()=>{ try{ r.stop(); }catch(e){} },350); } }
+function micStop(){ if(MIC.wh){ whStop(); return; } const r=MIC.rec; if(r&&MIC.active){ setTimeout(()=>{ try{ r.stop(); }catch(e){} },350); } }
 function setTx(on){ const t=$('#txi'), b=el('ptt'); if(t) t.classList.toggle('on',on); if(b){ b.classList.toggle('on',on); b.setAttribute('aria-pressed',on?'true':'false'); const s=b.querySelector('.pl'); if(s) s.textContent=on?L({en:'Release to send',no:'Slipp for å sende'}):L({en:'Hold to talk',no:'Hold for å snakke'}); } }
 
 /* ---------------- views ---------------- */
@@ -355,7 +356,9 @@ function drawPick(){
 }
 
 /* ---------------- session ---------------- */
-function startScenario(sc,o){ o=o||{}; if(natural()&&P.voice) nvPreload(); const lvl0=o.level||P.level;
+let ttsUnlocked=false;
+function unlockTts(){ if(ttsUnlocked||!TTS) return; ttsUnlocked=true; try{ const u=new SpeechSynthesisUtterance(' '); u.volume=0; speechSynthesis.speak(u); }catch(e){} }
+function startScenario(sc,o){ o=o||{}; unlockTts(); if(natural()&&P.voice) nvPreload(); const lvl0=o.level||P.level;
   AU.init(); hush();
   if(sc==='quick'){ const db=jget(K.srs,{}); const pool=S.QUICK_POOL(); const ids=R.SRS.due(db).concat(R.SRS.weak(db)).filter(id=>pool.includes(id));
     const seed=(Date.now()>>>0)^0x5bd1; const V=S.vars(seed,{callsign:P.callsign});
@@ -558,8 +561,8 @@ function init(){
   el('setMic').value=P.mic; el('setMic').onchange=()=>{ P.mic=el('setMic').value; saveP(); };
   const eng=el('setEng'); if(eng){
     if(!WH.supported) eng.querySelector('[value=whisper]').disabled=true; if(!SR) eng.querySelector('[value=browser]').disabled=true;
-    eng.value=useWhisper()?'whisper':'browser';
-    const sync=()=>{ el('setMic').closest('label').hidden=eng.value==='whisper'; if(eng.value==='whisper'){ if(P.engine==='whisper'||WH.ready) whPreload(); else el('engNote').textContent=L({en:'More accurate, and your voice never leaves this device. Downloads about 80 MB the first time you talk.',no:'Mer nøyaktig, og stemmen din forlater aldri denne enheten. Laster ned omtrent 80 MB første gang du snakker.'}); } else el('engNote').textContent=L({en:'Uses the browser’s own recogniser (Chrome and Edge send the audio to Google, Safari to Apple).',no:'Bruker nettleserens egen gjenkjenning (Chrome og Edge sender lyden til Google, Safari til Apple).'}); };
+    eng.value=wantWhisper()?'whisper':'browser';
+    const sync=()=>{ el('setMic').closest('label').hidden=eng.value==='whisper'&&!!WH.ready; if(eng.value==='whisper'){ if(P.engine==='whisper'||WH.ready) whPreload(); else el('engNote').textContent=L({en:'More accurate, and your voice never leaves this device. Downloads about 80 MB the first time you talk.',no:'Mer nøyaktig, og stemmen din forlater aldri denne enheten. Laster ned omtrent 80 MB første gang du snakker.'}); } else el('engNote').textContent=L({en:'Uses the browser’s own recogniser (Chrome and Edge send the audio to Google, Safari to Apple).',no:'Bruker nettleserens egen gjenkjenning (Chrome og Edge sender lyden til Google, Safari til Apple).'}); };
     eng.onchange=()=>{ P.engine=eng.value; saveP(); sync(); }; sync(); }
   el('setTest').onclick=()=>{ AU.init(); speak(`${R.parseCallsign(P.callsign).full}, NORDAP Tower, wind 340 degrees 8 knots, runway 36, cleared to land.`); };
   const te=el('setTts'); if(te){ if(!NV.supported){ te.value='browser'; te.disabled=true; } else te.value=natural()?'natural':'browser';
@@ -570,7 +573,7 @@ function init(){
   el('say').placeholder=PH();
   drawHome(); show('home'); aiSetup();
   { const c=navigator.connection||{}; const ok=!c.saveData&&!/2g/.test(c.effectiveType||'')&&c.type!=='cellular'&&window.matchMedia&&matchMedia('(pointer:fine)').matches;
-    if(ok) setTimeout(()=>{ (window.requestIdleCallback||setTimeout)(()=>{ if(natural()&&P.voice&&!NV.ready) nvPreload(); if(useWhisper()&&!WH.ready) whPreload(); }); },2500); }
+    if(ok) setTimeout(()=>{ (window.requestIdleCallback||setTimeout)(()=>{ if(natural()&&P.voice&&!NV.ready) nvPreload(); if(wantWhisper()&&!WH.ready) whPreload(); }); },2500); }
   LAB.onLang(()=>{ const y=window.scrollY; requestAnimationFrame(()=>window.scrollTo(0,y)); drawHome(); if(!el('v-pick').hidden) drawPick(); if(ses&&!el('v-sess').hidden){ el('sessT').textContent=L(cur.t); drawBasis(); drawTurn(); } if(!el('v-deb').hidden&&ses) drawDeb(ses.summary()); });
   // test hooks (headless browsers cannot speak): type and transmit
   window.__radio={get ses(){ return ses; },vocab:()=>vocabPrompt(),voice:c=>finishVoice(c),micStart,micStop,say(t){ el('say').value=t; return transmit(false); },model(){ return ses&&ses.step?ses.step.model:''; },start:k=>startScenario(k==='quick'?'quick':S.byKey(k)),idle:()=>queue};
