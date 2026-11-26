@@ -67,8 +67,12 @@ function engNew(cold,t){ const T=t==null?15:t; return {n1:0,n2:0,egt:T,ff:0,oilP
 function engRun(e){ Object.assign(e,{n1:19.6,n2:58.8,egt:395,ff:290,oilP:42,oilT:78,run:true,st:4,avail:true,fuelOn:true,lit:true}); }
 
 /* ---------- failures the page can set ---------- */
+/* ADR i (0..2) gives air data: its pushbutton ON, the ADIRU powered with the mode selector not OFF, and not failed.
+   IR i gives attitude and heading: its pushbutton ON and aligned in NAV (or ATT when att is asked for). */
+function adrValid(A,i){ return A.sw['adr'+(i+1)]!==0&&!A.fail['adr'+(i+1)]&&A.irs[i].st!==0; }
+function irValid(A,i,att){ const r=A.irs[i]; return A.sw['ir'+(i+1)]!==0&&(r.st===2||(!!att&&r.st===3)); }
 const FAILS=['eng1','eng2','fire1','fire2','fire1x','fire2x','fireApu','gen1','gen2','idg1','apuGen','acBus1','hydG','hydB','hydY','yOvht','edp1','edp2','fuelL1','fuelL2','bleed1','bleed2','pack1','pack2','elac1','sec1','ir1','ir2','decomp','cabLeak','bothGen',
-  'bscu','nws','ap1f','ap2f','smokeFwd','smokeAft','locTx','gsTx'];
+  'bscu','nws','ap1f','ap2f','smokeFwd','smokeAft','locTx','gsTx','adr1','adr2','adr3'];
 /* the brakes and steering the BSCU gives (read by the flight model): normal braking with anti-skid and autobrake, nose wheel
    steering. Both BSCU channels lost, or the A/SKID & N/W STRG switch OFF: alternate braking on yellow without anti-skid (the
    ABCU limits the pressure to about 1,000 psi), no autobrake, no nose wheel steering. */
@@ -82,17 +86,18 @@ function elec(A,dt,air){
   // IDG disconnect is irreversible in flight (and here: until Restart)
   for(let i=0;i<2;i++){ if(S['idg'+(i+1)]) A.idgOK[i]=false; }
   const genAv=[0,1].map(i=>{ const e=A.eng[i]; return A.idgOK[i]&&!F['gen'+(i+1)]&&!F.bothGen&&!(i===0&&F.idg1)&&e.n2>57&&S['gen'+(i+1)]===1; });
+  const line1=S.genLine!==0; // EMER ELEC PWR GEN 1 LINE (smoke procedure): OFF opens the GEN 1 line contactor
   const apuAv=A.apu.avail&&S.apuGen===1&&!F.apuGen&&A.apu.n>95;
   const extAv=A.gpu&&S.ext===1&&gnd;
   // AC bus 1 / 2: own generator, else EXT PWR, else APU GEN, else the other generator through the bus tie
   const tie=S.busTie===1;
   function feed(i){
     if(F.acBus1&&i===0) return null;
-    if(genAv[i]) return 'GEN '+(i+1);
+    if(genAv[i]&&(i!==0||line1)) return 'GEN '+(i+1);
     if(!tie) return null;
     if(extAv) return 'EXT PWR';
     if(apuAv) return 'APU GEN';
-    if(genAv[1-i]) return 'GEN '+(2-i);
+    if(genAv[1-i]&&(1-i!==0||line1)) return 'GEN '+(2-i);
     return null; }
   src.ac1=feed(0); src.ac2=feed(1);
   // a single generator, EXT PWR or APU GEN can carry the whole network (GALY & CAB shed, FCOM)
@@ -224,7 +229,7 @@ function engines(A,dt,air,fm){
     if(e.run){
       // thrust lever -> N1 command (A/THR replaces the lever between idle and the active detent; fm.js computes nTgt)
       const t=fm?fm.n1Cmd[i]:IDLE.n1;
-      e.n1=lag(e.n1,Math.max(IDLE.n1+(air.gnd?0:Math.max(0,(air.alt-0)/1e4*2+(air.ias>200?2:0))),t),e.n1<t?1.6:1.3,dt);
+      e.n1=lag(e.n1,Math.max(IDLE.n1+(S['eai'+n]?2.5:0)+(air.gnd?0:Math.max(0,(air.alt-0)/1e4*2+(air.ias>200?2:0))),t),e.n1<t?1.6:1.3,dt); // anti-ice raises the idle
       n2t=IDLE.n2+(e.n1-IDLE.n1)*0.55;
       egtT=IDLE.egt+(e.n1-IDLE.n1)*7.2+(A.env.t-15)*0.9-(air.alt/1e4)*12;
       const thrF=Math.max(0,(e.n1-IDLE.n1)/(100-IDLE.n1));
@@ -232,6 +237,7 @@ function engines(A,dt,air,fm){
       e.oilP=lag(e.oilP,40+thrF*55,2,dt); e.oilT=lag(e.oilT,80+thrF*45,40,dt);
       e.ignA=e.ignB=false;
       if(ign&&(!air.gnd||A.phase===2||A.phase===3)){ e.ignA=e.ignB=true; }
+      if(S['eai'+n]){ e.ignA=e.ignB=true; } // ENG anti-ice ON selects continuous ignition (A320neo)
       if(ign&&!e.avail){ e.ignA=e.ignB=true; }
     } else if(e.st===0){
       n2t=crank&&S['manSt'+n]&&bleedP>20?22:(air.gnd?0:Math.min(30,air.ias*0.12)); // windmilling in flight
@@ -330,17 +336,22 @@ function air(A,dt,air){
   X.p1=X.duct[0]; X.p2=X.duct[1];
   // packs: flow control valve open with pb ON, pressure, and not during an engine start (FCOM: closes during start)
   const starting=e.some(x=>x.st>0&&x.st<4);
-  const flow=[0.8,1,1.2][S.pkFlow];
+  const onePack=(S.pk1&&!S.pk2)||(S.pk2&&!S.pk1); // HI flow is selected automatically with the APU bleed or one pack only
+  const flow=apuBl||onePack?1.2:[0.8,1,1.2][S.pkFlow];
   X.pk1=starting?0:lag(X.pk1,S.pk1&&!A.fail.pack1&&X.duct[0]>8&&!S.ditch?flow:0,2,dt); // the pack valves close at once during a start
   X.pk2=starting?0:lag(X.pk2,S.pk2&&!A.fail.pack2&&X.duct[1]>8&&!S.ditch?flow:0,2,dt);
   // cabin pressure controller (automatic): cabin altitude schedule from the aircraft altitude, max ΔP 8.06 psi,
   // landing elevation from the FMS (here: the field, 0 ft); with no packs or a leak the cabin climbs to the aircraft altitude
   const flowIn=X.pk1+X.pk2;
   const pAt=h=>14.696*Math.pow(1-6.8756e-6*h,5.2559);
-  const target=air.gnd?(A.env.elev||0):clamp(air.alt*0.235,(A.env.elev||0),8000);
+  /* landing elevation: AUTO from the FMS (here the field), or the LDG ELEV selector (-2,000 to 14,000 ft) */
+  const ldgE=S.ldgElev?(S.ldgElev-2)*2000:(A.env.elev||0); X.ldgElev=ldgE;
+  const target=air.gnd?(A.env.elev||0):clamp(air.alt*0.235,ldgE,Math.max(8000,ldgE));
   let rate=air.gnd?500:(air.vs>0?clamp(air.vs*0.27,300,750):clamp(air.vs*0.27,-750,-300));
   let tgt=target;
   if(flowIn<0.2||A.fail.decomp||A.fail.cabLeak){ tgt=air.alt; rate=A.fail.decomp?30000:(A.fail.cabLeak?1200:1500); }
+  X.ram=!!S.ram&&!S.ditch&&X.dp<1; // RAM AIR: the inlet opens when the differential pressure is below 1 psi
+  if(X.ram&&!air.gnd){ tgt=air.alt; rate=Math.max(rate,800); }
   if(!S.pressMode&&!air.gnd&&!A.fail.decomp){ const v=S.manVs||0; tgt=v>0?air.alt:v<0?-1000:X.cab; rate=v?1000:0; } // MAN: the pilot drives the outflow valve with the V/S CTL switch
   X.cab=toward(X.cab,tgt,Math.abs(rate)/60,dt);
   X.cab=Math.min(X.cab,Math.max(air.alt,A.env.elev||0));
@@ -348,6 +359,10 @@ function air(A,dt,air){
   if(X.dp>8.6){ X.cab=Math.min(air.alt,X.cab+((X.dp-8.6)*2000)*dt); X.dp=8.6; }
   const prev=X.cabPrev==null?X.cab:X.cabPrev; X.cabVs=lag(X.cabVs,(X.cab-prev)/Math.max(dt,1e-3)*60,1.2,dt); X.cabPrev=X.cab;
   X.ofv=air.gnd?100:clamp(100-X.dp*11,4,100);
+  /* WING anti-ice: in flight the valves open with bleed pressure; on the ground only a 30 s test, then they close (the ON light
+     stays). ENG anti-ice valves open with the engine running. */
+  X.waiT=S.wai?(X.waiT||0)+dt:0; X.wai=!!S.wai&&(X.duct[0]>8||X.duct[1]>8)&&(!air.gnd||X.waiT<30);
+  X.eai=[0,1].map(i=>!!S['eai'+(i+1)]&&e[i].run);
   // cabin temperatures follow the selectors (18 to 30 °C), slowly
   X.tCk=lag(X.tCk,flowIn>0.2?18+12*S.tCk:A.env.t,120,dt); X.tFwd=lag(X.tFwd,flowIn>0.2?18+12*S.tFwd:A.env.t,140,dt); X.tAft=lag(X.tAft,flowIn>0.2?18+12*S.tAft:A.env.t,140,dt);
 }
@@ -385,8 +400,8 @@ function fctl(A){
   A.elac=[S.elac1&&!A.fail.elac1&&(B.dcEss||B.dcBat),S.elac2&&(B.dc2||B.dcBat)];
   A.sec=[S.sec1&&!A.fail.sec1&&(B.dcEss||B.dcBat),S.sec2&&B.dc2,S.sec3&&B.dc2];
   A.fac=[S.fac1&&B.acEss,S.fac2&&B.ac2];
-  const adrOK=[0,1,2].filter(i=>A.irs[i].st===2||A.irs[i].st===3).length;
-  const irOK=[0,1,2].filter(i=>A.irs[i].st===2).length;
+  const adrOK=[0,1,2].filter(i=>adrValid(A,i)).length;
+  const irOK=[0,1,2].filter(i=>irValid(A,i,false)).length;
   A.law=(!A.elac[0]&&!A.elac[1])||(A.hyd.g<1500&&A.hyd.y<1500)||adrOK<2?((A.hyd.g<1500&&A.hyd.y<1500&&A.hyd.b<1500)?'MECH':(irOK<1?'DIRECT':'ALTN')):'NORMAL';
   if(!A.sec[0]&&!A.sec[1]&&!A.sec[2]&&!A.elac[0]&&!A.elac[1]) A.law='MECH';
 }
@@ -497,7 +512,17 @@ function alerts(A,air,fm){
   if(A.law==='ALTN'&&!air.gnd) add('altn',2,'F/CTL','ALTN LAW',[['MAX SPEED ......... 320 KT',null]],{page:'fctl'});
   if(A.law==='DIRECT'&&!air.gnd) add('direct',2,'F/CTL','DIRECT LAW',[['MAX SPEED ......... 320/.77',null],['MAN PITCH TRIM ..... USE',null]],{page:'fctl'});
   // NAV
-  for(let i=0;i<3;i++) if(A.irs[i].st===4) add('ir'+i,2,'NAV','IR '+(i+1)+' FAULT',[['ATT HDG SWTG ...... CAPT ON 3',null]],{inh:[3,4,5,7,8]});
+  /* IR and ADR faults; in flight an ADIRS mode selector turned to OFF loses the IR and the ADR, to ATT the IR navigation.
+     The switching actions are for the captain's side (1) and the first officer's side (2); unit 3 is the standby. */
+  const swtg=['CAPT ON 3','F/O ON 3',null], misc=A.misc||{};
+  for(let i=0;i<3;i++){ const m=S['irM'+(i+1)], sel=i===0?0:2;
+    if(A.irs[i].st===4||(!air.gnd&&(m===0||m===2))) add('ir'+i,2,'NAV','IR '+(i+1)+' FAULT',swtg[i]?[['ATT HDG SWTG ...... '+swtg[i],()=>misc.attHdg===sel]]:[],{inh:[3,4,5,7,8]});
+    if(A.fail['adr'+(i+1)]||(!air.gnd&&m===0)) add('adr'+i,2,'NAV','ADR '+(i+1)+' FAULT',swtg[i]?[['AIR DATA SWTG ..... '+swtg[i],()=>misc.airData===sel]]:[],{inh:[3,4,5,7,8]}); }
+  // GPWS: TERR OFF inhibits the terrain awareness functions (basic modes 1 to 5 stay)
+  if(S.gpwsT===0) add('terr',2,'NAV','GPWS TERR DET FAULT',[],{inh:[3,4,5,7,8]});
+  // BRAKES HOT: a brake above 300 °C (with gear retraction the hot brakes go into the wheel well: gear down to cool them)
+  if(Math.max(...A.brk.temp)>300) add('brkhot',2,'BRAKES','HOT',air.gnd?[['PARK BRK ......... PREFER CHOCKS',null],['DELAY T.O ........... FOR COOL',null],['BRK FAN ................. ON',()=>!!S.brkFan]]
+    :[['L/G ............. DN FOR COOL',()=>!!(fm&&fm.gearDown)]],{page:'wheel',inh:[4,5,8]});
   // BRAKES / WHEEL: both BSCU channels lost; nose wheel steering lost (no crew action on the ECAM for that one)
   if(A.fail.bscu) add('bscu',2,'BRAKES','A/SKID N/WS FAULT',[['MAX BRK PR ....... 1000 PSI',null]],{page:'wheel',inh:[3,4,5,7,8]});
   if(A.fail.nws&&!A.fail.bscu) add('nws',2,'WHEEL','N/W STRG FAULT',[],{page:'wheel',inh:[3,4,5,7,8]});
@@ -545,7 +570,7 @@ function memos(A,air,fm){
   if(A.apu.avail&&!A.apu.bleedOn) R('APU AVAIL'); if(A.apu.bleedOn) R('APU BLEED');
   if(S.landL===2||S.landR===2) R('LDG LT');
   if(S.strobe===0&&!air.gnd) R('STROBE LT OFF');
-  if(S.engMode===2&&A.eng.every(e=>e.run)&&!air.gnd) R('IGNITION');
+  if(((S.engMode===2&&!air.gnd)||S.eai1||S.eai2)&&A.eng.some(e=>e.run&&(e.ignA||e.ignB))) R('IGNITION');
   if(A.hyd.rat) R('RAT OUT',air.gnd?'a':'g');
   if(A.emer.emerGen) R('EMER GEN');
   if(A.fuel.xfr) R('OUTR TK FUEL XFRD');
@@ -555,6 +580,9 @@ function memos(A,air,fm){
   if(A.gpu&&!S.ext&&air.gnd) R('EXT PWR AVAIL','g');
   if(S.abrk&&!E.tomemo&&!E.ldgmemo) R('AUTO BRK '+['','LO','MED','MAX'][S.abrk]);
   if(fm&&fm.tcasStby) R('TCAS STBY');
+  if(A.air.ram) R('RAM AIR ON'); if(S.ldgElev) R('MAN LDG ELEV'); if(S.gpwsF===0) R('GPWS FLAP MODE OFF');
+  if(A.com&&A.com.wx&&A.com.wx.pws===0) R('PRED W/S OFF');
+  const mi=A.misc; if(mi&&(mi.attHdg!==1||mi.airData!==1||mi.eisDmc!==1||mi.ecamNd!==1)) R('SWITCHG PNL'); if(mi&&mi.audio!==1) R('AUDIO 3 XFRD');
   if(E.land&&E.stsDone) R('LAND ASAP',E.land==='r'?'r':'a'); if(E.stsHas&&(E.stsDone||!E.stsAlert)) R('STS','w');
   E.memo=m; E.memoR=r;
 }
@@ -584,7 +612,9 @@ const ECX=[
   [/^bscu$/,{land:'',sec:()=>[],lim:[],proc:['LDG DIST PROC.......APPLY'],inop:()=>['ANTI SKID','N/W STRG','AUTO BRK']}],
   [/^nws$/,{land:'',sec:()=>[],lim:[],proc:[],inop:()=>['N/W STRG']}],
   [/^yovht$/,{land:'',sec:()=>[],lim:[],proc:['IF OVHT OUT:','YELLOW ENG 2 PUMP.....ON','PTU..................AUTO'],inop:()=>['Y HYD','N/W STRG']}],
-  [/^smk(fwd|aft)$/,{land:'r',sec:()=>[],lim:[],proc:[],inop:()=>[]}]
+  [/^smk(fwd|aft)$/,{land:'r',sec:()=>[],lim:[],proc:[],inop:()=>[]}],
+  [/^ir\d$/,{land:'',sec:()=>[],lim:[],proc:[],inop:n=>['IR '+(n+1)]}],
+  [/^adr\d$/,{land:'',sec:()=>[],lim:[],proc:[],inop:n=>['ADR '+(n+1)]}]
 ];
 /* STATUS items from failures that give no ECAM alert of their own (an autopilot that cannot be engaged) */
 function standing(A){ const F=A.fail, inop=[];
@@ -662,5 +692,5 @@ function ecamBtn(A,k){
 }
 function master(A,lvl){ const E=A.ecam; E.list.forEach(a=>{ if(lvl===3&&a.lvl===3) E.mwAck[a.id]=true; if(lvl===2&&a.lvl===2) E.mcAck[a.id]=true; }); }
 
-G.A320SYS={create,step,defaults,ecamBtn,master,FAILS,IDLE,wheels};
+G.A320SYS={create,step,defaults,ecamBtn,master,FAILS,IDLE,wheels,adrValid,irValid};
 })(typeof window!=='undefined'?window:globalThis);

@@ -236,7 +236,7 @@ function defs(){
   // ---- ADIRS ----
   for(const n of [1,2,3]){
     pb('ADIRS|IR '+n,'ir'+n,['FAULT','a',()=>A.irs[n-1].st===4||(A.irs[n-1].st===1&&(UI.t%2<1)&&false)],['OFF','w',()=>!S_('ir'+n)]);
-    pb('ADIRS|ADR '+n,'adr'+n,['FAULT','a',()=>false],['OFF','w',()=>!S_('adr'+n)]);
+    pb('ADIRS|ADR '+n,'adr'+n,['FAULT','a',()=>!!A.fail['adr'+n]],['OFF','w',()=>!S_('adr'+n)]);
     sel('ADIRS|IR MODE '+n,'irM'+n,['OFF','NAV','ATT'],[-55,0,55]); }
   ann('ADIRS|ON BAT',null,['ON BAT','a',()=>A.irs.some(r=>r.st===1&&r.onBat)||(!A.ac&&A.irs.some(r=>r.st>0))]);
   // ---- FIRE ----
@@ -363,7 +363,7 @@ function defs(){
   CT.push({id:'GEAR LEVER|GEAR LEVER',t:'lever',kind:'gear'});
   CT.push({id:'LDG GEAR / BRAKES|LDG GEAR IND',t:'gearInd'});
   for(const [id,v,txt] of [['LO',1,'LO'],['MED',2,'MED'],['MAX',3,'MAX']]) CT.push({id:'LDG GEAR / BRAKES|AUTO BRK '+id,t:'pb',k:null,up:['DECEL','g',()=>A.sw.abrk===v&&M.abActive&&M.accel<-1],dn:['ON','b',()=>A.sw.abrk===v],on:()=>{ A.sw.abrk=A.sw.abrk===v?0:v; }});
-  pb('LDG GEAR / BRAKES|BRK FAN','brkFan',['HOT','a',()=>false],['ON','b',()=>!!S_('brkFan')]);
+  pb('LDG GEAR / BRAKES|BRK FAN','brkFan',['HOT','a',()=>Math.max(...A.brk.temp)>300],['ON','b',()=>!!S_('brkFan')]);
   tog('LDG GEAR / BRAKES|A/SKID & N/W STRG','askid',[1,0],{lab:['ON','OFF']});
   // ---- ECAM control panel ----
   for(const [id,k] of [['ENG','eng'],['BLEED','bleed'],['PRESS','press'],['ELEC','elec'],['HYD','hyd'],['FUEL','fuel'],['APU','apu'],['COND','cond'],['DOOR','door'],['WHEEL','wheel'],['F/CTL','fctl'],['ALL','all'],['STS','sts']])
@@ -751,8 +751,8 @@ const drawD=(d,D)=>{ const e=effD(d); ((CF&&CF.draw&&CF.draw[e.k])||DSP[e.k])(d.
 function dispData(d){ d=effD(d);
   if(CF&&CF.dispData){ const r=CF.dispData(d,X); if(r) return r; }
   const ap=M.ap, sp=M.spds||{}, side=d.side||0, E=side?UI.efis2:UI.efis;
-  const sw3=k=>!CF&&A.misc&&A.misc[k]===(side?2:0); const ir=A.irs[sw3('attHdg')?2:side?1:0], irOK=ir.st===2, attOK=ir.st===2||ir.st===3;
-  const adrOK=A.sw['adr'+(sw3('airData')?3:side?2:1)]&&(A.bus.acEss||A.bus.ac1||A.bus.ac2||A.bus.dcBat);
+  const sw3=k=>!CF&&A.misc&&A.misc[k]===(side?2:0); const irI=sw3('attHdg')?2:side?1:0, irOK=Y.irValid?Y.irValid(A,irI,false):A.irs[irI].st===2, attOK=Y.irValid?Y.irValid(A,irI,true):A.irs[irI].st>=2;
+  const adrI=sw3('airData')?2:side?1:0, adrOK=(Y.adrValid?Y.adrValid(A,adrI):A.sw['adr'+(adrI+1)])&&(A.bus.acEss||A.bus.ac1||A.bus.ac2||A.bus.dcBat);
   const qnhAdj=E.std?0:(E.qnh-1013.25)*27.3, alt=M.h/FT+qnhAdj-(E.std?0:0);
   const hdg=w360(M.psi*R2D), trk=w360((M.gnd?M.psi:M.trk||M.chi)*R2D);
   const pwr=side?(A.bus.ac2||A.bus.acEss):(A.bus.acEss);
@@ -1087,7 +1087,7 @@ function setStat(){ const s=$('stat'); if(!s) return; const t=UI.crashed?T('Cras
 function pause(){ UI.paused=!UI.paused; setStat(); if(CH) CH.sync(); }
 let CH=null;
 if(SH){ SH.init(); CH=SH.chrome({paused:()=>UI.paused,pause,restart:()=>reset(UI.start),sound:()=>UI.sound,setSound:v=>{ UI.sound=v; },refit:()=>layout(true)});
-  SH.pane('fl',el=>{ const L_=[['v1cut','Engine 1 failure at V1 (next take-off)'],['hydGY','Green + yellow hydraulics (G+Y SYS LO PR)'],['eng1','Engine 1 failure'],['fire1','Engine 1 fire'],['fire2','Engine 2 fire'],['fire1x','Engine 1 fire that does not go out'],['fire2x','Engine 2 fire that does not go out'],['fireApu','APU fire'],['smokeFwd','Forward cargo smoke'],['smokeAft','Aft cargo smoke'],['gen1','Generator 1'],['idg1','IDG 1 oil pressure'],['acBus1','AC BUS 1'],['bothGen','Both generators'],['hydG','Green hydraulics'],['hydY','Yellow hydraulics'],['yOvht','Yellow reservoir overheat'],['edp1','Engine 1 pump (green)'],['bscu','Brakes: both BSCU channels (anti-skid and steering)'],['nws','Nose wheel steering'],['ap1f','AP 1'],['ap2f','AP 2'],['locTx','ILS localizer transmitter (ground)'],['gsTx','ILS glideslope transmitter (ground)'],['fuelL1','Left tank pump 1'],['bleed1','Engine 1 bleed'],['pack1','Pack 1'],['elac1','ELAC 1'],['sec1','SEC 1'],['ir1','IR 1'],['decomp','Decompression'],['cabLeak','Slow cabin leak'],['ws','Windshear (next approach or take-off, below 1,000 ft)'],['tcas','TCAS intruder (head-on, about your level)']];
+  SH.pane('fl',el=>{ const L_=[['v1cut','Engine 1 failure at V1 (next take-off)'],['hydGY','Green + yellow hydraulics (G+Y SYS LO PR)'],['eng1','Engine 1 failure'],['fire1','Engine 1 fire'],['fire2','Engine 2 fire'],['fire1x','Engine 1 fire that does not go out'],['fire2x','Engine 2 fire that does not go out'],['fireApu','APU fire'],['smokeFwd','Forward cargo smoke'],['smokeAft','Aft cargo smoke'],['gen1','Generator 1'],['idg1','IDG 1 oil pressure'],['acBus1','AC BUS 1'],['bothGen','Both generators'],['hydG','Green hydraulics'],['hydY','Yellow hydraulics'],['yOvht','Yellow reservoir overheat'],['edp1','Engine 1 pump (green)'],['bscu','Brakes: both BSCU channels (anti-skid and steering)'],['nws','Nose wheel steering'],['ap1f','AP 1'],['ap2f','AP 2'],['locTx','ILS localizer transmitter (ground)'],['gsTx','ILS glideslope transmitter (ground)'],['fuelL1','Left tank pump 1'],['bleed1','Engine 1 bleed'],['pack1','Pack 1'],['elac1','ELAC 1'],['sec1','SEC 1'],['ir1','IR 1'],['adr1','ADR 1'],['adr2','ADR 2'],['adr3','ADR 3'],['decomp','Decompression'],['cabLeak','Slow cabin leak'],['ws','Windshear (next approach or take-off, below 1,000 ft)'],['tcas','TCAS intruder (head-on, about your level)']];
     el.innerHTML='<div class="sgrp">'+T('Failures')+'</div><div class="fbtns">'+L_.map(([k,t])=>`<button type="button" data-f="${k}" class="${A.fail[k]?'on':''}">${t}</button>`).join('')+'<button type="button" class="rs" data-f="__clr">Clear all failures</button></div>';
     el.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=b.dataset.f;
       if(k==='v1cut'){ UI.v1cut=!UI.v1cut; A.fail.v1cut=UI.v1cut; say(UI.v1cut?'Engine 1 will fail at V1 on the next take-off':'V1 cut cancelled'); el.querySelectorAll('button[data-f]').forEach(x=>x.classList.toggle('on',!!A.fail[x.dataset.f])); return; }

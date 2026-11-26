@@ -376,6 +376,10 @@ function step(M,dt,sys){
     if(M.abLatch&&(C.abrk===0||C.brkL>0.6||M.tla.some(x=>x>TLA.CL*0.5)||(WH&&!WH.autoBrk))) M.abLatch=false;
     if(M.abLatch&&C.abrk>0&&M.tas>0.05){ const dec=[0,1.7,3.0,6][C.abrk]; M.abActive=true; brk=Math.max(brk,clamp((dec*M.gw-(D-T))/(0.55*N+1),0,1)); } else M.abActive=false;
     const brkF=brk*0.55*N*(M.tas>0.3?1:0), roll=0.011*N;
+    /* brake heating: the braking power goes into the four carbon heat sinks (left pedal: brakes 1 and 2, right: 3 and 4);
+       about 1.4 × 10⁵ J/K each, so a normal landing adds roughly 150 °C and a high-energy rejected take-off goes above 300 °C */
+    if(sys&&sys.brk&&sys.brk.temp&&brkF>0){ const P=brkF*Math.max(0,M.tas)*dt, fl=bL+bR>0.01?bL/(bL+bR):0.5;
+      for(let i=0;i<4;i++) sys.brk.temp[i]+=P*(i<2?fl:1-fl)/2/1.4e5; }
     let ax=(T-D-roll*(M.tas>0.05?1:0)-brkF)/M.gw;
     if(M.tas<=0.05&&T<roll+brkF) ax=Math.max(0,ax);
     M.tas=Math.max(0,M.tas+ax*dt);
@@ -491,6 +495,9 @@ function step(M,dt,sys){
     if(A.ap1||A.ap2){ if(A.vert!=='ROLL OUT'&&A.vert!=='FLARE'){ A.ap1=A.ap2=false; } }
   }
   if(M.gnd&&(A.vert==='ROLL OUT')&&M.gs/KT<10){ A.ap1=A.ap2=false; A.vert=''; A.lat=''; }
+  // brake cooling toward the outside air: slow in the wheel well, faster with the gear down in flight or the brake fans on
+  if(sys&&sys.brk&&sys.brk.temp){ const amb=sys.env?sys.env.t:15, tau=M.gnd?(sys.sw&&sys.sw.brkFan?700:2400):(M.gear>0.5?500:3000);
+    for(let i=0;i<4;i++) sys.brk.temp[i]-=(sys.brk.temp[i]-amb)*dt/tau; }
   // automatic pitch trim position (THS) for the display / T.O config check
   if(!M.gnd) M.ths=clamp(lag(M.ths||0,clamp((M.alpha*R2D-3)*0.6+(M.cg-28)*-0.15,-3,10),3,dt),-4,13.5);
   else M.ths=C.ths;

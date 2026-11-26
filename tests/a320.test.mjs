@@ -154,4 +154,29 @@ function run(R,sec,each){ const {A,M}=R; for(let i=0;i<sec*50;i++){ const C=M.ct
   ok('FINAL APP: AP disengages at MDA − 50 ft (450 ft)',off!=null&&off<=455&&off>=400,off&&Math.round(off)); }
 { const K=MC.create({}); K.page='status'; const P=MC.render(K,null,null); ok('MCDU A/C STATUS: A320-251N with LEAP-1A26',P.title==='A320-251N'&&P.lines.some(l=>l[1]==='LEAP-1A26')); }
 
+
+/* ---------- overhead panel: switches with their aircraft effects ---------- */
+{ const R=rig({sys:{cold:false},fm:{air:true,h:8000*FT,ias:250,hdg:360}}); const A=R.A, M=R.M; A.sw.park=0; M.ctl.park=0; A.sw.gearLv=0; A.phase=6; M.ctl.tla=[25,25]; A.misc={attHdg:1,airData:1,eisDmc:1,ecamNd:1,audio:1};
+  A.sw.ir1=0; run(R,1); ok('IR 1 pushbutton OFF: IR 1 output lost (captain attitude and heading)',!Y.irValid(A,0,true)&&Y.irValid(A,1,false));
+  A.sw.ir1=1; A.fail.adr2=true; run(R,1); const a2=A.ecam.list.find(x=>x.text==='ADR 2 FAULT');
+  ok('ADR 2 failure: NAV ADR 2 FAULT, AIR DATA SWTG F/O ON 3',a2&&/AIR DATA SWTG .* F\/O ON 3/.test(a2.steps[0]&&a2.steps[0][0]),a2&&a2.steps.map(s=>s[0]).join('|'));
+  A.misc.airData=2; run(R,1); ok('AIR DATA switched F/O ON 3: the action is done',!A.ecam.list.find(x=>x.text==='ADR 2 FAULT').steps.length); A.fail.adr2=false; A.misc.airData=1;
+  A.sw.irM1=0; run(R,1); ok('ADIRS 1 mode selector OFF in flight: NAV IR 1 FAULT and NAV ADR 1 FAULT (ATT HDG / AIR DATA CAPT ON 3)',A.ecam.list.some(x=>x.text==='IR 1 FAULT'&&/CAPT ON 3/.test(x.steps[0][0]))&&A.ecam.list.some(x=>x.text==='ADR 1 FAULT'));
+  A.sw.irM1=1; A.sw.gpwsT=0; run(R,1); ok('GPWS TERR OFF: NAV GPWS TERR DET FAULT',A.ecam.list.some(x=>x.text==='GPWS TERR DET FAULT')); A.sw.gpwsT=1;
+  const n1=A.eng[0].n1; M.ctl.tla=[0,0]; run(R,20); const idle=A.eng[0].n1; A.sw.eai1=1; A.sw.eai2=1; run(R,20);
+  ok('ENG anti-ice ON: continuous ignition (IGNITION memo) and a higher idle',A.ecam.memoR.some(m=>m.t==='IGNITION')&&A.eng[0].n1>idle+1.5,idle.toFixed(1)+' → '+A.eng[0].n1.toFixed(1));
+  A.sw.ldgElev=3; A.sw.gpwsF=0; A.sw.ram=0; run(R,1); ok('LDG ELEV selected: MAN LDG ELEV memo and 2,000 ft landing elevation; GPWS FLAP MODE OFF memo',A.ecam.memoR.some(m=>m.t==='MAN LDG ELEV')&&A.air.ldgElev===2000&&A.ecam.memoR.some(m=>m.t==='GPWS FLAP MODE OFF'));
+  A.sw.genLine=0; run(R,1); ok('GEN 1 LINE OFF: AC BUS 1 from GEN 2 through the bus tie',A.src.ac1==='GEN 2'&&A.src.ac2==='GEN 2'); }
+{ const R=rig({sys:{cold:false}}); const A=R.A; A.sw.apuM=1; A.sw.apuS=1; run(R,1); A.sw.apuS=0; run(R,90); A.sw.apuBl=1; A.sw.pkFlow=0; run(R,5);
+  ok('PACK FLOW LO, APU bleed in use: HI flow all the same',A.air.pk1>1.1,A.air.pk1.toFixed(2)); }
+{ // brakes: heating, BRAKES HOT, brake fans
+  const R=rig({sys:{cold:false},gw:70000}); const A=R.A, M=R.M; A.sw.park=0; M.ctl.park=0; M.tas=140*KT; M.ctl.tla=[0,0]; M.ctl.brkL=M.ctl.brkR=1; run(R,40);
+  const T=Math.max(...A.brk.temp); ok('rejected take-off at 140 kt, 70 t: brakes above 300 °C',T>300,Math.round(T));
+  const w=A.ecam.list.find(x=>x.title==='BRAKES'&&x.text==='HOT'); ok('BRAKES HOT caution on the ground: PARK BRK PREFER CHOCKS, DELAY T.O, BRK FAN ON',w&&w.steps.some(s=>/PREFER CHOCKS/.test(s[0]))&&w.steps.some(s=>/BRK FAN/.test(s[0])));
+  const R2=rig({sys:{cold:false},gw:62000}); R2.A.sw.park=0; R2.M.ctl.park=0; R2.M.tas=130*KT; R2.M.ctl.tla=[-1,-1]; R2.M.gsplr=true; R2.A.sw.abrk=1; R2.M.ctl.abrk=1; R2.M.abLatch=true; run(R2,60,()=>{ R2.M.ctl.abrk=1; });
+  const T2=Math.max(...R2.A.brk.temp); ok('landing roll with autobrake LO and idle reverse from 130 kt: brakes about 100 to 280 °C',T2>100&&T2<280,Math.round(T2));
+  M.ctl.brkL=M.ctl.brkR=0; A.sw.park=1; M.ctl.park=1; const t0=Math.max(...A.brk.temp); run(R,300); const noFan=t0-Math.max(...A.brk.temp);
+  const R3=rig({sys:{cold:false}}); R3.A.brk.temp=[t0,t0,t0,t0]; R3.A.sw.brkFan=1; run(R3,300); const fan=t0-Math.max(...R3.A.brk.temp);
+  ok('brake fans cool the brakes faster',fan>noFan*2,Math.round(noFan)+' vs '+Math.round(fan)); }
+
 console.log(`a320: ${pass} passed, ${fail} failed`); if(fail){ console.log(fails.map(f=>'  FAIL '+f).join('\n')); process.exit(1); }

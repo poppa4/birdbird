@@ -335,10 +335,11 @@ const PAGES={
     // X bleed and APU
     L(g,250,430,750,430,C.g,3); valveC(g,500,430,X.xbo,C.g,true); T(g,'X BLEED',500,395,C.w,24,'center');
     L(g,420,430,420,560,C.g,3); valveC(g,420,600,D.apu.bleedOn,C.g,false); T(g,'APU',420,680,C.w,28,'center');
-    T(g,'RAM AIR',500,170,C.w,26,'center'); valveC(g,500,210,D.sw.ram,C.g,true);
+    T(g,'RAM AIR',500,170,C.w,26,'center'); valveC(g,500,210,!!X.ram,D.sw.ram&&!X.ram?C.a:C.g,true);
+    if(X.wai){ for(const x of [90,910]){ T(g,'ANTI',x,470,C.w,24,'center'); T(g,'ICE',x,500,C.w,24,'center'); tri(g,x+(x<500?-40:40),485,10,x<500?'l':'r',C.g,true); } }
   },
   press(g,D){ title(g,'CAB PRESS');
-    T(g,'LDG ELEV AUTO',460,50,C.g,30); T(g,String(Math.round(D.elev||0)),880,50,C.g,32,'right'); T(g,'FT',890,50,C.c,22);
+    const le=D.air&&D.air.ldgElev!=null?D.air.ldgElev:(D.elev||0), man=!!D.sw.ldgElev; T(g,'LDG ELEV',460,50,C.w,30); if(!man) T(g,'AUTO',620,50,C.g,30); T(g,String(Math.round(le/50)*50),880,50,man?C.c:C.g,32,'right'); T(g,'FT',890,50,C.c,22);
     const a=D.air; T(g,'ΔP',150,150,C.w,30,'center'); T(g,a.dp.toFixed(1),150,250,a.dp>8.5?C.a:C.g,40,'center',700); T(g,'PSI',150,290,C.c,24,'center');
     T(g,'V/S',450,150,C.w,30,'center'); T(g,String(Math.round(a.cabVs/50)*50),450,250,Math.abs(a.cabVs)>1750?C.a:C.g,40,'center',700); T(g,'FT/MIN',450,290,C.c,24,'center');
     T(g,'CAB ALT',780,150,C.w,30,'center'); T(g,String(Math.round(a.cab/50)*50),780,250,a.cab>9550?C.r:C.g,40,'center',700); T(g,'FT',780,290,C.c,24,'center');
