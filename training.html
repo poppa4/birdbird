@@ -355,19 +355,24 @@
 }
 @media (prefers-reduced-motion:reduce){.th-t img{transition:none}.th-t:hover img{transform:none}}
 
-.th-flow{display:block!important;background:#0E1319!important}
-.th-flow img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;flex:none!important;object-fit:cover;object-position:50% 30%;z-index:0!important;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
-.th-grid .th-flow:hover img{transform:scale(1.03)}
-.th-flow::after{display:block!important;content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(6,14,26,.35) 0%,rgba(6,14,26,0) 22%)}
-.th-flow .th-tx{position:absolute!important;left:0;right:0;bottom:0;z-index:2;background:linear-gradient(180deg,rgba(6,14,26,0) 0%,rgba(6,14,26,.82) 38%,rgba(6,14,26,.97) 72%)!important;border:0!important;padding:46px 20px 18px!important}
+.th-flow{display:block!important;background:#111518!important;container-type:inline-size}
+.th-flow img{position:absolute!important;top:10px!important;bottom:10px!important;right:14px!important;left:auto!important;inset:auto;height:calc(100% - 20px)!important;width:auto!important;max-width:48%;margin:0!important;flex:none!important;object-fit:contain;object-position:100% 50%;z-index:0!important;transition:transform .5s cubic-bezier(.2,.7,.2,1);transform-origin:70% 50%}
+.th-grid .th-flow:hover img{transform:scale(1.025)}
+.th-flow::after{content:none!important}
+.th-flow .th-tx{position:absolute!important;left:0;right:auto!important;bottom:0;width:calc(100% - 206px);z-index:2;background:none!important;border:0!important;padding:0 0 18px 20px!important}
 .th-flow .th-tx span{color:#D3DEE9!important;font-size:14px!important}
-.th-flow .ft-now{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:14px;color:#fff}
-.th-flow .ft-now i{flex:0 0 auto;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#3CCB7F;color:#0B0F12;font-style:normal;font-weight:800;font-size:12.5px}
-.th-flow .ft-now span{margin:0!important;color:#fff!important;font-size:14px!important}
-.th-flow .ft-tag{position:absolute;top:14px;left:16px;z-index:2;padding:3px 10px;border-radius:999px;background:rgba(9,16,26,.7);font-size:12.5px;font-weight:600;color:#fff}
+.th-grid .th-flow small{display:none}
+.th-flow .ft-tag{position:absolute;top:14px;left:16px;z-index:2;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.1);font-size:12.5px;font-weight:600;color:#fff}
+.th-flow .ft-steps{position:absolute;left:16px;top:48px;width:calc(100% - 222px);margin:0;padding:0;list-style:none;z-index:2;display:flex;flex-direction:column;gap:3px}
+.th-flow .ft-steps li{display:grid;grid-template-columns:17px auto 1fr;align-items:start;column-gap:6px;min-width:0;padding:3px 6px 3px 4px;border-radius:5px;background:rgba(255,255,255,.05);border-left:2px solid #3CCB7F;font-size:11.5px;line-height:17px;color:#DCE5EE}
+.th-flow .ft-steps li:has(.pm){border-left-color:#F2C230}
+.th-flow .ft-steps i{flex:0 0 auto;display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#3CCB7F;color:#0B0F12;font-style:normal;font-weight:800;font-size:10.5px}
+.th-flow .ft-steps i.pm{background:#F2C230}
+.th-flow .ft-steps b{font-family:var(--f-body);font-stretch:100%;font-weight:700;color:#fff;font-size:11.5px;line-height:17px;letter-spacing:0;margin:0;display:block}
 @media (max-width:1100px) and (min-width:601px){.th-grid>.th-feat{grid-column:1/2;min-height:340px}.th-grid>.th-flow{grid-column:2/3;min-height:340px}.th-feat .th-tx{padding:24px 22px}}
 @media (prefers-reduced-motion:reduce){.th-flow img{transition:none}.th-grid .th-flow:hover img{transform:none}}
-@media (max-width:600px){.th-grid>.th-flow{height:300px!important;flex-direction:column!important}.th-flow .ft-tag{display:none}}
+@media (max-width:600px){.th-grid>.th-flow{height:300px!important;flex-direction:column!important}.th-flow .ft-tag{top:16px;left:18px}}
+@container (max-width:440px){.th-flow .ft-steps{display:none}.th-flow .th-tx{width:calc(50% - 8px)}.th-flow img{max-width:48%}}
 
 /* overview polish: the small tiles show their screenshot as a screen on a navy stage (light and dark screenshots then sit
    together evenly), a kicker and an arrow; the aircraft row with bigger pictures and no cut names */
@@ -445,8 +450,9 @@
         <div class="th-tx"><span class="k" data-tx="fK">Cockpit trainer</span><b data-tx="fH">Fly the A320</b><span data-tx="fP">The systems behind every switch and your checklist beside the panel. It starts in the air.</span>
           <div class="th-go"><a class="th-btn" href="a320-3d.html" data-tx="fGo">Start</a><a class="th-lk" href="#simulators" data-tx="fAlt">Other aircraft</a></div></div>
       </div>
-      <a class="th-t th-flow" href="flows.html"><img src="img/training/hub4-flows-1400.webp" srcset="img/training/hub4-flows-700.webp 700w, img/training/hub4-flows-1400.webp 1400w" sizes="(max-width:600px) 100vw, (max-width:1100px) 50vw, 460px" width="1400" height="1036" alt="The flow trainer: the A320 cockpit preparation flow drawn step by step on the overhead panel, at step 18." data-alt-no="Flow-treneren: klargjøringsflowen for A320 tegnet steg for steg på takpanelet, ved steg 18." fetchpriority="high" decoding="async">
-        <span class="ft-tag" data-tx="ftTag">A320 · Cockpit preparation</span>
+      <a class="th-t th-flow" href="flows.html"><img src="img/training/hub4-flowdeck-450.webp" srcset="img/training/hub4-flowdeck-450.webp 450w, img/training/hub4-flowdeck-900.webp 900w" sizes="200px" width="900" height="1511" alt="The flow trainer: the whole A320 flight deck with the before-takeoff flow drawn on it, PF in green and PM in yellow." data-alt-no="Flow-treneren: hele A320-cockpiten med flowen før avgang tegnet inn, PF i grønt og PM i gult." fetchpriority="high" decoding="async">
+        <span class="ft-tag" data-tx="ftTag">A320 · Before takeoff</span>
+        <ol class="ft-steps" aria-hidden="true"><li><i class="pm">1</i><b>PM</b> Brake temperature – CHECK</li><li><i class="pm">2</i><b>PM</b> TCAS – TA/RA</li><li><i>1</i><b>PF</b> Exterior lights – SET, STROBE ON</li><li><i class="pm">3</i><b>PM</b> Packs 1 and 2 – AS RQRD</li><li><i>2</i><b>PF</b> Take-off clearance: NOSE light – T.O</li><li><i>3</i><b>PF</b> Landing lights – ON</li></ol>
         <div class="th-tx"><b data-tx="tFl">Flow trainer</b><span data-tx="tFlL">Every step on the panel, in order.</span><small data-tx="tFlM">13 aircraft</small></div>
       </a>
       <a class="th-t th-s1" href="ifr.html"><img src="img/training/hub4-ifr-640.webp" srcset="img/training/hub4-ifr-640.webp 640w, img/training/hub4-ifr-1200.webp 1200w" sizes="(max-width:600px) 100vw, (max-width:1100px) 50vw, 300px" alt="The IFR trainer's HSI, established on the ILS." data-alt-no="HSI-en i IFR-treneren, etablert på ILS-en." loading="lazy" decoding="async"><div class="th-tx"><b data-tx="tIf">IFR trainer</b><span data-tx="tIfL">One procedure at a time.</span><small data-tx="tIfM">46 exercises</small></div></a>
@@ -692,7 +698,7 @@ LAB.add({},{'Training':'Trening'});
 LAB.tx({
  h1:'Treningshub', lede:'Cockpiter, flows, IFR, radio og briefing på ett sted. Alt kjører i nettleseren.',
  fK:'Cockpittrener', fH:'Fly A320', fP:'Systemene bak hver bryter og sjekklisten ved siden av panelet. Starter i luften.', fGo:'Start', fAlt:'Andre fly',
- tFl:'Flow-trener', ftTag:'A320 · Klargjøring av cockpit', tFlL:'Hvert steg på panelet, i rekkefølge.', tFlM:'13 flytyper',
+ tFl:'Flow-trener', ftTag:'A320 · Før avgang', tFlL:'Hvert steg på panelet, i rekkefølge.', tFlM:'13 flytyper',
  tIf:'IFR-trener', tIfL:'Én prosedyre om gangen.', tIfM:'46 øvelser',
  tRa:'Radio', tRaL:'Høyt, fra gate til gate.', tRaM:'Gate to gate · driller',
  tAv:'Avionikktrenere', tAvL:'Først ut: A320-MCDU-en.', tAvM:'A320 · 737 · GNS 530',

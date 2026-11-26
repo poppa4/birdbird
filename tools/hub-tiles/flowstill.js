@@ -1,11 +1,12 @@
 /* Training hub, flow tile (2026-11-26): a still of the flow trainer, drawn the way flows.js draws it (badges, curved arrows).
    node flows-dump.js > a320flows.json
-   LS=0.8 UPTO=18 SEL=18 node flowstill.js ovhd 310 362 380 281 2800 still.html   -> screenshot at 2800 px, then hub4-flows-1400/700.webp
-   args: flowId, frame x y w h in the 1000-wide deck canvas, output width, output file. LS = badge size (the trainer's setting),
+   LS=0.8 UPTO=18 SEL=18 node flowstill.js ovhd 310 362 380 281 2800 still.html   -> hub4-flows-700.webp (Continue card)
+   LS=2 LW=8 node flowstill.js bto 0 0 1000 1678 900 deck.html                   -> hub4-flowdeck-900/450.webp (the flow tile: the whole flight deck)
+   args: flowId, frame x y w h in the 1000-wide deck canvas, output width, output file. LS = badge size and LW = line width (the trainer's settings),
    UPTO = steps drawn (as when the trainer plays a flow), SEL = the step with the trainer's dashed selection ring. */
 const fs=require('fs'), path=require('path'); const D=JSON.parse(fs.readFileSync(__dirname+'/a320flows.json'));
 const [id,x,y,w,h,outW,out]=process.argv.slice(2); const f=D[id]; const X=+x,Y=+y,Wd=+w,Ht=+h,OW=+outW, OH=Math.round(OW*Ht/Wd);
-const COL={PF:'#3CCB7F',PM:'#F2C230'}; const LS=+(process.env.LS||1), R=15*LS, lw=3;
+const COL={PF:'#3CCB7F',PM:'#F2C230'}; const LS=+(process.env.LS||1), R=15*LS, lw=+(process.env.LW||3);
 function pathD(a,b){ const mx=(a.x+b.x)/2,my=(a.y+b.y)/2,dx=b.x-a.x,dy=b.y-a.y,L0=Math.hypot(dx,dy)||1,k=Math.min(40,L0*.12);
   const cx=mx-dy/L0*k,cy=my+dx/L0*k,ta=R/L0,tb=1-(R+4)/L0; const q=t=>[(1-t)*(1-t)*a.x+2*(1-t)*t*cx+t*t*b.x,(1-t)*(1-t)*a.y+2*(1-t)*t*cy+t*t*b.y];
   const p0=q(Math.min(.45,ta)),p1=q(Math.max(.55,tb)); return `M${p0[0].toFixed(1)} ${p0[1].toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${p1[0].toFixed(1)} ${p1[1].toFixed(1)}`; }

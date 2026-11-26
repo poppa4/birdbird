@@ -61,6 +61,40 @@
 .live input{font-family:var(--f-mono);font-size:15px;width:76px;padding:6px 8px;border:1px solid var(--rule);border-radius:3px;text-transform:uppercase;background:#fff}
 .livest{font-size:13px;color:var(--ink-2);flex:1 1 220px;min-width:0}.livest.err{color:var(--warning)}
 @media (pointer:coarse){.ex button{min-height:44px;padding-inline:12px}.ctl input[type=range]{min-height:44px}}
+/* SIGMET tab: a chart of the warnings in force and the list beside it */
+.sgtop{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px}
+.sgtop h2{margin:0}
+.sgctl{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.sgair{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
+.sgair input{width:16px;height:16px;accent-color:var(--accent)}
+.sgst{margin:10px 0 14px;font-size:13.5px;color:var(--ink-2)}
+.sgst b{color:var(--ink)}.sgst.err{color:var(--warning)}
+.sgw{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr);gap:18px;align-items:start}
+.sgmapw{position:sticky;top:84px}
+#sgMap{display:block;width:100%;height:auto;max-height:72vh;border:1px solid var(--rule);border-radius:6px;background:#DCE7EE}
+#sgMap .sp{cursor:pointer;transition:fill-opacity .15s,stroke-width .15s}
+#sgMap .sp.on{fill-opacity:.42;stroke-width:3.2}
+#sgMap .sl{cursor:pointer}
+.sglg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:12.5px;color:var(--ink-2)}
+.sglg i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px;opacity:.85}
+.sglg .air i{background:repeating-linear-gradient(90deg,#3A4650 0 4px,transparent 4px 7px)!important;height:3px;width:16px;vertical-align:3px;border-radius:0}
+.sglist{display:flex;flex-direction:column;gap:10px;min-width:0}
+.sglist h3{margin:8px 0 0;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);font-family:var(--f-body)}
+.sglist h3:first-child{margin-top:0}
+.sgc{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--rule);border-left:4px solid var(--c,#3A4650);border-radius:6px;padding:10px 12px;font:inherit;color:inherit;cursor:pointer;scroll-margin:90px}
+.sgc:hover{border-color:var(--accent);border-left-color:var(--c,#3A4650)}
+.sgc.on{box-shadow:0 0 0 2px var(--c,#3A4650)}
+.sgc .h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.sgc .h b{font-size:15px}
+.sgc .h .k{font-family:var(--f-mono);font-size:12.5px;font-weight:600;color:var(--c,#3A4650)}
+.sgc .h em{margin-left:auto;font-style:normal;font-size:12px;color:var(--ink-2);white-space:nowrap}
+.sgc dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 12px;margin:8px 0 0;font-size:13.5px}
+.sgc dt{color:var(--ink-2)}.sgc dd{margin:0}
+.sgc .tag{display:inline-block;margin-left:6px;padding:0 7px;border-radius:999px;font-size:11.5px;font-weight:600;background:#EEF2F5;color:var(--ink-2)}
+.sgc .tag.up{background:#FFF4DB;color:#7A5200}
+.sgc pre{margin:8px 0 0;padding:8px 10px;background:#F4F7F9;border-radius:4px;font-family:var(--f-mono);font-size:12px;line-height:1.45;white-space:pre-wrap;word-break:break-word;color:var(--ink)}
+.sgnone{padding:14px;border:1px dashed var(--rule);border-radius:6px;font-size:14px;color:var(--ink-2);background:#fff}
+@media (max-width:900px){.sgw{grid-template-columns:minmax(0,1fr)}.sgmapw{position:static}#sgMap{max-height:none}}
 </style>
 <link rel="icon" href="favicon.ico?v=3" sizes="48x48"><link rel="icon" type="image/svg+xml" href="favicon.svg?v=3"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 </head>
@@ -75,7 +109,7 @@
     </div>
     <div class="hright"><div class="status ok" id="stat" hidden>Decoded</div></div>
   </header>
-  <nav class="wxtabs" aria-label="Weather"><a href="weather.html" data-w="now" class="on">Now</a><a href="outlook.html" data-w="fc">Forecast</a><a href="weather.html#decode" data-w="dec">Decode and practise</a><a href="sun.html" data-w="sun">Sun and twilight</a></nav>
+  <nav class="wxtabs" aria-label="Weather"><a href="weather.html" data-w="now" class="on">Now</a><a href="weather.html#sigmet" data-w="sig">SIGMET</a><a href="outlook.html" data-w="fc">Forecast</a><a href="weather.html#decode" data-w="dec">Decode and practise</a><a href="sun.html" data-w="sun">Sun and twilight</a></nav>
   <nav class="snav" id="wxsn" aria-label="Sections" hidden><a href="#decode">Decode</a><a href="#xwind">Crosswind</a><a href="#codes">Codes</a><a href="#quiz">Practise</a></nav>
 
   <section class="card livecard" id="live">
@@ -83,6 +117,19 @@
       <div class="live"><label for="liveId">ICAO code</label><input id="liveId" maxlength="4" inputmode="text" autocapitalize="characters" enterkeyhint="go" placeholder="ENGM" autocomplete="off" spellcheck="false" aria-label="ICAO code"><button class="btn sm" type="button" id="liveM">Show</button><span id="liveSt" class="livest" role="status" aria-live="polite"></span></div>
     <div class="nowx" id="liveOut"></div>
     <p class="note">The latest METAR and TAF, SIGMETs in force over the aerodrome, the freezing level and the radar. Tap a report to decode it line by line. For flight, the official briefing decides.</p>
+  </section>
+
+  <section class="card" id="sigmet" hidden>
+    <div class="sgtop">
+      <h2>SIGMET and AIRMET in force</h2>
+      <div class="sgctl"><div id="sgReg" role="group" aria-label="Area"></div><label class="sgair"><input type="checkbox" id="sgAir" checked> AIRMET</label><button class="btn sm" id="sgRef" type="button">Update</button></div>
+    </div>
+    <p class="sgst" id="sgSt" aria-live="polite"></p>
+    <div class="sgw">
+      <div class="sgmapw"><svg id="sgMap" role="img" aria-label="Map of the SIGMETs and AIRMETs in force"></svg><div class="sglg" id="sgLg"></div></div>
+      <div class="sglist" id="sgList"></div>
+    </div>
+    <p class="note">Norway: MET Norway, which issues them (SIGMET and AIRMET). Elsewhere: aviationweather.gov (NOAA), which relays each country's SIGMETs; AIRMETs outside Norway are not openly published. Updated every 5 minutes. Can be late or incomplete: for flight, the official briefing decides.</p>
   </section>
 
   <section class="card" id="decode">
@@ -141,6 +188,8 @@ const NOd={
  'Training tool. The reports used as examples and in the practice are made up. For flight planning, use the official briefing service.':'Opplæringsverktøy. Meldingene i eksemplene og øvingen er oppdiktet. Bruk den offisielle briefingtjenesten til flyplanlegging.',
  'Decoded':'Dekodet','Weather':'Vær','The weather at an aerodrome now, the forecast for the days ahead, and METAR and TAF decoded line by line.':'Været på en flyplass nå, varselet for dagene fram, og METAR og TAF dekodet linje for linje.','Now':'Nå','Forecast':'Varsel','Decode and practise':'Dekod og øv','Sun and twilight':'Sol og tussmørke','At the aerodrome now':'På flyplassen nå','Show':'Vis','The latest METAR and TAF, SIGMETs in force over the aerodrome, the freezing level and the radar. Tap a report to decode it line by line. For flight, the official briefing decides.':'Siste METAR og TAF, SIGMET i kraft over flyplassen, frysenivået og radaren. Trykk på en melding for å dekode den linje for linje. Før flyging er det offisiell briefing som gjelder.','Check the report':'Sjekk meldingen','Latest report for':'Siste melding for'
 };
+Object.assign(NOd,{'SIGMET and AIRMET in force':'SIGMET og AIRMET i kraft','Update':'Oppdater','Norway':'Norge','Nordic':'Norden','Europe':'Europa',
+ "Norway: MET Norway, which issues them (SIGMET and AIRMET). Elsewhere: aviationweather.gov (NOAA), which relays each country's SIGMETs; AIRMETs outside Norway are not openly published. Updated every 5 minutes. Can be late or incomplete: for flight, the official briefing decides.":'Norge: MET Norway, som utsteder dem (SIGMET og AIRMET). Ellers: aviationweather.gov (NOAA), som videreformidler SIGMET-ene fra hvert land; AIRMET utenfor Norge publiseres ikke åpent. Oppdateres hvert 5. minutt. Kan være forsinket eller ufullstendig: før flyging er det offisiell briefing som gjelder.'});
 LAB.add({},NOd);
 
 /* ---------- ordbok ---------- */
@@ -300,18 +349,108 @@ function paintNow(){ if(!NOW) return; const {id,s,ago}=NOW, ap=APW&&APW[id];
   const ns=window.ICB?ICB.notam(id):null;
   h+=`<div class="lnk"><a class="fc" href="outlook.html?icao=${id}">${LL('Forecast, up to 14 days →','Varsel, opptil 14 dager →')}</a>${ns?`<a href="${ns.url}" target="_blank" rel="noopener">NOTAM ↗</a>`:''}<a href="/api/aip?icao=${id}&go=1" target="_blank" rel="noopener">AIP ↗</a><a href="sun.html?icao=${id}">${LL('Sun and twilight','Sol og tussmørke')}</a></div>`;
   el('liveOut').innerHTML=h; }
+/* ---------- SIGMET tab: every SIGMET and AIRMET in force for Norway, the Nordic FIRs or Europe, on a chart and in a list ----------
+   One request (/api/sigmet: MET Norway for Norway incl. AIRMETs, aviationweather.gov elsewhere), kept 5 min; filtered here.
+   Colours by hazard as on the Route Explorer map (rxmap.js SIGC). Areas given only as text (e.g. ENTIRE FIR) are listed, not drawn. */
+const SGM=(()=>{
+  const C={ts:'#C62828',turb:'#C77700',ice:'#1D63B8',mtw:'#7B3FA0',va:'#6D4C2F',vis:'#4E6B2E',other:'#3A4650'};
+  const CAT=[['ts','Thunderstorms and CB','Tordenvær og CB'],['turb','Turbulence','Turbulens'],['ice','Icing','Ising'],['mtw','Mountain waves','Fjellbølger'],['va','Volcanic ash','Vulkansk aske'],['vis','Cloud and visibility','Skyer og sikt'],['other','Other','Annet']];
+  const REG={no:{re:/^EN/,b:[-1,33,56.6,71.8],en:'Norway',nb:'Norge'},nordic:{re:/^(EN|ES|EK|EF|BI)/,b:[-25,33,53.6,71.8],en:'the Nordic countries',nb:'Norden'},eu:{re:/^(E|L|BI)/,b:[-25,42,34.5,71.5],en:'Europe',nb:'Europa'}};
+  const NOL={'Moderate icing':'Moderat ising','Moderate turbulence':'Moderat turbulens','Moderate mountain wave':'Moderate fjellbølger','Isolated thunderstorms':'Isolert tordenvær','Occasional thunderstorms':'Spredt tordenvær','Cumulonimbus':'Cumulonimbus','Mountains obscured':'Fjell skjult','Low cloud':'Lavt skydekke','Reduced surface visibility':'Nedsatt sikt ved bakken','Strong surface wind':'Sterk vind ved bakken','Convective SIGMET (thunderstorms)':'Konvektiv SIGMET (tordenvær)','Severe turbulence':'Kraftig turbulens','Severe icing':'Kraftig ising','Severe icing (freezing rain)':'Kraftig ising (underkjølt regn)','Severe mountain wave':'Kraftige fjellbølger','Volcanic ash':'Vulkansk aske','Tropical cyclone':'Tropisk syklon','Radioactive cloud':'Radioaktiv sky','Heavy duststorm':'Kraftig støvstorm','Heavy sandstorm':'Kraftig sandstorm','Thunderstorms':'Tordenvær','Embedded thunderstorms':'Innleiret tordenvær','Obscured thunderstorms':'Skjult tordenvær','Frequent thunderstorms':'Hyppig tordenvær','Squall line thunderstorms':'Bygelinje med tordenvær'};
+  /* a few aerodromes to find your way on the chart */
+  const APS=[['ENGM',60.19,11.10],['ENBR',60.29,5.22],['ENZV',58.88,5.64],['ENVA',63.46,10.92],['ENBO',67.27,14.37],['ENTC',69.68,18.92],['ENKR',69.72,29.89],['ENSB',78.25,15.47],['ENTO',59.19,10.26],['ESSA',59.65,17.92],['ESGG',57.66,12.28],['ESNQ',67.82,20.34],['EKCH',55.62,12.65],['EFHK',60.32,24.96],['EFRO',66.56,25.83],['BIKF',63.98,-22.6],['EGLL',51.47,-0.45],['EIDW',53.42,-6.27],['EDDF',50.03,8.57],['LFPG',49.0,2.55],['EHAM',52.31,4.76],['LEMD',40.47,-3.56],['LIRF',41.8,12.25],['EPWA',52.17,20.97],['LOWW',48.11,16.57],['LGAV',37.94,23.94],['LTFM',41.26,28.74]];
+  const MAJ=new Set(['ENGM','ESSA','EKCH','EFHK','BIKF','EGLL','EIDW','EDDF','LFPG','EHAM','LEMD','LIRF','EPWA','LOWW','LGAV','LTFM']);
+  let D=null, at=0, busy=false, err=false, reg='no', air=true, sel=null, tick=0, MAP=null, mapP=null, segA=null, on=false;
+  try{ reg=localStorage.getItem('bb-sig-reg')||'no'; if(!REG[reg]) reg='no'; air=localStorage.getItem('bb-sig-air')!=='0'; }catch(e){}
+  const lab=s=>{ if(!lang()) return s.label||'SIGMET'; const b=String(s.label||'').replace(/ with hail$/,''); return (NOL[b]||s.label||'SIGMET')+(/ with hail$/.test(s.label||'')?' med hagl':''); };
+  const lvl=v=>v==null?null:v<=0?'SFC':v>=10000?'FL'+String(Math.round(v/100)).padStart(3,'0'):nf(v,0)+' ft';
+  const levels=s=>{ const b=lvl(s.base), t=lvl(s.top); return b&&t?b+'–'+t:t?LL('up to ','opp til ')+t:b?LL('above ','over ')+b:''; };
+  const z=d=>{ const t=new Date(d); return String(t.getUTCHours()).padStart(2,'0')+':'+String(t.getUTCMinutes()).padStart(2,'0')+'Z'; };
+  const day=d=>new Date(d).getUTCDate();
+  const left=ms=>{ const m=Math.max(0,Math.round(ms/60000)); return m<60?m+' min':Math.floor(m/60)+' h'+(m%60?' '+String(m%60).padStart(2,'0')+' min':''); };
+  const raw=s=>' '+String(s.raw||'').toUpperCase().replace(/\s+/g,' ')+' ';
+  const obs=s=>/ OBS( AT \d{4}Z)? /.test(raw(s))?LL('Observed','Observert'):/ FCST( AT \d{4}Z)? /.test(raw(s))?LL('Forecast','Varslet'):'';
+  const chg=s=>{ const r=raw(s); return / INTSF\b/.test(r)?LL('Intensifying','Tiltagende'):/ WKN\b/.test(r)?LL('Weakening','Avtagende'):/ NC=? /.test(r)||/ NC=/.test(r)?LL('No change','Ingen endring'):''; };
+  const mov=s=>{ const r=raw(s); if(String(s.dir||'').toUpperCase()==='STNR'||/ STNR /.test(r)) return LL('Stationary','Stasjonær'); return s.dir?s.dir+(s.spd?' '+s.spd+' kt':''):''; };
+  const fir=n=>String(n||'').toLowerCase().replace(/\b[a-zæøå]/g,c=>c.toUpperCase());
+  function loadMap(){ return mapP||(mapP=fetch('data/map-eu.json').then(r=>r.json()).then(d=>{ const dec=a=>{ const p=[]; let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9; for(let i=0;i<a.length;i+=2){ const lo=a[i]/100, la=a[i+1]/100; p.push([lo,la]); if(lo<x0)x0=lo; if(lo>x1)x1=lo; if(la<y0)y0=la; if(la>y1)y1=la; } return {p,b:[x0,x1,y0,y1]}; };
+    MAP={land:(d.land||[]).map(dec),border:(d.border||[]).map(dec)}; }).catch(()=>{ MAP={land:[],border:[]}; })); }
+  async function get(force){ if(busy) return; if(!force&&D&&Date.now()-at<5*60e3) return;
+    busy=true; status(); try{ const r=await fetch('/api/sigmet',{headers:{accept:'application/json'}}); const j=await r.json(); if(!j||!j.ok) throw new Error('sig'); D=j; err=false; }
+    catch(e){ err=true; } finally{ at=Date.now(); busy=false; } draw(); }
+  function list(){ const now=Date.now(); return (D&&D.items||[]).filter(s=>REG[reg].re.test(s.fir||'')&&(air||s.type!=='AIRMET')&&(!s.to||new Date(s.to)>now))
+    .sort((a,b)=>(/^EN/.test(b.fir)-/^EN/.test(a.fir))||(a.fir<b.fir?-1:a.fir>b.fir?1:0)||((a.type==='AIRMET')-(b.type==='AIRMET'))||String(a.series).localeCompare(String(b.series),'en',{numeric:true})); }
+  function status(L0){ const st=el('sgSt'); if(!st) return; const R=REG[reg], where=lang()?R.nb:R.en;
+    if(err&&!D){ st.className='sgst err'; st.innerHTML=LL('The SIGMETs could not be fetched right now. ','SIGMET-ene kunne ikke hentes akkurat nå. ')+`<button class="btn sm" type="button" data-sg="retry">${LL('Try again','Prøv igjen')}</button>`; return; }
+    if(!D){ st.className='sgst'; st.textContent=LL('Fetching the SIGMETs in force…','Henter SIGMET-ene som gjelder …'); return; }
+    const n=L0.length, up=L0.filter(s=>s.from&&new Date(s.from)>Date.now()).length, nS=L0.filter(s=>s.type!=='AIRMET').length, nA=n-nS;
+    const cnt=n?`<b>${nS} SIGMET</b>${air&&reg==='no'||nA?` ${LL('and','og')} <b>${nA} AIRMET</b>`:''} ${LL('in force for','for')} ${where}${up?` (${up} ${LL('not yet in force','gjelder ikke ennå')})`:''}`:LL(`No SIGMET${air?' or AIRMET':''} in force for ${where} right now.`,`Ingen SIGMET${air?' eller AIRMET':''} i kraft for ${where} akkurat nå.`);
+    st.className='sgst'+(err?' err':''); st.innerHTML=cnt+` · ${LL('updated','oppdatert')} ${z(at)}`+(err?' · '+LL('the last update failed','siste oppdatering feilet'):''); }
+  function draw(){ if(!on) return; const L0=list(); status(L0); chart(L0); cards(L0); }
+  function chart(L0){ const svg=el('sgMap'); if(!MAP){ loadMap().then(()=>draw()); }
+    let [x0,x1,y0,y1]=REG[reg].b; L0.forEach(s=>(s.poly||[]).forEach(([lo,la])=>{ x0=Math.min(x0,lo-1.5); x1=Math.max(x1,lo+1.5); y0=Math.min(y0,la-.8); y1=Math.max(y1,la+.8); }));
+    x0=Math.max(x0,-34.5); x1=Math.min(x1,52); y0=Math.max(y0,26); y1=Math.min(y1,83);
+    const k=Math.cos((y0+y1)/2*Math.PI/180), cw=(svg.parentNode&&svg.parentNode.clientWidth)||800; let W=cw<620?560:1000, H=W*(y1-y0)/((x1-x0)*k);
+    if(H>W*1.15){ const need=(y1-y0)/(1.15*k), c=(x0+x1)/2; x0=c-need/2; x1=c+need/2; H=W*1.15; }
+    if(H<W*.62){ const need=(x1-x0)*k*.62, c=(y0+y1)/2; y0=c-need/2; y1=c+need/2; H=W*.62; }
+    H=Math.round(H); const X=lo=>(lo-x0)/(x1-x0)*W, Y=la=>(y1-la)/(y1-y0)*H, P=p=>X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1);
+    const vis=b=>!(b[1]<x0||b[0]>x1||b[3]<y0||b[2]>y1);
+    let h=`<rect width="${W}" height="${H}" fill="#DCE7EE"/>`;
+    for(let g=Math.ceil(x0/5)*5; g<=x1; g+=5) h+=`<line x1="${X(g)}" x2="${X(g)}" y1="0" y2="${H}" stroke="#C6D4DD" stroke-width=".7"/>`;
+    for(let g=Math.ceil(y0/5)*5; g<=y1; g+=5) h+=`<line x1="0" x2="${W}" y1="${Y(g)}" y2="${Y(g)}" stroke="#C6D4DD" stroke-width=".7"/><text x="8" y="${Y(g)-5}" font-size="14" font-family="var(--f-mono)" fill="#7F96A6">${g}°N</text>`;
+    if(MAP){ h+='<path fill="#F6F6F2" stroke="#9FB2BF" stroke-width=".8" stroke-linejoin="round" d="'+MAP.land.filter(o=>vis(o.b)).map(o=>'M'+o.p.map(P).join('L')+'Z').join('')+'"/>';
+      h+='<path fill="none" stroke="#B9C5CD" stroke-width=".8" stroke-dasharray="3 3" d="'+MAP.border.filter(o=>vis(o.b)).map(o=>'M'+o.p.map(P).join('L')).join('')+'"/>'; }
+    const span=x1-x0; APS.forEach(([id,la,lo])=>{ if(lo<x0+.3||lo>x1-.3||la<y0+.3||la>y1-.3) return; if(span>40&&!MAJ.has(id)) return; const x=X(lo), y=Y(la);
+      h+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#fff" stroke="#47606F" stroke-width="1.8"/><text x="${(x+8).toFixed(1)}" y="${(y+5).toFixed(1)}" font-size="15" font-family="var(--f-mono)" fill="#47606F" paint-order="stroke" stroke="#F6F6F2" stroke-width="3">${id}</text>`; });
+    const now=Date.now(), lbl=[];
+    L0.forEach(s=>{ if(!s.poly) return; const c=C[s.cat]||C.other, up=s.from&&new Date(s.from)>now, am=s.type==='AIRMET';
+      h+=`<path class="sp${sel===s.id?' on':''}" data-id="${wesc(s.id)}" d="M${s.poly.map(P).join('L')}Z" fill="${c}" fill-opacity="${up?.08:.2}" stroke="${c}" stroke-width="2" stroke-linejoin="round"${am||up?' stroke-dasharray="7 5"':''}><title>${wesc((s.type||'SIGMET')+' '+(s.series||'')+' · '+lab(s))}</title></path>`;
+      const pts=s.poly.slice(0,-1); lbl.push([s,pts.reduce((a,p)=>a+p[0],0)/pts.length,pts.reduce((a,p)=>a+p[1],0)/pts.length,c]); });
+    lbl.forEach(([s,lo,la,c])=>{ const t=(s.type==='AIRMET'?'AIRMET ':'')+(s.series||''), w=t.length*10+16, x=X(lo), y=Y(la);
+      h+=`<g class="sl" data-id="${wesc(s.id)}"><rect x="${(x-w/2).toFixed(1)}" y="${(y-13).toFixed(1)}" width="${w.toFixed(1)}" height="26" rx="5" fill="#fff" stroke="${c}" stroke-width="2"/><text x="${x.toFixed(1)}" y="${(y+5.5).toFixed(1)}" text-anchor="middle" font-size="16" font-weight="700" font-family="var(--f-mono)" fill="${c}">${wesc(t)}</text></g>`; });
+    const nw=L0.filter(s=>!s.poly).length;
+    if(nw) h+=`<text x="${W-12}" y="${H-12}" text-anchor="end" font-size="15" fill="#47606F" paint-order="stroke" stroke="#DCE7EE" stroke-width="4">${nw} ${LL(nw>1?'more for a whole FIR or given as text, in the list':'more for a whole FIR or given as text, in the list',nw>1?'til for en hel FIR eller oppgitt som tekst, i listen':'til for en hel FIR eller oppgitt som tekst, i listen')}</text>`;
+    svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.innerHTML=h;
+    const used=new Set(L0.map(s=>s.cat||'other'));
+    el('sgLg').innerHTML=CAT.filter(c=>used.has(c[0])||['ts','turb','ice'].includes(c[0])).map(c=>`<span><i style="background:${C[c[0]]}"></i>${lang()?c[2]:c[1]}</span>`).join('')+`<span class="air"><i></i>${LL('AIRMET, or not yet in force','AIRMET, eller gjelder ikke ennå')}</span>`; }
+  function cards(L0){ const box=el('sgList'), now=Date.now(); if(!D){ box.innerHTML=''; return; }
+    if(!L0.length){ box.innerHTML=`<div class="sgnone">${LL('Nothing in force here right now. SIGMETs warn of severe turbulence and icing, embedded or frequent thunderstorms, mountain waves and volcanic ash; AIRMETs (Norway) of moderate ones and low cloud.','Ingenting i kraft her akkurat nå. SIGMET varsler kraftig turbulens og ising, innleiret eller hyppig tordenvær, fjellbølger og vulkansk aske; AIRMET (Norge) moderat turbulens og ising og lave skyer.')}</div>`; return; }
+    let h='', last='';
+    L0.forEach(s=>{ if(s.fir!==last){ last=s.fir; h+=`<h3>${wesc(s.fir)}${s.firName?' · '+wesc(fir(s.firName)):''}</h3>`; }
+      const c=C[s.cat]||C.other, up=s.from&&new Date(s.from)>now, sameDay=s.from&&s.to&&day(s.from)===day(s.to);
+      const valid=s.from&&s.to?`${sameDay?'':day(s.from)+'. '}${z(s.from)}–${sameDay?'':day(s.to)+'. '}${z(s.to)}`:'';
+      const rows=[[LL('Valid','Gyldig'),valid+(up?`<span class="tag up">${LL('not yet in force','gjelder ikke ennå')}</span>`:s.to?` · ${left(new Date(s.to)-now)} ${LL('left','igjen')}`:'')],
+        [LL('Levels','Nivåer'),levels(s)],[LL('Movement','Bevegelse'),mov(s)],[LL('Change','Endring'),chg(s)],
+        [LL('Area','Område'),s.poly?'':/ ENTIRE FIR /.test(raw(s))?LL('The whole FIR','Hele FIR-en'):LL('Given in the text','Oppgitt i teksten')]].filter(r=>r[1]);
+      h+=`<button type="button" class="sgc${sel===s.id?' on':''}" data-id="${wesc(s.id)}" style="--c:${c}"><div class="h"><span class="k">${wesc((s.type||'SIGMET')+' '+(s.series||''))}</span><b>${wesc(lab(s))}</b><em>${obs(s)}</em></div>`+
+        `<dl>${rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('')}</dl><pre>${wesc(s.raw||'')}</pre></button>`; });
+    box.innerHTML=h; }
+  function pick(id,from){ sel=sel===id?null:id; draw(); if(sel&&from==='map'){ const b=el('sgList').querySelector(`.sgc[data-id="${CSS.escape(sel)}"]`); if(b) b.scrollIntoView({block:'nearest',behavior:'smooth'}); } }
+  let wired=false;
+  function wire(){ if(wired) return; wired=true;
+    segA=seg(el('sgReg'),[['no','Norway'],['nordic','Nordic'],['eu','Europe']],reg,v=>{ reg=v; sel=null; try{ localStorage.setItem('bb-sig-reg',v); }catch(e){} draw(); });
+    el('sgAir').checked=air; el('sgAir').addEventListener('change',e=>{ air=e.target.checked; try{ localStorage.setItem('bb-sig-air',air?'1':'0'); }catch(e2){} draw(); });
+    el('sgRef').onclick=()=>get(true);
+    el('sgSt').addEventListener('click',e=>{ if(e.target.closest('[data-sg="retry"]')) get(true); });
+    el('sgMap').addEventListener('click',e=>{ const t=e.target.closest('[data-id]'); if(t) pick(t.dataset.id,'map'); });
+    el('sgList').addEventListener('click',e=>{ const t=e.target.closest('.sgc'); if(t&&!getSelection().toString()) pick(t.dataset.id,'list'); });
+    LAB.onLang(draw); let rw=innerWidth<620; addEventListener('resize',()=>{ const n=innerWidth<620; if(n!==rw){ rw=n; draw(); } }); }
+  return { show(){ on=true; wire(); draw(); get(false); clearInterval(tick); tick=setInterval(()=>{ if(document.hidden) return; if(Date.now()-at>=5*60e3) get(true); else draw(); },60e3); },
+           hide(){ on=false; clearInterval(tick); } };
+})();
 /* tabs: Now / Forecast / Decode and practise. Now and Decode live on this page; the forecast is outlook.html */
 function tabHrefs(id){ document.querySelectorAll('.wxtabs a').forEach(a=>{ if(a.dataset.w==='fc') a.href='outlook.html'+(id?'?icao='+id:''); }); }
 const DEC=['decode','xwind','codes','quiz'];
-function mode(){ const h=location.hash.slice(1), dec=DEC.includes(h);
-  el('live').hidden=dec; DEC.forEach(x=>{ el(x).hidden=!dec; }); el('wxsn').hidden=!dec; el('stat').hidden=!dec; document.querySelectorAll('.wxtabs a').forEach(a=>a.classList.toggle('on',a.dataset.w===(dec?'dec':'now')));
-  const note=document.querySelector('.page > p.note:last-of-type'); if(note) note.hidden=!dec; }
+function mode(){ const h=location.hash.slice(1), dec=DEC.includes(h), sig=h==='sigmet';
+  el('live').hidden=dec||sig; el('sigmet').hidden=!sig; DEC.forEach(x=>{ el(x).hidden=!dec; }); el('wxsn').hidden=!dec; el('stat').hidden=!dec; document.querySelectorAll('.wxtabs a').forEach(a=>{ const on=a.dataset.w===(dec?'dec':sig?'sig':'now'); a.classList.toggle('on',on); if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+  const note=document.querySelector('.page > p.note:last-of-type'); if(note) note.hidden=!dec;
+  if(sig) SGM.show(); else SGM.hide(); }
 document.querySelector('.wxtabs a[data-w="now"]').addEventListener('click',e=>{ e.preventDefault(); history.pushState(null,'',location.pathname+location.search); mode(); scrollTo(0,0); });
 addEventListener('hashchange',mode); mode();
 Promise.all([ldS('icaobrief.js?v=9'),ldS('sun.js?v=1'),loadApW()]).then(paintNow);
 // ?ids=ENGM (from the search bar or a link) fetches it straight away; otherwise the last code you looked up is filled in
 { const q=new URLSearchParams(location.search), id=(q.get('ids')||q.get('icao')||'').split(',')[0].trim().toUpperCase(); let last=''; try{ last=localStorage.getItem('bb-ol-icao')||localStorage.getItem('bb-wxid')||''; }catch(e){}
-  if(/^[A-Z]{4}$/.test(id)){ el('liveId').value=id; setTimeout(()=>live(q.get('k')==='T'?'T':'M'),0); } else if(/^[A-Z]{4}$/.test(last)){ el('liveId').value=last; if(!DEC.includes(location.hash.slice(1))) setTimeout(()=>live('M'),0); } }
+  if(/^[A-Z]{4}$/.test(id)){ el('liveId').value=id; setTimeout(()=>live(q.get('k')==='T'?'T':'M'),0); } else if(/^[A-Z]{4}$/.test(last)){ el('liveId').value=last; if(!DEC.includes(location.hash.slice(1))&&location.hash!=='#sigmet') setTimeout(()=>live('M'),0); } }
 el('liveId').addEventListener('input',e=>{ const v=e.target.value.toUpperCase().replace(/[^A-Z]/g,''); if(v!==e.target.value) e.target.value=v; });
 el('liveOut').addEventListener('click',e=>{ const b=e.target.closest('button[data-k]'); if(!b||!NOW) return; const r=b.dataset.k==='T'?NOW.s.taf:NOW.s.metar; if(!r) return; el('raw').value=r.raw; run(); location.hash='decode'; });
 el('liveM').onclick=()=>live('M'); el('liveId').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); live('M'); } });
