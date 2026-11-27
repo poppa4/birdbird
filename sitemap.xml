@@ -13,7 +13,6 @@
   <url><loc>https://nordap.eu/checkride</loc></url>
   <url><loc>https://nordap.eu/clouds</loc></url>
   <url><loc>https://nordap.eu/cockpit</loc></url>
-  <url><loc>https://nordap.eu/compass</loc></url>
   <url><loc>https://nordap.eu/da42-3d</loc></url>
   <url><loc>https://nordap.eu/engines</loc></url>
   <url><loc>https://nordap.eu/essentials</loc></url>
@@ -33,7 +32,6 @@
   <url><loc>https://nordap.eu/ifr</loc></url>
   <url><loc>https://nordap.eu/jetsystems</loc></url>
   <url><loc>https://nordap.eu/lab</loc></url>
-  <url><loc>https://nordap.eu/massbalance</loc></url>
   <url><loc>https://nordap.eu/orientation</loc></url>
   <url><loc>https://nordap.eu/performance</loc></url>
   <url><loc>https://nordap.eu/planning</loc></url>
@@ -41,13 +39,11 @@
   <url><loc>https://nordap.eu/pressure</loc></url>
   <url><loc>https://nordap.eu/pressurisation</loc></url>
   <url><loc>https://nordap.eu/privacy</loc></url>
-  <url><loc>https://nordap.eu/profile</loc></url>
   <url><loc>https://nordap.eu/propeller</loc></url>
   <url><loc>https://nordap.eu/radio-drills</loc></url>
   <url><loc>https://nordap.eu/radio</loc></url>
   <url><loc>https://nordap.eu/radionav</loc></url>
   <url><loc>https://nordap.eu/route</loc></url>
-  <url><loc>https://nordap.eu/schools</loc></url>
   <url><loc>https://nordap.eu/sheets</loc></url>
   <url><loc>https://nordap.eu/simcheck</loc></url>
   <url><loc>https://nordap.eu/sources</loc></url>
@@ -64,7 +60,6 @@
   <url><loc>https://nordap.eu/aerodrome</loc></url>
   <url><loc>https://nordap.eu/sun</loc></url>
   <url><loc>https://nordap.eu/weather</loc></url>
-  <url><loc>https://nordap.eu/wind</loc></url>
   <url><loc>https://nordap.eu/workspace</loc></url>
   <url><loc>https://nordap.eu/wxreports</loc></url>
 </urlset>
